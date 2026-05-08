@@ -16,6 +16,7 @@ export function Header() {
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
           <Link to="/search" className="px-3 py-2 rounded-sm hover:bg-secondary transition-colors">ابحث عن مصوّر</Link>
+          <Link to="/pricing" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">الأسعار</Link>
           <Link to="/photographers/join" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">انضم كمصوّر</Link>
           <Link
             to="/login"
