@@ -10,14 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
+import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
+import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -40,48 +49,100 @@ const PhotographersJoinRoute = PhotographersJoinRouteImport.update({
   path: '/photographers/join',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PhotographersUsernameRoute = PhotographersUsernameRouteImport.update({
+  id: '/photographers/$username',
+  path: '/photographers/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSubscriptionRoute = DashboardSubscriptionRouteImport.update({
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/admin/subscriptions',
+  path: '/admin/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/dashboard/subscription': typeof DashboardSubscriptionRoute
+  '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/dashboard/subscription': typeof DashboardSubscriptionRoute
+  '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/dashboard/subscription': typeof DashboardSubscriptionRoute
+  '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/search' | '/photographers/join'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/pricing'
+    | '/search'
+    | '/admin/subscriptions'
+    | '/dashboard/subscription'
+    | '/photographers/$username'
+    | '/photographers/join'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/search' | '/photographers/join'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/pricing'
+    | '/search'
+    | '/admin/subscriptions'
+    | '/dashboard/subscription'
+    | '/photographers/$username'
+    | '/photographers/join'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/login'
+    | '/pricing'
     | '/search'
+    | '/admin/subscriptions'
+    | '/dashboard/subscription'
+    | '/photographers/$username'
     | '/photographers/join'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
+  PricingRoute: typeof PricingRoute
   SearchRoute: typeof SearchRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
 }
 
@@ -92,6 +153,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -122,26 +190,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhotographersJoinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/photographers/$username': {
+      id: '/photographers/$username'
+      path: '/photographers/$username'
+      fullPath: '/photographers/$username'
+      preLoaderRoute: typeof PhotographersUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/subscription': {
+      id: '/dashboard/subscription'
+      path: '/subscription'
+      fullPath: '/dashboard/subscription'
+      preLoaderRoute: typeof DashboardSubscriptionRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/admin/subscriptions': {
+      id: '/admin/subscriptions'
+      path: '/admin/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardSubscriptionRoute: DashboardSubscriptionRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
+  PricingRoute: PricingRoute,
   SearchRoute: SearchRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

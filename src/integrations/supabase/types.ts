@@ -254,6 +254,102 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_payments: {
+        Row: {
+          amount: number
+          cliq_reference: string | null
+          created_at: string
+          currency: string
+          id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          notes: string | null
+          period_months: number
+          photographer_id: string
+          proof_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount?: number
+          cliq_reference?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          method: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          period_months?: number
+          photographer_id: string
+          proof_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount?: number
+          cliq_reference?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          period_months?: number
+          photographer_id?: string
+          proof_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          photographer_id: string
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          status: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          trial_ends_at: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          photographer_id: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          photographer_id?: string
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          status?: Database["public"]["Enums"]["subscription_status"]
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          trial_ends_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -287,6 +383,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_subscription_active: {
+        Args: { _photographer_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "photographer" | "client"
@@ -297,7 +397,16 @@ export type Database = {
         | "completed"
         | "cancelled"
       package_type: "hourly" | "full_day" | "addon"
+      payment_method: "cliq" | "stripe"
+      payment_status: "pending" | "approved" | "rejected"
       service_type: "photography" | "cinematic_video"
+      subscription_plan: "starter"
+      subscription_status:
+        | "trial"
+        | "active"
+        | "pending_review"
+        | "expired"
+        | "canceled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -434,7 +543,17 @@ export const Constants = {
         "cancelled",
       ],
       package_type: ["hourly", "full_day", "addon"],
+      payment_method: ["cliq", "stripe"],
+      payment_status: ["pending", "approved", "rejected"],
       service_type: ["photography", "cinematic_video"],
+      subscription_plan: ["starter"],
+      subscription_status: [
+        "trial",
+        "active",
+        "pending_review",
+        "expired",
+        "canceled",
+      ],
     },
   },
 } as const
