@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
+import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -58,6 +59,11 @@ const DashboardSubscriptionRoute = DashboardSubscriptionRouteImport.update({
   path: '/subscription',
   getParentRoute: () => DashboardRoute,
 } as any)
+const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
+  id: '/admin/subscriptions',
+  path: '/admin/subscriptions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/search'
+    | '/admin/subscriptions'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/search'
+    | '/admin/subscriptions'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/search'
+    | '/admin/subscriptions'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   SearchRoute: typeof SearchRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
 }
@@ -191,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSubscriptionRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/admin/subscriptions': {
+      id: '/admin/subscriptions'
+      path: '/admin/subscriptions'
+      fullPath: '/admin/subscriptions'
+      preLoaderRoute: typeof AdminSubscriptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -212,6 +232,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   SearchRoute: SearchRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
 }
