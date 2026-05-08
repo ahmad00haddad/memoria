@@ -14,16 +14,290 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          addons: Json | null
+          base_price: number
+          client_email: string
+          client_name: string
+          client_notes: string | null
+          client_phone: string | null
+          client_user_id: string | null
+          contract_agreed: boolean
+          created_at: string
+          deposit_amount: number
+          deposit_proof_url: string | null
+          edited_photos_count: number | null
+          end_time: string
+          event_date: string
+          id: string
+          photographer_id: string
+          photographer_notes: string | null
+          service: Database["public"]["Enums"]["service_type"]
+          start_time: string
+          status: Database["public"]["Enums"]["booking_status"]
+          total_price: number
+          travel_fee: number
+          updated_at: string
+          venue_address: string | null
+          venue_lat: number | null
+          venue_lng: number | null
+          venue_name: string | null
+        }
+        Insert: {
+          addons?: Json | null
+          base_price?: number
+          client_email: string
+          client_name: string
+          client_notes?: string | null
+          client_phone?: string | null
+          client_user_id?: string | null
+          contract_agreed?: boolean
+          created_at?: string
+          deposit_amount?: number
+          deposit_proof_url?: string | null
+          edited_photos_count?: number | null
+          end_time: string
+          event_date: string
+          id?: string
+          photographer_id: string
+          photographer_notes?: string | null
+          service: Database["public"]["Enums"]["service_type"]
+          start_time: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          total_price?: number
+          travel_fee?: number
+          updated_at?: string
+          venue_address?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
+          venue_name?: string | null
+        }
+        Update: {
+          addons?: Json | null
+          base_price?: number
+          client_email?: string
+          client_name?: string
+          client_notes?: string | null
+          client_phone?: string | null
+          client_user_id?: string | null
+          contract_agreed?: boolean
+          created_at?: string
+          deposit_amount?: number
+          deposit_proof_url?: string | null
+          edited_photos_count?: number | null
+          end_time?: string
+          event_date?: string
+          id?: string
+          photographer_id?: string
+          photographer_notes?: string | null
+          service?: Database["public"]["Enums"]["service_type"]
+          start_time?: string
+          status?: Database["public"]["Enums"]["booking_status"]
+          total_price?: number
+          travel_fee?: number
+          updated_at?: string
+          venue_address?: string | null
+          venue_lat?: number | null
+          venue_lng?: number | null
+          venue_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_photographer_id_fkey"
+            columns: ["photographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          booking_id: string
+          created_at: string
+          id: string
+          sender_id: string | null
+          sender_name: string
+        }
+        Insert: {
+          body: string
+          booking_id: string
+          created_at?: string
+          id?: string
+          sender_id?: string | null
+          sender_name: string
+        }
+        Update: {
+          body?: string
+          booking_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string | null
+          sender_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_rules: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          label: string
+          package: Database["public"]["Enums"]["package_type"]
+          per_photo_price: number | null
+          photographer_id: string
+          price: number
+          service: Database["public"]["Enums"]["service_type"]
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          label: string
+          package: Database["public"]["Enums"]["package_type"]
+          per_photo_price?: number | null
+          photographer_id: string
+          price: number
+          service: Database["public"]["Enums"]["service_type"]
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          label?: string
+          package?: Database["public"]["Enums"]["package_type"]
+          per_photo_price?: number | null
+          photographer_id?: string
+          price?: number
+          service?: Database["public"]["Enums"]["service_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_rules_photographer_id_fkey"
+            columns: ["photographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          base_location: string | null
+          bio: string | null
+          city: string | null
+          cliq_alias: string | null
+          cover_url: string | null
+          created_at: string
+          deposit_percent: number
+          display_name: string
+          equipment: string | null
+          id: string
+          instagram: string | null
+          is_published: boolean
+          phone: string | null
+          travel_fee_per_km: number
+          updated_at: string
+          username: string
+          whatsapp: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          base_location?: string | null
+          bio?: string | null
+          city?: string | null
+          cliq_alias?: string | null
+          cover_url?: string | null
+          created_at?: string
+          deposit_percent?: number
+          display_name: string
+          equipment?: string | null
+          id: string
+          instagram?: string | null
+          is_published?: boolean
+          phone?: string | null
+          travel_fee_per_km?: number
+          updated_at?: string
+          username: string
+          whatsapp?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          base_location?: string | null
+          bio?: string | null
+          city?: string | null
+          cliq_alias?: string | null
+          cover_url?: string | null
+          created_at?: string
+          deposit_percent?: number
+          display_name?: string
+          equipment?: string | null
+          id?: string
+          instagram?: string | null
+          is_published?: boolean
+          phone?: string | null
+          travel_fee_per_km?: number
+          updated_at?: string
+          username?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "photographer" | "client"
+      booking_status:
+        | "quote"
+        | "pending_deposit"
+        | "confirmed"
+        | "completed"
+        | "cancelled"
+      package_type: "hourly" | "full_day" | "addon"
+      service_type: "photography" | "cinematic_video"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +424,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "photographer", "client"],
+      booking_status: [
+        "quote",
+        "pending_deposit",
+        "confirmed",
+        "completed",
+        "cancelled",
+      ],
+      package_type: ["hourly", "full_day", "addon"],
+      service_type: ["photography", "cinematic_video"],
+    },
   },
 } as const
