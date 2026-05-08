@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
+import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -40,12 +41,18 @@ const PhotographersJoinRoute = PhotographersJoinRouteImport.update({
   path: '/photographers/join',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PhotographersUsernameRoute = PhotographersUsernameRouteImport.update({
+  id: '/photographers/$username',
+  path: '/photographers/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/search': typeof SearchRoute
+  '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/search': typeof SearchRoute
+  '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
 export interface FileRoutesById {
@@ -61,19 +69,33 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/search': typeof SearchRoute
+  '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/search' | '/photographers/join'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/search'
+    | '/photographers/$username'
+    | '/photographers/join'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/search' | '/photographers/join'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/search'
+    | '/photographers/$username'
+    | '/photographers/join'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/login'
     | '/search'
+    | '/photographers/$username'
     | '/photographers/join'
   fileRoutesById: FileRoutesById
 }
@@ -82,6 +104,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   SearchRoute: typeof SearchRoute
+  PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
 }
 
@@ -122,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhotographersJoinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/photographers/$username': {
+      id: '/photographers/$username'
+      path: '/photographers/$username'
+      fullPath: '/photographers/$username'
+      preLoaderRoute: typeof PhotographersUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -130,8 +160,19 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   SearchRoute: SearchRoute,
+  PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
