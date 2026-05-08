@@ -16,6 +16,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
+import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -52,32 +53,40 @@ const PhotographersUsernameRoute = PhotographersUsernameRouteImport.update({
   path: '/photographers/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardSubscriptionRoute = DashboardSubscriptionRouteImport.update({
+  id: '/subscription',
+  path: '/subscription',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
+  '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/search'
+    | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/search'
+    | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
   id:
@@ -107,13 +118,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/pricing'
     | '/search'
+    | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
   SearchRoute: typeof SearchRoute
@@ -172,12 +184,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhotographersUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/subscription': {
+      id: '/dashboard/subscription'
+      path: '/subscription'
+      fullPath: '/dashboard/subscription'
+      preLoaderRoute: typeof DashboardSubscriptionRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardSubscriptionRoute: DashboardSubscriptionRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
   SearchRoute: SearchRoute,
