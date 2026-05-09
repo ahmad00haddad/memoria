@@ -51,12 +51,12 @@ function Dashboard() {
         <SubscriptionBanner sub={sub} />
 
         <div className="grid gap-6 md:grid-cols-3">
-          <Card title="الملف الشخصي" desc="أكمل النبذة، المدينة، روابط التواصل، والمعدّات." cta="تعديل الملف" />
-          <Card title="بطاقة الأسعار" desc="حدّد أسعار التصوير والفيديو والإضافات." cta="إدارة الأسعار" />
-          <Card title="التقويم" desc="اربط Google Calendar وحدّد أيام العطل." cta="قريبًا" disabled />
-          <Card title="الحجوزات" desc="استعرض الطلبات الجديدة والمؤكّدة." cta="قريبًا" disabled />
-          <Card title="الرسائل" desc="رسائل العملاء المرتبطة بكل حجز." cta="قريبًا" disabled />
-          <Card title="المراجعات" desc="تقييمات العملاء بعد العرس." cta="قريبًا" disabled />
+          <Card title="الملف الشخصي" desc="الصور، النبذة، المعدّات، التواصل، إعدادات الحجز." cta="تعديل الملف" to="/dashboard/profile" />
+          <Card title="بطاقة الأسعار" desc="باقات التصوير والفيديو والإضافات." cta="إدارة الأسعار" to="/dashboard/pricing" />
+          <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
+          <Card title="الحجوزات" desc="جميع الطلبات والمؤكّدة والمنتهية." cta="عرض الحجوزات" to="/dashboard/bookings" />
+          <Card title="الاشتراك" desc="حالة اشتراكك وتجديده." cta="إدارة الاشتراك" to="/dashboard/subscription" />
+          <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={`/photographers/${profile?.username ?? ""}`} external />
         </div>
       </section>
       <Footer />
@@ -94,12 +94,15 @@ function SubscriptionBanner({ sub }: { sub: any }) {
   );
 }
 
-function Card({ title, desc, cta, disabled }: { title: string; desc: string; cta: string; disabled?: boolean }) {
+function Card({ title, desc, cta, to, external }: { title: string; desc: string; cta: string; to?: string; external?: boolean }) {
   return (
     <div className="rounded-sm border border-border bg-card p-6 shadow-soft">
       <h3 className="font-serif text-xl mb-1">{title}</h3>
       <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{desc}</p>
-      <button disabled={disabled} className={`text-sm border-b border-current pb-0.5 ${disabled ? "text-muted-foreground cursor-not-allowed" : "text-gold"}`}>{cta}</button>
+      {to ? (
+        external ? <a href={to} className="text-sm border-b border-current pb-0.5 text-gold">{cta}</a>
+        : <Link to={to} className="text-sm border-b border-current pb-0.5 text-gold">{cta}</Link>
+      ) : <span className="text-sm text-muted-foreground">{cta}</span>}
     </div>
   );
 }
