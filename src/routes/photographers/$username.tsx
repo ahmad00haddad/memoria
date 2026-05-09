@@ -310,7 +310,7 @@ function BookingModal({ profile, pricing, blockedDates, onClose }: { profile: Pr
               <span>أوافق على شروط الحجز: العربون غير مسترد عند الإلغاء قبل أقل من ٧ أيام، السعر النهائي يشمل التعديلات الأساسية.</span>
             </label>
 
-            <button onClick={submit} disabled={submitting || isBlocked} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
+            <button onClick={submit} disabled={submitting || !!isBlocked} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
               {submitting ? "جاري الإرسال…" : "تأكيد الحجز والانتقال للعربون"}
             </button>
           </div>
