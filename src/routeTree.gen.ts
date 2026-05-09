@@ -14,10 +14,16 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReviewBookingIdRouteImport } from './routes/review.$bookingId'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
+import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
+import { Route as DashboardPricingRouteImport } from './routes/dashboard.pricing'
+import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
+import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookings'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -44,6 +50,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReviewBookingIdRoute = ReviewBookingIdRouteImport.update({
+  id: '/review/$bookingId',
+  path: '/review/$bookingId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PhotographersJoinRoute = PhotographersJoinRouteImport.update({
   id: '/photographers/join',
   path: '/photographers/join',
@@ -59,10 +70,35 @@ const DashboardSubscriptionRoute = DashboardSubscriptionRouteImport.update({
   path: '/subscription',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardProfileRoute = DashboardProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardPricingRoute = DashboardPricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   id: '/admin/subscriptions',
   path: '/admin/subscriptions',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardBookingsIdRoute = DashboardBookingsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => DashboardBookingsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -72,9 +108,15 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/pricing': typeof DashboardPricingRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
+  '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -83,9 +125,15 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/pricing': typeof DashboardPricingRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
+  '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,9 +143,15 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/pricing': typeof DashboardPricingRoute
+  '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
+  '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,9 +162,15 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/dashboard/bookings'
+    | '/dashboard/calendar'
+    | '/dashboard/pricing'
+    | '/dashboard/profile'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
+    | '/review/$bookingId'
+    | '/dashboard/bookings/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -119,9 +179,15 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/dashboard/bookings'
+    | '/dashboard/calendar'
+    | '/dashboard/pricing'
+    | '/dashboard/profile'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
+    | '/review/$bookingId'
+    | '/dashboard/bookings/$id'
   id:
     | '__root__'
     | '/'
@@ -130,9 +196,15 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/dashboard/bookings'
+    | '/dashboard/calendar'
+    | '/dashboard/pricing'
+    | '/dashboard/profile'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
+    | '/review/$bookingId'
+    | '/dashboard/bookings/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,6 +216,7 @@ export interface RootRouteChildren {
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
+  ReviewBookingIdRoute: typeof ReviewBookingIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -183,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/review/$bookingId': {
+      id: '/review/$bookingId'
+      path: '/review/$bookingId'
+      fullPath: '/review/$bookingId'
+      preLoaderRoute: typeof ReviewBookingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/photographers/join': {
       id: '/photographers/join'
       path: '/photographers/join'
@@ -204,6 +284,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSubscriptionRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/profile': {
+      id: '/dashboard/profile'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof DashboardProfileRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/pricing': {
+      id: '/dashboard/pricing'
+      path: '/pricing'
+      fullPath: '/dashboard/pricing'
+      preLoaderRoute: typeof DashboardPricingRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/calendar': {
+      id: '/dashboard/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof DashboardCalendarRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/bookings': {
+      id: '/dashboard/bookings'
+      path: '/bookings'
+      fullPath: '/dashboard/bookings'
+      preLoaderRoute: typeof DashboardBookingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
       path: '/admin/subscriptions'
@@ -211,14 +319,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/bookings/$id': {
+      id: '/dashboard/bookings/$id'
+      path: '/$id'
+      fullPath: '/dashboard/bookings/$id'
+      preLoaderRoute: typeof DashboardBookingsIdRouteImport
+      parentRoute: typeof DashboardBookingsRoute
+    }
   }
 }
 
+interface DashboardBookingsRouteChildren {
+  DashboardBookingsIdRoute: typeof DashboardBookingsIdRoute
+}
+
+const DashboardBookingsRouteChildren: DashboardBookingsRouteChildren = {
+  DashboardBookingsIdRoute: DashboardBookingsIdRoute,
+}
+
+const DashboardBookingsRouteWithChildren =
+  DashboardBookingsRoute._addFileChildren(DashboardBookingsRouteChildren)
+
 interface DashboardRouteChildren {
+  DashboardBookingsRoute: typeof DashboardBookingsRouteWithChildren
+  DashboardCalendarRoute: typeof DashboardCalendarRoute
+  DashboardPricingRoute: typeof DashboardPricingRoute
+  DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardBookingsRoute: DashboardBookingsRouteWithChildren,
+  DashboardCalendarRoute: DashboardCalendarRoute,
+  DashboardPricingRoute: DashboardPricingRoute,
+  DashboardProfileRoute: DashboardProfileRoute,
   DashboardSubscriptionRoute: DashboardSubscriptionRoute,
 }
 
@@ -235,6 +369,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
+  ReviewBookingIdRoute: ReviewBookingIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

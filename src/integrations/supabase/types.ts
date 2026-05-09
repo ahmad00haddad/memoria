@@ -147,6 +147,60 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      photographer_unavailability: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          photographer_id: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          photographer_id: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          photographer_id?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       pricing_rules: {
         Row: {
           created_at: string
@@ -203,10 +257,12 @@ export type Database = {
           deposit_percent: number
           display_name: string
           equipment: string | null
+          free_km: number
           id: string
           instagram: string | null
           is_published: boolean
           phone: string | null
+          portfolio_urls: string[]
           travel_fee_per_km: number
           updated_at: string
           username: string
@@ -223,10 +279,12 @@ export type Database = {
           deposit_percent?: number
           display_name: string
           equipment?: string | null
+          free_km?: number
           id: string
           instagram?: string | null
           is_published?: boolean
           phone?: string | null
+          portfolio_urls?: string[]
           travel_fee_per_km?: number
           updated_at?: string
           username: string
@@ -243,14 +301,52 @@ export type Database = {
           deposit_percent?: number
           display_name?: string
           equipment?: string | null
+          free_km?: number
           id?: string
           instagram?: string | null
           is_published?: boolean
           phone?: string | null
+          portfolio_urls?: string[]
           travel_fee_per_km?: number
           updated_at?: string
           username?: string
           whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          booking_id: string
+          client_name: string
+          client_user_id: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          is_published: boolean
+          photographer_id: string
+          rating: number
+        }
+        Insert: {
+          booking_id: string
+          client_name: string
+          client_user_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          photographer_id: string
+          rating: number
+        }
+        Update: {
+          booking_id?: string
+          client_name?: string
+          client_user_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          photographer_id?: string
+          rating?: number
         }
         Relationships: []
       }
