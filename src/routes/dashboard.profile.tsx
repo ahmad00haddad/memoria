@@ -150,10 +150,10 @@ function ProfilePage() {
 function Card({ title, children }: any) {
   return <div className="rounded-sm border border-border bg-card p-6 shadow-soft space-y-4"><h2 className="font-serif text-xl">{title}</h2>{children}</div>;
 }
-function Field({ label, v, on, type = "text" }: any) {
+function Field({ label, v, on, type = "text" }: { label: string; v: any; on: (v: string) => void; type?: string }) {
   return <label className="block"><span className="text-sm text-muted-foreground">{label}</span><input type={type} value={v ?? ""} onChange={(e) => on(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
 }
-function Area({ label, v, on }: any) {
+function Area({ label, v, on }: { label: string; v: any; on: (v: string) => void }) {
   return <label className="block"><span className="text-sm text-muted-foreground">{label}</span><textarea value={v ?? ""} onChange={(e) => on(e.target.value)} rows={4} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
 }
 function ImgPicker({ label, url, onPick, aspect = "aspect-square" }: any) {

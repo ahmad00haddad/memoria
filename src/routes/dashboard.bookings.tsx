@@ -34,8 +34,8 @@ function BookingsList() {
 
         <div className="flex gap-2 mb-4 flex-wrap text-sm">
           {[
-            { v: "all", l: "الكل" }, { v: "quote", l: "عروض أسعار" }, { v: "deposit_pending", l: "بانتظار العربون" },
-            { v: "confirmed", l: "مؤكّد" }, { v: "completed", l: "منجز" }, { v: "canceled", l: "ملغى" },
+            { v: "all", l: "الكل" }, { v: "quote", l: "عروض أسعار" }, { v: "pending_deposit", l: "بانتظار العربون" },
+            { v: "confirmed", l: "مؤكّد" }, { v: "completed", l: "منجز" }, { v: "cancelled", l: "ملغى" },
           ].map((f) => (
             <button key={f.v} onClick={() => setFilter(f.v)} className={`px-3 py-1.5 rounded-sm border ${filter === f.v ? "bg-charcoal text-ivory border-charcoal" : "border-border hover:bg-secondary"}`}>{f.l}</button>
           ))}
@@ -67,10 +67,10 @@ function BookingsList() {
 function StatusBadge({ s }: { s: string }) {
   const m: Record<string, { l: string; c: string }> = {
     quote: { l: "عرض سعر", c: "bg-secondary" },
-    deposit_pending: { l: "بانتظار العربون", c: "bg-amber-100 text-amber-800" },
+    pending_deposit: { l: "بانتظار العربون", c: "bg-amber-100 text-amber-800" },
     confirmed: { l: "مؤكّد", c: "bg-emerald-100 text-emerald-800" },
     completed: { l: "منجز", c: "bg-charcoal text-ivory" },
-    canceled: { l: "ملغى", c: "bg-destructive/10 text-destructive" },
+    cancelled: { l: "ملغى", c: "bg-destructive/10 text-destructive" },
   };
   const x = m[s] ?? m.quote;
   return <span className={`text-[10px] mt-1 inline-block px-2 py-0.5 rounded-sm ${x.c}`}>{x.l}</span>;

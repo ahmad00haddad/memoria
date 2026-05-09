@@ -36,7 +36,7 @@ function BookingDetail() {
 
   useEffect(() => { load(); }, [id]);
 
-  const setStatus = async (status: string) => {
+  const setStatus = async (status: "quote" | "pending_deposit" | "confirmed" | "completed" | "cancelled") => {
     await supabase.from("bookings").update({ status }).eq("id", id);
     toast.success("تم تحديث الحالة");
     load();
@@ -86,14 +86,14 @@ function BookingDetail() {
             )}
 
             <div className="flex flex-wrap gap-2">
-              {b.status === "deposit_pending" && proofUrl && (
+              {b.status === "pending_deposit" && proofUrl && (
                 <button onClick={() => setStatus("confirmed")} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تأكيد العربون</button>
               )}
-              {b.status !== "completed" && b.status !== "canceled" && (
+              {b.status !== "completed" && b.status !== "cancelled" && (
                 <button onClick={() => setStatus("completed")} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">إنهاء كمنجز</button>
               )}
-              {b.status !== "canceled" && (
-                <button onClick={() => setStatus("canceled")} className="inline-flex items-center gap-2 text-destructive border border-destructive/30 px-4 py-2 rounded-sm hover:bg-destructive/10"><XCircle className="h-4 w-4" /> إلغاء</button>
+              {b.status !== "cancelled" && (
+                <button onClick={() => setStatus("cancelled")} className="inline-flex items-center gap-2 text-destructive border border-destructive/30 px-4 py-2 rounded-sm hover:bg-destructive/10"><XCircle className="h-4 w-4" /> إلغاء</button>
               )}
             </div>
           </div>
