@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "public sign by token" ON public.contracts;

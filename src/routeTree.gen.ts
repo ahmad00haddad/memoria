@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -20,10 +21,13 @@ import { Route as PhotographersUsernameRouteImport } from './routes/photographer
 import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
 import { Route as DashboardPricingRouteImport } from './routes/dashboard.pricing'
+import { Route as DashboardContractsRouteImport } from './routes/dashboard.contracts'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookings'
+import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
+import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -33,6 +37,11 @@ const SearchRoute = SearchRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -80,6 +89,11 @@ const DashboardPricingRoute = DashboardPricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardContractsRoute = DashboardContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
@@ -89,6 +103,11 @@ const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
   id: '/bookings',
   path: '/bookings',
   getParentRoute: () => DashboardRoute,
+} as any)
+const ContractsTokenRoute = ContractsTokenRouteImport.update({
+  id: '/contracts/$token',
+  path: '/contracts/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   id: '/admin/subscriptions',
@@ -100,16 +119,24 @@ const DashboardBookingsIdRoute = DashboardBookingsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => DashboardBookingsRoute,
 } as any)
+const ApiPublicIcalTokenRoute = ApiPublicIcalTokenRouteImport.update({
+  id: '/api/public/ical/$token',
+  path: '/api/public/ical/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
@@ -117,16 +144,20 @@ export interface FileRoutesByFullPath {
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
+  '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
@@ -134,17 +165,21 @@ export interface FileRoutesByTo {
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
+  '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
@@ -152,6 +187,7 @@ export interface FileRoutesById {
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
+  '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,11 +195,14 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/login'
+    | '/notifications'
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/contracts/$token'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
+    | '/dashboard/contracts'
     | '/dashboard/pricing'
     | '/dashboard/profile'
     | '/dashboard/subscription'
@@ -171,16 +210,20 @@ export interface FileRouteTypes {
     | '/photographers/join'
     | '/review/$bookingId'
     | '/dashboard/bookings/$id'
+    | '/api/public/ical/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
     | '/login'
+    | '/notifications'
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/contracts/$token'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
+    | '/dashboard/contracts'
     | '/dashboard/pricing'
     | '/dashboard/profile'
     | '/dashboard/subscription'
@@ -188,16 +231,20 @@ export interface FileRouteTypes {
     | '/photographers/join'
     | '/review/$bookingId'
     | '/dashboard/bookings/$id'
+    | '/api/public/ical/$token'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/login'
+    | '/notifications'
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/contracts/$token'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
+    | '/dashboard/contracts'
     | '/dashboard/pricing'
     | '/dashboard/profile'
     | '/dashboard/subscription'
@@ -205,18 +252,22 @@ export interface FileRouteTypes {
     | '/photographers/join'
     | '/review/$bookingId'
     | '/dashboard/bookings/$id'
+    | '/api/public/ical/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   LoginRoute: typeof LoginRoute
+  NotificationsRoute: typeof NotificationsRoute
   PricingRoute: typeof PricingRoute
   SearchRoute: typeof SearchRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  ContractsTokenRoute: typeof ContractsTokenRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
   ReviewBookingIdRoute: typeof ReviewBookingIdRoute
+  ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -233,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -298,6 +356,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPricingRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/contracts': {
+      id: '/dashboard/contracts'
+      path: '/contracts'
+      fullPath: '/dashboard/contracts'
+      preLoaderRoute: typeof DashboardContractsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/calendar': {
       id: '/dashboard/calendar'
       path: '/calendar'
@@ -312,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBookingsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/contracts/$token': {
+      id: '/contracts/$token'
+      path: '/contracts/$token'
+      fullPath: '/contracts/$token'
+      preLoaderRoute: typeof ContractsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
       path: '/admin/subscriptions'
@@ -325,6 +397,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/bookings/$id'
       preLoaderRoute: typeof DashboardBookingsIdRouteImport
       parentRoute: typeof DashboardBookingsRoute
+    }
+    '/api/public/ical/$token': {
+      id: '/api/public/ical/$token'
+      path: '/api/public/ical/$token'
+      fullPath: '/api/public/ical/$token'
+      preLoaderRoute: typeof ApiPublicIcalTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -343,6 +422,7 @@ const DashboardBookingsRouteWithChildren =
 interface DashboardRouteChildren {
   DashboardBookingsRoute: typeof DashboardBookingsRouteWithChildren
   DashboardCalendarRoute: typeof DashboardCalendarRoute
+  DashboardContractsRoute: typeof DashboardContractsRoute
   DashboardPricingRoute: typeof DashboardPricingRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
@@ -351,6 +431,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardBookingsRoute: DashboardBookingsRouteWithChildren,
   DashboardCalendarRoute: DashboardCalendarRoute,
+  DashboardContractsRoute: DashboardContractsRoute,
   DashboardPricingRoute: DashboardPricingRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardSubscriptionRoute: DashboardSubscriptionRoute,
@@ -364,12 +445,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRouteWithChildren,
   LoginRoute: LoginRoute,
+  NotificationsRoute: NotificationsRoute,
   PricingRoute: PricingRoute,
   SearchRoute: SearchRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  ContractsTokenRoute: ContractsTokenRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
   ReviewBookingIdRoute: ReviewBookingIdRoute,
+  ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
