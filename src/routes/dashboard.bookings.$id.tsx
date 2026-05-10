@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, ScrollText, Copy } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -17,16 +17,20 @@ function BookingDetail() {
   const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [contract, setContract] = useState<any>(null);
+  const [templates, setTemplates] = useState<any[]>([]);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return nav({ to: "/login" });
     setUid(session.user.id);
-    const [{ data: bk }, { data: m }] = await Promise.all([
+    const [{ data: bk }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
       supabase.from("bookings").select("*").eq("id", id).maybeSingle(),
       supabase.from("messages").select("*").eq("booking_id", id).order("created_at"),
+      supabase.from("contracts").select("*").eq("booking_id", id).maybeSingle(),
+      supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
     ]);
-    setB(bk); setMsgs(m ?? []);
+    setB(bk); setMsgs(m ?? []); setContract(ct); setTemplates(tpl ?? []);
     if (bk?.deposit_proof_url) {
       const { data } = await supabase.storage.from("deposit-proofs").createSignedUrl(bk.deposit_proof_url, 3600);
       setProofUrl(data?.signedUrl ?? null);
@@ -47,6 +51,31 @@ function BookingDetail() {
     await supabase.from("messages").insert({ booking_id: id, body: text, sender_id: uid, sender_name: "المصوّر" });
     setText("");
     load();
+  };
+
+  const generateContract = async (templateId?: string) => {
+    if (!b) return;
+    const tpl = templates.find((t) => t.id === templateId);
+    const baseBody = tpl?.body ?? `عقد تصوير حفل زفاف بين المصوّر/ة والعميل/ة ${b.client_name}.\n\nتاريخ الحفل: ${b.event_date}\nالمدّة: ${b.start_time?.slice(0,5)} - ${b.end_time?.slice(0,5)}\nالموقع: ${b.venue_name ?? "—"}\nالمجموع: ${b.total_price} د.أ\nالعربون (غير قابل للاسترداد): ${b.deposit_amount} د.أ\n\nالبنود الافتراضية:\n- تسليم الصور خلال 30 يومًا.\n- إلغاء قبل أسبوعين يعفي من المتبقّي، بعدها 50%.\n- يحق للمصوّر استخدام الصور للترويج ما لم يطلب العميل خلاف ذلك كتابيًا.`;
+    const body = baseBody
+      .replace(/\[اسم العميل\]/g, b.client_name)
+      .replace(/\[التاريخ\]/g, b.event_date)
+      .replace(/\[الموقع\]/g, b.venue_name ?? "—")
+      .replace(/\[البداية\]/g, b.start_time?.slice(0,5) ?? "")
+      .replace(/\[النهاية\]/g, b.end_time?.slice(0,5) ?? "")
+      .replace(/\[المجموع\]/g, String(b.total_price))
+      .replace(/\[العربون\]/g, String(b.deposit_amount));
+    const { error } = await supabase.from("contracts").insert({
+      booking_id: id, photographer_id: uid, body, client_name: b.client_name,
+    });
+    if (error) return toast.error(error.message);
+    toast.success("تم إنشاء العقد"); load();
+  };
+
+  const copyContractLink = () => {
+    if (!contract) return;
+    const url = `${window.location.origin}/contracts/${contract.sign_token}`;
+    navigator.clipboard.writeText(url); toast.success("تم نسخ رابط العقد");
   };
 
   if (loading || !b) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
@@ -97,6 +126,32 @@ function BookingDetail() {
               )}
             </div>
           </div>
+        </div>
+
+        <div className="mt-8 rounded-sm border border-border bg-card p-6">
+          <h2 className="font-serif text-xl mb-3 flex items-center gap-2"><ScrollText className="h-5 w-5 text-gold" /> العقد الرقمي</h2>
+          {contract ? (
+            <div className="text-sm space-y-2">
+              <div>الحالة: <strong>{contract.status === "signed" ? "موقّع" : "في انتظار التوقيع"}</strong></div>
+              {contract.status === "signed" && (
+                <div className="text-muted-foreground">وُقّع في {new Date(contract.signed_at).toLocaleString("ar")} بواسطة {contract.client_name}</div>
+              )}
+              <div className="flex gap-2 pt-2">
+                <button onClick={copyContractLink} className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm hover:bg-secondary"><Copy className="h-4 w-4" /> نسخ رابط العقد</button>
+                <Link to="/contracts/$token" params={{ token: contract.sign_token }} className="border border-border px-3 py-2 rounded-sm hover:bg-secondary">عرض العقد</Link>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">لم يتمّ إنشاء عقد بعد.</p>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => generateContract()} className="bg-charcoal text-ivory px-4 py-2 rounded-sm">إنشاء عقد قياسي</button>
+                {templates.map((t) => (
+                  <button key={t.id} onClick={() => generateContract(t.id)} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">من قالب: {t.name}</button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-8 rounded-sm border border-border bg-card p-6">
