@@ -22,6 +22,7 @@ import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile
 import { Route as DashboardPricingRouteImport } from './routes/dashboard.pricing'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookings'
+import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
@@ -91,6 +92,11 @@ const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => DashboardRoute,
 } as any)
+const ContractsTokenRoute = ContractsTokenRouteImport.update({
+  id: '/contracts/$token',
+  path: '/contracts/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   id: '/admin/subscriptions',
   path: '/admin/subscriptions',
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/search': typeof SearchRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/contracts/$token'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/pricing'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/contracts/$token'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/pricing'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/search'
     | '/admin/subscriptions'
+    | '/contracts/$token'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/pricing'
@@ -226,6 +238,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   SearchRoute: typeof SearchRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  ContractsTokenRoute: typeof ContractsTokenRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
   ReviewBookingIdRoute: typeof ReviewBookingIdRoute
@@ -325,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBookingsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/contracts/$token': {
+      id: '/contracts/$token'
+      path: '/contracts/$token'
+      fullPath: '/contracts/$token'
+      preLoaderRoute: typeof ContractsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
       path: '/admin/subscriptions'
@@ -387,6 +407,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   SearchRoute: SearchRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  ContractsTokenRoute: ContractsTokenRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
   ReviewBookingIdRoute: ReviewBookingIdRoute,
@@ -395,3 +416,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
