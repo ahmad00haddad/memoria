@@ -112,6 +112,89 @@ export type Database = {
           },
         ]
       }
+      contract_templates: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_default: boolean
+          name: string
+          photographer_id: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          photographer_id: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          photographer_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contracts: {
+        Row: {
+          body: string
+          booking_id: string
+          client_name: string
+          client_signature: string | null
+          created_at: string
+          id: string
+          photographer_id: string
+          sign_token: string
+          signed_at: string | null
+          signed_ip: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          booking_id: string
+          client_name: string
+          client_signature?: string | null
+          created_at?: string
+          id?: string
+          photographer_id: string
+          sign_token?: string
+          signed_at?: string | null
+          signed_ip?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          booking_id?: string
+          client_name?: string
+          client_signature?: string | null
+          created_at?: string
+          id?: string
+          photographer_id?: string
+          sign_token?: string
+          signed_at?: string | null
+          signed_ip?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
@@ -258,6 +341,7 @@ export type Database = {
           display_name: string
           equipment: string | null
           free_km: number
+          ical_token: string | null
           id: string
           instagram: string | null
           is_published: boolean
@@ -280,6 +364,7 @@ export type Database = {
           display_name: string
           equipment?: string | null
           free_km?: number
+          ical_token?: string | null
           id: string
           instagram?: string | null
           is_published?: boolean
@@ -302,6 +387,7 @@ export type Database = {
           display_name?: string
           equipment?: string | null
           free_km?: number
+          ical_token?: string | null
           id?: string
           instagram?: string | null
           is_published?: boolean
