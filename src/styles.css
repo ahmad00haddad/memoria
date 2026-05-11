@@ -146,3 +146,9 @@
 @utility hairline {
   border-block: 1px solid var(--color-border);
 }
+
+@media print {
+  header, footer, nav, .print\:hidden { display: none !important; }
+  body { background: white !important; color: black !important; }
+  article { border: 1px solid #ddd !important; }
+}
