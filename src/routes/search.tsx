@@ -16,6 +16,7 @@ type Photographer = {
   bio: string | null;
   avatar_url: string | null;
   cover_url: string | null;
+  is_featured?: boolean;
 };
 
 function SearchPage() {
@@ -30,8 +31,9 @@ function SearchPage() {
     const run = async () => {
       let query = supabase
         .from("profiles")
-        .select("username,display_name,city,bio,avatar_url,cover_url")
+        .select("username,display_name,city,bio,avatar_url,cover_url,is_featured")
         .eq("is_published", true)
+        .order("is_featured", { ascending: false })
         .limit(24);
       if (q.trim()) {
         query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%,city.ilike.%${q}%`);
@@ -92,7 +94,12 @@ function SearchPage() {
                   {p.cover_url && <img src={p.cover_url} alt={p.display_name} className="h-full w-full object-cover group-hover:scale-105 transition" />}
                 </div>
                 <div className="p-5">
-                  <div className="font-serif text-xl mb-1">{p.display_name}</div>
+                  <div className="font-serif text-xl mb-1 flex items-center gap-2">
+                    {p.display_name}
+                    {p.is_featured && (
+                      <span className="text-[10px] uppercase tracking-wider bg-gold/15 text-gold px-2 py-0.5 rounded-sm border border-gold/30">مميّز</span>
+                    )}
+                  </div>
                   <div className="text-xs text-muted-foreground mb-2">@{p.username}</div>
                   {p.city && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">

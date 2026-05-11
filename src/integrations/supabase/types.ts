@@ -344,9 +344,12 @@ export type Database = {
           ical_token: string | null
           id: string
           instagram: string | null
+          is_featured: boolean
           is_published: boolean
           phone: string | null
           portfolio_urls: string[]
+          referral_code: string | null
+          referred_by: string | null
           travel_fee_per_km: number
           updated_at: string
           username: string
@@ -367,9 +370,12 @@ export type Database = {
           ical_token?: string | null
           id: string
           instagram?: string | null
+          is_featured?: boolean
           is_published?: boolean
           phone?: string | null
           portfolio_urls?: string[]
+          referral_code?: string | null
+          referred_by?: string | null
           travel_fee_per_km?: number
           updated_at?: string
           username: string
@@ -390,13 +396,40 @@ export type Database = {
           ical_token?: string | null
           id?: string
           instagram?: string | null
+          is_featured?: boolean
           is_published?: boolean
           phone?: string | null
           portfolio_urls?: string[]
+          referral_code?: string | null
+          referred_by?: string | null
           travel_fee_per_km?: number
           updated_at?: string
           username?: string
           whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+          reward_granted: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+          reward_granted?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+          reward_granted?: boolean
         }
         Relationships: []
       }
@@ -569,6 +602,7 @@ export type Database = {
         Args: { _photographer_id: string }
         Returns: boolean
       }
+      refresh_featured_photographers: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "photographer" | "client"

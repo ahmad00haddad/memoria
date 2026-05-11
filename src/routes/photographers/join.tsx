@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,13 @@ function JoinPage() {
   const [form, setForm] = useState({ display_name: "", username: "", email: "", password: "" });
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [refCode, setRefCode] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref) setRefCode(ref);
+  }, []);
 
   const upd = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -25,7 +31,7 @@ function JoinPage() {
       setLoading(false);
       return setErr("اسم المستخدم يجب أن يكون 3 أحرف على الأقل وبالإنجليزية.");
     }
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
@@ -34,11 +40,24 @@ function JoinPage() {
           role: "photographer",
           username,
           display_name: form.display_name,
+          referral_code: refCode,
         },
       },
     });
     setLoading(false);
     if (error) return setErr(error.message);
+    // Record referral if a code was provided
+    if (refCode && signUpData.user) {
+      const { data: referrer } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("referral_code", refCode)
+        .maybeSingle();
+      if (referrer) {
+        await supabase.from("referrals").insert({ referrer_id: referrer.id, referred_id: signUpData.user.id });
+        await supabase.from("profiles").update({ referred_by: referrer.id }).eq("id", signUpData.user.id);
+      }
+    }
     navigate({ to: "/dashboard" });
   };
 
@@ -52,6 +71,11 @@ function JoinPage() {
           <p className="text-sm text-muted-foreground mt-2">أنشئ ملفك خلال دقيقة وابدأ باستقبال الحجوزات.</p>
         </div>
         <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-sm p-6 shadow-soft">
+          {refCode && (
+            <div className="text-xs bg-gold/10 border border-gold/30 px-3 py-2 rounded-sm text-gold">
+              تمّ تطبيق رمز إحالة: <strong>{refCode}</strong> — شهر مجاني للطرفين عند تفعيل الاشتراك.
+            </div>
+          )}
           <Field label="الاسم الكامل / اسم الاستوديو" value={form.display_name} onChange={upd("display_name")} required />
           <Field label="اسم المستخدم (بالإنجليزية)" value={form.username} onChange={upd("username")} required placeholder="مثال: studio_amman" />
           <Field label="البريد الإلكتروني" type="email" value={form.email} onChange={upd("email")} required />

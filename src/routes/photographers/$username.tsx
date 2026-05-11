@@ -28,6 +28,7 @@ type Profile = {
   deposit_percent: number;
   travel_fee_per_km: number;
   free_km: number;
+  is_featured?: boolean;
 };
 
 type Pricing = {
@@ -99,7 +100,12 @@ function PhotographerPage() {
             </div>
             <div>
               <div className="text-xs uppercase tracking-[0.25em] text-gold mb-1">مصوّر أعراس</div>
-              <h1 className="font-serif text-3xl sm:text-4xl">{profile.display_name}</h1>
+              <h1 className="font-serif text-3xl sm:text-4xl flex items-center gap-3">
+                {profile.display_name}
+                {profile.is_featured && (
+                  <span className="text-[10px] uppercase tracking-wider bg-gold/15 text-gold px-2 py-1 rounded-sm border border-gold/30">⭐ مصوّر مميّز</span>
+                )}
+              </h1>
               <div className="text-sm text-muted-foreground mb-3">@{profile.username}</div>
               <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                 {profile.city && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {profile.city}</span>}
