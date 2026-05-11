@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, MessageSquareOff, Receipt, ShieldCheck, Sparkles, Star } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import heroImg from "@/assets/hero-bride.jpg";
@@ -9,6 +11,17 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [featured, setFeatured] = useState<any[]>([]);
+  useEffect(() => {
+    supabase
+      .from("profiles")
+      .select("username,display_name,city,cover_url,avatar_url")
+      .eq("is_published", true)
+      .eq("is_featured", true)
+      .limit(4)
+      .then(({ data }) => setFeatured(data ?? []));
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -104,6 +117,29 @@ function Landing() {
           <Feature icon={ShieldCheck} title="عربون آمن" desc="تأكيد الحجز برفع إثبات تحويل CliQ ومصادقة المصوّر." />
         </div>
       </section>
+
+      {featured.length > 0 && (
+        <section className="container-editorial py-16">
+          <div className="text-center mb-10">
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">⭐ المميّزون</div>
+            <h2 className="font-serif text-3xl sm:text-4xl">مصوّرون بأعلى التقييمات</h2>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p) => (
+              <Link key={p.username} to="/photographers/$username" params={{ username: p.username }}
+                className="group rounded-sm overflow-hidden border border-border bg-card shadow-soft hover:shadow-elegant transition">
+                <div className="aspect-[4/3] bg-gradient-royal overflow-hidden">
+                  {p.cover_url && <img src={p.cover_url} alt={p.display_name} className="h-full w-full object-cover group-hover:scale-105 transition" />}
+                </div>
+                <div className="p-4">
+                  <div className="font-serif text-lg">{p.display_name}</div>
+                  {p.city && <div className="text-xs text-muted-foreground">{p.city}</div>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <Footer />
     </div>
