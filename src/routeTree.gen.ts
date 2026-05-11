@@ -19,6 +19,7 @@ import { Route as ReviewBookingIdRouteImport } from './routes/review.$bookingId'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
+import { Route as DashboardReferralsRouteImport } from './routes/dashboard.referrals'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
 import { Route as DashboardPricingRouteImport } from './routes/dashboard.pricing'
 import { Route as DashboardContractsRouteImport } from './routes/dashboard.contracts'
@@ -77,6 +78,11 @@ const PhotographersUsernameRoute = PhotographersUsernameRouteImport.update({
 const DashboardSubscriptionRoute = DashboardSubscriptionRouteImport.update({
   id: '/subscription',
   path: '/subscription',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReferralsRoute = DashboardReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardProfileRoute = DashboardProfileRouteImport.update({
@@ -139,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
   '/dashboard/profile': typeof DashboardProfileRoute
+  '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/dashboard/contracts'
     | '/dashboard/pricing'
     | '/dashboard/profile'
+    | '/dashboard/referrals'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/dashboard/contracts'
     | '/dashboard/pricing'
     | '/dashboard/profile'
+    | '/dashboard/referrals'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -247,6 +258,7 @@ export interface FileRouteTypes {
     | '/dashboard/contracts'
     | '/dashboard/pricing'
     | '/dashboard/profile'
+    | '/dashboard/referrals'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -342,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSubscriptionRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/referrals': {
+      id: '/dashboard/referrals'
+      path: '/referrals'
+      fullPath: '/dashboard/referrals'
+      preLoaderRoute: typeof DashboardReferralsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/profile': {
       id: '/dashboard/profile'
       path: '/profile'
@@ -425,6 +444,7 @@ interface DashboardRouteChildren {
   DashboardContractsRoute: typeof DashboardContractsRoute
   DashboardPricingRoute: typeof DashboardPricingRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
+  DashboardReferralsRoute: typeof DashboardReferralsRoute
   DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
 }
 
@@ -434,6 +454,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardContractsRoute: DashboardContractsRoute,
   DashboardPricingRoute: DashboardPricingRoute,
   DashboardProfileRoute: DashboardProfileRoute,
+  DashboardReferralsRoute: DashboardReferralsRoute,
   DashboardSubscriptionRoute: DashboardSubscriptionRoute,
 }
 
@@ -458,3 +479,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
