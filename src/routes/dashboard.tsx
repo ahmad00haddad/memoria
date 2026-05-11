@@ -77,6 +77,7 @@ function Dashboard() {
           <Card title="الحجوزات" desc="جميع الطلبات والمؤكّدة والمنتهية." cta="عرض الحجوزات" to="/dashboard/bookings" />
           <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
           <Card title="الاشتراك" desc="حالة اشتراكك وتجديده." cta="إدارة الاشتراك" to="/dashboard/subscription" />
+          <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهرًا مجانيًا للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
           <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={`/photographers/${profile?.username ?? ""}`} external />
         </div>
       </section>
