@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Instagram, MapPin, Phone, MessageCircle, ArrowLeft, Star, Upload, Copy } from "lucide-react";
+import { Instagram, MapPin, Phone, MessageCircle, ArrowLeft, Star, Upload, Copy, Share2 } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,14 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
+  head: ({ params }) => ({
+    meta: [
+      { title: `${params.username} — احجز جلسة تصوير | EliteCapture` },
+      { name: "description", content: `استعرض أعمال وأسعار المصوّر @${params.username} واحجز موعدك مباشرة.` },
+      { property: "og:title", content: `${params.username} — مصوّر أعراس` },
+      { property: "og:type", content: "profile" },
+    ],
+  }),
 });
 
 type Profile = {
@@ -114,9 +122,33 @@ function PhotographerPage() {
                 {profile.phone && <span className="inline-flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {profile.phone}</span>}
               </div>
             </div>
-            <button onClick={() => setShowBooking(true)} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-3 rounded-sm shadow-soft hover:opacity-90 self-end">
-              احجز موعدًا <ArrowLeft className="h-4 w-4" />
-            </button>
+            <div className="flex gap-2 self-end">
+              <button
+                onClick={() => {
+                  const url = typeof window !== "undefined" ? window.location.href : "";
+                  const text = `شاهد ملف المصوّر ${profile.display_name} على EliteCapture`;
+                  if (navigator.share) navigator.share({ title: profile.display_name, text, url }).catch(() => {});
+                  else { navigator.clipboard.writeText(url); toast.success("نُسخ الرابط"); }
+                }}
+                className="inline-flex items-center gap-1 border border-border px-3 py-3 rounded-sm hover:bg-secondary"
+                aria-label="مشاركة"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+              {profile.whatsapp && (
+                <a
+                  href={`https://wa.me/${profile.whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(`مرحبًا، شاهدت ملفك على EliteCapture وأرغب بالاستفسار.`)}`}
+                  target="_blank" rel="noreferrer"
+                  className="inline-flex items-center gap-1 border border-border px-3 py-3 rounded-sm hover:bg-secondary"
+                  aria-label="واتساب"
+                >
+                  <MessageCircle className="h-4 w-4 text-green-600" />
+                </a>
+              )}
+              <button onClick={() => setShowBooking(true)} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-3 rounded-sm shadow-soft hover:opacity-90">
+                احجز موعدًا <ArrowLeft className="h-4 w-4" />
+              </button>
+            </div>
           </div>
           {reviews.length > 0 && (
             <div className="mt-3 text-sm flex items-center gap-2"><Star className="h-4 w-4 fill-gold text-gold" /> <span className="font-semibold">{avgRating.toFixed(1)}</span><span className="text-muted-foreground">({reviews.length} مراجعة)</span></div>

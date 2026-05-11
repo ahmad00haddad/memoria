@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
@@ -30,9 +32,19 @@ import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscript
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -137,7 +149,9 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
@@ -159,7 +173,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
@@ -182,7 +198,9 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
@@ -206,7 +224,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/notifications'
     | '/pricing'
+    | '/robots.txt'
     | '/search'
+    | '/sitemap.xml'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/bookings'
@@ -228,7 +248,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/notifications'
     | '/pricing'
+    | '/robots.txt'
     | '/search'
+    | '/sitemap.xml'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/bookings'
@@ -250,7 +272,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/notifications'
     | '/pricing'
+    | '/robots.txt'
     | '/search'
+    | '/sitemap.xml'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/bookings'
@@ -273,7 +297,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   NotificationsRoute: typeof NotificationsRoute
   PricingRoute: typeof PricingRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ContractsTokenRoute: typeof ContractsTokenRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
@@ -284,11 +310,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -468,7 +508,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   NotificationsRoute: NotificationsRoute,
   PricingRoute: PricingRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ContractsTokenRoute: ContractsTokenRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
@@ -479,3 +521,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
