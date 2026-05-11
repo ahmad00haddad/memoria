@@ -16,6 +16,7 @@ type Photographer = {
   bio: string | null;
   avatar_url: string | null;
   cover_url: string | null;
+  is_featured?: boolean;
 };
 
 function SearchPage() {
@@ -30,8 +31,9 @@ function SearchPage() {
     const run = async () => {
       let query = supabase
         .from("profiles")
-        .select("username,display_name,city,bio,avatar_url,cover_url")
+        .select("username,display_name,city,bio,avatar_url,cover_url,is_featured")
         .eq("is_published", true)
+        .order("is_featured", { ascending: false })
         .limit(24);
       if (q.trim()) {
         query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%,city.ilike.%${q}%`);
