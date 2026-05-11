@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Instagram, MapPin, Phone, MessageCircle, ArrowLeft, Star, Upload, Copy } from "lucide-react";
+import { Instagram, MapPin, Phone, MessageCircle, ArrowLeft, Star, Upload, Copy, Share2 } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,14 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
+  head: ({ params }) => ({
+    meta: [
+      { title: `${params.username} — احجز جلسة تصوير | EliteCapture` },
+      { name: "description", content: `استعرض أعمال وأسعار المصوّر @${params.username} واحجز موعدك مباشرة.` },
+      { property: "og:title", content: `${params.username} — مصوّر أعراس` },
+      { property: "og:type", content: "profile" },
+    ],
+  }),
 });
 
 type Profile = {
