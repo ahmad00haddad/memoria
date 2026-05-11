@@ -5,7 +5,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { getContractByToken, signContract } from "@/lib/contracts.functions";
 import { toast } from "sonner";
-import { CheckCircle2, ScrollText } from "lucide-react";
+import { CheckCircle2, ScrollText, Printer } from "lucide-react";
 
 export const Route = createFileRoute("/contracts/$token")({ component: SignPage });
 
@@ -67,11 +67,14 @@ function SignPage() {
         {signed ? (
           <div className="mt-8 border border-emerald-300 bg-emerald-50 rounded-sm p-6 flex items-center gap-3">
             <CheckCircle2 className="h-6 w-6 text-emerald-600" />
-            <div>
+            <div className="flex-1">
               <div className="font-semibold">تم التوقيع</div>
               <div className="text-sm text-muted-foreground">بواسطة {contract.client_name} · {new Date(contract.signed_at).toLocaleString("ar")}</div>
               <div className="font-serif italic text-xl mt-2">{contract.client_signature}</div>
             </div>
+            <button onClick={() => window.print()} className="print:hidden inline-flex items-center gap-2 border border-emerald-600 text-emerald-700 px-3 py-2 rounded-sm hover:bg-emerald-100 text-sm">
+              <Printer className="h-4 w-4" /> طباعة / حفظ PDF
+            </button>
           </div>
         ) : (
           <div className="mt-8 space-y-4 border border-border rounded-sm p-6">
