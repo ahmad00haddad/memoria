@@ -78,6 +78,7 @@ function Dashboard() {
           <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
           <Card title="الاشتراك" desc="حالة اشتراكك وتجديده." cta="إدارة الاشتراك" to="/dashboard/subscription" />
           <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهرًا مجانيًا للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
+          <Card title="✨ أدوات الذكاء الاصطناعي" desc="نبذة، ردود، تسعير، عقود، ترجمة، كابشن إنستغرام والمزيد — مدعومة بـ Lovable AI." cta="افتح الأدوات" to="/dashboard/ai-tools" />
           <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={`/photographers/${profile?.username ?? ""}`} external />
         </div>
       </section>
