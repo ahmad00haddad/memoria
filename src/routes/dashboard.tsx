@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
-import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Users, Star, Copy } from "lucide-react";
+import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, Copy, ArrowLeft, Bell } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
@@ -54,7 +54,14 @@ function Dashboard() {
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">لوحة المصوّر</div>
             <h1 className="font-serif text-4xl">أهلاً، {profile?.display_name ?? "مصوّر"}</h1>
-            <div className="text-sm text-muted-foreground mt-1">ملفك العام: <Link to="/photographers/$username" params={{ username: profile?.username ?? "" }} className="text-gold underline">@{profile?.username}</Link></div>
+            <div className="text-sm text-muted-foreground mt-1">
+              ملفك العام:{" "}
+              {profile?.username ? (
+                <Link to="/photographers/$username" params={{ username: profile.username }} className="text-gold underline">@{profile.username}</Link>
+              ) : (
+                <span>أكملي اسم المستخدم من الملف الشخصي</span>
+              )}
+            </div>
           </div>
           <button onClick={signOut} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary">تسجيل الخروج</button>
         </div>
@@ -76,10 +83,11 @@ function Dashboard() {
           <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
           <Card title="الحجوزات" desc="جميع الطلبات والمؤكّدة والمنتهية." cta="عرض الحجوزات" to="/dashboard/bookings" />
           <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
-          <Card title="الاشتراك" desc="حالة اشتراكك وتجديده." cta="إدارة الاشتراك" to="/dashboard/subscription" />
+          <Card title="الاشتراك" desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." cta="إدارة الاشتراك" to="/dashboard/subscription" />
+          <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
           <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهرًا مجانيًا للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
           <Card title="✨ أدوات الذكاء الاصطناعي" desc="نبذة، ردود، تسعير، عقود، ترجمة، كابشن إنستغرام والمزيد — مدعومة بـ Lovable AI." cta="افتح الأدوات" to="/dashboard/ai-tools" />
-          <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={`/photographers/${profile?.username ?? ""}`} external />
+          <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={profile?.username ? `/photographers/${profile.username}` : undefined} external={!!profile?.username} disabled={!profile?.username} />
         </div>
       </section>
       <Footer />
@@ -143,15 +151,46 @@ function SubscriptionBanner({ sub }: { sub: any }) {
   );
 }
 
-function Card({ title, desc, cta, to, external }: { title: string; desc: string; cta: string; to?: string; external?: boolean }) {
-  return (
-    <div className="rounded-sm border border-border bg-card p-6 shadow-soft">
-      <h3 className="font-serif text-xl mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{desc}</p>
-      {to ? (
-        external ? <a href={to} className="text-sm border-b border-current pb-0.5 text-gold">{cta}</a>
-        : <Link to={to} className="text-sm border-b border-current pb-0.5 text-gold">{cta}</Link>
-      ) : <span className="text-sm text-muted-foreground">{cta}</span>}
-    </div>
+function Card({
+  title,
+  desc,
+  cta,
+  to,
+  external,
+  disabled,
+  icon,
+}: {
+  title: string;
+  desc: string;
+  cta: string;
+  to?: string;
+  external?: boolean;
+  disabled?: boolean;
+  icon?: any;
+}) {
+  const sharedClassName = `group flex min-h-[190px] flex-col justify-between rounded-sm border border-border bg-card p-6 shadow-soft transition ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-0.5 hover:border-gold/40 hover:bg-secondary/20 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
+
+  const content = (
+    <>
+      <div>
+        <h3 className="font-serif text-xl mb-1">{title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+      </div>
+      <div className="mt-6 inline-flex items-center gap-2 text-sm text-gold">
+        {icon}
+        <span className="border-b border-current pb-0.5">{disabled ? "أكملي اسم المستخدم أولًا" : cta}</span>
+        {!disabled && <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />}
+      </div>
+    </>
   );
+
+  if (!to || disabled) {
+    return <div className={sharedClassName}>{content}</div>;
+  }
+
+  if (external) {
+    return <a href={to} className={sharedClassName}>{content}</a>;
+  }
+
+  return <Link to={to} className={sharedClassName}>{content}</Link>;
 }
