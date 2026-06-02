@@ -44,7 +44,7 @@ function NotificationsPage() {
                     {n.body && <div className="text-sm text-muted-foreground mt-1">{n.body}</div>}
                     <div className="text-[11px] text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString("ar-JO")}</div>
                   </div>
-                  {n.link && <Link to={n.link} className="text-xs text-gold underline whitespace-nowrap">فتح</Link>}
+                  {n.link && <a href={n.link} className="text-xs text-gold underline whitespace-nowrap">فتح</a>}
                 </div>
               </li>
             ))}
