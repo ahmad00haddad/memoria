@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Sparkles, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   aiGenerateBio, aiSuggestReply, aiAnalyzeBrief, aiGenerateCaption,
   aiSuggestPricing, aiContractClause, aiTranslate, aiAskAssistant, aiSeoMeta,
@@ -13,6 +14,22 @@ import {
 export const Route = createFileRoute("/dashboard/ai-tools")({ component: AiToolsPage });
 
 function AiToolsPage() {
+  const navigate = useNavigate();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate({ to: "/login" });
+        return;
+      }
+      setReady(true);
+    })();
+  }, [navigate]);
+
+  if (!ready) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
