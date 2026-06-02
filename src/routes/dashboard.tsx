@@ -159,7 +159,7 @@ function Card({
   to?: string;
   external?: boolean;
   disabled?: boolean;
-  icon?: React.ReactNode;
+  icon?: any;
 }) {
   const sharedClassName = `group flex min-h-[190px] flex-col justify-between rounded-sm border border-border bg-card p-6 shadow-soft transition ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-0.5 hover:border-gold/40 hover:bg-secondary/20 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
 
