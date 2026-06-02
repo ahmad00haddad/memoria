@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
-import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Users, Star, Copy, ArrowLeft, Bell } from "lucide-react";
+import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, Copy, ArrowLeft, Bell } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
@@ -54,7 +54,14 @@ function Dashboard() {
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">لوحة المصوّر</div>
             <h1 className="font-serif text-4xl">أهلاً، {profile?.display_name ?? "مصوّر"}</h1>
-            <div className="text-sm text-muted-foreground mt-1">ملفك العام: <Link to="/photographers/$username" params={{ username: profile?.username ?? "" }} className="text-gold underline">@{profile?.username}</Link></div>
+            <div className="text-sm text-muted-foreground mt-1">
+              ملفك العام:{" "}
+              {profile?.username ? (
+                <Link to="/photographers/$username" params={{ username: profile.username }} className="text-gold underline">@{profile.username}</Link>
+              ) : (
+                <span>أكملي اسم المستخدم من الملف الشخصي</span>
+              )}
+            </div>
           </div>
           <button onClick={signOut} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary">تسجيل الخروج</button>
         </div>
