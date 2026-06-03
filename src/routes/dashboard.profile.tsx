@@ -70,6 +70,10 @@ function ProfilePage() {
       travel_fee_per_km: Number(p.travel_fee_per_km || 0.5), free_km: Number(p.free_km || 20),
       avatar_url: p.avatar_url, cover_url: p.cover_url, portfolio_urls: p.portfolio_urls ?? [],
       is_published: !!p.is_published,
+      tagline: p.tagline ?? null,
+      booking_notes: p.booking_notes ?? null,
+      bank_info: p.bank_info ?? null,
+      fixed_deposit: p.fixed_deposit ? Number(p.fixed_deposit) : null,
     }).eq("id", uid);
     setSaving(false);
     if (error) return toast.error(error.message);
@@ -112,6 +116,7 @@ function ProfilePage() {
           <Card title="المعلومات الأساسية">
             <Field label="الاسم المعروض" v={p.display_name} on={(v) => setP({ ...p, display_name: v })} />
             <Field label="اسم المستخدم (للرابط)" v={p.username} on={(v) => setP({ ...p, username: v.toLowerCase().replace(/[^a-z0-9_]/g, "") })} />
+            <Field label="شعار قصير (Tagline) — مثال: PHOTOGRAPHY" v={p.tagline} on={(v) => setP({ ...p, tagline: v })} />
             <Field label="المدينة" v={p.city} on={(v) => setP({ ...p, city: v })} />
             <Field label="الموقع الأساسي (عمّان مثلاً)" v={p.base_location} on={(v) => setP({ ...p, base_location: v })} />
             <Area label="نبذة قصيرة" v={p.bio} on={(v) => setP({ ...p, bio: v })} />
@@ -123,14 +128,17 @@ function ProfilePage() {
             <Field label="واتساب" v={p.whatsapp} on={(v) => setP({ ...p, whatsapp: v })} />
             <Field label="إنستغرام (اسم المستخدم)" v={p.instagram} on={(v) => setP({ ...p, instagram: v })} />
             <Field label="CliQ Alias لاستلام العربون" v={p.cliq_alias} on={(v) => setP({ ...p, cliq_alias: v })} />
+            <Area label="معلومات الحساب البنكي (بنك / رقم حساب / IBAN)" v={p.bank_info} on={(v) => setP({ ...p, bank_info: v })} />
           </Card>
 
           <Card title="إعدادات الحجز">
             <div className="grid sm:grid-cols-3 gap-4">
               <Field label="نسبة العربون %" type="number" v={p.deposit_percent} on={(v) => setP({ ...p, deposit_percent: v })} />
+              <Field label="عربون ثابت (د.أ) — اختياري" type="number" v={p.fixed_deposit} on={(v) => setP({ ...p, fixed_deposit: v })} />
               <Field label="رسوم/كم (د.أ)" type="number" v={p.travel_fee_per_km} on={(v) => setP({ ...p, travel_fee_per_km: v })} />
-              <Field label="كم مجاني" type="number" v={p.free_km} on={(v) => setP({ ...p, free_km: v })} />
             </div>
+            <Field label="كم مجاني" type="number" v={p.free_km} on={(v) => setP({ ...p, free_km: v })} />
+            <Area label="ملاحظات مهمة تظهر للعميل (مثال: تسليم الصور خلال أسبوع، الفيديو خلال شهر…)" v={p.booking_notes} on={(v) => setP({ ...p, booking_notes: v })} />
             <label className="flex items-center gap-2 text-sm mt-3">
               <input type="checkbox" checked={!!p.is_published} onChange={(e) => setP({ ...p, is_published: e.target.checked })} />
               نشر ملفي للعموم
