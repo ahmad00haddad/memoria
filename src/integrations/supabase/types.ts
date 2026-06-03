@@ -331,8 +331,10 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bank_info: string | null
           base_location: string | null
           bio: string | null
+          booking_notes: string | null
           city: string | null
           cliq_alias: string | null
           cover_url: string | null
@@ -340,6 +342,7 @@ export type Database = {
           deposit_percent: number
           display_name: string
           equipment: string | null
+          fixed_deposit: number | null
           free_km: number
           ical_token: string | null
           id: string
@@ -350,6 +353,7 @@ export type Database = {
           portfolio_urls: string[]
           referral_code: string | null
           referred_by: string | null
+          tagline: string | null
           travel_fee_per_km: number
           updated_at: string
           username: string
@@ -357,8 +361,10 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bank_info?: string | null
           base_location?: string | null
           bio?: string | null
+          booking_notes?: string | null
           city?: string | null
           cliq_alias?: string | null
           cover_url?: string | null
@@ -366,6 +372,7 @@ export type Database = {
           deposit_percent?: number
           display_name: string
           equipment?: string | null
+          fixed_deposit?: number | null
           free_km?: number
           ical_token?: string | null
           id: string
@@ -376,6 +383,7 @@ export type Database = {
           portfolio_urls?: string[]
           referral_code?: string | null
           referred_by?: string | null
+          tagline?: string | null
           travel_fee_per_km?: number
           updated_at?: string
           username: string
@@ -383,8 +391,10 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bank_info?: string | null
           base_location?: string | null
           bio?: string | null
+          booking_notes?: string | null
           city?: string | null
           cliq_alias?: string | null
           cover_url?: string | null
@@ -392,6 +402,7 @@ export type Database = {
           deposit_percent?: number
           display_name?: string
           equipment?: string | null
+          fixed_deposit?: number | null
           free_km?: number
           ical_token?: string | null
           id?: string
@@ -402,6 +413,7 @@ export type Database = {
           portfolio_urls?: string[]
           referral_code?: string | null
           referred_by?: string | null
+          tagline?: string | null
           travel_fee_per_km?: number
           updated_at?: string
           username?: string
