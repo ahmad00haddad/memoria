@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/login")({
 
 function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -23,11 +25,26 @@ function LoginPage() {
       return;
     }
     setErr(null);
+    setSuccess(null);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) return setErr(error.message);
-    navigate({ to: "/dashboard" });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setErr(error.message);
+        toast.error("تعذّر تسجيل الدخول");
+        return;
+      }
+
+      setSuccess("تم تسجيل الدخول بنجاح، يتم تحويلك الآن.");
+      toast.success("تم تسجيل الدخول بنجاح");
+      navigate({ to: "/dashboard", replace: true });
+    } catch (error: any) {
+      const message = error?.message || "حدث خلل غير متوقع أثناء تسجيل الدخول.";
+      setErr(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,6 +59,7 @@ function LoginPage() {
           <Field label="البريد الإلكتروني" name="email" type="email" autoComplete="email" required />
           <Field label="كلمة المرور" name="password" type="password" autoComplete="current-password" required />
           <p className="text-xs text-muted-foreground">سيبقى تسجيل دخولك محفوظًا على هذا المتصفح حتى تضغط "تسجيل الخروج".</p>
+          {success && <p className="text-sm text-emerald-600">{success}</p>}
           {err && <p className="text-sm text-destructive">{err}</p>}
           <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
             {loading ? "جاري الدخول…" : "دخول"}
