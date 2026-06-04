@@ -7,10 +7,8 @@ export function Footer() {
   useEffect(() => {
     let active = true;
 
-    const load = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const load = async (sessionOverride?: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
 
       if (!active || !session) {
         setIsPhotographer(false);
@@ -23,7 +21,11 @@ export function Footer() {
     };
 
     load();
-    const { data } = supabase.auth.onAuthStateChange(() => load());
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      queueMicrotask(() => {
+        void load(session);
+      });
+    });
 
     return () => {
       active = false;
