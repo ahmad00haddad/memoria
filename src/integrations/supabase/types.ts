@@ -110,13 +110,6 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "bookings_photographer_id_fkey"
-            columns: ["photographer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       contract_templates: {
@@ -331,13 +324,6 @@ export type Database = {
             columns: ["photographer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pricing_rules_photographer_id_fkey"
-            columns: ["photographer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -614,108 +600,7 @@ export type Database = {
       }
     }
     Views: {
-      profiles_public: {
-        Row: {
-          avatar_url: string | null
-          bank_info: string | null
-          base_location: string | null
-          bio: string | null
-          booking_notes: string | null
-          city: string | null
-          cliq_alias: string | null
-          cover_url: string | null
-          created_at: string | null
-          deposit_percent: number | null
-          display_name: string | null
-          equipment: string | null
-          fixed_deposit: number | null
-          free_km: number | null
-          id: string | null
-          instagram: string | null
-          is_featured: boolean | null
-          is_published: boolean | null
-          phone: string | null
-          portfolio_urls: string[] | null
-          tagline: string | null
-          travel_fee_per_km: number | null
-          updated_at: string | null
-          username: string | null
-          whatsapp: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bank_info?: string | null
-          base_location?: string | null
-          bio?: string | null
-          booking_notes?: string | null
-          city?: string | null
-          cliq_alias?: string | null
-          cover_url?: string | null
-          created_at?: string | null
-          deposit_percent?: number | null
-          display_name?: string | null
-          equipment?: string | null
-          fixed_deposit?: number | null
-          free_km?: number | null
-          id?: string | null
-          instagram?: string | null
-          is_featured?: boolean | null
-          is_published?: boolean | null
-          phone?: string | null
-          portfolio_urls?: string[] | null
-          tagline?: string | null
-          travel_fee_per_km?: number | null
-          updated_at?: string | null
-          username?: string | null
-          whatsapp?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bank_info?: string | null
-          base_location?: string | null
-          bio?: string | null
-          booking_notes?: string | null
-          city?: string | null
-          cliq_alias?: string | null
-          cover_url?: string | null
-          created_at?: string | null
-          deposit_percent?: number | null
-          display_name?: string | null
-          equipment?: string | null
-          fixed_deposit?: number | null
-          free_km?: number | null
-          id?: string | null
-          instagram?: string | null
-          is_featured?: boolean | null
-          is_published?: boolean | null
-          phone?: string | null
-          portfolio_urls?: string[] | null
-          tagline?: string | null
-          travel_fee_per_km?: number | null
-          updated_at?: string | null
-          username?: string | null
-          whatsapp?: string | null
-        }
-        Relationships: []
-      }
-      unavailability_public: {
-        Row: {
-          date: string | null
-          id: string | null
-          photographer_id: string | null
-        }
-        Insert: {
-          date?: string | null
-          id?: string | null
-          photographer_id?: string | null
-        }
-        Update: {
-          date?: string | null
-          id?: string | null
-          photographer_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_referrer_id: { Args: { _code: string }; Returns: string }
