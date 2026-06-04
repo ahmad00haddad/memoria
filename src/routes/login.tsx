@@ -9,14 +9,19 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") ?? "").trim();
+    const password = String(fd.get("password") ?? "");
+    if (!email || !password) {
+      setErr("الرجاء إدخال البريد الإلكتروني وكلمة المرور.");
+      return;
+    }
     setErr(null);
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -34,8 +39,9 @@ function LoginPage() {
           <h1 className="font-serif text-4xl">تسجيل الدخول</h1>
         </div>
         <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-sm p-6 shadow-soft">
-          <Field label="البريد الإلكتروني" type="email" value={email} onChange={setEmail} required />
-          <Field label="كلمة المرور" type="password" value={password} onChange={setPassword} required />
+          <Field label="البريد الإلكتروني" name="email" type="email" autoComplete="email" required />
+          <Field label="كلمة المرور" name="password" type="password" autoComplete="current-password" required />
+          <p className="text-xs text-muted-foreground">سيبقى تسجيل دخولك محفوظًا على هذا المتصفح حتى تضغط "تسجيل الخروج".</p>
           {err && <p className="text-sm text-destructive">{err}</p>}
           <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
             {loading ? "جاري الدخول…" : "دخول"}
@@ -53,14 +59,14 @@ function LoginPage() {
   );
 }
 
-function Field({ label, type, value, onChange, required }: { label: string; type: string; value: string; onChange: (v: string) => void; required?: boolean }) {
+function Field({ label, name, type, autoComplete, required }: { label: string; name: string; type: string; autoComplete?: string; required?: boolean }) {
   return (
     <label className="block">
       <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
       <input
+        name={name}
         type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        autoComplete={autoComplete}
         required={required}
         className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60"
       />
