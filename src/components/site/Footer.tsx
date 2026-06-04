@@ -1,4 +1,36 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 export function Footer() {
+  const [isPhotographer, setIsPhotographer] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    const load = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!active || !session) {
+        setIsPhotographer(false);
+        return;
+      }
+
+      const { data: profile } = await supabase.from("profiles").select("id").eq("id", session.user.id).maybeSingle();
+      if (!active) return;
+      setIsPhotographer(!!profile);
+    };
+
+    load();
+    const { data } = supabase.auth.onAuthStateChange(() => load());
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+
   return (
     <footer className="mt-24 border-t border-border/60 bg-background">
       <div className="container-editorial py-12 grid gap-8 sm:grid-cols-3 text-sm">
@@ -16,7 +48,7 @@ export function Footer() {
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">للمصوّرين</div>
           <ul className="space-y-2">
-            <li><a href="/photographers/join" className="hover:text-gold">انضم إلى المنصة</a></li>
+            {!isPhotographer && <li><a href="/photographers/join" className="hover:text-gold">انضم إلى المنصة</a></li>}
             <li><a href="/login" className="hover:text-gold">تسجيل الدخول</a></li>
           </ul>
         </div>
