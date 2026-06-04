@@ -10,6 +10,8 @@ import {
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 function NotFoundComponent() {
   return (
@@ -114,6 +116,27 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") {
+        return;
+      }
+
+      router.invalidate();
+
+      if (event !== "SIGNED_OUT") {
+        queryClient.invalidateQueries();
+      } else {
+        queryClient.clear();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [queryClient, router]);
 
   return (
     <QueryClientProvider client={queryClient}>
