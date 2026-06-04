@@ -10,8 +10,8 @@ export function Header() {
 
   useEffect(() => {
     let active = true;
-    const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const load = async (sessionOverride?: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
       if (!active) return;
       setAuthed(!!session);
       setIsPhotographer(false);
@@ -27,7 +27,11 @@ export function Header() {
       }
     };
     load();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => load());
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      queueMicrotask(() => {
+        void load(session);
+      });
+    });
     return () => { active = false; sub.subscription.unsubscribe(); };
   }, []);
 
