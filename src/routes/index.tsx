@@ -15,19 +15,20 @@ function Landing() {
   const [isPhotographer, setIsPhotographer] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   useEffect(() => {
+    let active = true;
+
     supabase
       .from("profiles")
       .select("username,display_name,city,cover_url,avatar_url")
       .eq("is_published", true)
       .eq("is_featured", true)
       .limit(4)
-      .then(({ data }) => setFeatured(data ?? []));
+      .then(({ data }) => {
+        if (active) setFeatured(data ?? []);
+      });
 
-    let active = true;
-    const loadAuthState = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const loadAuthState = async (sessionOverride?: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
 
       if (!active || !session) {
         setIsPhotographer(false);
@@ -60,7 +61,11 @@ function Landing() {
     };
 
     loadAuthState();
-    const { data } = supabase.auth.onAuthStateChange(() => loadAuthState());
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      queueMicrotask(() => {
+        void loadAuthState(session);
+      });
+    });
 
     return () => {
       active = false;
