@@ -126,13 +126,15 @@ function RootComponent() {
         return;
       }
 
-      router.invalidate();
+      queueMicrotask(() => {
+        router.invalidate();
 
-      if (event !== "SIGNED_OUT") {
-        queryClient.invalidateQueries();
-      } else {
-        queryClient.clear();
-      }
+        if (event !== "SIGNED_OUT") {
+          queryClient.invalidateQueries();
+        } else {
+          queryClient.clear();
+        }
+      });
     });
 
     return () => subscription.unsubscribe();
