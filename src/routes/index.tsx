@@ -12,14 +12,65 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const [featured, setFeatured] = useState<any[]>([]);
+  const [isPhotographer, setIsPhotographer] = useState(false);
+  const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   useEffect(() => {
+    let active = true;
+
     supabase
       .from("profiles")
       .select("username,display_name,city,cover_url,avatar_url")
       .eq("is_published", true)
       .eq("is_featured", true)
       .limit(4)
-      .then(({ data }) => setFeatured(data ?? []));
+      .then(({ data }) => {
+        if (active) setFeatured(data ?? []);
+      });
+
+    const loadAuthState = async (sessionOverride?: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
+
+      if (!active || !session) {
+        setIsPhotographer(false);
+        setTrialDaysLeft(null);
+        return;
+      }
+
+      const [{ data: profile }, { data: sub }] = await Promise.all([
+        supabase.from("profiles").select("id").eq("id", session.user.id).maybeSingle(),
+        supabase.from("subscriptions").select("status,trial_ends_at,current_period_end").eq("photographer_id", session.user.id).maybeSingle(),
+      ]);
+
+      if (!active) return;
+
+      const photographer = !!profile;
+      setIsPhotographer(photographer);
+
+      if (!photographer || !sub) {
+        setTrialDaysLeft(null);
+        return;
+      }
+
+      const targetDate = sub.status === "trial" ? sub.trial_ends_at : sub.current_period_end;
+      if (!targetDate) {
+        setTrialDaysLeft(0);
+        return;
+      }
+
+      setTrialDaysLeft(Math.max(0, Math.ceil((new Date(targetDate).getTime() - Date.now()) / 86400000)));
+    };
+
+    loadAuthState();
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      queueMicrotask(() => {
+        void loadAuthState(session);
+      });
+    });
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -50,13 +101,29 @@ function Landing() {
                 ابحث عن مصوّر
                 <ArrowLeft className="h-4 w-4" />
               </Link>
-              <Link
-                to="/photographers/join"
-                className="inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition"
-              >
-                أنا مصوّر — انضم
-              </Link>
+              {isPhotographer ? (
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition"
+                >
+                  ادخل إلى لوحتي
+                </Link>
+              ) : (
+                <Link
+                  to="/photographers/join"
+                  className="inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition"
+                >
+                  أنا مصوّر — انضم
+                </Link>
+              )}
             </div>
+            {isPhotographer && trialDaysLeft !== null && (
+              <div className="rounded-sm border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-foreground max-w-xl">
+                {trialDaysLeft > 0
+                  ? `متبقّي ${trialDaysLeft} يومًا من التجربة المجانية لحسابك.`
+                  : "انتهت التجربة المجانية، ويجب تفعيل الاشتراك للاستمرار في استقبال الحجوزات."}
+              </div>
+            )}
             <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1"><Star className="h-4 w-4 fill-gold text-gold" /> ٤.٩ تقييم المصوّرين</div>
               <div className="hidden sm:block">+١٢٠ مصوّر معتمد</div>
@@ -94,13 +161,23 @@ function Landing() {
             cta="ابحث عن مصوّر"
             href="/search"
           />
-          <RoleCard
-            title="مصوّر محترف"
-            desc="أنشئ ملفك، حدّد أسعارك واربط تقويمك — ودع النظام يدير حجوزاتك."
-            cta="انضم إلى المنصة"
-            href="/photographers/join"
-            highlight
-          />
+          {!isPhotographer ? (
+            <RoleCard
+              title="مصوّر محترف"
+              desc="أنشئ ملفك، حدّد أسعارك واربط تقويمك — ودع النظام يدير حجوزاتك."
+              cta="انضم إلى المنصة"
+              href="/photographers/join"
+              highlight
+            />
+          ) : (
+            <RoleCard
+              title="حسابك جاهز"
+              desc="أنتِ مسجّلة بالفعل. انتقلي مباشرة إلى لوحة التحكم لإدارة الباقات والحجوزات والاشتراك."
+              cta="افتحي لوحة التحكم"
+              href="/dashboard"
+              highlight
+            />
+          )}
         </div>
       </section>
 

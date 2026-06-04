@@ -6,21 +6,32 @@ import { supabase } from "@/integrations/supabase/client";
 export function Header() {
   const [unread, setUnread] = useState(0);
   const [authed, setAuthed] = useState(false);
+  const [isPhotographer, setIsPhotographer] = useState(false);
 
   useEffect(() => {
     let active = true;
-    const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    const load = async (sessionOverride?: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
+      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
       if (!active) return;
       setAuthed(!!session);
+      setIsPhotographer(false);
       if (session) {
-        const { count } = await supabase.from("notifications").select("id", { count: "exact", head: true })
-          .eq("user_id", session.user.id).eq("is_read", false);
+        const [{ count }, { data: profile }] = await Promise.all([
+          supabase.from("notifications").select("id", { count: "exact", head: true })
+            .eq("user_id", session.user.id).eq("is_read", false),
+          supabase.from("profiles").select("id").eq("id", session.user.id).maybeSingle(),
+        ]);
+        if (!active) return;
         setUnread(count ?? 0);
+        setIsPhotographer(!!profile);
       }
     };
     load();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => load());
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      queueMicrotask(() => {
+        void load(session);
+      });
+    });
     return () => { active = false; sub.subscription.unsubscribe(); };
   }, []);
 
@@ -39,7 +50,7 @@ export function Header() {
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
           <Link to="/search" className="px-3 py-2 rounded-sm hover:bg-secondary transition-colors">ابحث عن مصوّر</Link>
           <Link to="/pricing" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">الأسعار</Link>
-          <Link to="/photographers/join" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">انضم كمصوّر</Link>
+          {!isPhotographer && <Link to="/photographers/join" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">انضم كمصوّر</Link>}
           {authed && (
             <Link to="/notifications" className="relative px-3 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="إشعارات">
               <Bell className="h-5 w-5" />
@@ -49,10 +60,10 @@ export function Header() {
             </Link>
           )}
           <Link
-            to="/login"
+            to={authed ? "/dashboard" : "/login"}
             className="px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity"
           >
-            تسجيل الدخول
+            {authed ? "لوحتي" : "تسجيل الدخول"}
           </Link>
         </nav>
       </div>
