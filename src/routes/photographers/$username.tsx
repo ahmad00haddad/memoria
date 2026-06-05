@@ -218,11 +218,11 @@ function PhotographerPage() {
   );
 }
 
-function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profile; pricing: Pricing[]; blockedDates: string[] }) {
+function SimpleBookingForm({ profile, pricing, blockedDates, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; pickedPackageId?: string }) {
   const [f, setF] = useState({
     client_name: "", client_phone: "", event_date: "", start_time: "", end_time: "",
     package_id: "", venue_address: "", remaining_note: "", client_notes: "",
-    privacy_level: "public" as "public" | "no_publish" | "private_only",
+    privacy_level: "public" as "public" | "private_only",
   });
   const [submitting, setSubmitting] = useState(false);
   const selected = pricing.find((p) => p.id === f.package_id);
@@ -252,6 +252,12 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
     const note = `الباقة: ${pkg.label} — ${Number(pkg.price).toLocaleString("ar-JO")} د.أ${pkg.description ? `\n${pkg.description}` : ""}`;
     setF({ ...f, package_id: id, start_time: start, end_time: end, client_notes: f.client_notes ? f.client_notes : note });
   };
+
+  // عند اختيار الباقة من زر "احجزي هذه الباقة" خارج النموذج
+  useEffect(() => {
+    if (pickedPackageId && pickedPackageId !== f.package_id) onSelectPackage(pickedPackageId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pickedPackageId]);
 
   const total = selected ? Number(selected.price) : 0;
   const deposit = selected ? (profile.fixed_deposit ?? Math.round(total * (Number(profile.deposit_percent || 25) / 100))) : 0;
@@ -379,7 +385,6 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
             {[
               { v: "public", t: "صور قابلة للنشر", d: "يحق للمصوّرة استخدام لقطات للترويج" },
-              { v: "no_publish", t: "بدون نشر علني", d: "تُحفظ الصور لكِ ولا تُنشر على وسائل التواصل" },
               { v: "private_only", t: "خصوصية تامة", d: "فريق نسائي فقط — لا مشاركة مع أي طرف ثالث" },
             ].map((o) => (
               <button key={o.v} type="button" onClick={() => setF({ ...f, privacy_level: o.v as any })}
