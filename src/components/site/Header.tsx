@@ -49,6 +49,7 @@ export function Header() {
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
           <Link to="/search" className="px-3 py-2 rounded-sm hover:bg-secondary transition-colors">ابحث عن مصوّر</Link>
+          <Link to="/guide" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">كيف يعمل</Link>
           <Link to="/pricing" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">الأسعار</Link>
           {!isPhotographer && <Link to="/photographers/join" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">انضم كمصوّر</Link>}
           {authed && (
