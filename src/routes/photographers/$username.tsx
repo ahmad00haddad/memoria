@@ -382,7 +382,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, pickedPackageId }: 
         </div>
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">مستوى الخصوصية</label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
             {[
               { v: "public", t: "صور قابلة للنشر", d: "يحق للمصوّرة استخدام لقطات للترويج" },
               { v: "private_only", t: "خصوصية تامة", d: "فريق نسائي فقط — لا مشاركة مع أي طرف ثالث" },
