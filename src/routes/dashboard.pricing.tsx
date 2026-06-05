@@ -18,15 +18,22 @@ function PricingMgr() {
   const [uid, setUid] = useState("");
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return nav({ to: "/login" });
-      setUid(session.user.id);
-      const { data } = await supabase.from("pricing_rules").select("*").eq("photographer_id", session.user.id);
-      setRules((data ?? []) as Rule[]);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return nav({ to: "/login" });
+        setUid(session.user.id);
+        const { data, error } = await supabase.from("pricing_rules").select("*").eq("photographer_id", session.user.id);
+        if (error) throw error;
+        setRules((data ?? []) as Rule[]);
+      } catch (error: any) {
+        setLoadError(error?.message || "تعذّر تحميل الأسعار الآن.");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [nav]);
 
@@ -50,6 +57,22 @@ function PricingMgr() {
   };
 
   if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <section className="container-editorial py-12 max-w-3xl">
+          <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-gold">← اللوحة</Link>
+          <div className="rounded-sm border border-destructive/30 bg-card p-6 shadow-soft mt-4">
+            <h1 className="font-serif text-3xl mb-2">تعذّر فتح صفحة الأسعار</h1>
+            <p className="text-sm text-muted-foreground mb-4">{loadError}</p>
+            <button onClick={() => window.location.reload()} className="bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90">إعادة المحاولة</button>
+          </div>
+        </section>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -58,6 +81,29 @@ function PricingMgr() {
         <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-gold">← اللوحة</Link>
         <h1 className="font-serif text-4xl mt-2 mb-2">إدارة الأسعار</h1>
         <p className="text-sm text-muted-foreground mb-6">حدّدي باقات التصوير والفيديو والإضافات. تظهر فورًا للعملاء على ملفك العام.</p>
+
+        {rules.length === 0 && (
+          <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-6">
+            <h2 className="font-serif text-2xl mb-2">ابدئي بأول باقة</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضيفي على الأقل باقة تصوير وباقة يوم كامل، ثم احفظيها لتظهر مباشرة في ملفك العام.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3 text-sm">
+              <div className="rounded-sm border border-border bg-background p-4">
+                <div className="font-medium mb-1">تصوير 4 ساعات</div>
+                <div className="text-muted-foreground">مناسب للحفلات القصيرة أو الخطبة.</div>
+              </div>
+              <div className="rounded-sm border border-border bg-background p-4">
+                <div className="font-medium mb-1">يوم زفاف كامل</div>
+                <div className="text-muted-foreground">من التحضيرات حتى نهاية الحفل.</div>
+              </div>
+              <div className="rounded-sm border border-border bg-background p-4">
+                <div className="font-medium mb-1">إضافة فيديو أو ألبوم</div>
+                <div className="text-muted-foreground">خيار إضافي يرفع قيمة الطلب.</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="space-y-4">
           {rules.map((r, i) => (

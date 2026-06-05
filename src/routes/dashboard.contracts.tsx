@@ -30,6 +30,8 @@ function Contracts() {
   const [contracts, setContracts] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [body, setBody] = useState(DEFAULT_TEMPLATE);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -41,7 +43,17 @@ function Contracts() {
     ]);
     setTemplates(t ?? []); setContracts(c ?? []);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        await load();
+      } catch (error: any) {
+        setLoadError(error?.message || "تعذّر تحميل العقود.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const saveTemplate = async () => {
     if (!name.trim() || !body.trim()) return toast.error("الاسم والمحتوى مطلوبان");
@@ -55,12 +67,29 @@ function Contracts() {
     navigator.clipboard.writeText(url); toast.success("تم نسخ رابط التوقيع");
   };
 
+  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">العقود</div>
         <h1 className="font-serif text-4xl mb-8">قوالب وعقود التصوير</h1>
+
+        {templates.length === 0 && contracts.length === 0 && (
+          <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
+            <h2 className="font-serif text-2xl mb-2">كيف يعمل قسم العقود؟</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              هنا تبنين القالب مرة واحدة فقط. بعد ذلك، من صفحة أي حجز، يمكنك إنشاء عقد جاهز باسم العميل وتاريخ الحدث والسعر، ثم إرسال رابط التوقيع له مباشرة.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3 text-sm">
+              <div className="rounded-sm border border-border bg-background p-4">1) احفظي قالبًا أساسيًا للعقود.</div>
+              <div className="rounded-sm border border-border bg-background p-4">2) افتحي أي حجز ثم أنشئي عقدًا منه.</div>
+              <div className="rounded-sm border border-border bg-background p-4">3) انسخي رابط التوقيع وأرسليه للعميل.</div>
+            </div>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-8">
           <div className="border border-border rounded-sm p-6 bg-card">

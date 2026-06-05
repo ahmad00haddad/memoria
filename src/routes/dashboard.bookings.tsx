@@ -11,18 +11,26 @@ function BookingsList() {
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return nav({ to: "/login" });
-      const { data } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).order("event_date", { ascending: false });
-      setList(data ?? []);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return nav({ to: "/login" });
+        const { data, error } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).order("event_date", { ascending: false });
+        if (error) throw error;
+        setList(data ?? []);
+      } catch (error: any) {
+        setLoadError(error?.message || "تعذّر تحميل الحجوزات.");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [nav]);
 
   if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
   const filtered = filter === "all" ? list : list.filter((b) => b.status === filter);
 
   return (
@@ -40,6 +48,20 @@ function BookingsList() {
             <button key={f.v} onClick={() => setFilter(f.v)} className={`px-3 py-1.5 rounded-sm border ${filter === f.v ? "bg-charcoal text-ivory border-charcoal" : "border-border hover:bg-secondary"}`}>{f.l}</button>
           ))}
         </div>
+
+        {list.length === 0 && (
+          <div className="rounded-sm border border-border bg-card p-6 mb-6 shadow-soft">
+            <h2 className="font-serif text-2xl mb-2">لا توجد حجوزات بعد</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              هذه الصفحة ليست فارغة بسبب خطأ، بل لأن العملاء لم يرسلوا أي طلب بعد. لبدء استقبال الطلبات يجب أولًا إكمال الملف الشخصي ثم إضافة الباقات ونشر الملف العام.
+            </p>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <Link to="/dashboard/profile" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">إكمال الملف</Link>
+              <Link to="/dashboard/pricing" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">إضافة باقات</Link>
+              <Link to="/search" className="bg-charcoal text-ivory px-4 py-2 rounded-sm hover:opacity-90">معاينة تجربة العميل</Link>
+            </div>
+          </div>
+        )}
 
         <div className="rounded-sm border border-border bg-card overflow-hidden">
           {filtered.length === 0 ? <p className="p-6 text-sm text-muted-foreground">لا حجوزات.</p> : filtered.map((b) => (

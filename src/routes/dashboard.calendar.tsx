@@ -16,6 +16,7 @@ function CalendarPage() {
   const [date, setDate] = useState("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async (id: string) => {
     const [{ data: u }, { data: b }] = await Promise.all([
@@ -28,11 +29,16 @@ function CalendarPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return nav({ to: "/login" });
-      setUid(session.user.id);
-      await load(session.user.id);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return nav({ to: "/login" });
+        setUid(session.user.id);
+        await load(session.user.id);
+      } catch (error: any) {
+        setLoadError(error?.message || "تعذّر تحميل التقويم.");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [nav]);
 
@@ -49,6 +55,7 @@ function CalendarPage() {
   };
 
   if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,6 +66,9 @@ function CalendarPage() {
 
         <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
           <h2 className="font-serif text-xl mb-3">حجب يوم</h2>
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+            استخدمي هذا القسم لإغلاق الأيام غير المتاحة عليكِ، مثل السفر أو الحجوزات الخارجية. الأيام المحجوبة ستمنع العميل من اختيارها أثناء الطلب.
+          </p>
           <div className="flex flex-wrap gap-3 items-end">
             <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background" />
             <input placeholder="السبب (اختياري)" value={reason} onChange={(e) => setReason(e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[200px]" />
@@ -68,7 +78,7 @@ function CalendarPage() {
 
         <h2 className="font-serif text-xl mb-3">الأيام المحجوبة</h2>
         <div className="rounded-sm border border-border bg-card overflow-hidden mb-8">
-          {unavail.length === 0 ? <p className="p-4 text-sm text-muted-foreground">لا يوجد.</p> : unavail.map((u) => (
+          {unavail.length === 0 ? <p className="p-4 text-sm text-muted-foreground">لا توجد أيام محجوبة حاليًا.</p> : unavail.map((u) => (
             <div key={u.id} className="flex items-center justify-between p-3 border-b border-border last:border-0">
               <div><div className="text-sm">{new Date(u.date).toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>{u.reason && <div className="text-xs text-muted-foreground">{u.reason}</div>}</div>
               <button onClick={() => unblock(u.id)} className="text-destructive p-2"><X className="h-4 w-4" /></button>

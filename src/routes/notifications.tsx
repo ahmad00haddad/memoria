@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -10,14 +10,27 @@ export const Route = createFileRoute("/notifications")({ component: Notification
 function NotificationsPage() {
   const nav = useNavigate();
   const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return nav({ to: "/login" });
-    const { data } = await supabase.from("notifications").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(100);
+    const { data, error } = await supabase.from("notifications").select("*").eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(100);
+    if (error) throw error;
     setItems(data ?? []);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        await load();
+      } catch (error: any) {
+        setLoadError(error?.message || "تعذّر تحميل الإشعارات.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const markAll = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -34,7 +47,18 @@ function NotificationsPage() {
           <h1 className="font-serif text-4xl flex items-center gap-3"><Bell className="h-7 w-7 text-gold" /> الإشعارات</h1>
           <button onClick={markAll} className="text-sm border border-border px-3 py-2 rounded-sm hover:bg-secondary inline-flex items-center gap-2"><CheckCheck className="h-4 w-4" /> تعليم الكل كمقروء</button>
         </div>
-        {items.length === 0 ? <p className="text-muted-foreground">لا إشعارات بعد.</p> : (
+        {loading ? <p className="text-muted-foreground">جاري التحميل…</p> : loadError ? <p className="text-destructive">{loadError}</p> : items.length === 0 ? (
+          <div className="rounded-sm border border-border bg-card p-6 shadow-soft">
+            <h2 className="font-serif text-2xl mb-2">لا إشعارات بعد</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              ستظهر هنا التنبيهات المهمة مثل طلب حجز جديد، رفع إثبات عربون، توقيع عقد، أو مراجعة جديدة من عميل.
+            </p>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <Link to="/dashboard/bookings" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">اذهب إلى الحجوزات</Link>
+              <Link to="/dashboard/contracts" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">اذهب إلى العقود</Link>
+            </div>
+          </div>
+        ) : (
           <ul className="space-y-2">
             {items.map((n) => (
               <li key={n.id} className={`border rounded-sm p-4 ${n.is_read ? "border-border bg-card" : "border-gold/40 bg-gold/5"}`}>

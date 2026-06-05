@@ -89,6 +89,12 @@ function ProfilePage() {
         <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-gold">← اللوحة</Link>
         <h1 className="font-serif text-4xl mt-2 mb-8">تعديل الملف الشخصي</h1>
 
+        {!p?.is_published && (
+          <div className="rounded-sm border border-gold/30 bg-gold/10 p-4 mb-8 text-sm leading-relaxed">
+            ملفك غير منشور حاليًا، لذلك لن يظهر للعملاء في البحث. بعد إكمال البيانات الأساسية والصور، فعّلي خيار <strong>نشر ملفي للعموم</strong> في أسفل الصفحة ثم احفظي التغييرات.
+          </div>
+        )}
+
         <div className="space-y-8">
           <Card title="الصور">
             <div className="grid sm:grid-cols-2 gap-4">
