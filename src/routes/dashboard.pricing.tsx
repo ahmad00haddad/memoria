@@ -59,6 +59,29 @@ function PricingMgr() {
         <h1 className="font-serif text-4xl mt-2 mb-2">إدارة الأسعار</h1>
         <p className="text-sm text-muted-foreground mb-6">حدّدي باقات التصوير والفيديو والإضافات. تظهر فورًا للعملاء على ملفك العام.</p>
 
+        {rules.length === 0 && (
+          <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-6">
+            <h2 className="font-serif text-2xl mb-2">ابدئي بأول باقة</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضيفي على الأقل باقة تصوير وباقة يوم كامل، ثم احفظيها لتظهر مباشرة في ملفك العام.
+            </p>
+            <div className="grid gap-3 md:grid-cols-3 text-sm">
+              <div className="rounded-sm border border-border bg-background p-4">
+                <div className="font-medium mb-1">تصوير 4 ساعات</div>
+                <div className="text-muted-foreground">مناسب للحفلات القصيرة أو الخطبة.</div>
+              </div>
+              <div className="rounded-sm border border-border bg-background p-4">
+                <div className="font-medium mb-1">يوم زفاف كامل</div>
+                <div className="text-muted-foreground">من التحضيرات حتى نهاية الحفل.</div>
+              </div>
+              <div className="rounded-sm border border-border bg-background p-4">
+                <div className="font-medium mb-1">إضافة فيديو أو ألبوم</div>
+                <div className="text-muted-foreground">خيار إضافي يرفع قيمة الطلب.</div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4">
           {rules.map((r, i) => (
             <div key={i} className="rounded-sm border border-border bg-card p-4 grid gap-3 sm:grid-cols-[1fr_1fr_1fr_120px_120px_auto]">
