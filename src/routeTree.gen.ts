@@ -31,6 +31,7 @@ import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookin
 import { Route as DashboardAiToolsRouteImport } from './routes/dashboard.ai-tools'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
 
@@ -144,6 +145,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/admin/subscriptions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardBookingsIndexRoute = DashboardBookingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardBookingsRoute,
+} as any)
 const DashboardBookingsIdRoute = DashboardBookingsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/review/$bookingId': typeof ReviewBookingIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
+  '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesByTo {
@@ -192,7 +199,6 @@ export interface FileRoutesByTo {
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/ai-tools': typeof DashboardAiToolsRoute
-  '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
@@ -204,6 +210,7 @@ export interface FileRoutesByTo {
   '/review/$bookingId': typeof ReviewBookingIdRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
+  '/dashboard/bookings': typeof DashboardBookingsIndexRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesById {
@@ -231,6 +238,7 @@ export interface FileRoutesById {
   '/review/$bookingId': typeof ReviewBookingIdRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
+  '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRouteTypes {
@@ -259,6 +267,7 @@ export interface FileRouteTypes {
     | '/review/$bookingId'
     | '/dashboard/'
     | '/dashboard/bookings/$id'
+    | '/dashboard/bookings/'
     | '/api/public/ical/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -272,7 +281,6 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/ai-tools'
-    | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/contracts'
     | '/dashboard/pricing'
@@ -284,6 +292,7 @@ export interface FileRouteTypes {
     | '/review/$bookingId'
     | '/dashboard'
     | '/dashboard/bookings/$id'
+    | '/dashboard/bookings'
     | '/api/public/ical/$token'
   id:
     | '__root__'
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/review/$bookingId'
     | '/dashboard/'
     | '/dashboard/bookings/$id'
+    | '/dashboard/bookings/'
     | '/api/public/ical/$token'
   fileRoutesById: FileRoutesById
 }
@@ -486,6 +496,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/bookings/': {
+      id: '/dashboard/bookings/'
+      path: '/'
+      fullPath: '/dashboard/bookings/'
+      preLoaderRoute: typeof DashboardBookingsIndexRouteImport
+      parentRoute: typeof DashboardBookingsRoute
+    }
     '/dashboard/bookings/$id': {
       id: '/dashboard/bookings/$id'
       path: '/$id'
@@ -505,10 +522,12 @@ declare module '@tanstack/react-router' {
 
 interface DashboardBookingsRouteChildren {
   DashboardBookingsIdRoute: typeof DashboardBookingsIdRoute
+  DashboardBookingsIndexRoute: typeof DashboardBookingsIndexRoute
 }
 
 const DashboardBookingsRouteChildren: DashboardBookingsRouteChildren = {
   DashboardBookingsIdRoute: DashboardBookingsIdRoute,
+  DashboardBookingsIndexRoute: DashboardBookingsIndexRoute,
 }
 
 const DashboardBookingsRouteWithChildren =
@@ -561,3 +580,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
