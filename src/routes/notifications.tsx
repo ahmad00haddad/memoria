@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -41,8 +41,8 @@ function NotificationsPage() {
               ستظهر هنا التنبيهات المهمة مثل طلب حجز جديد، رفع إثبات عربون، توقيع عقد، أو مراجعة جديدة من عميل.
             </p>
             <div className="flex flex-wrap gap-3 text-sm">
-              <a href="/dashboard/bookings" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">اذهب إلى الحجوزات</a>
-              <a href="/dashboard/contracts" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">اذهب إلى العقود</a>
+              <Link to="/dashboard/bookings" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">اذهب إلى الحجوزات</Link>
+              <Link to="/dashboard/contracts" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">اذهب إلى العقود</Link>
             </div>
           </div>
         ) : (
