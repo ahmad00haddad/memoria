@@ -5,6 +5,11 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { ar } from "date-fns/locale";
+import { format } from "date-fns";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
@@ -220,6 +225,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
   const selected = pricing.find((p) => p.id === f.package_id);
   const isBlocked = !!f.event_date && blockedDates.includes(f.event_date);
 
+  const blockedDateObjs = blockedDates.map((d) => {
+    const [y, m, day] = d.split("-").map(Number);
+    return new Date(y, m - 1, day);
+  });
+  const selectedDateObj = f.event_date
+    ? (() => { const [y, m, day] = f.event_date.split("-").map(Number); return new Date(y, m - 1, day); })()
+    : undefined;
+
   // تعبئة تلقائية للأوقات والملاحظات حسب نوع الباقة
   const onSelectPackage = (id: string) => {
     const pkg = pricing.find((p) => p.id === id);
@@ -294,7 +307,39 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="الاسم" v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
         <Field label="الهاتف" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
-        <Field label="التاريخ" type="date" v={f.event_date} on={(v) => setF({ ...f, event_date: v })} />
+        <div className="sm:col-span-1">
+          <label className="text-sm text-muted-foreground">التاريخ</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={`w-full mt-1 inline-flex items-center justify-between gap-2 border rounded-sm px-3 py-2 bg-background text-sm text-start ${isBlocked ? "border-destructive text-destructive" : "border-border"}`}
+              >
+                <span>{selectedDateObj ? format(selectedDateObj, "EEEE d MMMM yyyy", { locale: ar }) : "اختاري اليوم"}</span>
+                <CalendarIcon className="h-4 w-4 opacity-60" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDateObj}
+                onSelect={(d) => {
+                  if (!d) return;
+                  const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                  setF({ ...f, event_date: iso });
+                }}
+                disabled={[{ before: new Date() }, ...blockedDateObjs]}
+                modifiers={{ blocked: blockedDateObjs }}
+                modifiersClassNames={{ blocked: "line-through text-destructive/60 bg-destructive/5" }}
+                locale={ar}
+                className="pointer-events-auto"
+              />
+              <div className="border-t border-border p-2 text-[11px] text-muted-foreground flex items-center gap-3">
+                <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-destructive/20 line-through">×</span> أيام محجوزة/محجوبة</span>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="من" type="time" v={f.start_time} on={(v) => setF({ ...f, start_time: v })} />
           <Field label="إلى" type="time" v={f.end_time} on={(v) => setF({ ...f, end_time: v })} />
