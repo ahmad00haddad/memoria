@@ -220,15 +220,32 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
   const selected = pricing.find((p) => p.id === f.package_id);
   const isBlocked = !!f.event_date && blockedDates.includes(f.event_date);
 
+  // تعبئة تلقائية للأوقات والملاحظات حسب نوع الباقة
+  const onSelectPackage = (id: string) => {
+    const pkg = pricing.find((p) => p.id === id);
+    if (!pkg) return setF({ ...f, package_id: id });
+    let start = f.start_time, end = f.end_time;
+    if (pkg.package === "full_day") { start = start || "10:00"; end = end || "23:00"; }
+    else if (pkg.package === "hourly") {
+      const m = /(\d+)\s*ساعة|(\d+)\s*ساعات|\((\d+)\s*ساع/.exec(pkg.label) || /(\d+)\s*hours?/i.exec(pkg.label);
+      const hours = m ? Number(m[1] || m[2] || m[3]) : 4;
+      start = start || "18:00";
+      const endHour = (18 + hours) % 24;
+      end = end || `${String(endHour).padStart(2, "0")}:00`;
+    }
+    const note = `الباقة: ${pkg.label} — ${Number(pkg.price).toLocaleString("ar-JO")} د.أ${pkg.description ? `\n${pkg.description}` : ""}`;
+    setF({ ...f, package_id: id, start_time: start, end_time: end, client_notes: f.client_notes ? f.client_notes : note });
+  };
+
+  const total = selected ? Number(selected.price) : 0;
+  const deposit = selected ? (profile.fixed_deposit ?? Math.round(total * (Number(profile.deposit_percent || 25) / 100))) : 0;
+
   const submit = async () => {
     if (!f.client_name || !f.client_phone || !f.event_date || !selected) {
       return toast.error("الرجاء تعبئة الاسم والهاتف والتاريخ واختيار الباقة");
     }
     if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
     setSubmitting(true);
-
-    const total = Number(selected.price);
-    const deposit = profile.fixed_deposit ?? Math.round(total * (Number(profile.deposit_percent || 25) / 100));
 
     await supabase.from("bookings").insert({
       photographer_id: profile.id,
@@ -284,10 +301,18 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
         </div>
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">الباقة</label>
-          <select value={f.package_id} onChange={(e) => setF({ ...f, package_id: e.target.value })} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background">
+          <select value={f.package_id} onChange={(e) => onSelectPackage(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background">
             <option value="">— اختاري الباقة —</option>
             {pricing.map((r) => <option key={r.id} value={r.id}>{r.label} — {r.price} د.أ</option>)}
           </select>
+          {selected && (
+            <div className="mt-3 rounded-sm bg-secondary/60 border border-border p-3 text-sm space-y-1">
+              {selected.description && <div className="text-muted-foreground whitespace-pre-line">{selected.description}</div>}
+              <div className="flex justify-between"><span>المجموع</span><span className="font-semibold">{total.toLocaleString("ar-JO")} د.أ</span></div>
+              <div className="flex justify-between text-gold"><span>العربون المطلوب</span><span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span></div>
+              <div className="text-xs text-muted-foreground pt-1">تم تعبئة الأوقات تلقائياً — يمكنكِ تعديلها.</div>
+            </div>
+          )}
         </div>
         <div className="sm:col-span-2">
           <Field label="الموقع / القاعة" v={f.venue_address} on={(v) => setF({ ...f, venue_address: v })} />
