@@ -17,6 +17,7 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as ReviewBookingIdRouteImport } from './routes/review.$bookingId'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
@@ -72,6 +73,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const ReviewBookingIdRoute = ReviewBookingIdRouteImport.update({
   id: '/review/$bookingId',
@@ -171,12 +177,12 @@ export interface FileRoutesByFullPath {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/pricing': typeof PricingRoute
@@ -196,6 +202,7 @@ export interface FileRoutesByTo {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
@@ -222,6 +229,7 @@ export interface FileRoutesById {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
@@ -249,12 +257,12 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/api/public/ical/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard'
     | '/login'
     | '/notifications'
     | '/pricing'
@@ -274,6 +282,7 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/dashboard'
     | '/dashboard/bookings/$id'
     | '/api/public/ical/$token'
   id:
@@ -299,6 +308,7 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/api/public/ical/$token'
   fileRoutesById: FileRoutesById
@@ -377,6 +387,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/review/$bookingId': {
       id: '/review/$bookingId'
@@ -506,6 +523,7 @@ interface DashboardRouteChildren {
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardReferralsRoute: typeof DashboardReferralsRoute
   DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
@@ -517,6 +535,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardReferralsRoute: DashboardReferralsRoute,
   DashboardSubscriptionRoute: DashboardSubscriptionRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
 }
 
 const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
