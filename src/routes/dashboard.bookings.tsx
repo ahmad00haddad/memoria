@@ -11,18 +11,26 @@ function BookingsList() {
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return nav({ to: "/login" });
-      const { data } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).order("event_date", { ascending: false });
-      setList(data ?? []);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return nav({ to: "/login" });
+        const { data, error } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).order("event_date", { ascending: false });
+        if (error) throw error;
+        setList(data ?? []);
+      } catch (error: any) {
+        setLoadError(error?.message || "تعذّر تحميل الحجوزات.");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [nav]);
 
   if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
   const filtered = filter === "all" ? list : list.filter((b) => b.status === filter);
 
   return (
