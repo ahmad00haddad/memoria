@@ -30,6 +30,8 @@ function Contracts() {
   const [contracts, setContracts] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [body, setBody] = useState(DEFAULT_TEMPLATE);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -41,7 +43,17 @@ function Contracts() {
     ]);
     setTemplates(t ?? []); setContracts(c ?? []);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        await load();
+      } catch (error: any) {
+        setLoadError(error?.message || "تعذّر تحميل العقود.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
   const saveTemplate = async () => {
     if (!name.trim() || !body.trim()) return toast.error("الاسم والمحتوى مطلوبان");
@@ -54,6 +66,9 @@ function Contracts() {
     const url = `${window.location.origin}/contracts/${token}`;
     navigator.clipboard.writeText(url); toast.success("تم نسخ رابط التوقيع");
   };
+
+  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
 
   return (
     <div className="min-h-screen bg-background">
