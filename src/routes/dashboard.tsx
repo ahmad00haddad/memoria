@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
-import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, Copy, ArrowLeft, Bell } from "lucide-react";
+import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, Copy, ArrowLeft, Bell, CircleDashed, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
@@ -15,6 +15,7 @@ function Dashboard() {
   const [profile, setProfile] = useState<any>(null);
   const [sub, setSub] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [pricingCount, setPricingCount] = useState(0);
   const [stats, setStats] = useState({ confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0 });
   const navigate = useNavigate();
 
@@ -25,14 +26,16 @@ function Dashboard() {
         navigate({ to: "/login" });
         return;
       }
-      const [{ data }, { data: s }, { data: bks }, { data: rvs }] = await Promise.all([
+      const [{ data }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
         supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
         supabase.from("bookings").select("status,total_price").eq("photographer_id", session.user.id),
         supabase.from("reviews").select("rating").eq("photographer_id", session.user.id),
+        supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       ]);
       setProfile(data);
       setSub(s);
+      setPricingCount(pricingRulesCount ?? 0);
       const confirmed = (bks ?? []).filter((b) => b.status === "confirmed").length;
       const pending = (bks ?? []).filter((b) => b.status === "pending_deposit" || b.status === "quote").length;
       const completed = (bks ?? []).filter((b) => b.status === "completed").length;
@@ -75,6 +78,8 @@ function Dashboard() {
           <Stat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating ? stats.avgRating.toFixed(1) : "—"} />
         </div>
 
+        <QuickStart profile={profile} pricingCount={pricingCount} bookingCount={stats.confirmed + stats.pending + stats.completed} />
+
         {profile?.ical_token && <IcalBlock token={profile.ical_token} />}
 
         <div className="grid gap-6 md:grid-cols-3">
@@ -91,6 +96,63 @@ function Dashboard() {
         </div>
       </section>
       <Footer />
+    </div>
+  );
+}
+
+function QuickStart({ profile, pricingCount, bookingCount }: { profile: any; pricingCount: number; bookingCount: number }) {
+  const steps = [
+    {
+      title: "أكملي الملف الشخصي",
+      desc: "الاسم، الصورة، المدينة، معلومات التواصل وإعدادات الحجز.",
+      done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url,
+      to: "/dashboard/profile",
+      cta: "افتحي الملف",
+    },
+    {
+      title: "أضيفي الباقات والأسعار",
+      desc: "بدون باقات لن يرى العميل أسعارك ولن يستطيع اختيار خدمة واضحة.",
+      done: pricingCount > 0,
+      to: "/dashboard/pricing",
+      cta: pricingCount > 0 ? `لديك ${pricingCount} باقة` : "أضيفي أول باقة",
+    },
+    {
+      title: "افعّلي الظهور العام",
+      desc: "انشري ملفك العام ثم افتحيه كما يراه العميل واختبري الحجز بنفسك.",
+      done: !!profile?.is_published && !!profile?.username,
+      to: "/dashboard/profile",
+      cta: profile?.is_published ? "الملف منشور" : "فعّلي النشر",
+    },
+    {
+      title: "راجعي أول الحجوزات",
+      desc: "من هنا ستؤكدين العربون، تنشئين العقود وتتابعين الرسائل.",
+      done: bookingCount > 0,
+      to: "/dashboard/bookings",
+      cta: bookingCount > 0 ? `لديك ${bookingCount} حجز` : "لا توجد حجوزات بعد",
+    },
+  ];
+
+  return (
+    <div className="mb-8 rounded-sm border border-border bg-card p-6 shadow-soft">
+      <div className="flex items-center gap-2 mb-4">
+        <ListChecks className="h-5 w-5 text-gold" />
+        <h2 className="font-serif text-2xl">حالة الجاهزية</h2>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {steps.map((step) => (
+          <div key={step.title} className="rounded-sm border border-border bg-background p-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="font-medium leading-relaxed">{step.title}</div>
+              {step.done ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" /> : <CircleDashed className="h-4 w-4 text-muted-foreground shrink-0" />}
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed min-h-[56px]">{step.desc}</p>
+            <Link to={step.to} className="mt-4 inline-flex items-center gap-2 text-sm text-gold">
+              <span className="border-b border-current pb-0.5">{step.cta}</span>
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
