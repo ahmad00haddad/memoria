@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ScrollText, Copy } from "lucide-react";
+import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -46,6 +46,19 @@ function BookingDetail() {
     load();
   };
 
+  const markFinalPaid = async () => {
+    const amount = b.total_price - (b.deposit_amount || 0);
+    await supabase.from("bookings").update({ final_paid_at: new Date().toISOString(), final_paid_amount: amount }).eq("id", id);
+    toast.success("تم تسجيل الدفعة النهائية");
+    load();
+  };
+
+  const markDelivered = async () => {
+    await supabase.from("bookings").update({ delivered_at: new Date().toISOString(), status: "completed" }).eq("id", id);
+    toast.success("تم تسجيل تسليم الصور");
+    load();
+  };
+
   const send = async () => {
     if (!text.trim()) return;
     await supabase.from("messages").insert({ booking_id: id, body: text, sender_id: uid, sender_name: "المصوّر" });
@@ -56,7 +69,12 @@ function BookingDetail() {
   const generateContract = async (templateId?: string) => {
     if (!b) return;
     const tpl = templates.find((t) => t.id === templateId);
-    const baseBody = tpl?.body ?? `عقد تصوير حفل زفاف بين المصوّر/ة والعميل/ة ${b.client_name}.\n\nتاريخ الحفل: ${b.event_date}\nالمدّة: ${b.start_time?.slice(0,5)} - ${b.end_time?.slice(0,5)}\nالموقع: ${b.venue_name ?? "—"}\nالمجموع: ${b.total_price} د.أ\nالعربون (غير قابل للاسترداد): ${b.deposit_amount} د.أ\n\nالبنود الافتراضية:\n- تسليم الصور خلال 30 يومًا.\n- إلغاء قبل أسبوعين يعفي من المتبقّي، بعدها 50%.\n- يحق للمصوّر استخدام الصور للترويج ما لم يطلب العميل خلاف ذلك كتابيًا.`;
+    const privacyLabels: Record<string, string> = {
+      public: "عام — يحق للمصوّرة استخدام لقطات للترويج",
+      no_publish: "بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي",
+      private_only: "خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث",
+    };
+    const baseBody = tpl?.body ?? `عقد تصوير حفل زفاف بين المصوّر/ة والعميل/ة ${b.client_name}.\n\nتاريخ الحفل: ${b.event_date}\nالمدّة: ${b.start_time?.slice(0,5)} - ${b.end_time?.slice(0,5)}\nالموقع: ${b.venue_name ?? "—"}\nالمجموع: ${b.total_price} د.أ\nالعربون (غير قابل للاسترداد): ${b.deposit_amount} د.أ\nرسوم الساعة الإضافية: ${b.overtime_fee_per_hour || 0} د.أ\nمستوى الخصوصية: ${privacyLabels[b.privacy_level || 'public']}\n\nالبنود الافتراضية:\n- تسليم الصور خلال ${b.delivery_days_promised || 30} يومًا (تاريخ التسليم المتوقع: ${b.delivery_due_at ?? '—'}).\n- إلغاء قبل أسبوعين يعفي من المتبقّي، بعدها 50%.\n- لا يحق للعميل نشر الصور الخام (RAW) أو إزالة شعار المصوّرة.`;
     const body = baseBody
       .replace(/\[اسم العميل\]/g, b.client_name)
       .replace(/\[التاريخ\]/g, b.event_date)
@@ -64,7 +82,9 @@ function BookingDetail() {
       .replace(/\[البداية\]/g, b.start_time?.slice(0,5) ?? "")
       .replace(/\[النهاية\]/g, b.end_time?.slice(0,5) ?? "")
       .replace(/\[المجموع\]/g, String(b.total_price))
-      .replace(/\[العربون\]/g, String(b.deposit_amount));
+      .replace(/\[العربون\]/g, String(b.deposit_amount))
+      .replace(/\[رسوم الساعة الإضافية\]/g, String(b.overtime_fee_per_hour || 0))
+      .replace(/\[مستوى الخصوصية\]/g, privacyLabels[b.privacy_level || 'public']);
     const { error } = await supabase.from("contracts").insert({
       booking_id: id, photographer_id: uid, body, client_name: b.client_name,
     });
@@ -99,11 +119,17 @@ function BookingDetail() {
             <Row k="رسوم التنقّل" v={`${b.travel_fee} د.أ`} />
             <Row k="الإجمالي" v={`${b.total_price} د.أ`} bold />
             <Row k="العربون" v={`${b.deposit_amount} د.أ`} />
+            <Row k="المتبقي" v={`${(b.total_price - (b.deposit_amount || 0)).toLocaleString()} د.أ`} bold />
+            {b.final_paid_at && <Row k="تم استلام المتبقي" v={new Date(b.final_paid_at).toLocaleDateString("ar-JO")} />}
+            <hr className="my-2 border-border" />
+            <PrivacyBadge level={b.privacy_level} />
           </div>
 
           <div className="rounded-sm border border-border bg-card p-6">
             <h2 className="font-serif text-xl mb-3">الحالة والإجراءات</h2>
             <div className="text-sm mb-3">الحالة الحالية: <strong>{b.status}</strong></div>
+
+            <DeliveryCountdown b={b} />
 
             {proofUrl && (
               <div className="mb-4">
@@ -118,8 +144,11 @@ function BookingDetail() {
               {b.status === "pending_deposit" && proofUrl && (
                 <button onClick={() => setStatus("confirmed")} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تأكيد العربون</button>
               )}
-              {b.status !== "completed" && b.status !== "cancelled" && (
-                <button onClick={() => setStatus("completed")} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">إنهاء كمنجز</button>
+              {!b.final_paid_at && b.status !== "cancelled" && (
+                <button onClick={markFinalPaid} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm"><BadgeDollarSign className="h-4 w-4" /> تسجيل استلام المتبقي</button>
+              )}
+              {!b.delivered_at && b.status !== "cancelled" && (
+                <button onClick={markDelivered} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تسليم الصور وإنهاء</button>
               )}
               {b.status !== "cancelled" && (
                 <button onClick={() => setStatus("cancelled")} className="inline-flex items-center gap-2 text-destructive border border-destructive/30 px-4 py-2 rounded-sm hover:bg-destructive/10"><XCircle className="h-4 w-4" /> إلغاء</button>
@@ -178,4 +207,36 @@ function BookingDetail() {
 
 function Row({ k, v, bold }: any) {
   return <div className="flex justify-between gap-3"><span className="text-muted-foreground">{k}</span><span className={bold ? "font-semibold" : ""}>{v || "—"}</span></div>;
+}
+
+function PrivacyBadge({ level }: { level?: string }) {
+  const map: Record<string, { icon: any; t: string; c: string }> = {
+    public: { icon: <Eye className="h-3.5 w-3.5" />, t: "صور قابلة للنشر", c: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+    no_publish: { icon: <EyeOff className="h-3.5 w-3.5" />, t: "بدون نشر علني", c: "bg-amber-50 text-amber-800 border-amber-200" },
+    private_only: { icon: <Lock className="h-3.5 w-3.5" />, t: "خصوصية تامة — فريق نسائي", c: "bg-rose-50 text-rose-700 border-rose-200" },
+  };
+  const x = map[level ?? "public"] ?? map.public;
+  return <div className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-sm border ${x.c}`}>{x.icon} {x.t}</div>;
+}
+
+function DeliveryCountdown({ b }: { b: any }) {
+  if (b.delivered_at) {
+    return (
+      <div className="mb-4 rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 flex items-center gap-2">
+        <CheckCircle2 className="h-4 w-4" /> سُلِّمت الصور في {new Date(b.delivered_at).toLocaleDateString("ar-JO")}
+      </div>
+    );
+  }
+  if (!b.delivery_due_at) return null;
+  const due = new Date(b.delivery_due_at);
+  const days = Math.ceil((due.getTime() - Date.now()) / 86400000);
+  const overdue = days < 0;
+  return (
+    <div className={`mb-4 rounded-sm border p-3 text-sm flex items-center gap-2 ${overdue ? "border-destructive/40 bg-destructive/10 text-destructive" : days <= 7 ? "border-amber-200 bg-amber-50 text-amber-800" : "border-border bg-secondary/40"}`}>
+      <Clock className="h-4 w-4" />
+      {overdue
+        ? <span>متأخّر <strong>{Math.abs(days)}</strong> يومًا عن موعد التسليم ({due.toLocaleDateString("ar-JO")})</span>
+        : <span>الوقت المتبقي لتسليم الصور: <strong>{days}</strong> يومًا (حتى {due.toLocaleDateString("ar-JO")})</span>}
+    </div>
+  );
 }
