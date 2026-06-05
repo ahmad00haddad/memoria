@@ -25,14 +25,23 @@ export type Database = {
           client_user_id: string | null
           contract_agreed: boolean
           created_at: string
+          delivered_at: string | null
+          delivery_days_promised: number | null
+          delivery_due_at: string | null
           deposit_amount: number
           deposit_proof_url: string | null
           edited_photos_count: number | null
           end_time: string
           event_date: string
+          final_paid_amount: number | null
+          final_paid_at: string | null
           id: string
+          overtime_fee_per_hour: number | null
+          photographer_can_publish: boolean
           photographer_id: string
           photographer_notes: string | null
+          photos_promised: number | null
+          privacy_level: string
           service: Database["public"]["Enums"]["service_type"]
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
@@ -54,14 +63,23 @@ export type Database = {
           client_user_id?: string | null
           contract_agreed?: boolean
           created_at?: string
+          delivered_at?: string | null
+          delivery_days_promised?: number | null
+          delivery_due_at?: string | null
           deposit_amount?: number
           deposit_proof_url?: string | null
           edited_photos_count?: number | null
           end_time: string
           event_date: string
+          final_paid_amount?: number | null
+          final_paid_at?: string | null
           id?: string
+          overtime_fee_per_hour?: number | null
+          photographer_can_publish?: boolean
           photographer_id: string
           photographer_notes?: string | null
+          photos_promised?: number | null
+          privacy_level?: string
           service: Database["public"]["Enums"]["service_type"]
           start_time: string
           status?: Database["public"]["Enums"]["booking_status"]
@@ -83,14 +101,23 @@ export type Database = {
           client_user_id?: string | null
           contract_agreed?: boolean
           created_at?: string
+          delivered_at?: string | null
+          delivery_days_promised?: number | null
+          delivery_due_at?: string | null
           deposit_amount?: number
           deposit_proof_url?: string | null
           edited_photos_count?: number | null
           end_time?: string
           event_date?: string
+          final_paid_amount?: number | null
+          final_paid_at?: string | null
           id?: string
+          overtime_fee_per_hour?: number | null
+          photographer_can_publish?: boolean
           photographer_id?: string
           photographer_notes?: string | null
+          photos_promised?: number | null
+          privacy_level?: string
           service?: Database["public"]["Enums"]["service_type"]
           start_time?: string
           status?: Database["public"]["Enums"]["booking_status"]

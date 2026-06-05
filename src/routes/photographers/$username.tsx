@@ -220,6 +220,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
   const [f, setF] = useState({
     client_name: "", client_phone: "", event_date: "", start_time: "", end_time: "",
     package_id: "", venue_address: "", remaining_note: "", client_notes: "",
+    privacy_level: "public" as "public" | "no_publish" | "private_only",
   });
   const [submitting, setSubmitting] = useState(false);
   const selected = pricing.find((p) => p.id === f.package_id);
@@ -270,6 +271,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
       venue_name: "", venue_address: f.venue_address,
       base_price: total, travel_fee: 0, total_price: total,
       deposit_amount: deposit, edited_photos_count: 0,
+      privacy_level: f.privacy_level,
+      photographer_can_publish: f.privacy_level === "public",
       client_notes: [f.client_notes, f.remaining_note ? `الرصيد المتبقي: ${f.remaining_note}` : ""].filter(Boolean).join("\n"),
       contract_agreed: true, status: "pending_deposit",
       addons: [{ rule_id: selected.id, label: selected.label }],
@@ -368,6 +371,22 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">معلومات إضافية</label>
           <textarea value={f.client_notes} onChange={(e) => setF({ ...f, client_notes: e.target.value })} rows={3} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="text-sm text-muted-foreground">مستوى الخصوصية</label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+            {[
+              { v: "public", t: "صور قابلة للنشر", d: "يحق للمصوّرة استخدام لقطات للترويج" },
+              { v: "no_publish", t: "بدون نشر علني", d: "تُحفظ الصور لكِ ولا تُنشر على وسائل التواصل" },
+              { v: "private_only", t: "خصوصية تامة", d: "فريق نسائي فقط — لا مشاركة مع أي طرف ثالث" },
+            ].map((o) => (
+              <button key={o.v} type="button" onClick={() => setF({ ...f, privacy_level: o.v as any })}
+                className={`text-start rounded-sm border p-3 text-sm transition ${f.privacy_level === o.v ? "border-gold bg-gold/5" : "border-border hover:bg-secondary"}`}>
+                <div className="font-medium">{o.t}</div>
+                <div className="text-xs text-muted-foreground mt-1">{o.d}</div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       {isBlocked && <p className="text-sm text-destructive mt-3">⚠️ هذا اليوم غير متاح</p>}
