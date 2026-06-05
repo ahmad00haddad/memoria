@@ -16,6 +16,7 @@ function CalendarPage() {
   const [date, setDate] = useState("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = async (id: string) => {
     const [{ data: u }, { data: b }] = await Promise.all([
@@ -28,11 +29,16 @@ function CalendarPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return nav({ to: "/login" });
-      setUid(session.user.id);
-      await load(session.user.id);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return nav({ to: "/login" });
+        setUid(session.user.id);
+        await load(session.user.id);
+      } catch (error: any) {
+        setLoadError(error?.message || "تعذّر تحميل التقويم.");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [nav]);
 
@@ -49,6 +55,7 @@ function CalendarPage() {
   };
 
   if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
 
   return (
     <div className="min-h-screen bg-background">
