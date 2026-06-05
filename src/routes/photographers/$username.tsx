@@ -50,6 +50,7 @@ function PhotographerPage() {
   const [unavail, setUnavail] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pickedPackageId, setPickedPackageId] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -81,6 +82,7 @@ function PhotographerPage() {
   const blockedDates = [...new Set([...unavail, ...bookedDates])];
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const pickPackage = (id: string) => { setPickedPackageId(id); setTimeout(() => scrollTo("book"), 50); };
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,7 +132,7 @@ function PhotographerPage() {
                 <h3 className="font-serif text-2xl mb-1">{p.label}</h3>
                 {p.description && <p className="text-sm text-muted-foreground mb-4 whitespace-pre-line">{p.description}</p>}
                 <div className="font-serif text-3xl text-gold mb-4">{Number(p.price).toLocaleString("ar-JO")} <span className="text-sm">د.أ</span></div>
-                <button onClick={() => scrollTo("book")} className="w-full bg-charcoal text-ivory py-2 rounded-sm hover:opacity-90 text-sm">احجزي هذه الباقة</button>
+                <button onClick={() => pickPackage(p.id)} className="w-full bg-charcoal text-ivory py-2 rounded-sm hover:opacity-90 text-sm">احجزي هذه الباقة</button>
               </div>
             ))}
           </div>
@@ -157,7 +159,7 @@ function PhotographerPage() {
       {/* BOOKING + DEPOSIT */}
       <section id="book" className="bg-secondary/40 py-16">
         <div className="container-editorial grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} />
+          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} pickedPackageId={pickedPackageId} />
           <DepositCard profile={profile} />
         </div>
       </section>
