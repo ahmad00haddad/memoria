@@ -15,6 +15,9 @@ function CalendarPage() {
   const [bookings, setBookings] = useState<{ event_date: string; status: string; client_name: string }[]>([]);
   const [date, setDate] = useState("");
   const [reason, setReason] = useState("");
+  const [weekday, setWeekday] = useState<string>("5"); // 5 = الجمعة
+  const [weeks, setWeeks] = useState<number>(26); // ~6 أشهر
+  const [recurringReason, setRecurringReason] = useState("عطلة أسبوعية");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -54,6 +57,28 @@ function CalendarPage() {
     load(uid);
   };
 
+  const blockRecurring = async () => {
+    const wd = Number(weekday);
+    const total = Math.max(1, Math.min(104, Number(weeks) || 26));
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const dates: string[] = [];
+    // ابدئي من أول وقوع للأسبوع المختار ابتداءً من اليوم
+    const start = new Date(today);
+    const diff = (wd - start.getDay() + 7) % 7;
+    start.setDate(start.getDate() + diff);
+    for (let i = 0; i < total; i++) {
+      const d = new Date(start); d.setDate(start.getDate() + i * 7);
+      dates.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+    }
+    const existing = new Set(unavail.map((u) => u.date));
+    const rows = dates.filter((d) => !existing.has(d)).map((d) => ({ photographer_id: uid, date: d, reason: recurringReason || "عطلة أسبوعية" }));
+    if (!rows.length) return toast.info("جميع هذه الأيام محجوبة مسبقاً");
+    const { error } = await supabase.from("photographer_unavailability").insert(rows);
+    if (error) return toast.error(error.message);
+    toast.success(`تم حجب ${rows.length} يوماً`);
+    load(uid);
+  };
+
   if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
   if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
 
@@ -74,6 +99,36 @@ function CalendarPage() {
             <input placeholder="السبب (اختياري)" value={reason} onChange={(e) => setReason(e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[200px]" />
             <button onClick={block} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90">حجب</button>
           </div>
+        </div>
+
+        <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
+          <h2 className="font-serif text-xl mb-3">حجب يوم أسبوعي متكرر</h2>
+          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+            مثال: حجب كل أيام الجمعة كعطلة رسمية دائمة لكِ، بحيث لا يستطيع العملاء اختيارها.
+          </p>
+          <div className="grid sm:grid-cols-4 gap-3 items-end">
+            <div>
+              <label className="text-xs text-muted-foreground">اليوم</label>
+              <select value={weekday} onChange={(e) => setWeekday(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background">
+                <option value="0">الأحد</option>
+                <option value="1">الإثنين</option>
+                <option value="2">الثلاثاء</option>
+                <option value="3">الأربعاء</option>
+                <option value="4">الخميس</option>
+                <option value="5">الجمعة</option>
+                <option value="6">السبت</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">عدد الأسابيع</label>
+              <input type="number" min={1} max={104} value={weeks} onChange={(e) => setWeeks(Number(e.target.value))} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="text-xs text-muted-foreground">السبب</label>
+              <input value={recurringReason} onChange={(e) => setRecurringReason(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
+            </div>
+          </div>
+          <button onClick={blockRecurring} className="mt-4 bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90">حجب جميع الأيام</button>
         </div>
 
         <h2 className="font-serif text-xl mb-3">الأيام المحجوبة</h2>

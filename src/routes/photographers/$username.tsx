@@ -50,6 +50,7 @@ function PhotographerPage() {
   const [unavail, setUnavail] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pickedPackageId, setPickedPackageId] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -81,6 +82,7 @@ function PhotographerPage() {
   const blockedDates = [...new Set([...unavail, ...bookedDates])];
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const pickPackage = (id: string) => { setPickedPackageId(id); setTimeout(() => scrollTo("book"), 50); };
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,7 +132,7 @@ function PhotographerPage() {
                 <h3 className="font-serif text-2xl mb-1">{p.label}</h3>
                 {p.description && <p className="text-sm text-muted-foreground mb-4 whitespace-pre-line">{p.description}</p>}
                 <div className="font-serif text-3xl text-gold mb-4">{Number(p.price).toLocaleString("ar-JO")} <span className="text-sm">د.أ</span></div>
-                <button onClick={() => scrollTo("book")} className="w-full bg-charcoal text-ivory py-2 rounded-sm hover:opacity-90 text-sm">احجزي هذه الباقة</button>
+                <button onClick={() => pickPackage(p.id)} className="w-full bg-charcoal text-ivory py-2 rounded-sm hover:opacity-90 text-sm">احجزي هذه الباقة</button>
               </div>
             ))}
           </div>
@@ -157,7 +159,7 @@ function PhotographerPage() {
       {/* BOOKING + DEPOSIT */}
       <section id="book" className="bg-secondary/40 py-16">
         <div className="container-editorial grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} />
+          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} pickedPackageId={pickedPackageId} />
           <DepositCard profile={profile} />
         </div>
       </section>
@@ -216,11 +218,11 @@ function PhotographerPage() {
   );
 }
 
-function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profile; pricing: Pricing[]; blockedDates: string[] }) {
+function SimpleBookingForm({ profile, pricing, blockedDates, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; pickedPackageId?: string }) {
   const [f, setF] = useState({
     client_name: "", client_phone: "", event_date: "", start_time: "", end_time: "",
     package_id: "", venue_address: "", remaining_note: "", client_notes: "",
-    privacy_level: "public" as "public" | "no_publish" | "private_only",
+    privacy_level: "public" as "public" | "private_only",
   });
   const [submitting, setSubmitting] = useState(false);
   const selected = pricing.find((p) => p.id === f.package_id);
@@ -250,6 +252,12 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
     const note = `الباقة: ${pkg.label} — ${Number(pkg.price).toLocaleString("ar-JO")} د.أ${pkg.description ? `\n${pkg.description}` : ""}`;
     setF({ ...f, package_id: id, start_time: start, end_time: end, client_notes: f.client_notes ? f.client_notes : note });
   };
+
+  // عند اختيار الباقة من زر "احجزي هذه الباقة" خارج النموذج
+  useEffect(() => {
+    if (pickedPackageId && pickedPackageId !== f.package_id) onSelectPackage(pickedPackageId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pickedPackageId]);
 
   const total = selected ? Number(selected.price) : 0;
   const deposit = selected ? (profile.fixed_deposit ?? Math.round(total * (Number(profile.deposit_percent || 25) / 100))) : 0;
@@ -374,10 +382,9 @@ function SimpleBookingForm({ profile, pricing, blockedDates }: { profile: Profil
         </div>
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">مستوى الخصوصية</label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
             {[
               { v: "public", t: "صور قابلة للنشر", d: "يحق للمصوّرة استخدام لقطات للترويج" },
-              { v: "no_publish", t: "بدون نشر علني", d: "تُحفظ الصور لكِ ولا تُنشر على وسائل التواصل" },
               { v: "private_only", t: "خصوصية تامة", d: "فريق نسائي فقط — لا مشاركة مع أي طرف ثالث" },
             ].map((o) => (
               <button key={o.v} type="button" onClick={() => setF({ ...f, privacy_level: o.v as any })}

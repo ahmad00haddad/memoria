@@ -43,7 +43,14 @@ function BookingDetail() {
   const setStatus = async (status: "quote" | "pending_deposit" | "confirmed" | "completed" | "cancelled") => {
     await supabase.from("bookings").update({ status }).eq("id", id);
     toast.success("تم تحديث الحالة");
-    load();
+    await load();
+    if (status === "confirmed") {
+      const { data: existing } = await supabase.from("contracts").select("id").eq("booking_id", id).maybeSingle();
+      if (!existing) {
+        await generateContract();
+        toast.success("تم إنشاء العقد تلقائياً");
+      }
+    }
   };
 
   const markFinalPaid = async () => {
