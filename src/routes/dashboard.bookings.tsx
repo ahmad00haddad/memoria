@@ -41,6 +41,20 @@ function BookingsList() {
           ))}
         </div>
 
+        {list.length === 0 && (
+          <div className="rounded-sm border border-border bg-card p-6 mb-6 shadow-soft">
+            <h2 className="font-serif text-2xl mb-2">لا توجد حجوزات بعد</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              هذه الصفحة ليست فارغة بسبب خطأ، بل لأن العملاء لم يرسلوا أي طلب بعد. لبدء استقبال الطلبات يجب أولًا إكمال الملف الشخصي ثم إضافة الباقات ونشر الملف العام.
+            </p>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <Link to="/dashboard/profile" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">إكمال الملف</Link>
+              <Link to="/dashboard/pricing" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">إضافة باقات</Link>
+              <Link to="/search" className="bg-charcoal text-ivory px-4 py-2 rounded-sm hover:opacity-90">معاينة تجربة العميل</Link>
+            </div>
+          </div>
+        )}
+
         <div className="rounded-sm border border-border bg-card overflow-hidden">
           {filtered.length === 0 ? <p className="p-6 text-sm text-muted-foreground">لا حجوزات.</p> : filtered.map((b) => (
             <Link key={b.id} to="/dashboard/bookings/$id" params={{ id: b.id }} className="block p-4 border-b border-border last:border-0 hover:bg-secondary/50">
