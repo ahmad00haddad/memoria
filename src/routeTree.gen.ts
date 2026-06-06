@@ -25,6 +25,7 @@ import { Route as PhotographersUsernameRouteImport } from './routes/photographer
 import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
 import { Route as DashboardReferralsRouteImport } from './routes/dashboard.referrals'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
+import { Route as DashboardProductionRouteImport } from './routes/dashboard.production'
 import { Route as DashboardPricingRouteImport } from './routes/dashboard.pricing'
 import { Route as DashboardContractsRouteImport } from './routes/dashboard.contracts'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
@@ -116,6 +117,11 @@ const DashboardProfileRoute = DashboardProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardProductionRoute = DashboardProductionRouteImport.update({
+  id: '/production',
+  path: '/production',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardPricingRoute = DashboardPricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -184,6 +190,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
+  '/dashboard/production': typeof DashboardProductionRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
+  '/dashboard/production': typeof DashboardProductionRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
+  '/dashboard/production': typeof DashboardProductionRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/contracts'
     | '/dashboard/pricing'
+    | '/dashboard/production'
     | '/dashboard/profile'
     | '/dashboard/referrals'
     | '/dashboard/subscription'
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/contracts'
     | '/dashboard/pricing'
+    | '/dashboard/production'
     | '/dashboard/profile'
     | '/dashboard/referrals'
     | '/dashboard/subscription'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/dashboard/calendar'
     | '/dashboard/contracts'
     | '/dashboard/pricing'
+    | '/dashboard/production'
     | '/dashboard/profile'
     | '/dashboard/referrals'
     | '/dashboard/subscription'
@@ -467,6 +479,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardProfileRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/production': {
+      id: '/dashboard/production'
+      path: '/production'
+      fullPath: '/dashboard/production'
+      preLoaderRoute: typeof DashboardProductionRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/pricing': {
       id: '/dashboard/pricing'
       path: '/pricing'
@@ -559,6 +578,7 @@ interface DashboardRouteChildren {
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardContractsRoute: typeof DashboardContractsRoute
   DashboardPricingRoute: typeof DashboardPricingRoute
+  DashboardProductionRoute: typeof DashboardProductionRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardReferralsRoute: typeof DashboardReferralsRoute
   DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
@@ -571,6 +591,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardContractsRoute: DashboardContractsRoute,
   DashboardPricingRoute: DashboardPricingRoute,
+  DashboardProductionRoute: DashboardProductionRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardReferralsRoute: DashboardReferralsRoute,
   DashboardSubscriptionRoute: DashboardSubscriptionRoute,
@@ -601,3 +622,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
