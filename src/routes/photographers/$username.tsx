@@ -48,7 +48,7 @@ function PhotographerPage() {
   const [pricing, setPricing] = useState<Pricing[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [unavail, setUnavail] = useState<string[]>([]);
-  const [bookedDates, setBookedDates] = useState<string[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<{ event_date: string; start_time: string; end_time: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
 
@@ -65,12 +65,12 @@ function PhotographerPage() {
           supabase.from("pricing_rules").select("*").eq("photographer_id", pid),
           supabase.from("reviews").select("*").eq("photographer_id", pid).eq("is_published", true).order("created_at", { ascending: false }),
           supabase.from("photographer_unavailability").select("date").eq("photographer_id", pid),
-          supabase.from("bookings").select("event_date").eq("photographer_id", pid).in("status", ["confirmed", "pending_deposit"]),
+          supabase.from("bookings").select("event_date,start_time,end_time").eq("photographer_id", pid).in("status", ["confirmed", "pending_deposit"]),
         ]);
         setPricing((p ?? []) as Pricing[]);
         setReviews(r ?? []);
         setUnavail((u ?? []).map((x: any) => x.date));
-        setBookedDates((bk ?? []).map((x: any) => x.event_date));
+        setBookedSlots((bk ?? []) as any);
       }
       setLoading(false);
     })();
@@ -79,7 +79,9 @@ function PhotographerPage() {
   if (loading) return <FallbackPage>جاري التحميل…</FallbackPage>;
   if (!profile) return <FallbackPage>لا يوجد مصوّر بهذا الاسم. <Link to="/search" className="underline">عُد للبحث</Link></FallbackPage>;
 
-  const blockedDates = [...new Set([...unavail, ...bookedDates])];
+  // اليوم يُحجَب فقط لو كان في عدم التوفر (Google/يدوي). الحجوزات الفردية لا تحجب اليوم كاملاً
+  // بل تُعرض كفترات مشغولة بالساعات حتى يمكن حجز جلسة أخرى في نفس اليوم.
+  const blockedDates = [...new Set(unavail)];
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
   const pickPackage = (id: string) => { setPickedPackageId(id); setTimeout(() => scrollTo("book"), 50); };
@@ -159,7 +161,7 @@ function PhotographerPage() {
       {/* BOOKING + DEPOSIT */}
       <section id="book" className="bg-secondary/40 py-16">
         <div className="container-editorial grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} pickedPackageId={pickedPackageId} />
+          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} bookedSlots={bookedSlots} pickedPackageId={pickedPackageId} />
           <DepositCard profile={profile} />
         </div>
       </section>
@@ -218,7 +220,7 @@ function PhotographerPage() {
   );
 }
 
-function SimpleBookingForm({ profile, pricing, blockedDates, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; pickedPackageId?: string }) {
+function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
   const [f, setF] = useState({
     client_name: "", client_phone: "", event_date: "", start_time: "", end_time: "",
     package_id: "", venue_address: "", remaining_note: "", client_notes: "",
@@ -227,6 +229,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, pickedPackageId }: 
   const [submitting, setSubmitting] = useState(false);
   const selected = pricing.find((p) => p.id === f.package_id);
   const isBlocked = !!f.event_date && blockedDates.includes(f.event_date);
+  const daySlots = bookedSlots.filter((s) => s.event_date === f.event_date);
+  const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
+  const hasConflict = !!(f.event_date && f.start_time && f.end_time) && daySlots.some((s) => {
+    const a1 = toMin(f.start_time), a2 = toMin(f.end_time);
+    const b1 = toMin(s.start_time), b2 = toMin(s.end_time);
+    return a1 < b2 && b1 < a2;
+  });
 
   const blockedDateObjs = blockedDates.map((d) => {
     const [y, m, day] = d.split("-").map(Number);
@@ -267,6 +276,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, pickedPackageId }: 
       return toast.error("الرجاء تعبئة الاسم والهاتف والتاريخ واختيار الباقة");
     }
     if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
+    if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
     setSubmitting(true);
 
     await supabase.from("bookings").insert({
@@ -397,6 +407,16 @@ function SimpleBookingForm({ profile, pricing, blockedDates, pickedPackageId }: 
         </div>
       </div>
       {isBlocked && <p className="text-sm text-destructive mt-3">⚠️ هذا اليوم غير متاح</p>}
+      {daySlots.length > 0 && !isBlocked && (
+        <div className="mt-3 rounded-sm border border-amber-200 bg-amber-50 p-3 text-sm">
+          <div className="font-medium text-amber-900 mb-1">فترات محجوزة في هذا اليوم:</div>
+          <ul className="text-xs text-amber-800 space-y-0.5">
+            {daySlots.map((s, i) => <li key={i}>• من {s.start_time?.slice(0,5)} إلى {s.end_time?.slice(0,5)}</li>)}
+          </ul>
+          <div className="text-xs text-amber-700 mt-1">اختاري وقتاً خارج هذه الفترات.</div>
+        </div>
+      )}
+      {hasConflict && <p className="text-sm text-destructive mt-3">⚠️ يتعارض مع فترة محجوزة</p>}
       <button onClick={submit} disabled={submitting} className="w-full mt-5 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60">
         <MessageCircle className="h-4 w-4" /> {submitting ? "جاري الإرسال…" : "إرسال الطلب عبر واتساب"}
       </button>
