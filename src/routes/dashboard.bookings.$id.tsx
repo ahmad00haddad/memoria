@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign } from "lucide-react";
+import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -39,6 +39,38 @@ function BookingDetail() {
   };
 
   useEffect(() => { load(); }, [id]);
+
+  // Realtime: استقبال الرسائل الجديدة فوراً + تعليم رسائلي كمقروءة
+  useEffect(() => {
+    if (!id || !uid) return;
+    const ch = supabase.channel(`messages-${id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `booking_id=eq.${id}` },
+        (payload) => setMsgs((prev) => [...prev, payload.new as any]))
+      .subscribe();
+    // علّمي رسائل الطرف الآخر كمقروءة
+    supabase.from("messages").update({ read_at: new Date().toISOString() })
+      .eq("booking_id", id).is("read_at", null).neq("sender_id", uid).then(() => {});
+    return () => { supabase.removeChannel(ch); };
+  }, [id, uid]);
+
+  const setStage = async (stage: string) => {
+    const patch: any = { production_stage: stage };
+    if (stage === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
+    if (stage === "delivered") {
+      patch.editing_completed_at = new Date().toISOString();
+      patch.delivered_at = new Date().toISOString();
+      patch.status = "completed";
+    }
+    await supabase.from("bookings").update(patch).eq("id", id);
+    toast.success("تم تحديث المرحلة");
+    load();
+  };
+
+  const saveSelectionLink = async (link: string) => {
+    await supabase.from("bookings").update({ selection_link: link }).eq("id", id);
+    toast.success("تم حفظ الرابط");
+    load();
+  };
 
   const setStatus = async (status: "quote" | "pending_deposit" | "confirmed" | "completed" | "cancelled") => {
     await supabase.from("bookings").update({ status }).eq("id", id);
@@ -190,13 +222,18 @@ function BookingDetail() {
           )}
         </div>
 
+        <ProductionPanel b={b} onSetStage={setStage} onSaveLink={saveSelectionLink} />
+
         <div className="mt-8 rounded-sm border border-border bg-card p-6">
           <h2 className="font-serif text-xl mb-4">الرسائل</h2>
           <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
             {msgs.length === 0 && <p className="text-sm text-muted-foreground">لا رسائل بعد.</p>}
             {msgs.map((m) => (
               <div key={m.id} className={`p-3 rounded-sm ${m.sender_id === uid ? "bg-charcoal text-ivory mr-12" : "bg-secondary ml-12"}`}>
-                <div className="text-[10px] opacity-70 mb-1">{m.sender_name} · {new Date(m.created_at).toLocaleString("ar-JO")}</div>
+                <div className="text-[10px] opacity-70 mb-1 flex items-center gap-1.5">
+                  <span>{m.sender_name} · {new Date(m.created_at).toLocaleString("ar-JO")}</span>
+                  {m.sender_id === uid && m.read_at && <span title="مقروءة">✓✓</span>}
+                </div>
                 <div className="text-sm whitespace-pre-wrap">{m.body}</div>
               </div>
             ))}
@@ -224,6 +261,48 @@ function PrivacyBadge({ level }: { level?: string }) {
   };
   const x = map[level ?? "public"] ?? map.public;
   return <div className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-sm border ${x.c}`}>{x.icon} {x.t}</div>;
+}
+
+const STAGES: { key: string; label: string; icon: any }[] = [
+  { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-3.5 w-3.5" /> },
+  { key: "shooting", label: "يوم التصوير", icon: <Camera className="h-3.5 w-3.5" /> },
+  { key: "selecting", label: "اختيار الصور", icon: <ImageIcon className="h-3.5 w-3.5" /> },
+  { key: "editing", label: "قيد التحرير", icon: <Edit3 className="h-3.5 w-3.5" /> },
+  { key: "ready", label: "جاهز للتسليم", icon: <Send className="h-3.5 w-3.5" /> },
+  { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
+];
+
+function ProductionPanel({ b, onSetStage, onSaveLink }: { b: any; onSetStage: (s: string) => void; onSaveLink: (l: string) => void }) {
+  const [link, setLink] = useState(b.selection_link ?? "");
+  const current = b.production_stage || "awaiting";
+  const idx = STAGES.findIndex((s) => s.key === current);
+  const progress = ((idx + 1) / STAGES.length) * 100;
+  return (
+    <div className="mt-8 rounded-sm border border-border bg-card p-6">
+      <h2 className="font-serif text-xl mb-4">متابعة الإنتاج</h2>
+      <div className="h-2 w-full bg-secondary rounded-full overflow-hidden mb-4">
+        <div className="h-full bg-gold transition-all" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {STAGES.map((s) => (
+          <button key={s.key} onClick={() => onSetStage(s.key)}
+            className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-sm border transition ${current === s.key ? "bg-charcoal text-ivory border-charcoal" : "border-border hover:bg-secondary"}`}>
+            {s.icon}{s.label}
+          </button>
+        ))}
+      </div>
+      <div>
+        <label className="text-xs text-muted-foreground">رابط معرض اختيار الصور (Pixieset / Drive)</label>
+        <div className="flex gap-2 mt-1">
+          <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://…" className="flex-1 border border-border rounded-sm px-3 py-2 bg-background text-sm" />
+          <button onClick={() => onSaveLink(link)} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary text-sm">حفظ</button>
+        </div>
+        {b.selection_link && (
+          <a href={b.selection_link} target="_blank" rel="noreferrer" className="text-xs text-gold underline mt-1 inline-block">فتح المعرض الحالي</a>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function DeliveryCountdown({ b }: { b: any }) {
