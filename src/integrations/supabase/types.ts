@@ -31,6 +31,8 @@ export type Database = {
           deposit_amount: number
           deposit_proof_url: string | null
           edited_photos_count: number | null
+          editing_completed_at: string | null
+          editing_started_at: string | null
           end_time: string
           event_date: string
           final_paid_amount: number | null
@@ -42,6 +44,8 @@ export type Database = {
           photographer_notes: string | null
           photos_promised: number | null
           privacy_level: string
+          production_stage: string
+          selection_link: string | null
           service: Database["public"]["Enums"]["service_type"]
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
@@ -69,6 +73,8 @@ export type Database = {
           deposit_amount?: number
           deposit_proof_url?: string | null
           edited_photos_count?: number | null
+          editing_completed_at?: string | null
+          editing_started_at?: string | null
           end_time: string
           event_date: string
           final_paid_amount?: number | null
@@ -80,6 +86,8 @@ export type Database = {
           photographer_notes?: string | null
           photos_promised?: number | null
           privacy_level?: string
+          production_stage?: string
+          selection_link?: string | null
           service: Database["public"]["Enums"]["service_type"]
           start_time: string
           status?: Database["public"]["Enums"]["booking_status"]
@@ -107,6 +115,8 @@ export type Database = {
           deposit_amount?: number
           deposit_proof_url?: string | null
           edited_photos_count?: number | null
+          editing_completed_at?: string | null
+          editing_started_at?: string | null
           end_time?: string
           event_date?: string
           final_paid_amount?: number | null
@@ -118,6 +128,8 @@ export type Database = {
           photographer_notes?: string | null
           photos_promised?: number | null
           privacy_level?: string
+          production_stage?: string
+          selection_link?: string | null
           service?: Database["public"]["Enums"]["service_type"]
           start_time?: string
           status?: Database["public"]["Enums"]["booking_status"]
@@ -224,26 +236,32 @@ export type Database = {
       }
       messages: {
         Row: {
+          attachment_url: string | null
           body: string
           booking_id: string
           created_at: string
           id: string
+          read_at: string | null
           sender_id: string | null
           sender_name: string
         }
         Insert: {
+          attachment_url?: string | null
           body: string
           booking_id: string
           created_at?: string
           id?: string
+          read_at?: string | null
           sender_id?: string | null
           sender_name: string
         }
         Update: {
+          attachment_url?: string | null
           body?: string
           booking_id?: string
           created_at?: string
           id?: string
+          read_at?: string | null
           sender_id?: string | null
           sender_name?: string
         }
@@ -369,6 +387,8 @@ export type Database = {
           deposit_percent: number
           display_name: string
           equipment: string | null
+          external_ical_synced_at: string | null
+          external_ical_url: string | null
           fixed_deposit: number | null
           free_km: number
           ical_token: string | null
@@ -376,6 +396,7 @@ export type Database = {
           instagram: string | null
           is_featured: boolean
           is_published: boolean
+          min_session_minutes: number
           phone: string | null
           portfolio_urls: string[]
           referral_code: string | null
@@ -399,6 +420,8 @@ export type Database = {
           deposit_percent?: number
           display_name: string
           equipment?: string | null
+          external_ical_synced_at?: string | null
+          external_ical_url?: string | null
           fixed_deposit?: number | null
           free_km?: number
           ical_token?: string | null
@@ -406,6 +429,7 @@ export type Database = {
           instagram?: string | null
           is_featured?: boolean
           is_published?: boolean
+          min_session_minutes?: number
           phone?: string | null
           portfolio_urls?: string[]
           referral_code?: string | null
@@ -429,6 +453,8 @@ export type Database = {
           deposit_percent?: number
           display_name?: string
           equipment?: string | null
+          external_ical_synced_at?: string | null
+          external_ical_url?: string | null
           fixed_deposit?: number | null
           free_km?: number
           ical_token?: string | null
@@ -436,6 +462,7 @@ export type Database = {
           instagram?: string | null
           is_featured?: boolean
           is_published?: boolean
+          min_session_minutes?: number
           phone?: string | null
           portfolio_urls?: string[]
           referral_code?: string | null
