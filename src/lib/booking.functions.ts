@@ -97,9 +97,9 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("client_mark_deposit_sent", {
       _token: data.token,
-      _proof_path: data.proof_path ?? null,
-      _reference: data.reference ?? null,
-      _note: data.note ?? null,
+      _proof_path: (data.proof_path ?? null) as any,
+      _reference: (data.reference ?? null) as any,
+      _note: (data.note ?? null) as any,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
