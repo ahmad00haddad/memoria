@@ -102,29 +102,16 @@ function AdminSubs() {
     load();
   };
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
-  if (!isAdmin) return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="container-editorial py-24 text-center">
-        <h1 className="font-serif text-3xl mb-2">غير مصرّح</h1>
-        <p className="text-muted-foreground">هذه الصفحة للمشرفين فقط.</p>
-      </div>
-      <Footer />
-    </div>
-  );
+  if (loading) return <div className="py-12 text-center text-muted-foreground">جاري التحميل…</div>;
+  if (!isAdmin) return null;
 
   const pending = rows.filter((r) => r.status === "pending");
   const reviewed = rows.filter((r) => r.status !== "pending");
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <section className="container-editorial py-12">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">لوحة الإدارة</div>
-        <h1 className="font-serif text-4xl mb-8">مراجعة دفعات الاشتراك</h1>
-
-        <h2 className="font-serif text-xl mb-3">قيد المراجعة ({pending.length})</h2>
+    <section>
+      <h2 className="font-serif text-2xl mb-4">مراجعة دفعات الاشتراك</h2>
+      <h3 className="font-serif text-lg mb-3">قيد المراجعة ({pending.length})</h3>
         {pending.length === 0 ? (
           <div className="rounded-sm border border-border bg-card p-6 text-muted-foreground text-sm mb-10">لا توجد دفعات معلّقة.</div>
         ) : (
@@ -133,13 +120,11 @@ function AdminSubs() {
           </div>
         )}
 
-        <h2 className="font-serif text-xl mb-3">السجل ({reviewed.length})</h2>
+        <h3 className="font-serif text-lg mb-3">السجل ({reviewed.length})</h3>
         <div className="space-y-3">
           {reviewed.map((r) => <Row key={r.id} r={r} url={signedUrls[r.id]} />)}
         </div>
-      </section>
-      <Footer />
-    </div>
+    </section>
   );
 }
 
