@@ -20,6 +20,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ReviewBookingIdRouteImport } from './routes/review.$bookingId'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
@@ -92,6 +93,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const ReviewBookingIdRoute = ReviewBookingIdRouteImport.update({
   id: '/review/$bookingId',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
@@ -211,7 +218,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRouteWithChildren
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -232,6 +238,7 @@ export interface FileRoutesByTo {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings': typeof DashboardBookingsIndexRoute
@@ -263,6 +270,7 @@ export interface FileRoutesById {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
@@ -295,6 +303,7 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/admin/'
     | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings/'
@@ -302,7 +311,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/guide'
     | '/login'
     | '/notifications'
@@ -323,6 +331,7 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/admin'
     | '/dashboard'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings'
@@ -353,6 +362,7 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/admin/'
     | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings/'
@@ -455,6 +465,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/review/$bookingId': {
       id: '/review/$bookingId'
@@ -580,10 +597,12 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -651,3 +670,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
