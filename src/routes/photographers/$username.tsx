@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Instagram, MessageCircle, Copy, Share2, Star } from "lucide-react";
+import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { ar } from "date-fns/locale";
 import { format } from "date-fns";
+import { useServerFn } from "@tanstack/react-start";
+import { submitBookingRequest } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
