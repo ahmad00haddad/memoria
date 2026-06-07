@@ -17,8 +17,11 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as TrackTokenRouteImport } from './routes/track.$token'
 import { Route as ReviewBookingIdRouteImport } from './routes/review.$bookingId'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
@@ -33,6 +36,7 @@ import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookin
 import { Route as DashboardAiToolsRouteImport } from './routes/dashboard.ai-tools'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminPhotographersRouteImport } from './routes/admin.photographers'
 import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
@@ -77,6 +81,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -86,6 +95,16 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const TrackTokenRoute = TrackTokenRouteImport.update({
+  id: '/track/$token',
+  path: '/track/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewBookingIdRoute = ReviewBookingIdRouteImport.update({
   id: '/review/$bookingId',
@@ -153,9 +172,14 @@ const ContractsTokenRoute = ContractsTokenRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
-  id: '/admin/subscriptions',
-  path: '/admin/subscriptions',
-  getParentRoute: () => rootRouteImport,
+  id: '/subscriptions',
+  path: '/subscriptions',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminPhotographersRoute = AdminPhotographersRouteImport.update({
+  id: '/photographers',
+  path: '/photographers',
+  getParentRoute: () => AdminRoute,
 } as any)
 const DashboardBookingsIndexRoute = DashboardBookingsIndexRouteImport.update({
   id: '/',
@@ -175,6 +199,7 @@ const ApiPublicIcalTokenRoute = ApiPublicIcalTokenRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
@@ -183,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/ai-tools': typeof DashboardAiToolsRoute
@@ -197,6 +223,8 @@ export interface FileRoutesByFullPath {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/track/$token': typeof TrackTokenRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
@@ -211,6 +239,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/ai-tools': typeof DashboardAiToolsRoute
@@ -224,6 +253,8 @@ export interface FileRoutesByTo {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/track/$token': typeof TrackTokenRoute
+  '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings': typeof DashboardBookingsIndexRoute
@@ -232,6 +263,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
@@ -240,6 +272,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/ai-tools': typeof DashboardAiToolsRoute
@@ -254,6 +287,8 @@ export interface FileRoutesById {
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$bookingId': typeof ReviewBookingIdRoute
+  '/track/$token': typeof TrackTokenRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
@@ -263,6 +298,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/dashboard'
     | '/guide'
     | '/login'
@@ -271,6 +307,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/ai-tools'
@@ -285,6 +322,8 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/track/$token'
+    | '/admin/'
     | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings/'
@@ -299,6 +338,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/ai-tools'
@@ -312,6 +352,8 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/track/$token'
+    | '/admin'
     | '/dashboard'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings'
@@ -319,6 +361,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/dashboard'
     | '/guide'
     | '/login'
@@ -327,6 +370,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/ai-tools'
@@ -341,6 +385,8 @@ export interface FileRouteTypes {
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$bookingId'
+    | '/track/$token'
+    | '/admin/'
     | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings/'
@@ -349,6 +395,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
@@ -357,11 +404,11 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   ContractsTokenRoute: typeof ContractsTokenRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
   ReviewBookingIdRoute: typeof ReviewBookingIdRoute
+  TrackTokenRoute: typeof TrackTokenRoute
   ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
 
@@ -423,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -436,6 +490,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/track/$token': {
+      id: '/track/$token'
+      path: '/track/$token'
+      fullPath: '/track/$token'
+      preLoaderRoute: typeof TrackTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/review/$bookingId': {
       id: '/review/$bookingId'
@@ -530,10 +598,17 @@ declare module '@tanstack/react-router' {
     }
     '/admin/subscriptions': {
       id: '/admin/subscriptions'
-      path: '/admin/subscriptions'
+      path: '/subscriptions'
       fullPath: '/admin/subscriptions'
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/photographers': {
+      id: '/admin/photographers'
+      path: '/photographers'
+      fullPath: '/admin/photographers'
+      preLoaderRoute: typeof AdminPhotographersRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/dashboard/bookings/': {
       id: '/dashboard/bookings/'
@@ -558,6 +633,20 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminRouteChildren {
+  AdminPhotographersRoute: typeof AdminPhotographersRoute
+  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminPhotographersRoute: AdminPhotographersRoute,
+  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface DashboardBookingsRouteChildren {
   DashboardBookingsIdRoute: typeof DashboardBookingsIdRoute
@@ -604,6 +693,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
   GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
@@ -612,23 +702,13 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   ContractsTokenRoute: ContractsTokenRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
   ReviewBookingIdRoute: ReviewBookingIdRoute,
+  TrackTokenRoute: TrackTokenRoute,
   ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
