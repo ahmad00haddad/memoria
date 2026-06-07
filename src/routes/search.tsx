@@ -64,7 +64,7 @@ function SearchPage() {
           onSubmit={(e) => {
             e.preventDefault();
             const direct = q.trim().replace(/^@/, "");
-            if (direct) navigate({ to: "/photographers/$username", params: { username: direct } });
+            if (direct) navigate({ to: "/photographers/$username", params: { username: direct.toLowerCase() } });
           }}
           className="max-w-xl mx-auto relative mb-10"
         >
@@ -73,6 +73,10 @@ function SearchPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="ابحث باسم المصوّر أو اسم المستخدم أو المدينة…"
+            autoCapitalize="none"
+            autoCorrect="off"
+            autoComplete="off"
+            spellCheck={false}
             className="w-full rounded-sm border border-input bg-card ps-11 pe-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-gold/60"
           />
         </form>
