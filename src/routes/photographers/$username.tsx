@@ -65,30 +65,7 @@ function PhotographerPage() {
         .eq("is_published", true)
         .maybeSingle();
 
-      let publicExtras: Pick<Profile, "phone" | "whatsapp" | "cliq_alias" | "bank_info"> = {
-        phone: null,
-        whatsapp: null,
-        cliq_alias: null,
-        bank_info: null,
-      };
-
-      if (prof?.id) {
-        const { data: extra } = await supabase
-          .from("profiles_public")
-          .select("id,phone,whatsapp,cliq_alias,bank_info")
-          .eq("id", prof.id)
-          .maybeSingle();
-
-        if (extra) {
-          publicExtras = {
-            phone: extra.phone ?? null,
-            whatsapp: extra.whatsapp ?? null,
-            cliq_alias: extra.cliq_alias ?? null,
-            bank_info: extra.bank_info ?? null,
-          };
-        }
-      }
-      const mergedProfile = prof ? ({ ...prof, ...publicExtras } as Profile) : null;
+      const mergedProfile = (prof as Profile | null) ?? null;
       setProfile(mergedProfile);
       if (mergedProfile) {
         const pid = mergedProfile.id;
