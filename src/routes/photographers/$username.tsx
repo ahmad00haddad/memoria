@@ -57,7 +57,7 @@ function PhotographerPage() {
       const { data: prof } = await supabase
         .from("profiles")
         .select("id,username,display_name,bio,city,base_location,phone,cliq_alias,instagram,whatsapp,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,free_km,is_published,is_featured,portfolio_urls,tagline,booking_notes,bank_info,fixed_deposit,created_at,updated_at")
-        .eq("username", username).eq("is_published", true).maybeSingle();
+        .ilike("username", username).eq("is_published", true).maybeSingle();
       setProfile(prof as Profile | null);
       if (prof) {
         const pid = (prof as Profile).id;
