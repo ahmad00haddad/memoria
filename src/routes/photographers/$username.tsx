@@ -33,6 +33,9 @@ type Profile = {
   is_featured?: boolean;
   tagline?: string | null; booking_notes?: string | null;
   bank_info?: string | null; fixed_deposit?: number | null;
+  is_published?: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
 
 type Pricing = {
@@ -54,13 +57,18 @@ function PhotographerPage() {
 
   useEffect(() => {
     (async () => {
+      const normalizedUsername = username.trim().toLowerCase();
       const { data: prof } = await supabase
         .from("profiles")
-        .select("id,username,display_name,bio,city,base_location,phone,cliq_alias,instagram,whatsapp,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,free_km,is_published,is_featured,portfolio_urls,tagline,booking_notes,bank_info,fixed_deposit,created_at,updated_at")
-        .ilike("username", username).eq("is_published", true).maybeSingle();
-      setProfile(prof as Profile | null);
-      if (prof) {
-        const pid = (prof as Profile).id;
+        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,tagline,booking_notes,fixed_deposit")
+        .eq("username", normalizedUsername)
+        .eq("is_published", true)
+        .maybeSingle();
+
+      const mergedProfile = (prof as Profile | null) ?? null;
+      setProfile(mergedProfile);
+      if (mergedProfile) {
+        const pid = mergedProfile.id;
         const [{ data: p }, { data: r }, { data: u }, { data: bk }] = await Promise.all([
           supabase.from("pricing_rules").select("*").eq("photographer_id", pid),
           supabase.from("reviews").select("*").eq("photographer_id", pid).eq("is_published", true).order("created_at", { ascending: false }),
