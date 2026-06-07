@@ -22,6 +22,8 @@ export type Database = {
           client_name: string
           client_notes: string | null
           client_phone: string | null
+          client_received_at: string | null
+          client_tracking_token: string | null
           client_user_id: string | null
           contract_agreed: boolean
           created_at: string
@@ -29,7 +31,9 @@ export type Database = {
           delivery_days_promised: number | null
           delivery_due_at: string | null
           deposit_amount: number
+          deposit_confirmed_at: string | null
           deposit_proof_url: string | null
+          deposit_sent_at: string | null
           edited_photos_count: number | null
           editing_completed_at: string | null
           editing_started_at: string | null
@@ -64,6 +68,8 @@ export type Database = {
           client_name: string
           client_notes?: string | null
           client_phone?: string | null
+          client_received_at?: string | null
+          client_tracking_token?: string | null
           client_user_id?: string | null
           contract_agreed?: boolean
           created_at?: string
@@ -71,7 +77,9 @@ export type Database = {
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
+          deposit_confirmed_at?: string | null
           deposit_proof_url?: string | null
+          deposit_sent_at?: string | null
           edited_photos_count?: number | null
           editing_completed_at?: string | null
           editing_started_at?: string | null
@@ -106,6 +114,8 @@ export type Database = {
           client_name?: string
           client_notes?: string | null
           client_phone?: string | null
+          client_received_at?: string | null
+          client_tracking_token?: string | null
           client_user_id?: string | null
           contract_agreed?: boolean
           created_at?: string
@@ -113,7 +123,9 @@ export type Database = {
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
+          deposit_confirmed_at?: string | null
           deposit_proof_url?: string | null
+          deposit_sent_at?: string | null
           edited_photos_count?: number | null
           editing_completed_at?: string | null
           editing_started_at?: string | null
@@ -657,6 +669,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_renew_subscription: {
+        Args: { _months: number; _photographer_id: string }
+        Returns: undefined
+      }
+      admin_set_published: {
+        Args: { _photographer_id: string; _published: boolean }
+        Returns: undefined
+      }
+      client_add_note: {
+        Args: { _note: string; _token: string }
+        Returns: undefined
+      }
+      client_mark_deposit_sent: {
+        Args: {
+          _note: string
+          _proof_path: string
+          _reference: string
+          _token: string
+        }
+        Returns: undefined
+      }
+      client_mark_received: { Args: { _token: string }; Returns: undefined }
+      delete_photographer_cascade: {
+        Args: { _photographer_id: string }
+        Returns: undefined
+      }
+      get_booking_by_token: { Args: { _token: string }; Returns: Json }
       get_referrer_id: { Args: { _code: string }; Returns: string }
       has_role: {
         Args: {
