@@ -1,7 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Header } from "@/components/site/Header";
-import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, X, ExternalLink } from "lucide-react";
