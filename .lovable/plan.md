@@ -1,62 +1,101 @@
 
-سأنفذ كل ميزة في طبقة قاعدة بيانات + واجهة. سأبدأ بالأبسط أثراً وأنتهي بمزامنة Google.
+## الجزء الأول: لوحة الأدمن الشاملة `/admin`
 
-## 1) حجز بالساعات (Hour-based slots)
+صفحة رئيسية للأدمن (محمية بـ `has_role(admin)`) تحتوي تبويبات:
 
-الحجوزات الحالية فيها `start_time` و `end_time` لكن التقويم يحجب اليوم كاملاً.
+### 1) إدارة المصورات `/admin/photographers`
+جدول بكل المصورات يعرض: الاسم، @username، حالة الاشتراك (تجريبي/نشط/منتهي/قيد المراجعة)، تاريخ انتهاء الفترة، عدد الحجوزات، عدد التقييمات.
+عمليات لكل صف:
+- **إخفاء/إظهار الصفحة** (toggle `is_published`) — يدوي من الأدمن.
+- **تجديد الاشتراك** — نافذة منبثقة لاختيار المدة (1، 3، 6، 12 شهر) → يحدّث `subscriptions.current_period_end` ويضع الحالة `active`. يُسجَّل سجل في `subscription_payments` بطريقة `manual_admin`.
+- **تعليق الاشتراك** (status = `expired`) → يخفي الصفحة تلقائيًا.
+- **حذف المصورة نهائيًا** — تأكيد مزدوج. يحذف: الحجوزات، الرسائل، التقييمات، العقود، قوالب العقود، التسعير، أيام العطل، المدفوعات، الاشتراك، الأدوار، الملف الشخصي. (CASCADE عبر دالة `delete_photographer_cascade` بصلاحية SECURITY DEFINER).
 
-**التغييرات:**
-- في `dashboard.calendar.tsx`: عرض الحجوزات بالساعة (مثلاً "10:00–14:00 — مريم")، مع إمكانية وجود عدة حجوزات في نفس اليوم.
-- في `photographers/$username.tsx` (تقويم الزبون): اليوم يصبح "مزدحم" بدل "محجوب" لو فيه فراغ كافٍ. عرض شريط Time-slots للساعات المحجوزة، والسماح باختيار وقت متاح.
-- التحقق من التعارض بين `start_time/end_time` المطلوب وأي حجز موجود قبل الإرسال (وإلا خطأ "هذا الوقت محجوز").
-- إضافة حقل `min_session_minutes` في `profiles` (افتراضي 60) كحد أدنى لكل جلسة.
+### 2) إخفاء تلقائي للمصورات غير المشتركات
+تريغر/دالة `is_subscription_active` موجودة. نضيف **سياسة قراءة عامة محدّثة** للملفات الشخصية:
+- العامة يرون الملف فقط إذا `is_published = true` **و** `is_subscription_active(id) = true`.
+- المالكة والأدمن يرون دائمًا.
 
-## 2) نظام رسائل منظم + سجل كامل
+(الموجود حاليًا: `(is_published = true) OR (auth.uid() = id)` — سيتم تشديده).
 
-**قاعدة البيانات:**
-- إضافة `read_at timestamptz` و `attachment_url text` لجدول `messages`.
-- realtime publication على `messages` (موجودة جزئياً).
+### 3) لوحة المدفوعات (موجودة `/admin/subscriptions`) — رابط من اللوحة الجديدة.
 
-**الواجهة:**
-- في صفحة الحجز (`dashboard.bookings.$id.tsx` وللزبون): محادثة حية مع scroll تلقائي، شارة "غير مقروء"، طابع زمني، تمييز رسائلي/رسائله.
-- شارة العدّاد في الـ Header لإجمالي الرسائل غير المقروءة.
-- إنشاء إشعار تلقائي (`notifications` insert) للطرف الآخر عند كل رسالة جديدة عبر trigger.
+---
 
-## 3) لوحة متابعة الإنتاج
+## الجزء الثاني: إعادة هيكلة تدفق الحجز
 
-**قاعدة البيانات على جدول `bookings`:**
-- `production_stage text default 'awaiting'` — قيم: `awaiting` (قبل التصوير) / `shooting` (يوم الجلسة) / `selecting` (اختيار الصور) / `editing` (تحرير) / `ready` (جاهز للتسليم) / `delivered`.
-- `editing_started_at`, `editing_completed_at`, `selection_link text` (رابط Pixieset/Drive).
+### الحالة الحالية
+زر "إرسال الطلب عبر الواتساب" يفتح `wa.me` مباشرة → لا يوجد سجل ولا تتبع للعميل.
 
-**الواجهة:**
-- صفحة جديدة `dashboard.production.tsx`: Kanban بأعمدة المراحل، مع سحب البطاقة بين المراحل (أو أزرار Next/Back).
-- على بطاقة الحجز: شريط تقدم + ETA حسب `delivery_due_at`.
-- شاشة الزبون في صفحة الحجز: شريط تقدم مبسط ("قيد التحرير - متبقي 12 يوم").
+### التدفق الجديد
 
-## 4) مزامنة Google Calendar (طريقة عملية بلا OAuth)
+**خطوة 1 — العميل يملأ نموذج الحجز في صفحة المصورة**
+نفس الحقول الحالية (اسم، إيميل، هاتف، تاريخ، وقت، خدمة، باقة، ملاحظات). زر جديد: **"إرسال الطلب"** بدل واتساب.
 
-OAuth لكل مصورة معقد ويحتاج إعداد Google Cloud Console. أقترح طريقة ثنائية الاتجاه أبسط بكثير:
+**خطوة 2 — عند الإرسال**
+1. إنشاء سطر في `bookings` بحالة `quote` (موجود حاليًا).
+2. توليد **رمز تتبع للعميل** `client_tracking_token` (عمود جديد، UUID عشوائي).
+3. ربط `client_user_id` إذا كان مسجلًا، وإلا يبقى `null` والوصول عبر التوكن.
+4. استدعاء server function `notifyPhotographerNewBooking`:
+   - يرسل واتساب للمصورة عبر **رابط CallMeBot / WhatsApp Cloud API** (يحتاج توكن — سنطلبه من المستخدم). كحل أولي بدون توكن خارجي: نستخدم **إيميل فقط** ونعرض على المستخدم خيار إضافة WhatsApp Cloud API لاحقًا.
+   - يرسل إيميل للمصورة عبر بنية الإيميلات في Lovable (`scaffold_transactional_email`) مع تفاصيل الحجز ورابط `/dashboard/bookings/{id}`.
+   - يرسل إيميل للعميل بتأكيد الاستلام + رابط التتبع `/track/{token}` + تعليمات إرسال العربون.
+5. شاشة نجاح للعميل: "تم إرسال طلبك. الخطوة التالية: أرسلي العربون بقيمة X د.أ على CliQ alias `xxxx`، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز" + زر "اذهب لصفحة التتبع".
 
-**اتجاه أ — مواعيدنا تظهر في Google:**
-- الكود يدعمها فعلاً: ملف `/api/public/ical/$token` يصدّر iCal feed لكل مصورة.
-- نضيف في `dashboard.calendar.tsx` زر "إضافة إلى Google Calendar" مع رابط `https://calendar.google.com/calendar/r?cid=webcal://...` + تعليمات بالعربي.
-- Google يحدّث كل ~12 ساعة تلقائياً، فأي حجز جديد يظهر عندها.
+**خطوة 3 — صفحة تتبع العميل `/track/$token`** (عامة، بدون تسجيل دخول، مدخولة بالتوكن)
+تعرض:
+- ملخص الحجز (التاريخ، الباقة، السعر، حالة الحجز، حالة الإنتاج).
+- **تايملاين** بصري: طلب مُستلم ✓ → عربون ⏳ → مؤكّد → تصوير → تحرير → تسليم.
+- **إجراءات للعميل:**
+  - زر "تم إرسال العربون" + حقل لرفع إثبات التحويل (يستخدم bucket `deposit-proofs` الموجود) + خانة مرجع التحويل.
+  - حقل ملاحظات (`client_notes`).
+  - زر "تم استلام الصور" (يظهر فقط بعد حالة `delivered`).
+  - نموذج رسائل مبسّط (يستخدم جدول `messages` الموجود — مع توسعة RLS للسماح بالكتابة بالتوكن).
+- معلومات تواصل المصورة (واتساب/إيميل) للحالات الطارئة فقط.
 
-**اتجاه ب — مواعيد Google تحجب عندنا:**
-- نضيف حقل `external_ical_url text` في `profiles`.
-- المصورة تنسخ "Secret iCal URL" من إعدادات Google Calendar وتلصقه عندنا.
-- Server function تجلب الـ iCal كل ساعة (أو on-demand عند تحميل التقويم) وتُدرج الفعاليات كـ `photographer_unavailability` مع `reason = 'Google: <اسم الحدث>'`.
+**خطوة 4 — جانب المصورة**
+في `/dashboard/bookings/$id`:
+- إشعار "حجز جديد بانتظار مراجعتك" + زر "اعتماد ومتابعة".
+- عند تأكيد استلام العربون من المصورة → تتغير حالة الحجز إلى `confirmed`، ويتلقى العميل إيميلًا.
 
-هذا حل مجاني، خصوصي، ولا يحتاج موافقة المستخدم على scopes حساسة. إن أصرّت على OAuth كامل لاحقاً نضيفه.
+---
 
-## ملفات ستتعدل/تُضاف
+## التغييرات التقنية
 
-- migration: أعمدة جديدة على `bookings`, `messages`, `profiles` + trigger للإشعارات + realtime على messages.
-- `src/routes/dashboard.calendar.tsx`: عرض بالساعة + زر Google sync + حقل iCal خارجي.
-- `src/routes/dashboard.production.tsx` (جديد): لوحة Kanban.
-- `src/routes/dashboard.bookings.$id.tsx`: شريط مراحل الإنتاج + محادثة محسّنة + أزرار تغيير المرحلة.
-- `src/routes/photographers/$username.tsx`: time slots بدل اليوم الكامل + تحقق تعارض.
-- `src/components/site/Header.tsx`: شارة الرسائل غير المقروءة.
-- `src/lib/ical-sync.functions.ts` (جديد): جلب iCal الخارجي ومزامنته.
+### قاعدة البيانات (Migration)
+- إضافة عمود `bookings.client_tracking_token TEXT DEFAULT replace(gen_random_uuid()::text,'-','')` فريد.
+- إضافة `bookings.deposit_sent_at`، `bookings.deposit_confirmed_at`، `bookings.client_received_at`.
+- إضافة سياسات RLS:
+  - قراءة `bookings` و`messages` بالتوكن عبر دالة `get_booking_by_token(token)` security definer.
+  - تحديث `bookings` (deposit_proof_url, client_notes, deposit_sent_at) بالتوكن.
+- تشديد سياسة `profiles` لإخفاء غير المشتركات عن العموم.
+- دالة `delete_photographer_cascade(uuid)` للأدمن.
+- دالة `admin_renew_subscription(uuid, months int)` للأدمن.
 
-أبدأ بالـ migration ثم الواجهات. سأمضي إذا وافقت.
+### Server Functions جديدة
+- `src/lib/admin.functions.ts`: `listPhotographersAdmin`, `togglePublish`, `renewSubscription`, `deletePhotographer`.
+- `src/lib/booking.functions.ts`: `submitBookingRequest` (ينشئ الحجز + يرسل الإشعارات), `getBookingByToken`, `markDepositSent` (مع رفع الإثبات), `clientUpdateBooking`.
+
+### الإيميلات
+- تشغيل البنية التحتية للإيميلات: `setup_email_infra` ثم `scaffold_transactional_email`.
+- 3 قوالب: `new-booking-photographer`, `booking-received-client`, `booking-confirmed-client`.
+
+### الواتساب (سري)
+خياران للمستخدمة:
+- **مبدئيًا**: إيميل فقط (يعمل فورًا بعد إعداد البنية).
+- **اختياري**: WhatsApp Cloud API (تحتاج رقم Business و Token من Meta) — سنطلب السر `WHATSAPP_API_TOKEN` و`WHATSAPP_PHONE_ID` لاحقًا إذا أردتِ.
+
+### واجهة جديدة
+- `/admin` لوحة رئيسية بتبويبات.
+- `/admin/photographers` جدول الإدارة.
+- `/track/$token` صفحة تتبع العميل.
+- تعديل نموذج الحجز في `src/routes/photographers/$username.tsx` لإزالة زر الواتساب وإضافة المنطق الجديد.
+- شاشة نجاح بعد الإرسال.
+
+---
+
+## أسئلة سريعة قبل البدء
+
+1. **الواتساب السري للمصورة**: هل أبدأ بالإيميل فقط الآن، ونضيف WhatsApp Cloud API لاحقًا عند توفر التوكن؟ (أنصح بذلك لتجنّب الانتظار)
+2. **حساب الأدمن**: من سيكون أول أدمن؟ أعطيني الإيميل لأضيف له دور `admin` في قاعدة البيانات.
+3. **حذف المصورة**: هل أحتفظ بسجل بسيط بحذفها (audit log) للرجوع لاحقًا، أم حذف نهائي كامل بلا أثر؟
