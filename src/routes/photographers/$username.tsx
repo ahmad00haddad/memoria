@@ -285,54 +285,63 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const deposit = selected ? (profile.fixed_deposit ?? Math.round(total * (Number(profile.deposit_percent || 25) / 100))) : 0;
 
   const submit = async () => {
-    if (!f.client_name || !f.client_phone || !f.event_date || !selected) {
-      return toast.error("الرجاء تعبئة الاسم والهاتف والتاريخ واختيار الباقة");
+    if (!f.client_name || !f.client_phone || !f.client_email || !f.event_date || !selected) {
+      return toast.error("الرجاء تعبئة الاسم والهاتف والإيميل والتاريخ واختيار الباقة");
     }
     if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
     if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
     setSubmitting(true);
-
-    await supabase.from("bookings").insert({
-      photographer_id: profile.id,
-      client_name: f.client_name,
-      client_email: `${f.client_phone.replace(/\D/g, "") || "guest"}@whatsapp.local`,
-      client_phone: f.client_phone,
-      service: selected.service, event_date: f.event_date,
-      start_time: f.start_time || "12:00", end_time: f.end_time || "18:00",
-      venue_name: "", venue_address: f.venue_address,
-      base_price: total, travel_fee: 0, total_price: total,
-      deposit_amount: deposit, edited_photos_count: 0,
-      privacy_level: f.privacy_level,
-      photographer_can_publish: f.privacy_level === "public",
-      client_notes: [f.client_notes, f.remaining_note ? `الرصيد المتبقي: ${f.remaining_note}` : ""].filter(Boolean).join("\n"),
-      contract_agreed: true, status: "pending_deposit",
-      addons: [{ rule_id: selected.id, label: selected.label }],
-    });
-
-    const msg = [
-      `مرحبًا ${profile.display_name}،`,
-      `أرغب بالحجز:`,
-      `الاسم: ${f.client_name}`,
-      `الهاتف: ${f.client_phone}`,
-      `التاريخ: ${f.event_date}`,
-      f.start_time && `من: ${f.start_time}`,
-      f.end_time && `إلى: ${f.end_time}`,
-      `الباقة: ${selected.label} (${total} د.أ)`,
-      f.venue_address && `الموقع: ${f.venue_address}`,
-      f.remaining_note && `الرصيد المتبقي: ${f.remaining_note}`,
-      f.client_notes && `ملاحظات: ${f.client_notes}`,
-      `سأحوّل العربون ${deposit} د.أ.`,
-    ].filter(Boolean).join("\n");
-
-    setSubmitting(false);
-    const phone = (profile.whatsapp || profile.phone || "").replace(/[^0-9]/g, "");
-    if (phone) {
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
-      toast.success("تم إرسال طلبك");
-    } else {
-      toast.success("تم إرسال الطلب بنجاح");
+    try {
+      const notes = [f.client_notes, f.remaining_note ? `الرصيد المتبقي: ${f.remaining_note}` : ""].filter(Boolean).join("\n");
+      const res = await submitFn({
+        data: {
+          photographer_id: profile.id,
+          client_name: f.client_name,
+          client_email: f.client_email.trim(),
+          client_phone: f.client_phone,
+          service: selected.service,
+          event_date: f.event_date,
+          start_time: f.start_time || "12:00",
+          end_time: f.end_time || "18:00",
+          venue_address: f.venue_address || null,
+          base_price: total,
+          total_price: total,
+          deposit_amount: deposit,
+          package_id: selected.id,
+          package_label: selected.label,
+          client_notes: notes || null,
+          privacy_level: f.privacy_level,
+        },
+      });
+      setSuccess({ token: res.tracking_token });
+    } catch (e: any) {
+      toast.error(e.message || "فشل إرسال الطلب");
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  if (success) {
+    const trackUrl = `/track/${success.token}`;
+    return (
+      <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
+        <CheckCircle2 className="h-14 w-14 text-emerald-600 mx-auto mb-3" />
+        <h2 className="font-serif text-3xl mb-2">تم إرسال طلبك!</h2>
+        <p className="text-muted-foreground mb-5">تم إخطار {profile.display_name} وسيتم التواصل معكِ قريبًا.</p>
+        <div className="bg-gold/5 border border-gold/30 rounded-sm p-4 mb-5 text-start">
+          <div className="text-xs uppercase tracking-[0.2em] text-gold mb-1">الخطوة التالية</div>
+          <p className="text-sm">حوّلي العربون بقيمة <span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span>، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز.</p>
+        </div>
+        <button onClick={() => navigate({ to: trackUrl })}
+                className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 inline-flex items-center justify-center gap-2">
+          <Send className="h-4 w-4" /> اذهبي لصفحة تتبع الحجز
+        </button>
+        <p className="text-xs text-muted-foreground mt-3">احفظي هذا الرابط للوصول لاحقًا: <br/>
+          <span className="font-mono text-[11px] break-all">{typeof window !== "undefined" ? window.location.origin : ""}{trackUrl}</span>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft">
