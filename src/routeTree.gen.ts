@@ -35,6 +35,7 @@ import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookin
 import { Route as DashboardAiToolsRouteImport } from './routes/dashboard.ai-tools'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminPhotographersRouteImport } from './routes/admin.photographers'
 import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
@@ -169,6 +170,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPhotographersRoute = AdminPhotographersRouteImport.update({
+  id: '/photographers',
+  path: '/photographers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const DashboardBookingsIndexRoute = DashboardBookingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/ai-tools': typeof DashboardAiToolsRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/ai-tools': typeof DashboardAiToolsRoute
@@ -256,6 +264,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/ai-tools': typeof DashboardAiToolsRoute
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/ai-tools'
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/ai-tools'
@@ -348,6 +359,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/ai-tools'
@@ -571,6 +583,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/photographers': {
+      id: '/admin/photographers'
+      path: '/photographers'
+      fullPath: '/admin/photographers'
+      preLoaderRoute: typeof AdminPhotographersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/dashboard/bookings/': {
       id: '/dashboard/bookings/'
       path: '/'
@@ -596,11 +615,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminPhotographersRoute: typeof AdminPhotographersRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminPhotographersRoute: AdminPhotographersRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
