@@ -350,6 +350,9 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="الاسم" v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
         <Field label="الهاتف" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
+        <div className="sm:col-span-2">
+          <Field label="الإيميل" type="email" v={f.client_email} on={(v) => setF({ ...f, client_email: v })} />
+        </div>
         <div className="sm:col-span-1">
           <label className="text-sm text-muted-foreground">التاريخ</label>
           <Popover>
@@ -440,7 +443,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       )}
       {hasConflict && <p className="text-sm text-destructive mt-3">⚠️ يتعارض مع فترة محجوزة</p>}
       <button onClick={submit} disabled={submitting} className="w-full mt-5 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60">
-        <MessageCircle className="h-4 w-4" /> {submitting ? "جاري الإرسال…" : "إرسال الطلب عبر واتساب"}
+        <Send className="h-4 w-4" /> {submitting ? "جاري الإرسال…" : "إرسال طلب الحجز"}
       </button>
     </div>
   );
