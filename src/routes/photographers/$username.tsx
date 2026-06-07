@@ -232,11 +232,14 @@ function PhotographerPage() {
 
 function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
   const [f, setF] = useState({
-    client_name: "", client_phone: "", event_date: "", start_time: "", end_time: "",
+    client_name: "", client_phone: "", client_email: "", event_date: "", start_time: "", end_time: "",
     package_id: "", venue_address: "", remaining_note: "", client_notes: "",
     privacy_level: "public" as "public" | "private_only",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState<{ token: string } | null>(null);
+  const navigate = useNavigate();
+  const submitFn = useServerFn(submitBookingRequest);
   const selected = pricing.find((p) => p.id === f.package_id);
   const isBlocked = !!f.event_date && blockedDates.includes(f.event_date);
   const daySlots = bookedSlots.filter((s) => s.event_date === f.event_date);
