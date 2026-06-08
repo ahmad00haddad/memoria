@@ -39,7 +39,10 @@ export const getContractByToken = createServerFn({ method: "GET" })
       "event_date,start_time,end_time,venue_name,total_price,deposit_amount,service"
     ).eq("id", c.booking_id).maybeSingle();
     const { data: p } = await supabaseAdmin.from("profiles").select(
-      "display_name,username,phone,cliq_alias"
+      "display_name,username"
     ).eq("id", c.photographer_id).maybeSingle();
-    return { contract: c, booking: b, photographer: p };
+    const { data: pp } = await supabaseAdmin.from("photographer_private").select(
+      "phone,cliq_alias"
+    ).eq("user_id", c.photographer_id).maybeSingle();
+    return { contract: c, booking: b, photographer: { ...(p ?? {}), ...(pp ?? {}) } };
   });
