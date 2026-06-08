@@ -9,8 +9,11 @@ export const Route = createFileRoute("/api/public/ical/$token")({
   server: {
     handlers: {
       GET: async ({ params }) => {
+        const { data: priv } = await supabaseAdmin
+          .from("photographer_private").select("user_id").eq("ical_token", params.token).maybeSingle();
+        if (!priv) return new Response("Not found", { status: 404 });
         const { data: profile } = await supabaseAdmin
-          .from("profiles").select("id, display_name").eq("ical_token", params.token).maybeSingle();
+          .from("profiles").select("id, display_name").eq("id", priv.user_id).maybeSingle();
         if (!profile) return new Response("Not found", { status: 404 });
 
         const [{ data: bookings }, { data: unavail }] = await Promise.all([
