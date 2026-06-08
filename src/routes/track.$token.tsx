@@ -128,13 +128,36 @@ function TrackingPage() {
         </div>
 
         {/* Booking summary */}
-        <div className="rounded-sm border border-border bg-card p-5 mb-6 grid sm:grid-cols-2 gap-3 text-sm">
-          <Info label="التاريخ" v={b.event_date} />
-          <Info label="الوقت" v={`${(b.start_time||"").slice(0,5)} - ${(b.end_time||"").slice(0,5)}`} />
-          <Info label="الباقة" v={(b.addons?.[0]?.label) || b.service} />
-          <Info label="الموقع" v={b.venue_address || "—"} />
-          <Info label="المبلغ الإجمالي" v={`${Number(b.total_price).toLocaleString("ar-JO")} د.أ`} />
-          <Info label="العربون المطلوب" v={`${Number(b.deposit_amount).toLocaleString("ar-JO")} د.أ`} />
+        <div className="rounded-sm border border-border bg-card p-5 mb-6 text-sm">
+          <div className="grid sm:grid-cols-2 gap-3 mb-4">
+            <Info label="التاريخ" v={b.event_date} />
+            <Info label="الوقت" v={`${(b.start_time||"").slice(0,5)} - ${(b.end_time||"").slice(0,5)}`} />
+            <Info label="الموقع" v={b.venue_address || "—"} />
+            <Info label="الخدمة" v={b.service === "cinematic_video" ? "فيديو سينمائي" : "تصوير"} />
+          </div>
+          {Array.isArray(b.addons) && b.addons.length > 0 && (
+            <div className="border-t border-border pt-3 mb-3">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">تفاصيل الباقة</div>
+              <ul className="space-y-1">
+                {b.addons.map((it: any, i: number) => {
+                  const qty = Number(it.qty || 1);
+                  const price = Number(it.price || 0);
+                  return (
+                    <li key={i} className="flex justify-between">
+                      <span className={it.kind === "main" ? "font-medium" : "text-muted-foreground"}>
+                        {it.label}{qty > 1 ? ` × ${qty}` : ""}
+                      </span>
+                      {price > 0 && <span>{(price * qty).toLocaleString("ar-JO")} د.أ</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+          <div className="border-t border-border pt-3 grid sm:grid-cols-2 gap-3">
+            <Info label="المبلغ الإجمالي" v={`${Number(b.total_price).toLocaleString("ar-JO")} د.أ`} />
+            <Info label="العربون المطلوب" v={`${Number(b.deposit_amount).toLocaleString("ar-JO")} د.أ`} />
+          </div>
         </div>
 
         {/* Deposit step */}
