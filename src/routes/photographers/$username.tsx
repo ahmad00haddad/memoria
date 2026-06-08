@@ -79,7 +79,7 @@ function PhotographerPage() {
         ]);
         setPricing((p ?? []) as Pricing[]);
         setReviews(r ?? []);
-        setUnavail((u ?? []).map((x: any) => x.date));
+        setUnavail(((u ?? []) as any[]).map((x: any) => (typeof x === "string" ? x : x.date ?? x.get_photographer_busy_dates)).filter(Boolean));
         setBookedSlots((bk ?? []) as any);
       }
       setLoading(false);
