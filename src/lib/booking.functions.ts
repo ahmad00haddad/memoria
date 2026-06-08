@@ -1,5 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 
+type BookingItem = {
+  rule_id: string;
+  label: string;
+  price: number;
+  qty: number;
+  kind: "main" | "addon";
+};
+
 type SubmitInput = {
   photographer_id: string;
   client_name: string;
@@ -13,8 +21,7 @@ type SubmitInput = {
   base_price: number;
   total_price: number;
   deposit_amount: number;
-  package_id: string;
-  package_label: string;
+  items: BookingItem[];
   client_notes?: string | null;
   privacy_level: "public" | "private_only";
 };
@@ -23,6 +30,11 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
   .inputValidator((d: SubmitInput) => d)
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const main = data.items.find((i) => i.kind === "main");
+    const summaryLabel = main
+      ? `${main.label}${data.items.length > 1 ? ` +${data.items.length - 1} إضافات` : ""}`
+      : data.items.map((i) => i.label).join(" + ");
 
     const { data: row, error } = await supabaseAdmin
       .from("bookings")
@@ -45,7 +57,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
         client_notes: data.client_notes ?? null,
         contract_agreed: true,
         status: "pending_deposit" as any,
-        addons: [{ rule_id: data.package_id, label: data.package_label }],
+        addons: data.items,
       })
       .select("id, client_tracking_token")
       .single();
@@ -68,7 +80,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     await supabaseAdmin.from("notifications").insert({
       user_id: data.photographer_id,
       title: "طلب حجز جديد",
-      body: `${data.client_name} يرغب بحجز ${data.package_label} بتاريخ ${data.event_date}`,
+      body: `${data.client_name} يرغب بحجز ${summaryLabel} بتاريخ ${data.event_date}`,
       link: `/dashboard/bookings/${row.id}`,
     });
 
