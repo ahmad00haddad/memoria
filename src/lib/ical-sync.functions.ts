@@ -39,7 +39,7 @@ export const syncExternalIcal = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data: profile } = await supabase
-      .from("profiles").select("external_ical_url").eq("id", userId).maybeSingle();
+      .from("photographer_private").select("external_ical_url").eq("user_id", userId).maybeSingle();
     const url = profile?.external_ical_url?.trim();
     if (!url) throw new Error("لم يتم تعيين رابط Google Calendar iCal بعد.");
     // قبول webcal:// عبر تحويلها إلى https://
@@ -72,6 +72,6 @@ export const syncExternalIcal = createServerFn({ method: "POST" })
       const { error } = await supabase.from("photographer_unavailability").insert(rows);
       if (error) throw error;
     }
-    await supabase.from("profiles").update({ external_ical_synced_at: new Date().toISOString() }).eq("id", userId);
+    await supabase.from("photographer_private").update({ external_ical_synced_at: new Date().toISOString() }).eq("user_id", userId);
     return { inserted: rows.length };
   });
