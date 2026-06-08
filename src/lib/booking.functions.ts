@@ -55,9 +55,14 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     // Get photographer profile for notification details
     const { data: prof } = await supabaseAdmin
       .from("profiles")
-      .select("display_name, username, whatsapp, phone")
+      .select("display_name, username")
       .eq("id", data.photographer_id)
       .single();
+    const { data: priv } = await supabaseAdmin
+      .from("photographer_private")
+      .select("whatsapp, phone")
+      .eq("user_id", data.photographer_id)
+      .maybeSingle();
 
     // In-app notification for the photographer
     await supabaseAdmin.from("notifications").insert({
@@ -71,7 +76,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     // Logging only — real WhatsApp/email send requires configured provider.
     console.log("[booking] new request", {
       photographer: prof?.username,
-      whatsapp: prof?.whatsapp,
+      whatsapp: priv?.whatsapp,
       booking_id: row.id,
       client: data.client_name,
     });

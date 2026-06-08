@@ -26,14 +26,15 @@ function Dashboard() {
         navigate({ to: "/login" });
         return;
       }
-      const [{ data }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }] = await Promise.all([
+      const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
+        supabase.from("photographer_private").select("ical_token").eq("user_id", session.user.id).maybeSingle(),
         supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
         supabase.from("bookings").select("status,total_price").eq("photographer_id", session.user.id),
         supabase.from("reviews").select("rating").eq("photographer_id", session.user.id),
         supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       ]);
-      setProfile(data);
+      setProfile({ ...(data ?? {}), ical_token: priv?.ical_token ?? null });
       setSub(s);
       setPricingCount(pricingRulesCount ?? 0);
       const confirmed = (bks ?? []).filter((b) => b.status === "confirmed").length;

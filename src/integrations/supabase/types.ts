@@ -317,6 +317,53 @@ export type Database = {
         }
         Relationships: []
       }
+      photographer_private: {
+        Row: {
+          bank_info: string | null
+          cliq_alias: string | null
+          created_at: string
+          external_ical_synced_at: string | null
+          external_ical_url: string | null
+          ical_token: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          bank_info?: string | null
+          cliq_alias?: string | null
+          created_at?: string
+          external_ical_synced_at?: string | null
+          external_ical_url?: string | null
+          ical_token?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          bank_info?: string | null
+          cliq_alias?: string | null
+          created_at?: string
+          external_ical_synced_at?: string | null
+          external_ical_url?: string | null
+          ical_token?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photographer_private_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photographer_unavailability: {
         Row: {
           created_at: string
@@ -388,28 +435,22 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          bank_info: string | null
           base_location: string | null
           bio: string | null
           booking_notes: string | null
           city: string | null
-          cliq_alias: string | null
           cover_url: string | null
           created_at: string
           deposit_percent: number
           display_name: string
           equipment: string | null
-          external_ical_synced_at: string | null
-          external_ical_url: string | null
           fixed_deposit: number | null
           free_km: number
-          ical_token: string | null
           id: string
           instagram: string | null
           is_featured: boolean
           is_published: boolean
           min_session_minutes: number
-          phone: string | null
           portfolio_urls: string[]
           referral_code: string | null
           referred_by: string | null
@@ -417,32 +458,25 @@ export type Database = {
           travel_fee_per_km: number
           updated_at: string
           username: string
-          whatsapp: string | null
         }
         Insert: {
           avatar_url?: string | null
-          bank_info?: string | null
           base_location?: string | null
           bio?: string | null
           booking_notes?: string | null
           city?: string | null
-          cliq_alias?: string | null
           cover_url?: string | null
           created_at?: string
           deposit_percent?: number
           display_name: string
           equipment?: string | null
-          external_ical_synced_at?: string | null
-          external_ical_url?: string | null
           fixed_deposit?: number | null
           free_km?: number
-          ical_token?: string | null
           id: string
           instagram?: string | null
           is_featured?: boolean
           is_published?: boolean
           min_session_minutes?: number
-          phone?: string | null
           portfolio_urls?: string[]
           referral_code?: string | null
           referred_by?: string | null
@@ -450,32 +484,25 @@ export type Database = {
           travel_fee_per_km?: number
           updated_at?: string
           username: string
-          whatsapp?: string | null
         }
         Update: {
           avatar_url?: string | null
-          bank_info?: string | null
           base_location?: string | null
           bio?: string | null
           booking_notes?: string | null
           city?: string | null
-          cliq_alias?: string | null
           cover_url?: string | null
           created_at?: string
           deposit_percent?: number
           display_name?: string
           equipment?: string | null
-          external_ical_synced_at?: string | null
-          external_ical_url?: string | null
           fixed_deposit?: number | null
           free_km?: number
-          ical_token?: string | null
           id?: string
           instagram?: string | null
           is_featured?: boolean
           is_published?: boolean
           min_session_minutes?: number
-          phone?: string | null
           portfolio_urls?: string[]
           referral_code?: string | null
           referred_by?: string | null
@@ -483,7 +510,6 @@ export type Database = {
           travel_fee_per_km?: number
           updated_at?: string
           username?: string
-          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -696,6 +722,7 @@ export type Database = {
         Returns: undefined
       }
       get_booking_by_token: { Args: { _token: string }; Returns: Json }
+      get_photographer_busy_dates: { Args: { _pid: string }; Returns: string[] }
       get_referrer_id: { Args: { _code: string }; Returns: string }
       has_role: {
         Args: {

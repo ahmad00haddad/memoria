@@ -74,12 +74,12 @@ function PhotographerPage() {
         const [{ data: p }, { data: r }, { data: u }, { data: bk }] = await Promise.all([
           supabase.from("pricing_rules").select("*").eq("photographer_id", pid),
           supabase.from("reviews").select("*").eq("photographer_id", pid).eq("is_published", true).order("created_at", { ascending: false }),
-          supabase.from("photographer_unavailability").select("date").eq("photographer_id", pid),
+          supabase.rpc("get_photographer_busy_dates", { _pid: pid }),
           supabase.from("bookings").select("event_date,start_time,end_time").eq("photographer_id", pid).in("status", ["confirmed", "pending_deposit"]),
         ]);
         setPricing((p ?? []) as Pricing[]);
         setReviews(r ?? []);
-        setUnavail((u ?? []).map((x: any) => x.date));
+        setUnavail(((u ?? []) as any[]).map((x: any) => (typeof x === "string" ? x : x.date ?? x.get_photographer_busy_dates)).filter(Boolean));
         setBookedSlots((bk ?? []) as any);
       }
       setLoading(false);

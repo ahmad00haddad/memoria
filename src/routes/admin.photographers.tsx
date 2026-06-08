@@ -20,8 +20,6 @@ type Row = {
   display_name: string;
   is_published: boolean;
   avatar_url: string | null;
-  phone: string | null;
-  whatsapp: string | null;
   created_at: string;
   bookings_count: number;
   reviews_count: number;
