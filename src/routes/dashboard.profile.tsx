@@ -22,8 +22,11 @@ function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return nav({ to: "/login" });
       setUid(session.user.id);
-      const { data } = await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
-      setP(data ?? {});
+      const [{ data }, { data: priv }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
+        supabase.from("photographer_private").select("*").eq("user_id", session.user.id).maybeSingle(),
+      ]);
+      setP({ ...(data ?? {}), ...(priv ?? {}) });
       setLoading(false);
     })();
   }, [nav]);
@@ -65,18 +68,24 @@ function ProfilePage() {
     setSaving(true);
     const { error } = await supabase.from("profiles").update({
       display_name: p.display_name, username: p.username, bio: p.bio, city: p.city,
-      base_location: p.base_location, phone: p.phone, instagram: p.instagram, whatsapp: p.whatsapp,
-      cliq_alias: p.cliq_alias, equipment: p.equipment, deposit_percent: Number(p.deposit_percent || 25),
+      base_location: p.base_location, instagram: p.instagram,
+      equipment: p.equipment, deposit_percent: Number(p.deposit_percent || 25),
       travel_fee_per_km: Number(p.travel_fee_per_km || 0.5), free_km: Number(p.free_km || 20),
       avatar_url: p.avatar_url, cover_url: p.cover_url, portfolio_urls: p.portfolio_urls ?? [],
       is_published: !!p.is_published,
       tagline: p.tagline ?? null,
       booking_notes: p.booking_notes ?? null,
-      bank_info: p.bank_info ?? null,
       fixed_deposit: p.fixed_deposit ? Number(p.fixed_deposit) : null,
     }).eq("id", uid);
+    const { error: pErr } = await supabase.from("photographer_private").upsert({
+      user_id: uid,
+      phone: p.phone ?? null,
+      whatsapp: p.whatsapp ?? null,
+      cliq_alias: p.cliq_alias ?? null,
+      bank_info: p.bank_info ?? null,
+    }, { onConflict: "user_id" });
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error || pErr) return toast.error((error ?? pErr)!.message);
     toast.success("تم الحفظ");
   };
 
