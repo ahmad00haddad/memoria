@@ -236,11 +236,18 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     package_id: "", venue_address: "", remaining_note: "", client_notes: "",
     privacy_level: "public" as "public" | "private_only",
   });
+  // إضافات: rule_id -> qty
+  const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ token: string } | null>(null);
   const navigate = useNavigate();
   const submitFn = useServerFn(submitBookingRequest);
+  const mainPackages = pricing.filter((p) => p.package !== "addon");
+  const addonPackages = pricing.filter((p) => p.package === "addon");
   const selected = pricing.find((p) => p.id === f.package_id);
+  const selectedAddons = addonPackages
+    .map((a) => ({ rule: a, qty: addonQty[a.id] || 0 }))
+    .filter((x) => x.qty > 0);
   const isBlocked = !!f.event_date && blockedDates.includes(f.event_date);
   const daySlots = bookedSlots.filter((s) => s.event_date === f.event_date);
   const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
@@ -281,8 +288,12 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pickedPackageId]);
 
-  const total = selected ? Number(selected.price) : 0;
-  const deposit = selected ? (profile.fixed_deposit ?? Math.round(total * (Number(profile.deposit_percent || 25) / 100))) : 0;
+  const basePrice = selected ? Number(selected.price) : 0;
+  const addonsTotal = selectedAddons.reduce((s, x) => s + Number(x.rule.price) * x.qty, 0);
+  const total = basePrice + addonsTotal;
+  const deposit = total > 0
+    ? (profile.fixed_deposit ?? Math.round(total * (Number(profile.deposit_percent || 25) / 100)))
+    : 0;
 
   const submit = async () => {
     if (!f.client_name || !f.client_phone || !f.client_email || !f.event_date || !selected) {
@@ -293,6 +304,12 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     setSubmitting(true);
     try {
       const notes = [f.client_notes, f.remaining_note ? `الرصيد المتبقي: ${f.remaining_note}` : ""].filter(Boolean).join("\n");
+      const items = [
+        { rule_id: selected.id, label: selected.label, price: Number(selected.price), qty: 1, kind: "main" as const },
+        ...selectedAddons.map((x) => ({
+          rule_id: x.rule.id, label: x.rule.label, price: Number(x.rule.price), qty: x.qty, kind: "addon" as const,
+        })),
+      ];
       const res = await submitFn({
         data: {
           photographer_id: profile.id,
@@ -304,11 +321,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           start_time: f.start_time || "12:00",
           end_time: f.end_time || "18:00",
           venue_address: f.venue_address || null,
-          base_price: total,
+          base_price: basePrice,
           total_price: total,
           deposit_amount: deposit,
-          package_id: selected.id,
-          package_label: selected.label,
+          items,
           client_notes: notes || null,
           privacy_level: f.privacy_level,
         },
@@ -391,20 +407,58 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           <Field label="إلى" type="time" v={f.end_time} on={(v) => setF({ ...f, end_time: v })} />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-sm text-muted-foreground">الباقة</label>
+          <label className="text-sm text-muted-foreground">الباقة الأساسية</label>
           <select value={f.package_id} onChange={(e) => onSelectPackage(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background">
             <option value="">— اختاري الباقة —</option>
-            {pricing.map((r) => <option key={r.id} value={r.id}>{r.label} — {r.price} د.أ</option>)}
+            {mainPackages.map((r) => <option key={r.id} value={r.id}>{r.label} — {r.price} د.أ</option>)}
           </select>
-          {selected && (
-            <div className="mt-3 rounded-sm bg-secondary/60 border border-border p-3 text-sm space-y-1">
-              {selected.description && <div className="text-muted-foreground whitespace-pre-line">{selected.description}</div>}
-              <div className="flex justify-between"><span>المجموع</span><span className="font-semibold">{total.toLocaleString("ar-JO")} د.أ</span></div>
-              <div className="flex justify-between text-gold"><span>العربون المطلوب</span><span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span></div>
-              <div className="text-xs text-muted-foreground pt-1">تم تعبئة الأوقات تلقائياً — يمكنكِ تعديلها.</div>
-            </div>
-          )}
+          {selected?.description && <div className="text-xs text-muted-foreground mt-2 whitespace-pre-line">{selected.description}</div>}
         </div>
+
+        {addonPackages.length > 0 && (
+          <div className="sm:col-span-2">
+            <label className="text-sm text-muted-foreground">إضافات اختيارية</label>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              {addonPackages.map((a) => {
+                const qty = addonQty[a.id] || 0;
+                const active = qty > 0;
+                return (
+                  <div key={a.id} className={`rounded-sm border p-3 text-sm transition ${active ? "border-gold bg-gold/5" : "border-border bg-background"}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{a.label}</div>
+                        <div className="text-xs text-muted-foreground">{Number(a.price).toLocaleString("ar-JO")} د.أ</div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button type="button" onClick={() => setAddonQty({ ...addonQty, [a.id]: Math.max(0, qty - 1) })}
+                                className="w-7 h-7 grid place-items-center border border-border rounded-sm hover:bg-secondary">−</button>
+                        <span className="w-6 text-center">{qty}</span>
+                        <button type="button" onClick={() => setAddonQty({ ...addonQty, [a.id]: qty + 1 })}
+                                className="w-7 h-7 grid place-items-center border border-border rounded-sm hover:bg-secondary">+</button>
+                      </div>
+                    </div>
+                    {a.description && <div className="text-xs text-muted-foreground mt-1 whitespace-pre-line">{a.description}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {selected && (
+          <div className="sm:col-span-2 rounded-sm bg-secondary/60 border border-border p-3 text-sm space-y-1.5">
+            <div className="flex justify-between"><span>{selected.label}</span><span>{basePrice.toLocaleString("ar-JO")} د.أ</span></div>
+            {selectedAddons.map((x) => (
+              <div key={x.rule.id} className="flex justify-between text-muted-foreground">
+                <span>{x.rule.label} × {x.qty}</span>
+                <span>{(Number(x.rule.price) * x.qty).toLocaleString("ar-JO")} د.أ</span>
+              </div>
+            ))}
+            <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">المجموع</span><span className="font-semibold">{total.toLocaleString("ar-JO")} د.أ</span></div>
+            <div className="flex justify-between text-gold"><span>العربون المطلوب</span><span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span></div>
+            <div className="text-xs text-muted-foreground pt-1">تم تعبئة الأوقات تلقائياً — يمكنكِ تعديلها.</div>
+          </div>
+        )}
         <div className="sm:col-span-2">
           <Field label="الموقع / القاعة" v={f.venue_address} on={(v) => setF({ ...f, venue_address: v })} />
         </div>
