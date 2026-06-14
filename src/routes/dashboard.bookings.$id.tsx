@@ -4,7 +4,9 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send } from "lucide-react";
+import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -223,6 +225,8 @@ function BookingDetail() {
         </div>
 
         <ProductionPanel b={b} onSetStage={setStage} onSaveLink={saveSelectionLink} />
+
+        <GalleryPanel bookingId={id} clientToken={b.client_tracking_token} />
 
         <div className="mt-8 rounded-sm border border-border bg-card p-6">
           <h2 className="font-serif text-xl mb-4">الرسائل</h2>
