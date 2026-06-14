@@ -40,6 +40,7 @@ import { Route as AdminPhotographersRouteImport } from './routes/admin.photograp
 import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
+import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -196,6 +197,11 @@ const ApiPublicIcalTokenRoute = ApiPublicIcalTokenRouteImport.update({
   path: '/api/public/ical/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksIcalSyncRoute = ApiPublicHooksIcalSyncRouteImport.update({
+  id: '/api/public/hooks/ical-sync',
+  path: '/api/public/hooks/ical-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
+  '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesByTo {
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings': typeof DashboardBookingsIndexRoute
+  '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesById {
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
+  '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRouteTypes {
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings/'
+    | '/api/public/hooks/ical-sync'
     | '/api/public/ical/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings'
+    | '/api/public/hooks/ical-sync'
     | '/api/public/ical/$token'
   id:
     | '__root__'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings/'
+    | '/api/public/hooks/ical-sync'
     | '/api/public/ical/$token'
   fileRoutesById: FileRoutesById
 }
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   PhotographersJoinRoute: typeof PhotographersJoinRoute
   ReviewTokenRoute: typeof ReviewTokenRoute
   TrackTokenRoute: typeof TrackTokenRoute
+  ApiPublicHooksIcalSyncRoute: typeof ApiPublicHooksIcalSyncRoute
   ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
 
@@ -631,6 +644,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIcalTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/ical-sync': {
+      id: '/api/public/hooks/ical-sync'
+      path: '/api/public/hooks/ical-sync'
+      fullPath: '/api/public/hooks/ical-sync'
+      preLoaderRoute: typeof ApiPublicHooksIcalSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -707,6 +727,7 @@ const rootRouteChildren: RootRouteChildren = {
   PhotographersJoinRoute: PhotographersJoinRoute,
   ReviewTokenRoute: ReviewTokenRoute,
   TrackTokenRoute: TrackTokenRoute,
+  ApiPublicHooksIcalSyncRoute: ApiPublicHooksIcalSyncRoute,
   ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }
 export const routeTree = rootRouteImport

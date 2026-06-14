@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { X, RefreshCw } from "lucide-react";
+import { X, RefreshCw, Copy, Check, Download, Upload, RefreshCcw } from "lucide-react";
 import { syncExternalIcal } from "@/lib/ical-sync.functions";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -25,18 +25,23 @@ function CalendarPage() {
   const [icalUrl, setIcalUrl] = useState("");
   const [lastSync, setLastSync] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const [autoSync, setAutoSync] = useState(false);
+  const [exportToken, setExportToken] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const runSync = useServerFn(syncExternalIcal);
 
   const load = async (id: string) => {
     const [{ data: u }, { data: b }, { data: p }] = await Promise.all([
       supabase.from("photographer_unavailability").select("*").eq("photographer_id", id).order("date"),
       supabase.from("bookings").select("event_date,start_time,end_time,status,client_name").eq("photographer_id", id).order("event_date"),
-      supabase.from("photographer_private").select("external_ical_url,external_ical_synced_at").eq("user_id", id).maybeSingle(),
+      supabase.from("photographer_private").select("external_ical_url,external_ical_synced_at,external_ical_auto_sync,ical_token").eq("user_id", id).maybeSingle(),
     ]);
     setUnavail((u ?? []) as any);
     setBookings((b ?? []) as any);
     setIcalUrl(p?.external_ical_url ?? "");
     setLastSync(p?.external_ical_synced_at ?? null);
+    setAutoSync(!!(p as any)?.external_ical_auto_sync);
+    setExportToken((p as any)?.ical_token ?? null);
   };
 
   useEffect(() => {
@@ -89,9 +94,27 @@ function CalendarPage() {
   };
 
   const saveIcalUrl = async () => {
-    const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: icalUrl || null }, { onConflict: "user_id" });
+    const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: icalUrl || null, external_ical_auto_sync: autoSync }, { onConflict: "user_id" });
     if (error) return toast.error(error.message);
     toast.success("تم الحفظ");
+  };
+
+  const toggleAutoSync = async (val: boolean) => {
+    setAutoSync(val);
+    const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: icalUrl || null, external_ical_auto_sync: val }, { onConflict: "user_id" });
+    if (error) { setAutoSync(!val); return toast.error(error.message); }
+    toast.success(val ? "تم تفعيل المزامنة التلقائية كل ٣٠ دقيقة" : "تم إيقاف المزامنة التلقائية");
+  };
+
+  const exportUrl = exportToken ? `${typeof window !== "undefined" ? window.location.origin : ""}/api/public/ical/${exportToken}` : "";
+  const webcalUrl = exportUrl.replace(/^https?:/, "webcal:");
+  const copyExport = async () => {
+    if (!exportUrl) return;
+    try {
+      await navigator.clipboard.writeText(exportUrl);
+      setCopied(true); setTimeout(() => setCopied(false), 2000);
+      toast.success("تم نسخ الرابط");
+    } catch { toast.error("تعذّر النسخ"); }
   };
 
   const doSync = async () => {
@@ -129,19 +152,91 @@ function CalendarPage() {
         </div>
 
         <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
-          <h2 className="font-serif text-xl mb-3">مزامنة Google Calendar</h2>
-          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-            ألصقي رابط <strong>Secret iCal address</strong> من إعدادات تقويم Google. سنجلب فعالياتك تلقائياً ونحجب أيامها لديكِ كي لا يتمكّن العميل من اختيارها.
-            (Google Calendar → إعدادات التقويم → عنوان iCal الخاص بالتنسيق السرّي)
+          <h2 className="font-serif text-2xl mb-2">مزامنة التقويم مع Google / Apple</h2>
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            اختاري الطريقة الأنسب لكِ. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.
           </p>
-          <div className="flex flex-wrap gap-3 items-end">
-            <input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[260px]" />
-            <button onClick={saveIcalUrl} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">حفظ</button>
-            <button onClick={doSync} disabled={syncing} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm disabled:opacity-60">
-              <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> مزامنة الآن
-            </button>
+
+          {/* خيار 1: تصدير إلى تقويمك */}
+          <div className="rounded-sm border border-border p-5 mb-5 bg-background/50">
+            <div className="flex items-center gap-2 mb-2">
+              <Download className="h-5 w-5 text-gold" />
+              <h3 className="font-serif text-lg">الخيار ١ — تصدير حجوزاتي إلى تقويمي الشخصي</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+              <strong>الأنسب لكِ إذا:</strong> تريدين رؤية الحجوزات والأيام المحجوبة داخل Google/Apple Calendar الخاص بكِ مباشرة (للقراءة فقط).
+              أي حجز جديد أو تعديل سيظهر تلقائياً في تقويمك خلال دقائق دون أي إعداد إضافي.
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              <strong>الطريقة:</strong> انسخي الرابط أدناه ثم في Google Calendar → إضافة تقويم → من URL → الصقي الرابط. في iPhone: الإعدادات → التقويم → الحسابات → اشتراك بتقويم.
+            </p>
+            <div className="flex flex-wrap gap-2 items-center">
+              <input readOnly value={exportUrl} className="border border-border rounded-sm px-3 py-2 bg-secondary/30 flex-1 min-w-[260px] text-xs ltr:font-mono" dir="ltr" />
+              <button onClick={copyExport} className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm hover:bg-secondary">
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? "تم النسخ" : "نسخ"}
+              </button>
+              <a href={webcalUrl} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-3 py-2 rounded-sm hover:opacity-90 text-sm">
+                فتح في تطبيق التقويم
+              </a>
+            </div>
           </div>
-          {lastSync && <p className="text-xs text-muted-foreground mt-2">آخر مزامنة: {new Date(lastSync).toLocaleString("ar-JO")}</p>}
+
+          {/* خيار 2: استيراد يدوي */}
+          <div className="rounded-sm border border-border p-5 mb-5 bg-background/50">
+            <div className="flex items-center gap-2 mb-2">
+              <Upload className="h-5 w-5 text-gold" />
+              <h3 className="font-serif text-lg">الخيار ٢ — استيراد مشاغلي من Google يدوياً</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+              <strong>الأنسب لكِ إذا:</strong> تريدين منع العميل من حجز يوم لديكِ فيه ارتباط شخصي مسجّل في Google Calendar.
+              تضغطين زر "مزامنة الآن" متى ما أحببتِ، وسنحجب الأيام التي عليها فعاليات.
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              <strong>الطريقة:</strong> Google Calendar → إعدادات التقويم → العنوان السرّي بتنسيق iCal → انسخي الرابط والصقيه هنا.
+            </p>
+            <div className="flex flex-wrap gap-2 items-end">
+              <input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[260px] text-xs" dir="ltr" />
+              <button onClick={saveIcalUrl} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary text-sm">حفظ</button>
+              <button onClick={doSync} disabled={syncing || !icalUrl} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm disabled:opacity-60 text-sm">
+                <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> مزامنة الآن
+              </button>
+            </div>
+            {lastSync && <p className="text-xs text-muted-foreground mt-2">آخر مزامنة: {new Date(lastSync).toLocaleString("ar-JO")}</p>}
+          </div>
+
+          {/* خيار 3: مزامنة تلقائية */}
+          <div className="rounded-sm border-2 border-gold/40 p-5 bg-gold/5">
+            <div className="flex items-center gap-2 mb-2">
+              <RefreshCcw className="h-5 w-5 text-gold" />
+              <h3 className="font-serif text-lg">الخيار ٣ — مزامنة تلقائية ثنائية الاتجاه (موصى به)</h3>
+              <span className="ml-auto text-[10px] px-2 py-0.5 bg-gold text-charcoal rounded-sm font-medium">الأقوى</span>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+              <strong>الأنسب لكِ إذا:</strong> تريدين كل شيء يحصل من نفسه دون أي تدخّل يومي.
+              نقوم بسحب مشاغلكِ من Google كل <strong>٣٠ دقيقة</strong> تلقائياً، وفي نفس الوقت تكون حجوزاتك ظاهرة في تقويم Google عبر رابط الخيار ١.
+            </p>
+            <p className="text-xs text-muted-foreground mb-3">
+              <strong>الطريقة:</strong> فعّلي الزرّ أدناه + استخدمي رابط الخيار ١ في تقويمك = مزامنة كاملة في الاتجاهين.
+            </p>
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
+              <div>
+                <div className="text-sm font-medium">المزامنة التلقائية كل ٣٠ دقيقة</div>
+                <div className="text-xs text-muted-foreground">يجب أن يكون رابط iCal في الخيار ٢ محفوظاً</div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoSync}
+                onClick={() => toggleAutoSync(!autoSync)}
+                disabled={!icalUrl}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${autoSync ? "bg-gold" : "bg-secondary"}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoSync ? "translate-x-6" : "translate-x-1"}`} />
+              </button>
+            </div>
+            {!icalUrl && <p className="text-xs text-destructive mt-2">احفظي رابط iCal أولاً في الخيار ٢ لتفعيل المزامنة التلقائية.</p>}
+          </div>
         </div>
 
         <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
