@@ -18,7 +18,7 @@ function BookingsList() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return nav({ to: "/login" });
-        const { data, error } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).order("event_date", { ascending: false });
+        const { data, error } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).is("deleted_at", null).order("event_date", { ascending: false });
         if (error) throw error;
         setList(data ?? []);
       } catch (error: any) {
