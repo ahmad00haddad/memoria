@@ -26,7 +26,7 @@ function ProductionBoard() {
   const load = async (id: string) => {
     const { data } = await supabase.from("bookings")
       .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status")
-      .eq("photographer_id", id).neq("status", "cancelled").order("event_date", { ascending: true });
+      .eq("photographer_id", id).is("deleted_at", null).neq("status", "cancelled").order("event_date", { ascending: true });
     setBookings(data ?? []);
   };
 
