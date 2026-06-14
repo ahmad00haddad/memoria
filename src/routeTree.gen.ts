@@ -22,7 +22,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TrackTokenRouteImport } from './routes/track.$token'
-import { Route as ReviewBookingIdRouteImport } from './routes/review.$bookingId'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
@@ -103,11 +102,6 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const TrackTokenRoute = TrackTokenRouteImport.update({
   id: '/track/$token',
   path: '/track/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReviewBookingIdRoute = ReviewBookingIdRouteImport.update({
-  id: '/review/$bookingId',
-  path: '/review/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PhotographersJoinRoute = PhotographersJoinRouteImport.update({
@@ -215,7 +209,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
-  '/review/$bookingId': typeof ReviewBookingIdRoute
   '/track/$token': typeof TrackTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -244,7 +237,6 @@ export interface FileRoutesByTo {
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
-  '/review/$bookingId': typeof ReviewBookingIdRoute
   '/track/$token': typeof TrackTokenRoute
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -277,7 +269,6 @@ export interface FileRoutesById {
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
-  '/review/$bookingId': typeof ReviewBookingIdRoute
   '/track/$token': typeof TrackTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -311,7 +302,6 @@ export interface FileRouteTypes {
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
-    | '/review/$bookingId'
     | '/track/$token'
     | '/admin/'
     | '/dashboard/'
@@ -340,7 +330,6 @@ export interface FileRouteTypes {
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
-    | '/review/$bookingId'
     | '/track/$token'
     | '/admin'
     | '/dashboard'
@@ -372,7 +361,6 @@ export interface FileRouteTypes {
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
-    | '/review/$bookingId'
     | '/track/$token'
     | '/admin/'
     | '/dashboard/'
@@ -395,7 +383,6 @@ export interface RootRouteChildren {
   ContractsTokenRoute: typeof ContractsTokenRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
-  ReviewBookingIdRoute: typeof ReviewBookingIdRoute
   TrackTokenRoute: typeof TrackTokenRoute
   ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
@@ -491,13 +478,6 @@ declare module '@tanstack/react-router' {
       path: '/track/$token'
       fullPath: '/track/$token'
       preLoaderRoute: typeof TrackTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/review/$bookingId': {
-      id: '/review/$bookingId'
-      path: '/review/$bookingId'
-      fullPath: '/review/$bookingId'
-      preLoaderRoute: typeof ReviewBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/photographers/join': {
@@ -684,7 +664,6 @@ const rootRouteChildren: RootRouteChildren = {
   ContractsTokenRoute: ContractsTokenRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
-  ReviewBookingIdRoute: ReviewBookingIdRoute,
   TrackTokenRoute: TrackTokenRoute,
   ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }
