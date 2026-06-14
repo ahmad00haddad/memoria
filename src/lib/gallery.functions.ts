@@ -79,6 +79,17 @@ export const sendMessageByToken = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: bk } = await supabaseAdmin.from("bookings").select("id,client_name").eq("client_tracking_token", data.token).maybeSingle();
     if (!bk) throw new Error("invalid token");
+    // Rate limit: max 10 client messages per booking per 60s.
+    const sinceIso = new Date(Date.now() - 60_000).toISOString();
+    const { count } = await supabaseAdmin
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("booking_id", bk.id)
+      .is("sender_id", null)
+      .gte("created_at", sinceIso);
+    if ((count ?? 0) >= 10) {
+      throw new Error("أرسلتِ رسائل كثيرة في وقت قصير، الرجاء الانتظار قليلًا.");
+    }
     const { error } = await supabaseAdmin.from("messages").insert({
       booking_id: bk.id, sender_id: null, sender_name: bk.client_name || "العميل", body: data.body,
     });
@@ -115,6 +126,13 @@ export const updateGallery = createServerFn({ method: "POST" })
     return d;
   })
   .handler(async ({ data, context }) => {
+    // Explicit ownership check — never trust RLS alone.
+    const { data: g } = await context.supabase
+      .from("delivery_galleries")
+      .select("id, photographer_id")
+      .eq("id", data.gallery_id)
+      .maybeSingle();
+    if (!g || g.photographer_id !== context.userId) throw new Error("forbidden");
     const patch: any = {};
     if (typeof data.title === "string") patch.title = data.title.slice(0, 200);
     if (typeof data.allow_downloads === "boolean") patch.allow_downloads = data.allow_downloads;
