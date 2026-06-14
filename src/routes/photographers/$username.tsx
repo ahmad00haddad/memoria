@@ -11,7 +11,7 @@ import { CalendarIcon } from "lucide-react";
 import { ar } from "date-fns/locale";
 import { format } from "date-fns";
 import { useServerFn } from "@tanstack/react-start";
-import { submitBookingRequest } from "@/lib/booking.functions";
+import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
@@ -56,6 +56,9 @@ function PhotographerPage() {
   const [bookedSlots, setBookedSlots] = useState<{ event_date: string; start_time: string; end_time: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
+  const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const fetchDeposit = useServerFn(getPublicDepositInfo);
 
   useEffect(() => {
     (async () => {
@@ -81,6 +84,10 @@ function PhotographerPage() {
         setReviews(r ?? []);
         setUnavail(((u ?? []) as any[]).map((x: any) => (typeof x === "string" ? x : x.date ?? x.get_photographer_busy_dates)).filter(Boolean));
         setBookedSlots((bk ?? []) as any);
+        try {
+          const dep = await fetchDeposit({ data: { username: normalizedUsername } });
+          setDeposit(dep);
+        } catch {}
       }
       setLoading(false);
     })();
@@ -130,17 +137,16 @@ function PhotographerPage() {
       {/* PACKAGES */}
       <section id="packages" className="container-editorial py-16">
         <div className="text-center mb-10">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Package Prices</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">الباقات</div>
           <h2 className="font-serif text-3xl sm:text-4xl">بطاقة الأسعار</h2>
         </div>
         {pricing.length === 0 ? (
           <p className="text-center text-muted-foreground">لم تُحدَّد الباقات بعد.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {pricing.map((p, i) => (
-              <div key={p.id} className={`relative rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${i === 1 ? "border-gold/60" : "border-border"}`}>
-                {i === 1 && <div className="absolute -top-3 right-4 bg-gold text-charcoal text-[10px] uppercase tracking-wider px-3 py-1 rounded-sm">الأكثر طلبًا</div>}
-                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? "Cinematic Video" : "Photography"}</div>
+            {pricing.filter((p) => p.package !== "addon").map((p) => (
+              <div key={p.id} className="relative rounded-sm border border-border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant">
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? "فيديو سينمائي" : "تصوير فوتوغرافي"}</div>
                 <h3 className="font-serif text-2xl mb-1">{p.label}</h3>
                 {p.description && <p className="text-sm text-muted-foreground mb-4 whitespace-pre-line">{p.description}</p>}
                 <div className="font-serif text-3xl text-gold mb-4">{Number(p.price).toLocaleString("ar-JO")} <span className="text-sm">د.أ</span></div>
@@ -155,16 +161,22 @@ function PhotographerPage() {
       {(profile.portfolio_urls?.length ?? 0) > 0 && (
         <section className="container-editorial pb-16">
           <div className="text-center mb-8">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Selected Photos</div>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">مختارات</div>
             <h2 className="font-serif text-3xl">مختارات من الأعمال</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {profile.portfolio_urls!.slice(0, 12).map((u, i) => (
-              <a key={i} href={u} target="_blank" rel="noreferrer" className="block aspect-square bg-secondary rounded-sm overflow-hidden">
+              <button type="button" key={i} onClick={() => setLightbox(u)} className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in">
                 <img src={u} alt="" className="w-full h-full object-cover hover:scale-105 transition" loading="lazy" />
-              </a>
+              </button>
             ))}
           </div>
+          {lightbox && (
+            <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
+              <button type="button" className="absolute top-4 left-4 text-white text-3xl leading-none" onClick={() => setLightbox(null)} aria-label="إغلاق">×</button>
+              <img src={lightbox} alt="" className="max-w-full max-h-full object-contain" onClick={(e) => e.stopPropagation()} />
+            </div>
+          )}
         </section>
       )}
 
@@ -172,7 +184,7 @@ function PhotographerPage() {
       <section id="book" className="bg-secondary/40 py-16">
         <div className="container-editorial grid gap-8 lg:grid-cols-[1.2fr_1fr]">
           <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} bookedSlots={bookedSlots} pickedPackageId={pickedPackageId} />
-          <DepositCard profile={profile} />
+          <DepositCard profile={profile} cliqAlias={deposit.cliq_alias} bankInfo={deposit.bank_info} />
         </div>
       </section>
 
@@ -299,6 +311,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     if (!f.client_name || !f.client_phone || !f.client_email || !f.event_date || !selected) {
       return toast.error("الرجاء تعبئة الاسم والهاتف والإيميل والتاريخ واختيار الباقة");
     }
+    const start = f.start_time || "12:00";
+    const end = f.end_time || "18:00";
+    if (toMin(end) <= toMin(start)) {
+      return toast.error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
+    }
     if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
     if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
     setSubmitting(true);
@@ -315,8 +332,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           client_email: f.client_email.trim(),
           client_phone: f.client_phone,
           event_date: f.event_date,
-          start_time: f.start_time || "12:00",
-          end_time: f.end_time || "18:00",
+          start_time: start,
+          end_time: end,
           venue_address: f.venue_address || null,
           items,
           client_notes: notes || null,
@@ -497,10 +514,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   );
 }
 
-function DepositCard({ profile }: { profile: Profile }) {
+function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqAlias: string | null; bankInfo: string | null }) {
   return (
     <div className="bg-charcoal text-ivory rounded-sm p-6 sm:p-8 h-fit lg:sticky lg:top-24">
-      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Deposit Information</div>
+      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">العربون</div>
       <h3 className="font-serif text-2xl mb-5">معلومات العربون</h3>
       <div className="space-y-4 text-sm">
         {profile.fixed_deposit ? (
@@ -508,24 +525,29 @@ function DepositCard({ profile }: { profile: Profile }) {
         ) : (
           <Row label="نسبة العربون" value={`${profile.deposit_percent}%`} />
         )}
-        {profile.cliq_alias && (
+        {cliqAlias && (
           <div className="bg-ivory/10 rounded-sm p-3">
             <div className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1">CliQ Alias</div>
             <div className="flex items-center justify-between gap-2">
-              <div className="font-mono text-lg">{profile.cliq_alias}</div>
-              <button onClick={() => { navigator.clipboard.writeText(profile.cliq_alias!); toast.success("تم النسخ"); }} className="p-2 hover:bg-ivory/10 rounded-sm"><Copy className="h-4 w-4" /></button>
+              <div className="font-mono text-lg">{cliqAlias}</div>
+              <button onClick={() => { navigator.clipboard.writeText(cliqAlias); toast.success("تم النسخ"); }} className="p-2 hover:bg-ivory/10 rounded-sm"><Copy className="h-4 w-4" /></button>
             </div>
           </div>
         )}
-        {profile.bank_info && (
+        {bankInfo && (
           <div className="bg-ivory/10 rounded-sm p-3">
             <div className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1">تحويل بنكي</div>
-            <div className="whitespace-pre-line">{profile.bank_info}</div>
+            <div className="whitespace-pre-line">{bankInfo}</div>
+          </div>
+        )}
+        {!cliqAlias && !bankInfo && (
+          <div className="bg-ivory/10 rounded-sm p-3 text-xs leading-relaxed">
+            ستظهر معلومات الدفع كاملة في صفحة تتبّع الحجز فور إرسال طلبك.
           </div>
         )}
       </div>
       <p className="text-[11px] text-ivory/60 mt-5 leading-relaxed">
-        بعد التحويل أرسلي إثبات الدفع عبر واتساب لتأكيد الحجز.
+        بعد التحويل ارفعي صورة إثبات الدفع من صفحة تتبّع الحجز الخاصة بكِ — يصل التأكيد تلقائيًا للمصوّرة.
       </p>
     </div>
   );

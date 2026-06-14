@@ -294,9 +294,31 @@ function ClientGallery({ token }: { token: string }) {
             <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightbox(p.url)}>
               {p.url && <img src={p.url} alt={p.caption ?? ""} loading="lazy" className="w-full h-full object-cover transition group-hover:scale-105" />}
               {data.gallery.allow_downloads && p.url && (
-                <a href={p.url} download onClick={(e) => e.stopPropagation()} className="absolute bottom-1 left-1 bg-black/60 text-white p-1.5 rounded-sm opacity-0 group-hover:opacity-100 transition">
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    try {
+                      const resp = await fetch(p.url);
+                      const blob = await resp.blob();
+                      const href = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = href;
+                      const ext = (resp.headers.get("content-type") || "image/jpeg").split("/")[1] || "jpg";
+                      a.download = `photo-${p.id}.${ext.replace(/[^a-z0-9]/gi, "") || "jpg"}`;
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      setTimeout(() => URL.revokeObjectURL(href), 1000);
+                    } catch {
+                      toast.error("تعذّر التحميل، حاولي مرة أخرى");
+                    }
+                  }}
+                  className="absolute bottom-1 left-1 bg-black/60 text-white p-1.5 rounded-sm opacity-0 group-hover:opacity-100 transition"
+                  aria-label="تحميل"
+                >
                   <Download className="h-3.5 w-3.5" />
-                </a>
+                </button>
               )}
             </div>
           ))}

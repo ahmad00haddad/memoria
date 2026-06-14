@@ -50,7 +50,12 @@ function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
-        setErr(error.message);
+        const m = error.message.toLowerCase();
+        let friendly = "تعذّر تسجيل الدخول. تحقّقي من البريد وكلمة المرور.";
+        if (m.includes("invalid login")) friendly = "البريد أو كلمة المرور غير صحيحة.";
+        else if (m.includes("not confirmed") || m.includes("email")) friendly = "لم يتم تأكيد البريد بعد. افتحي رابط التفعيل في بريدك.";
+        else if (m.includes("rate") || m.includes("limit")) friendly = "محاولات كثيرة، الرجاء المحاولة بعد قليل.";
+        setErr(friendly);
         toast.error("تعذّر تسجيل الدخول");
         return;
       }
@@ -78,7 +83,10 @@ function LoginPage() {
         <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-sm p-6 shadow-soft">
           <Field label="البريد الإلكتروني" name="email" type="email" autoComplete="email" required />
           <Field label="كلمة المرور" name="password" type="password" autoComplete="current-password" required />
-          <p className="text-xs text-muted-foreground">سيبقى تسجيل دخولك محفوظًا على هذا المتصفح حتى تضغط "تسجيل الخروج".</p>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">سيبقى تسجيل دخولك محفوظًا على هذا المتصفح.</span>
+            <Link to="/forgot-password" className="text-gold underline">نسيتِ كلمة المرور؟</Link>
+          </div>
           {success && <p className="text-sm text-emerald-600">{success}</p>}
           {err && <p className="text-sm text-destructive">{err}</p>}
           <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">

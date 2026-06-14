@@ -27,6 +27,12 @@ function validateInput(d: SubmitInput): SubmitInput {
   if (!d.client_phone || d.client_phone.length > 30) throw new Error("invalid phone");
   if (!isDate(d.event_date)) throw new Error("invalid event_date");
   if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error("invalid time");
+  const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
+  if (toMin(d.end_time) <= toMin(d.start_time)) throw new Error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
+  // التاريخ يجب أن يكون اليوم أو في المستقبل
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const ev = new Date(d.event_date + "T00:00:00");
+  if (ev.getTime() < today.getTime()) throw new Error("لا يمكن اختيار تاريخ في الماضي");
   if (!Array.isArray(d.items) || d.items.length === 0 || d.items.length > 30) throw new Error("invalid items");
   for (const it of d.items) {
     if (!isUuid(it.rule_id)) throw new Error("invalid item rule_id");
@@ -148,7 +154,10 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
   });
 
 export const getBookingByToken = createServerFn({ method: "GET" })
-  .inputValidator((d: { token: string }) => d)
+  .inputValidator((d: { token: string }) => {
+    if (!d || typeof d.token !== "string" || !/^[0-9a-f]{16,64}$/i.test(d.token)) throw new Error("invalid token");
+    return d;
+  })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin.rpc("get_booking_by_token", { _token: data.token });
@@ -220,10 +229,108 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
         is_published: true,
       } as any);
     if (error) {
-      if (/duplicate|unique/i.test(error.message)) {
+      if ((error as any).code === "23505" || /duplicate|unique/i.test(error.message)) {
         throw new Error("تم تسجيل تقييم لهذا الحجز سابقًا");
       }
       throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+// Public: deposit info shown on the photographer's public profile to clients (anon).
+// Returns only the fields safe to display (CliQ alias + bank info text).
+export const getPublicDepositInfo = createServerFn({ method: "POST" })
+  .inputValidator((d: { username: string }) => {
+    if (!d || typeof d.username !== "string" || d.username.length === 0 || d.username.length > 64) {
+      throw new Error("invalid username");
+    }
+    return { username: d.username.trim().toLowerCase() };
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("username", data.username)
+      .eq("is_published", true)
+      .maybeSingle();
+    if (!prof) return { cliq_alias: null, bank_info: null };
+    const { data: priv } = await supabaseAdmin
+      .from("photographer_private")
+      .select("cliq_alias, bank_info")
+      .eq("user_id", prof.id)
+      .maybeSingle();
+    return { cliq_alias: priv?.cliq_alias ?? null, bank_info: priv?.bank_info ?? null };
+  });
+
+// Records a referral after a new photographer signs up. Called from the client after
+// the user has an active session, or right after signUp when email confirmation is off.
+export const recordReferralAfterSignup = createServerFn({ method: "POST" })
+  .inputValidator((d: { referral_code: string; new_user_id: string }) => {
+    if (!d || typeof d.referral_code !== "string" || d.referral_code.length === 0 || d.referral_code.length > 64) {
+      throw new Error("invalid referral_code");
+    }
+    if (typeof d.new_user_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.new_user_id)) {
+      throw new Error("invalid user id");
+    }
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: referrer } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("referral_code", data.referral_code)
+      .maybeSingle();
+    if (!referrer) return { ok: false, reason: "referrer not found" };
+    if (referrer.id === data.new_user_id) return { ok: false, reason: "self-referral" };
+    // Idempotent: ignore conflict on duplicate.
+    await supabaseAdmin
+      .from("referrals")
+      .insert({ referrer_id: referrer.id, referred_id: data.new_user_id });
+    await supabaseAdmin
+      .from("profiles")
+      .update({ referred_by: referrer.id })
+      .eq("id", data.new_user_id);
+    return { ok: true };
+  });
+
+// Photographer-side: confirm a booking only if deposit has been paid (server enforced).
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string }) => {
+    if (!d || typeof d.booking_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.booking_id)) {
+      throw new Error("invalid booking_id");
+    }
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: bk, error } = await supabase
+      .from("bookings")
+      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id")
+      .eq("id", data.booking_id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!bk) throw new Error("الحجز غير موجود");
+    if (bk.photographer_id !== userId) throw new Error("forbidden");
+    if (!bk.deposit_sent_at && !bk.deposit_proof_url) {
+      throw new Error("لا يمكن تأكيد الحجز قبل وصول إثبات العربون من العميل");
+    }
+    const patch: any = { status: "confirmed", updated_at: new Date().toISOString() };
+    if (!bk.deposit_confirmed_at) patch.deposit_confirmed_at = new Date().toISOString();
+    const { error: uerr } = await supabase.from("bookings").update(patch).eq("id", data.booking_id);
+    if (uerr) throw new Error(uerr.message);
+    // Notify the client (if they have an account linked)
+    if (bk.client_user_id) {
+      await supabase.from("notifications").insert({
+        user_id: bk.client_user_id,
+        title: "تأكيد الحجز",
+        body: "تم تأكيد حجزك بعد استلام العربون.",
+        link: `/dashboard/bookings/${bk.id}`,
+      });
     }
     return { ok: true };
   });

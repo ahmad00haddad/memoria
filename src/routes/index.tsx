@@ -124,9 +124,9 @@ function Landing() {
                   : "انتهت التجربة المجانية، ويجب تفعيل الاشتراك للاستمرار في استقبال الحجوزات."}
               </div>
             )}
-            <div className="flex items-center gap-6 pt-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1"><Star className="h-4 w-4 fill-gold text-gold" /> ٤.٩ تقييم المصوّرين</div>
-              <div className="hidden sm:block">+١٢٠ مصوّر معتمد</div>
+            <div className="flex items-center gap-4 pt-4 text-sm text-muted-foreground flex-wrap">
+              <div className="flex items-center gap-1"><Star className="h-4 w-4 fill-gold text-gold" /> تقييمات حقيقية من عملاء سابقات</div>
+              <div className="hidden sm:block">حجز فوري بدون واتساب</div>
             </div>
           </div>
 

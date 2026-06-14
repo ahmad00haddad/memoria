@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { recordReferralAfterSignup } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/photographers/join")({
   component: JoinPage,
@@ -13,7 +15,9 @@ function JoinPage() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [refCode, setRefCode] = useState<string | null>(null);
+  const [confirmSent, setConfirmSent] = useState<string | null>(null);
   const navigate = useNavigate();
+  const referralFn = useServerFn(recordReferralAfterSignup);
 
   useEffect(() => {
     const ref = new URLSearchParams(window.location.search).get("ref");
@@ -25,46 +29,88 @@ function JoinPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
-    setLoading(true);
+    const hadArabic = /[^\u0000-\u007F]/.test(form.username);
     const username = form.username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
     if (username.length < 3) {
+      return setErr(hadArabic
+        ? "اسم المستخدم يجب أن يكون بالإنجليزية فقط (a-z, 0-9, _)."
+        : "اسم المستخدم يجب أن يكون 3 أحرف على الأقل.");
+    }
+    const reserved = new Set(["admin", "dashboard", "login", "logout", "auth", "api", "search", "guide", "track", "review", "contracts", "notifications", "photographers", "settings", "profile", "support"]);
+    if (reserved.has(username)) {
+      return setErr("اسم المستخدم محجوز، الرجاء اختيار اسم آخر.");
+    }
+    if (!form.display_name.trim()) {
+      return setErr("الرجاء إدخال الاسم الكامل أو اسم الاستوديو.");
+    }
+    if (form.password.length < 8) {
+      return setErr("كلمة المرور يجب أن تكون 8 أحرف على الأقل.");
+    }
+    setLoading(true);
+    // Ensure username is unique before creating the auth account.
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
+    if (existing) {
       setLoading(false);
-      return setErr("اسم المستخدم يجب أن يكون 3 أحرف على الأقل وبالإنجليزية.");
+      return setErr("اسم المستخدم مستخدم بالفعل، الرجاء اختيار اسم آخر.");
     }
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: `${window.location.origin}/dashboard`,
         data: {
           role: "photographer",
           username,
-          display_name: form.display_name,
+          display_name: form.display_name.trim(),
           referral_code: refCode,
         },
       },
     });
     setLoading(false);
-    if (error) return setErr(error.message);
-    // Record referral if a code was provided
-    if (refCode && signUpData.user) {
-      const { data: referrer } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("referral_code", refCode)
-        .maybeSingle();
-      if (referrer) {
-        await supabase.from("referrals").insert({ referrer_id: referrer.id, referred_id: signUpData.user.id });
-        await supabase.from("profiles").update({ referred_by: referrer.id }).eq("id", signUpData.user.id);
+    if (error) {
+      const m = error.message.toLowerCase();
+      if (m.includes("already registered") || m.includes("user already")) {
+        return setErr("هذا البريد مسجّل بالفعل. سجّلي الدخول بدلاً من إنشاء حساب جديد.");
       }
+      if (m.includes("password")) {
+        return setErr("كلمة المرور ضعيفة، استخدمي 8 أحرف على الأقل مع أرقام ورموز.");
+      }
+      if (m.includes("rate") || m.includes("limit")) {
+        return setErr("محاولات كثيرة، الرجاء المحاولة بعد قليل.");
+      }
+      return setErr(error.message);
     }
-    navigate({ to: "/dashboard" });
+    // Record referral via secure server function (idempotent, no-op if no session yet).
+    if (refCode && signUpData.user) {
+      try { await referralFn({ data: { referral_code: refCode, new_user_id: signUpData.user.id } }); } catch {}
+    }
+    // If email confirmation is required, the session will be null.
+    if (signUpData.session) {
+      navigate({ to: "/dashboard" });
+    } else {
+      setConfirmSent(form.email);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container-editorial py-16 max-w-lg">
+        {confirmSent ? (
+          <div className="bg-card border border-border rounded-sm p-6 shadow-soft text-center">
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">تحقّقي من بريدك</div>
+            <h1 className="font-serif text-3xl mb-3">رابط تفعيل في طريقه إليكِ</h1>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              أرسلنا رابط تفعيل إلى <strong>{confirmSent}</strong>.
+              افتحي الرابط لإكمال إنشاء حسابكِ ثم سجّلي الدخول.
+            </p>
+            <Link to="/login" className="inline-block bg-charcoal text-ivory px-6 py-2.5 rounded-sm hover:opacity-90">الذهاب لتسجيل الدخول</Link>
+          </div>
+        ) : (<>
         <div className="text-center mb-8">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">بوابة المصوّرين</div>
           <h1 className="font-serif text-4xl">انضم إلى المنصة</h1>
@@ -79,7 +125,7 @@ function JoinPage() {
           <Field label="الاسم الكامل / اسم الاستوديو" value={form.display_name} onChange={upd("display_name")} required />
           <Field label="اسم المستخدم (بالإنجليزية)" value={form.username} onChange={upd("username")} required placeholder="مثال: studio_amman" />
           <Field label="البريد الإلكتروني" type="email" value={form.email} onChange={upd("email")} required />
-          <Field label="كلمة المرور" type="password" value={form.password} onChange={upd("password")} required />
+          <Field label="كلمة المرور (8 أحرف على الأقل)" type="password" value={form.password} onChange={upd("password")} required />
           {err && <p className="text-sm text-destructive">{err}</p>}
           <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
             {loading ? "جاري الإنشاء…" : "إنشاء حسابي"}
@@ -88,6 +134,7 @@ function JoinPage() {
             لديك حساب؟ <Link to="/login" className="text-gold underline">تسجيل الدخول</Link>
           </p>
         </form>
+        </>)}
       </div>
       <Footer />
     </div>
