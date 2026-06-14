@@ -155,7 +155,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
 
 export const getBookingByToken = createServerFn({ method: "GET" })
   .inputValidator((d: { token: string }) => {
-    if (!d || typeof d.token !== "string" || !/^[0-9a-f]{16,64}$/i.test(d.token)) throw new Error("invalid token");
+    if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
     return d;
   })
   .handler(async ({ data }) => {
@@ -166,7 +166,13 @@ export const getBookingByToken = createServerFn({ method: "GET" })
   });
 
 export const clientMarkDepositSent = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string; proof_path?: string | null; reference?: string | null; note?: string | null }) => d)
+  .inputValidator((d: { token: string; proof_path?: string | null; reference?: string | null; note?: string | null }) => {
+    if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
+    if (d.proof_path && (typeof d.proof_path !== "string" || d.proof_path.length > 500)) throw new Error("invalid proof_path");
+    if (d.reference && (typeof d.reference !== "string" || d.reference.length > 200)) throw new Error("invalid reference");
+    if (d.note && (typeof d.note !== "string" || d.note.length > 2000)) throw new Error("invalid note");
+    return d;
+  })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("client_mark_deposit_sent", {
