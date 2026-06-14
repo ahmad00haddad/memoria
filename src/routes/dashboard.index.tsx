@@ -93,7 +93,6 @@ function Dashboard() {
           <Card title="الاشتراك" desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." cta="إدارة الاشتراك" to="/dashboard/subscription" />
           <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
           <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهرًا مجانيًا للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
-          <Card title="✨ أدوات الذكاء الاصطناعي" desc="نبذة، ردود، تسعير، عقود، ترجمة، كابشن إنستغرام والمزيد — مدعومة بـ Lovable AI." cta="افتح الأدوات" to="/dashboard/ai-tools" />
           <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={profile?.username ? `/photographers/${profile.username}` : undefined} external={!!profile?.username} disabled={!profile?.username} />
         </div>
       </section>

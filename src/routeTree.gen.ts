@@ -33,7 +33,6 @@ import { Route as DashboardPricingRouteImport } from './routes/dashboard.pricing
 import { Route as DashboardContractsRouteImport } from './routes/dashboard.contracts'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookings'
-import { Route as DashboardAiToolsRouteImport } from './routes/dashboard.ai-tools'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminPhotographersRouteImport } from './routes/admin.photographers'
@@ -161,11 +160,6 @@ const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
   path: '/bookings',
   getParentRoute: () => DashboardRoute,
 } as any)
-const DashboardAiToolsRoute = DashboardAiToolsRouteImport.update({
-  id: '/ai-tools',
-  path: '/ai-tools',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const ContractsTokenRoute = ContractsTokenRouteImport.update({
   id: '/contracts/$token',
   path: '/contracts/$token',
@@ -211,7 +205,6 @@ export interface FileRoutesByFullPath {
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
-  '/dashboard/ai-tools': typeof DashboardAiToolsRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/contracts': typeof DashboardContractsRoute
@@ -242,7 +235,6 @@ export interface FileRoutesByTo {
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
-  '/dashboard/ai-tools': typeof DashboardAiToolsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/contracts': typeof DashboardContractsRoute
   '/dashboard/pricing': typeof DashboardPricingRoute
@@ -275,7 +267,6 @@ export interface FileRoutesById {
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
-  '/dashboard/ai-tools': typeof DashboardAiToolsRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/contracts': typeof DashboardContractsRoute
@@ -310,7 +301,6 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
-    | '/dashboard/ai-tools'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/contracts'
@@ -341,7 +331,6 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
-    | '/dashboard/ai-tools'
     | '/dashboard/calendar'
     | '/dashboard/contracts'
     | '/dashboard/pricing'
@@ -373,7 +362,6 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/subscriptions'
     | '/contracts/$token'
-    | '/dashboard/ai-tools'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/contracts'
@@ -582,13 +570,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBookingsRouteImport
       parentRoute: typeof DashboardRoute
     }
-    '/dashboard/ai-tools': {
-      id: '/dashboard/ai-tools'
-      path: '/ai-tools'
-      fullPath: '/dashboard/ai-tools'
-      preLoaderRoute: typeof DashboardAiToolsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/contracts/$token': {
       id: '/contracts/$token'
       path: '/contracts/$token'
@@ -662,7 +643,6 @@ const DashboardBookingsRouteWithChildren =
   DashboardBookingsRoute._addFileChildren(DashboardBookingsRouteChildren)
 
 interface DashboardRouteChildren {
-  DashboardAiToolsRoute: typeof DashboardAiToolsRoute
   DashboardBookingsRoute: typeof DashboardBookingsRouteWithChildren
   DashboardCalendarRoute: typeof DashboardCalendarRoute
   DashboardContractsRoute: typeof DashboardContractsRoute
@@ -675,7 +655,6 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardAiToolsRoute: DashboardAiToolsRoute,
   DashboardBookingsRoute: DashboardBookingsRouteWithChildren,
   DashboardCalendarRoute: DashboardCalendarRoute,
   DashboardContractsRoute: DashboardContractsRoute,
