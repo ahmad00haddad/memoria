@@ -1,8 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, X, ExternalLink } from "lucide-react";
+import {
+  listSubscriptionPaymentsAdmin,
+  adminApproveSubscriptionPayment,
+  adminRejectSubscriptionPayment,
+} from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin/subscriptions")({
   component: AdminSubs,
@@ -18,90 +24,57 @@ type Row = {
   cliq_reference: string | null;
   created_at: string;
   notes: string | null;
+  proof_signed_url?: string | null;
   profile?: { username: string; display_name: string } | null;
 };
 
 function AdminSubs() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
-  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+  const listFn = useServerFn(listSubscriptionPaymentsAdmin);
+  const approveFn = useServerFn(adminApproveSubscriptionPayment);
+  const rejectFn = useServerFn(adminRejectSubscriptionPayment);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { navigate({ to: "/login" }); return; }
-    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
-    const admin = (roles ?? []).some((r: any) => r.role === "admin");
-    setIsAdmin(admin);
-    if (!admin) { setLoading(false); return; }
-
-    const { data: payments } = await supabase
-      .from("subscription_payments")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    const ids = Array.from(new Set((payments ?? []).map((p: any) => p.photographer_id)));
-    const { data: profs } = ids.length
-      ? await supabase.from("profiles").select("id, username, display_name").in("id", ids)
-      : { data: [] as any[] };
-    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
-
-    const enriched = (payments ?? []).map((p: any) => ({ ...p, profile: profMap.get(p.photographer_id) ?? null }));
-    setRows(enriched as Row[]);
-
-    // Signed URLs for proofs
-    const urls: Record<string, string> = {};
-    for (const r of enriched) {
-      if (r.proof_url) {
-        const { data } = await supabase.storage.from("payment-proofs").createSignedUrl(r.proof_url, 3600);
-        if (data?.signedUrl) urls[r.id] = data.signedUrl;
-      }
+    try {
+      const data = await listFn();
+      setRows((data as Row[]) ?? []);
+    } catch (e: any) {
+      toast.error(e.message || "ليست لديك صلاحية");
     }
-    setSignedUrls(urls);
     setLoading(false);
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
   const approve = async (row: Row) => {
-    const periodStart = new Date();
-    const periodEnd = new Date();
-    periodEnd.setMonth(periodEnd.getMonth() + 1);
-
-    const { error: e1 } = await supabase.from("subscription_payments").update({
-      status: "approved",
-      reviewed_at: new Date().toISOString(),
-    }).eq("id", row.id);
-    if (e1) { toast.error(e1.message); return; }
-
-    const { error: e2 } = await supabase.from("subscriptions").update({
-      status: "active",
-      current_period_start: periodStart.toISOString(),
-      current_period_end: periodEnd.toISOString(),
-    }).eq("photographer_id", row.photographer_id);
-    if (e2) { toast.error(e2.message); return; }
-
-    toast.success("تم تفعيل الاشتراك");
-    load();
+    const monthsStr = window.prompt("عدد الأشهر:", "1");
+    const months = Number(monthsStr);
+    if (!Number.isInteger(months) || months < 1 || months > 36) {
+      toast.error("أدخلي عدد أشهر بين 1 و36");
+      return;
+    }
+    try {
+      await approveFn({ data: { payment_id: row.id, months } });
+      toast.success("تم تفعيل الاشتراك");
+      load();
+    } catch (e: any) { toast.error(e.message); }
   };
 
   const reject = async (row: Row) => {
     const reason = window.prompt("سبب الرفض:");
     if (!reason) return;
-    const { error } = await supabase.from("subscription_payments").update({
-      status: "rejected",
-      reviewed_at: new Date().toISOString(),
-      notes: reason,
-    }).eq("id", row.id);
-    if (error) { toast.error(error.message); return; }
-    await supabase.from("subscriptions").update({ status: "trial" }).eq("photographer_id", row.photographer_id);
-    toast.success("تم رفض الدفعة");
-    load();
+    try {
+      await rejectFn({ data: { payment_id: row.id, reason } });
+      toast.success("تم رفض الدفعة");
+      load();
+    } catch (e: any) { toast.error(e.message); }
   };
 
   if (loading) return <div className="py-12 text-center text-muted-foreground">جاري التحميل…</div>;
-  if (!isAdmin) return null;
 
   const pending = rows.filter((r) => r.status === "pending");
   const reviewed = rows.filter((r) => r.status !== "pending");
@@ -114,13 +87,13 @@ function AdminSubs() {
           <div className="rounded-sm border border-border bg-card p-6 text-muted-foreground text-sm mb-10">لا توجد دفعات معلّقة.</div>
         ) : (
           <div className="space-y-3 mb-10">
-            {pending.map((r) => <Row key={r.id} r={r} url={signedUrls[r.id]} onApprove={() => approve(r)} onReject={() => reject(r)} />)}
+            {pending.map((r) => <Row key={r.id} r={r} url={r.proof_signed_url ?? undefined} onApprove={() => approve(r)} onReject={() => reject(r)} />)}
           </div>
         )}
 
         <h3 className="font-serif text-lg mb-3">السجل ({reviewed.length})</h3>
         <div className="space-y-3">
-          {reviewed.map((r) => <Row key={r.id} r={r} url={signedUrls[r.id]} />)}
+          {reviewed.map((r) => <Row key={r.id} r={r} url={r.proof_signed_url ?? undefined} />)}
         </div>
     </section>
   );
