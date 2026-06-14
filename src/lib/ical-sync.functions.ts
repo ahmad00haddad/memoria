@@ -34,6 +34,32 @@ function parseIcalDates(ics: string): { date: string; summary: string }[] {
   return events;
 }
 
+function assertSafeIcalUrl(raw: string): string {
+  const fetchUrl = raw.replace(/^webcal:\/\//i, "https://");
+  let u: URL;
+  try { u = new URL(fetchUrl); } catch { throw new Error("رابط غير صالح"); }
+  if (u.protocol !== "https:") throw new Error("الرابط يجب أن يكون https");
+  const host = u.hostname.toLowerCase();
+  // Reject literal IPs and private/loopback/link-local ranges
+  const isIPv4 = /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
+  const isIPv6 = host.includes(":");
+  if (isIPv6) throw new Error("عناوين IPv6 غير مسموحة");
+  if (isIPv4) {
+    const [a, b] = host.split(".").map(Number);
+    if (
+      a === 10 || a === 127 || a === 0 ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 169 && b === 254) ||
+      a >= 224 // multicast/reserved
+    ) throw new Error("عنوان IP داخلي غير مسموح");
+  }
+  if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal")) {
+    throw new Error("نطاق داخلي غير مسموح");
+  }
+  return u.toString();
+}
+
 export const syncExternalIcal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -42,11 +68,15 @@ export const syncExternalIcal = createServerFn({ method: "POST" })
       .from("photographer_private").select("external_ical_url").eq("user_id", userId).maybeSingle();
     const url = profile?.external_ical_url?.trim();
     if (!url) throw new Error("لم يتم تعيين رابط Google Calendar iCal بعد.");
-    // قبول webcal:// عبر تحويلها إلى https://
-    const fetchUrl = url.replace(/^webcal:\/\//i, "https://");
-    const res = await fetch(fetchUrl, { headers: { Accept: "text/calendar" } });
+    const fetchUrl = assertSafeIcalUrl(url);
+    const res = await fetch(fetchUrl, {
+      headers: { Accept: "text/calendar" },
+      redirect: "error",
+      signal: AbortSignal.timeout(10_000),
+    });
     if (!res.ok) throw new Error(`تعذّر جلب التقويم: ${res.status}`);
     const ics = await res.text();
+    if (ics.length > 2_000_000) throw new Error("الملف كبير جدًا");
     const events = parseIcalDates(ics);
 
     const { data: existing } = await supabase
