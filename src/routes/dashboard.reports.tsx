@@ -34,6 +34,7 @@ function ReportsPage() {
         .from("bookings")
         .select("id,client_name,event_date,service,status,total_price,deposit_amount,deposit_confirmed_at,delivered_at,created_at")
         .eq("photographer_id", session.user.id)
+        .is("deleted_at", null)
         .order("event_date", { ascending: false });
       setBookings((data ?? []) as Booking[]);
       setLoading(false);
