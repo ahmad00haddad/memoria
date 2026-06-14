@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           addons: Json | null
@@ -27,6 +63,7 @@ export type Database = {
           client_user_id: string | null
           contract_agreed: boolean
           created_at: string
+          deleted_at: string | null
           delivered_at: string | null
           delivery_days_promised: number | null
           delivery_due_at: string | null
@@ -53,6 +90,7 @@ export type Database = {
           service: Database["public"]["Enums"]["service_type"]
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
+          token_expires_at: string | null
           total_price: number
           travel_fee: number
           updated_at: string
@@ -73,6 +111,7 @@ export type Database = {
           client_user_id?: string | null
           contract_agreed?: boolean
           created_at?: string
+          deleted_at?: string | null
           delivered_at?: string | null
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
@@ -99,6 +138,7 @@ export type Database = {
           service: Database["public"]["Enums"]["service_type"]
           start_time: string
           status?: Database["public"]["Enums"]["booking_status"]
+          token_expires_at?: string | null
           total_price?: number
           travel_fee?: number
           updated_at?: string
@@ -119,6 +159,7 @@ export type Database = {
           client_user_id?: string | null
           contract_agreed?: boolean
           created_at?: string
+          deleted_at?: string | null
           delivered_at?: string | null
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
@@ -145,6 +186,7 @@ export type Database = {
           service?: Database["public"]["Enums"]["service_type"]
           start_time?: string
           status?: Database["public"]["Enums"]["booking_status"]
+          token_expires_at?: string | null
           total_price?: number
           travel_fee?: number
           updated_at?: string
@@ -200,6 +242,7 @@ export type Database = {
           client_name: string
           client_signature: string | null
           created_at: string
+          deleted_at: string | null
           id: string
           photographer_id: string
           sign_token: string
@@ -214,6 +257,7 @@ export type Database = {
           client_name: string
           client_signature?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           photographer_id: string
           sign_token?: string
@@ -228,6 +272,7 @@ export type Database = {
           client_name?: string
           client_signature?: string | null
           created_at?: string
+          deleted_at?: string | null
           id?: string
           photographer_id?: string
           sign_token?: string
@@ -523,6 +568,7 @@ export type Database = {
           city: string | null
           cover_url: string | null
           created_at: string
+          deleted_at: string | null
           deposit_percent: number
           display_name: string
           equipment: string | null
@@ -549,6 +595,7 @@ export type Database = {
           city?: string | null
           cover_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           deposit_percent?: number
           display_name: string
           equipment?: string | null
@@ -575,6 +622,7 @@ export type Database = {
           city?: string | null
           cover_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           deposit_percent?: number
           display_name?: string
           equipment?: string | null
@@ -813,11 +861,20 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_photographer_busy: {
+        Args: { _date: string; _pid: string }
+        Returns: boolean
+      }
       is_subscription_active: {
         Args: { _photographer_id: string }
         Returns: boolean
       }
       refresh_featured_photographers: { Args: never; Returns: undefined }
+      regenerate_booking_token: {
+        Args: { _booking_id: string }
+        Returns: string
+      }
+      soft_delete_booking: { Args: { _booking_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "photographer" | "client"
