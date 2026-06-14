@@ -401,6 +401,7 @@ export type Database = {
           bank_info: string | null
           cliq_alias: string | null
           created_at: string
+          external_ical_auto_sync: boolean
           external_ical_synced_at: string | null
           external_ical_url: string | null
           ical_token: string | null
@@ -413,6 +414,7 @@ export type Database = {
           bank_info?: string | null
           cliq_alias?: string | null
           created_at?: string
+          external_ical_auto_sync?: boolean
           external_ical_synced_at?: string | null
           external_ical_url?: string | null
           ical_token?: string | null
@@ -425,6 +427,7 @@ export type Database = {
           bank_info?: string | null
           cliq_alias?: string | null
           created_at?: string
+          external_ical_auto_sync?: boolean
           external_ical_synced_at?: string | null
           external_ical_url?: string | null
           ical_token?: string | null
