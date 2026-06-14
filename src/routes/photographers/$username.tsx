@@ -78,7 +78,7 @@ function PhotographerPage() {
           supabase.from("pricing_rules").select("*").eq("photographer_id", pid),
           supabase.from("reviews").select("*").eq("photographer_id", pid).eq("is_published", true).order("created_at", { ascending: false }),
           supabase.rpc("get_photographer_busy_dates", { _pid: pid }),
-          supabase.from("bookings").select("event_date,start_time,end_time").eq("photographer_id", pid).in("status", ["confirmed", "pending_deposit"]),
+          supabase.from("bookings").select("event_date,start_time,end_time").eq("photographer_id", pid).is("deleted_at", null).in("status", ["confirmed", "pending_deposit"]),
         ]);
         setPricing((p ?? []) as Pricing[]);
         setReviews(r ?? []);
