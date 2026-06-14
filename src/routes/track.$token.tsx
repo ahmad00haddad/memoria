@@ -52,6 +52,20 @@ function TrackingPage() {
   }, []);
 
   if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (b && b.expired) return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container-editorial py-24 text-center max-w-xl mx-auto">
+        <h1 className="font-serif text-3xl mb-2">انتهت صلاحية الرابط</h1>
+        <p className="text-muted-foreground mb-4">هذا الرابط أصبح غير فعّال. يرجى التواصل مع المصورة للحصول على رابط جديد.</p>
+        {b.photographer?.whatsapp && (
+          <a href={`https://wa.me/${String(b.photographer.whatsapp).replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+             className="inline-block bg-charcoal text-ivory px-5 py-2 rounded-sm">تواصل عبر واتساب</a>
+        )}
+      </div>
+      <Footer />
+    </div>
+  );
   if (!b) return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -69,6 +83,11 @@ function TrackingPage() {
       let proofPath: string | null = null;
       const file = fileRef.current?.files?.[0];
       if (file) {
+        // Server-side hardening: validate size & MIME client-side too
+        const MAX = 5 * 1024 * 1024; // 5 MB
+        const ALLOWED = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+        if (file.size > MAX) { toast.error("حجم الملف يجب أن لا يتجاوز 5 ميجابايت"); setUploading(false); return; }
+        if (!ALLOWED.includes(file.type)) { toast.error("الصيغة غير مدعومة. JPG / PNG / WEBP / PDF فقط"); setUploading(false); return; }
         const ext = file.name.split(".").pop() || "jpg";
         const path = `public-tokens/${token}/${Date.now()}.${ext}`;
         const { error: upErr } = await supabase.storage.from("deposit-proofs").upload(path, file);
