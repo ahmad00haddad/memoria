@@ -509,10 +509,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   );
 }
 
-function DepositCard({ profile }: { profile: Profile }) {
+function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqAlias: string | null; bankInfo: string | null }) {
   return (
     <div className="bg-charcoal text-ivory rounded-sm p-6 sm:p-8 h-fit lg:sticky lg:top-24">
-      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Deposit Information</div>
+      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">العربون</div>
       <h3 className="font-serif text-2xl mb-5">معلومات العربون</h3>
       <div className="space-y-4 text-sm">
         {profile.fixed_deposit ? (
@@ -520,24 +520,29 @@ function DepositCard({ profile }: { profile: Profile }) {
         ) : (
           <Row label="نسبة العربون" value={`${profile.deposit_percent}%`} />
         )}
-        {profile.cliq_alias && (
+        {cliqAlias && (
           <div className="bg-ivory/10 rounded-sm p-3">
             <div className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1">CliQ Alias</div>
             <div className="flex items-center justify-between gap-2">
-              <div className="font-mono text-lg">{profile.cliq_alias}</div>
-              <button onClick={() => { navigator.clipboard.writeText(profile.cliq_alias!); toast.success("تم النسخ"); }} className="p-2 hover:bg-ivory/10 rounded-sm"><Copy className="h-4 w-4" /></button>
+              <div className="font-mono text-lg">{cliqAlias}</div>
+              <button onClick={() => { navigator.clipboard.writeText(cliqAlias); toast.success("تم النسخ"); }} className="p-2 hover:bg-ivory/10 rounded-sm"><Copy className="h-4 w-4" /></button>
             </div>
           </div>
         )}
-        {profile.bank_info && (
+        {bankInfo && (
           <div className="bg-ivory/10 rounded-sm p-3">
             <div className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1">تحويل بنكي</div>
-            <div className="whitespace-pre-line">{profile.bank_info}</div>
+            <div className="whitespace-pre-line">{bankInfo}</div>
+          </div>
+        )}
+        {!cliqAlias && !bankInfo && (
+          <div className="bg-ivory/10 rounded-sm p-3 text-xs leading-relaxed">
+            ستظهر معلومات الدفع كاملة في صفحة تتبّع الحجز فور إرسال طلبك.
           </div>
         )}
       </div>
       <p className="text-[11px] text-ivory/60 mt-5 leading-relaxed">
-        بعد التحويل أرسلي إثبات الدفع عبر واتساب لتأكيد الحجز.
+        بعد التحويل ارفعي صورة إثبات الدفع من صفحة تتبّع الحجز الخاصة بكِ — يصل التأكيد تلقائيًا للمصوّرة.
       </p>
     </div>
   );
