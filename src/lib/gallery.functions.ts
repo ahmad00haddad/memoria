@@ -35,13 +35,13 @@ export const getGalleryByToken = createServerFn({ method: "POST" })
       .order("position", { ascending: true });
 
     const withUrls = await Promise.all((photos ?? []).map(async (p) => {
-      const { data: s } = await supabaseAdmin.storage.from("delivery-photos").createSignedUrl(p.storage_path, 60 * 60 * 6);
+      const { data: s } = await supabaseAdmin.storage.from("delivery-photos").createSignedUrl(p.storage_path, 60 * 60 * 24 * 7);
       return { id: p.id, caption: p.caption, position: p.position, url: s?.signedUrl ?? null };
     }));
 
     let coverUrl: string | null = null;
     if (g.cover_path) {
-      const { data: c } = await supabaseAdmin.storage.from("delivery-photos").createSignedUrl(g.cover_path, 60 * 60 * 6);
+      const { data: c } = await supabaseAdmin.storage.from("delivery-photos").createSignedUrl(g.cover_path, 60 * 60 * 24 * 7);
       coverUrl = c?.signedUrl ?? null;
     }
 
