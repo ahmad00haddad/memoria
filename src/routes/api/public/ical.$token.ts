@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/public/ical/$token")({
 
         const [{ data: bookings }, { data: unavail }] = await Promise.all([
           supabaseAdmin.from("bookings").select("id,event_date,start_time,end_time,client_name,venue_name,status")
-            .eq("photographer_id", profile.id).in("status", ["pending_deposit", "confirmed", "completed"]),
+            .eq("photographer_id", profile.id).is("deleted_at", null).in("status", ["pending_deposit", "confirmed", "completed"]),
           supabaseAdmin.from("photographer_unavailability").select("date,reason").eq("photographer_id", profile.id),
         ]);
 

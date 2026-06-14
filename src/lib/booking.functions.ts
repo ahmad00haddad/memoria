@@ -155,7 +155,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
 
 export const getBookingByToken = createServerFn({ method: "GET" })
   .inputValidator((d: { token: string }) => {
-    if (!d || typeof d.token !== "string" || !/^[0-9a-f]{16,64}$/i.test(d.token)) throw new Error("invalid token");
+    if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
     return d;
   })
   .handler(async ({ data }) => {
@@ -166,7 +166,13 @@ export const getBookingByToken = createServerFn({ method: "GET" })
   });
 
 export const clientMarkDepositSent = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string; proof_path?: string | null; reference?: string | null; note?: string | null }) => d)
+  .inputValidator((d: { token: string; proof_path?: string | null; reference?: string | null; note?: string | null }) => {
+    if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
+    if (d.proof_path && (typeof d.proof_path !== "string" || d.proof_path.length > 500)) throw new Error("invalid proof_path");
+    if (d.reference && (typeof d.reference !== "string" || d.reference.length > 200)) throw new Error("invalid reference");
+    if (d.note && (typeof d.note !== "string" || d.note.length > 2000)) throw new Error("invalid note");
+    return d;
+  })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("client_mark_deposit_sent", {
@@ -333,4 +339,36 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
       });
     }
     return { ok: true };
+  });
+
+// Photographer-side: soft-delete a booking (keeps audit trail, recoverable).
+export const softDeleteBooking = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string }) => {
+    if (!d || typeof d.booking_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.booking_id)) {
+      throw new Error("invalid booking_id");
+    }
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { error } = await supabase.rpc("soft_delete_booking", { _booking_id: data.booking_id });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// Photographer-side: regenerate the client-tracking token (invalidates old link).
+export const regenerateBookingToken = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string }) => {
+    if (!d || typeof d.booking_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.booking_id)) {
+      throw new Error("invalid booking_id");
+    }
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: token, error } = await supabase.rpc("regenerate_booking_token", { _booking_id: data.booking_id });
+    if (error) throw new Error(error.message);
+    return { token: token as string };
   });

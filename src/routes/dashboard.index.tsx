@@ -30,7 +30,7 @@ function Dashboard() {
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
         supabase.from("photographer_private").select("ical_token").eq("user_id", session.user.id).maybeSingle(),
         supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
-        supabase.from("bookings").select("status,total_price,deposit_amount,event_date,delivery_due_at,production_stage").eq("photographer_id", session.user.id),
+        supabase.from("bookings").select("status,total_price,deposit_amount,event_date,delivery_due_at,production_stage").eq("photographer_id", session.user.id).is("deleted_at", null),
         supabase.from("reviews").select("rating").eq("photographer_id", session.user.id),
         supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       ]);
