@@ -88,3 +88,85 @@ export const adminDeletePhotographer = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+export const listSubscriptionPaymentsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: payments, error } = await supabaseAdmin
+      .from("subscription_payments")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    const ids = Array.from(new Set((payments ?? []).map((p: any) => p.photographer_id)));
+    const { data: profs } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name").in("id", ids)
+      : { data: [] as any[] };
+    const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+
+    // signed urls for proofs
+    const enriched = await Promise.all((payments ?? []).map(async (p: any) => {
+      let proof_signed_url: string | null = null;
+      if (p.proof_url) {
+        const { data: s } = await supabaseAdmin.storage.from("payment-proofs").createSignedUrl(p.proof_url, 3600);
+        proof_signed_url = s?.signedUrl ?? null;
+      }
+      return { ...p, profile: map.get(p.photographer_id) ?? null, proof_signed_url };
+    }));
+    return enriched;
+  });
+
+export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { payment_id: string; months: number }) => {
+    if (!/^[0-9a-f-]{36}$/i.test(d?.payment_id ?? "")) throw new Error("invalid payment_id");
+    if (!Number.isInteger(d?.months) || d.months < 1 || d.months > 36) throw new Error("months 1-36");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: payment, error: pErr } = await supabaseAdmin
+      .from("subscription_payments")
+      .select("id, photographer_id, status")
+      .eq("id", data.payment_id)
+      .single();
+    if (pErr || !payment) throw new Error("الدفعة غير موجودة");
+    if (payment.status !== "pending") throw new Error("تمت معالجة هذه الدفعة سابقًا");
+
+    const { error: e1 } = await supabaseAdmin
+      .from("subscription_payments")
+      .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: userId, period_months: data.months })
+      .eq("id", data.payment_id);
+    if (e1) throw new Error(e1.message);
+
+    const { error: e2 } = await supabaseAdmin.rpc("admin_renew_subscription", {
+      _photographer_id: payment.photographer_id,
+      _months: data.months,
+    });
+    if (e2) throw new Error(e2.message);
+    return { ok: true };
+  });
+
+export const adminRejectSubscriptionPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { payment_id: string; reason: string }) => {
+    if (!/^[0-9a-f-]{36}$/i.test(d?.payment_id ?? "")) throw new Error("invalid payment_id");
+    if (!d.reason || d.reason.length > 500) throw new Error("invalid reason");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("subscription_payments")
+      .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: userId, notes: data.reason })
+      .eq("id", data.payment_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
