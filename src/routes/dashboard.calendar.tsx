@@ -33,7 +33,7 @@ function CalendarPage() {
   const load = async (id: string) => {
     const [{ data: u }, { data: b }, { data: p }] = await Promise.all([
       supabase.from("photographer_unavailability").select("*").eq("photographer_id", id).order("date"),
-      supabase.from("bookings").select("event_date,start_time,end_time,status,client_name").eq("photographer_id", id).order("event_date"),
+      supabase.from("bookings").select("event_date,start_time,end_time,status,client_name").eq("photographer_id", id).is("deleted_at", null).order("event_date"),
       supabase.from("photographer_private").select("external_ical_url,external_ical_synced_at,external_ical_auto_sync,ical_token").eq("user_id", id).maybeSingle(),
     ]);
     setUnavail((u ?? []) as any);
