@@ -9,8 +9,9 @@ import {
   clientMarkReceived,
   clientAddNote,
 } from "@/lib/booking.functions";
+import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare } from "lucide-react";
+import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/track/$token")({
@@ -43,6 +44,12 @@ function TrackingPage() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [token]);
+
+  // Polling refresh — keeps gallery/messages live without realtime RLS gymnastics
+  useEffect(() => {
+    const id = setInterval(() => { load(); }, 30000);
+    return () => clearInterval(id);
+  }, []);
 
   if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
   if (!b) return (
@@ -242,6 +249,9 @@ function TrackingPage() {
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-8">احفظي هذا الرابط للوصول لاحقًا لتتبع حجزك.</p>
+
+        <ClientGallery token={token} />
+        <ClientChat token={token} clientName={b.client_name} />
       </section>
       <Footer />
     </div>
@@ -253,6 +263,101 @@ function Info({ label, v }: { label: string; v: any }) {
     <div>
       <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{label}</div>
       <div className="font-medium">{v ?? "—"}</div>
+    </div>
+  );
+}
+
+function ClientGallery({ token }: { token: string }) {
+  const fetchG = useServerFn(getGalleryByToken);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState<string | null>(null);
+
+  const load = async () => {
+    try { setData(await fetchG({ data: { token } })); }
+    finally { setLoading(false); }
+  };
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [token]);
+
+  if (loading) return null;
+  if (data?.expired) return <div className="mt-8 rounded-sm border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">انتهت صلاحية معرض الصور.</div>;
+  if (!data?.gallery) return null;
+
+  return (
+    <div className="mt-8 rounded-sm border border-border bg-card p-5">
+      <h2 className="font-serif text-xl mb-4 flex items-center gap-2"><ImageIcon className="h-5 w-5 text-gold" /> {data.gallery.title || "معرض الصور"}</h2>
+      {data.photos.length === 0 ? (
+        <p className="text-sm text-muted-foreground">لم تُرفع صور بعد. ستظهر هنا فور التسليم.</p>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {data.photos.map((p: any) => (
+            <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightbox(p.url)}>
+              {p.url && <img src={p.url} alt={p.caption ?? ""} loading="lazy" className="w-full h-full object-cover transition group-hover:scale-105" />}
+              {data.gallery.allow_downloads && p.url && (
+                <a href={p.url} download onClick={(e) => e.stopPropagation()} className="absolute bottom-1 left-1 bg-black/60 text-white p-1.5 rounded-sm opacity-0 group-hover:opacity-100 transition">
+                  <Download className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      {lightbox && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
+          <button className="absolute top-4 left-4 text-white p-2" onClick={() => setLightbox(null)}><X className="h-6 w-6" /></button>
+          <img src={lightbox} alt="" className="max-w-full max-h-full object-contain" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ClientChat({ token, clientName }: { token: string; clientName: string }) {
+  const fetchM = useServerFn(getMessagesByToken);
+  const sendM = useServerFn(sendMessageByToken);
+  const [msgs, setMsgs] = useState<any[]>([]);
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const load = async () => {
+    try { const r = await fetchM({ data: { token } }); setMsgs(r.messages); } catch {}
+  };
+  useEffect(() => {
+    load();
+    const id = setInterval(load, 8000);
+    return () => clearInterval(id);
+    /* eslint-disable-next-line */
+  }, [token]);
+
+  const send = async () => {
+    if (!text.trim()) return;
+    setSending(true);
+    try { await sendM({ data: { token, body: text.trim() } }); setText(""); await load(); }
+    catch (e: any) { toast.error(e.message); }
+    finally { setSending(false); }
+  };
+
+  return (
+    <div className="mt-8 rounded-sm border border-border bg-card p-5">
+      <h2 className="font-serif text-xl mb-4 flex items-center gap-2"><MessageSquare className="h-5 w-5 text-gold" /> المحادثة مع المصوّرة</h2>
+      <div className="space-y-2 max-h-96 overflow-y-auto mb-4">
+        {msgs.length === 0 && <p className="text-sm text-muted-foreground">ابدئي المحادثة بإرسال رسالة.</p>}
+        {msgs.map((m) => {
+          const mine = !m.sender_id; // client messages have null sender_id
+          return (
+            <div key={m.id} className={`p-3 rounded-sm ${mine ? "bg-charcoal text-ivory mr-8" : "bg-secondary ml-8"}`}>
+              <div className="text-[10px] opacity-70 mb-1">{mine ? clientName : (m.sender_name || "المصوّرة")} · {new Date(m.created_at).toLocaleString("ar-JO")}</div>
+              <div className="text-sm whitespace-pre-wrap">{m.body}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex gap-2">
+        <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="اكتبي رسالة…" className="flex-1 border border-border rounded-sm px-3 py-2 bg-background text-sm" />
+        <button onClick={send} disabled={sending || !text.trim()} className="bg-charcoal text-ivory px-4 rounded-sm inline-flex items-center gap-2 disabled:opacity-50">
+          <SendIcon className="h-4 w-4" /> إرسال
+        </button>
+      </div>
     </div>
   );
 }
