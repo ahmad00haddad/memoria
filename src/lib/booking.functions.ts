@@ -1,40 +1,96 @@
 import { createServerFn } from "@tanstack/react-start";
 
-type BookingItem = {
-  rule_id: string;
-  label: string;
-  price: number;
-  qty: number;
-  kind: "main" | "addon";
-};
+type BookingItemInput = { rule_id: string; qty: number };
 
 type SubmitInput = {
   photographer_id: string;
   client_name: string;
   client_email: string;
   client_phone: string;
-  service: string;
   event_date: string;
   start_time: string;
   end_time: string;
   venue_address?: string | null;
-  base_price: number;
-  total_price: number;
-  deposit_amount: number;
-  items: BookingItem[];
+  items: BookingItemInput[];
   client_notes?: string | null;
   privacy_level: "public" | "private_only";
 };
 
+function validateInput(d: SubmitInput): SubmitInput {
+  const isUuid = (s: any) => typeof s === "string" && /^[0-9a-f-]{36}$/i.test(s);
+  const isDate = (s: any) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const isTime = (s: any) => typeof s === "string" && /^\d{2}:\d{2}(:\d{2})?$/.test(s);
+  if (!d || typeof d !== "object") throw new Error("invalid payload");
+  if (!isUuid(d.photographer_id)) throw new Error("invalid photographer_id");
+  if (!d.client_name || d.client_name.length > 120) throw new Error("invalid client_name");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.client_email ?? "")) throw new Error("invalid email");
+  if (!d.client_phone || d.client_phone.length > 30) throw new Error("invalid phone");
+  if (!isDate(d.event_date)) throw new Error("invalid event_date");
+  if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error("invalid time");
+  if (!Array.isArray(d.items) || d.items.length === 0 || d.items.length > 30) throw new Error("invalid items");
+  for (const it of d.items) {
+    if (!isUuid(it.rule_id)) throw new Error("invalid item rule_id");
+    if (!Number.isInteger(it.qty) || it.qty < 1 || it.qty > 50) throw new Error("invalid item qty");
+  }
+  if (d.privacy_level !== "public" && d.privacy_level !== "private_only") throw new Error("invalid privacy_level");
+  if (d.venue_address && d.venue_address.length > 500) throw new Error("invalid venue");
+  if (d.client_notes && d.client_notes.length > 4000) throw new Error("invalid notes");
+  return d;
+}
+
 export const submitBookingRequest = createServerFn({ method: "POST" })
-  .inputValidator((d: SubmitInput) => d)
+  .inputValidator((d: SubmitInput) => validateInput(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const main = data.items.find((i) => i.kind === "main");
-    const summaryLabel = main
-      ? `${main.label}${data.items.length > 1 ? ` +${data.items.length - 1} إضافات` : ""}`
-      : data.items.map((i) => i.label).join(" + ");
+    // Server-side authoritative price recompute.
+    const ruleIds = data.items.map((i) => i.rule_id);
+    const { data: rules, error: rulesErr } = await supabaseAdmin
+      .from("pricing_rules")
+      .select("id, photographer_id, label, price, service, is_addon")
+      .in("id", ruleIds);
+    if (rulesErr) throw new Error(rulesErr.message);
+    const ruleMap = new Map((rules ?? []).map((r: any) => [r.id, r]));
+    for (const it of data.items) {
+      const r = ruleMap.get(it.rule_id);
+      if (!r || r.photographer_id !== data.photographer_id) {
+        throw new Error("باقة غير صالحة");
+      }
+    }
+
+    const mainItem = data.items.find((i) => !ruleMap.get(i.rule_id)!.is_addon);
+    if (!mainItem) throw new Error("يجب اختيار باقة أساسية");
+    const mainRule: any = ruleMap.get(mainItem.rule_id);
+
+    const items = data.items.map((it) => {
+      const r: any = ruleMap.get(it.rule_id);
+      return {
+        rule_id: r.id,
+        label: r.label,
+        price: Number(r.price),
+        qty: it.qty,
+        kind: r.is_addon ? ("addon" as const) : ("main" as const),
+      };
+    });
+
+    const basePrice = Number(mainRule.price) * (mainItem.qty || 1);
+    const total = items.reduce((s, x) => s + x.price * x.qty, 0);
+
+    // Photographer's deposit configuration
+    const { data: profile, error: profErr } = await supabaseAdmin
+      .from("profiles")
+      .select("id, display_name, username, fixed_deposit, deposit_percent")
+      .eq("id", data.photographer_id)
+      .single();
+    if (profErr || !profile) throw new Error("المصوّرة غير موجودة");
+
+    const deposit = total > 0
+      ? (profile.fixed_deposit != null
+          ? Number(profile.fixed_deposit)
+          : Math.round(total * (Number(profile.deposit_percent ?? 25) / 100)))
+      : 0;
+
+    const summaryLabel = `${mainRule.label}${items.length > 1 ? ` +${items.length - 1} إضافات` : ""}`;
 
     const { data: row, error } = await supabaseAdmin
       .from("bookings")
@@ -43,33 +99,27 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
         client_name: data.client_name,
         client_email: data.client_email,
         client_phone: data.client_phone,
-        service: data.service as any,
+        service: mainRule.service as any,
         event_date: data.event_date,
         start_time: data.start_time,
         end_time: data.end_time,
         venue_address: data.venue_address ?? null,
-        base_price: data.base_price,
+        base_price: basePrice,
         travel_fee: 0,
-        total_price: data.total_price,
-        deposit_amount: data.deposit_amount,
+        total_price: total,
+        deposit_amount: deposit,
         privacy_level: data.privacy_level,
         photographer_can_publish: data.privacy_level === "public",
         client_notes: data.client_notes ?? null,
         contract_agreed: true,
         status: "pending_deposit" as any,
-        addons: data.items,
+        addons: items,
       })
       .select("id, client_tracking_token")
       .single();
 
     if (error) throw new Error(error.message);
 
-    // Get photographer profile for notification details
-    const { data: prof } = await supabaseAdmin
-      .from("profiles")
-      .select("display_name, username")
-      .eq("id", data.photographer_id)
-      .single();
     const { data: priv } = await supabaseAdmin
       .from("photographer_private")
       .select("whatsapp, phone")
@@ -84,10 +134,8 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       link: `/dashboard/bookings/${row.id}`,
     });
 
-    // Best-effort: WhatsApp/Email reminder side-channel (logged for now; integrate provider later)
-    // Logging only — real WhatsApp/email send requires configured provider.
     console.log("[booking] new request", {
-      photographer: prof?.username,
+      photographer: profile.username,
       whatsapp: priv?.whatsapp,
       booking_id: row.id,
       client: data.client_name,
