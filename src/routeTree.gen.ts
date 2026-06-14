@@ -16,6 +16,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -75,6 +76,11 @@ const LoginRoute = LoginRouteImport.update({
 const GuideRoute = GuideRouteImport.update({
   id: '/guide',
   path: '/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -273,6 +281,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/forgot-password'
     | '/guide'
     | '/login'
     | '/notifications'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
     | '/guide'
     | '/login'
     | '/notifications'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/forgot-password'
     | '/guide'
     | '/login'
     | '/notifications'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -474,6 +487,13 @@ declare module '@tanstack/react-router' {
       path: '/guide'
       fullPath: '/guide'
       preLoaderRoute: typeof GuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -715,6 +735,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
   NotificationsRoute: NotificationsRoute,
