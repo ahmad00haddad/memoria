@@ -330,3 +330,110 @@ function DeliveryCountdown({ b }: { b: any }) {
     </div>
   );
 }
+
+function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientToken: string | null }) {
+  const ensure = useServerFn(ensureGallery);
+  const fetchG = useServerFn(getGalleryForPhotographer);
+  const add = useServerFn(addGalleryPhoto);
+  const del = useServerFn(deleteGalleryPhoto);
+  const upd = useServerFn(updateGallery);
+  const [gallery, setGallery] = useState<any>(null);
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    const r = await fetchG({ data: { booking_id: bookingId } });
+    setGallery(r.gallery); setPhotos(r.photos);
+  };
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [bookingId]);
+
+  const create = async () => {
+    setBusy(true);
+    try { await ensure({ data: { booking_id: bookingId } }); await load(); toast.success("تم إنشاء معرض التسليم"); }
+    catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
+  };
+
+  const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length || !gallery) return;
+    setUploading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("جلسة منتهية");
+      for (const f of files) {
+        if (f.size > 25 * 1024 * 1024) { toast.error(`${f.name}: أكبر من 25MB`); continue; }
+        const ext = f.name.split(".").pop() || "jpg";
+        const path = `${session.user.id}/${gallery.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("delivery-photos").upload(path, f, { contentType: f.type });
+        if (upErr) { toast.error(upErr.message); continue; }
+        await add({ data: { gallery_id: gallery.id, storage_path: path } });
+      }
+      await load();
+      toast.success("تم رفع الصور");
+      e.target.value = "";
+    } catch (e: any) { toast.error(e.message); }
+    finally { setUploading(false); }
+  };
+
+  const remove = async (id: string) => {
+    if (!window.confirm("حذف هذه الصورة؟")) return;
+    try { await del({ data: { photo_id: id } }); await load(); }
+    catch (e: any) { toast.error(e.message); }
+  };
+
+  const toggleDownloads = async () => {
+    if (!gallery) return;
+    try { await upd({ data: { gallery_id: gallery.id, allow_downloads: !gallery.allow_downloads } }); await load(); }
+    catch (e: any) { toast.error(e.message); }
+  };
+
+  const copyClientLink = () => {
+    if (!clientToken) return;
+    const url = `${window.location.origin}/track/${clientToken}`;
+    navigator.clipboard.writeText(url); toast.success("تم نسخ رابط العميل");
+  };
+
+  return (
+    <div className="mt-8 rounded-sm border border-border bg-card p-6">
+      <h2 className="font-serif text-xl mb-4 flex items-center gap-2"><ImagePlus className="h-5 w-5 text-gold" /> معرض التسليم الخاص</h2>
+      {!gallery ? (
+        <div>
+          <p className="text-sm text-muted-foreground mb-3">أنشئي معرضاً خاصاً يصل إليه العميل من رابط التتبع لمعاينة وتحميل الصور المسلَّمة.</p>
+          <button onClick={create} disabled={busy} className="bg-charcoal text-ivory px-4 py-2 rounded-sm disabled:opacity-60">إنشاء معرض</button>
+        </div>
+      ) : (
+        <div>
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <label className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm cursor-pointer hover:bg-secondary text-sm">
+              <Upload className="h-4 w-4" />
+              <span>{uploading ? "جاري الرفع…" : "رفع صور"}</span>
+              <input type="file" multiple accept="image/*" className="hidden" onChange={onPick} disabled={uploading} />
+            </label>
+            <button onClick={toggleDownloads} className="text-sm border border-border px-3 py-2 rounded-sm hover:bg-secondary">
+              التحميل: {gallery.allow_downloads ? "مسموح" : "ممنوع"}
+            </button>
+            <button onClick={copyClientLink} className="inline-flex items-center gap-2 text-sm border border-border px-3 py-2 rounded-sm hover:bg-secondary">
+              <Copy className="h-4 w-4" /> رابط العميل
+            </button>
+            <span className="text-xs text-muted-foreground">{photos.length} صورة</span>
+          </div>
+          {photos.length === 0 ? (
+            <p className="text-sm text-muted-foreground">لم تُرفع صور بعد.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {photos.map((p) => (
+                <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden">
+                  {p.url && <img src={p.url} alt={p.caption ?? ""} className="w-full h-full object-cover" />}
+                  <button onClick={() => remove(p.id)} className="absolute top-1 left-1 bg-black/60 text-white p-1 rounded-sm opacity-0 group-hover:opacity-100 transition">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
