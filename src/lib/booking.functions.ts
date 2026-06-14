@@ -187,3 +187,43 @@ export const clientAddNote = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const submitReviewByToken = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; rating: number; comment?: string | null; client_name?: string | null }) => {
+    if (!d || typeof d.token !== "string" || d.token.length < 16) throw new Error("invalid token");
+    if (!Number.isInteger(d.rating) || d.rating < 1 || d.rating > 5) throw new Error("invalid rating");
+    if (d.comment && d.comment.length > 2000) throw new Error("comment too long");
+    if (d.client_name && d.client_name.length > 120) throw new Error("name too long");
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: booking, error: bErr } = await supabaseAdmin
+      .from("bookings")
+      .select("id, photographer_id, status, client_name, client_received_at")
+      .eq("client_tracking_token", data.token)
+      .maybeSingle();
+    if (bErr) throw new Error(bErr.message);
+    if (!booking) throw new Error("الحجز غير موجود");
+    if (booking.status !== "completed" && booking.status !== "delivered") {
+      throw new Error("لا يمكن التقييم قبل اكتمال الحجز");
+    }
+
+    const { error } = await supabaseAdmin
+      .from("reviews")
+      .insert({
+        booking_id: booking.id,
+        photographer_id: booking.photographer_id,
+        client_name: (data.client_name || booking.client_name || "عميلة").slice(0, 120),
+        rating: data.rating,
+        comment: data.comment ?? null,
+        is_published: true,
+      } as any);
+    if (error) {
+      if (/duplicate|unique/i.test(error.message)) {
+        throw new Error("تم تسجيل تقييم لهذا الحجز سابقًا");
+      }
+      throw new Error(error.message);
+    }
+    return { ok: true };
+  });
