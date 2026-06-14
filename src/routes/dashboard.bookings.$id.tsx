@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
+import { confirmBookingAfterDeposit } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -21,6 +22,7 @@ function BookingDetail() {
   const [loading, setLoading] = useState(true);
   const [contract, setContract] = useState<any>(null);
   const [templates, setTemplates] = useState<any[]>([]);
+  const confirmFn = useServerFn(confirmBookingAfterDeposit);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -75,16 +77,22 @@ function BookingDetail() {
   };
 
   const setStatus = async (status: "quote" | "pending_deposit" | "confirmed" | "completed" | "cancelled") => {
-    await supabase.from("bookings").update({ status }).eq("id", id);
-    toast.success("تم تحديث الحالة");
-    await load();
     if (status === "confirmed") {
+      // Server-side fn requires deposit proof / sent flag.
+      try { await confirmFn({ data: { booking_id: id } }); }
+      catch (e: any) { return toast.error(e?.message || "تعذّر التأكيد"); }
+      toast.success("تم تأكيد الحجز");
+      await load();
       const { data: existing } = await supabase.from("contracts").select("id").eq("booking_id", id).maybeSingle();
       if (!existing) {
         await generateContract();
         toast.success("تم إنشاء العقد تلقائياً");
       }
+      return;
     }
+    await supabase.from("bookings").update({ status }).eq("id", id);
+    toast.success("تم تحديث الحالة");
+    await load();
   };
 
   const markFinalPaid = async () => {
@@ -102,9 +110,16 @@ function BookingDetail() {
 
   const send = async () => {
     if (!text.trim()) return;
-    await supabase.from("messages").insert({ booking_id: id, body: text, sender_id: uid, sender_name: "المصوّر" });
+    const body = text.trim();
     setText("");
-    load();
+    // Optimistic: realtime channel will reconcile, but show immediately.
+    const optimistic = { id: `tmp-${Date.now()}`, sender_id: uid, sender_name: "المصوّر", body, created_at: new Date().toISOString(), read_at: null };
+    setMsgs((prev) => [...prev, optimistic]);
+    const { error } = await supabase.from("messages").insert({ booking_id: id, body, sender_id: uid, sender_name: "المصوّر" });
+    if (error) {
+      toast.error("تعذّر إرسال الرسالة");
+      setMsgs((prev) => prev.filter((m) => m.id !== optimistic.id));
+    }
   };
 
   const generateContract = async (templateId?: string) => {
