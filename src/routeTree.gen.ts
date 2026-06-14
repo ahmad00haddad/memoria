@@ -26,6 +26,7 @@ import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
+import { Route as DashboardReportsRouteImport } from './routes/dashboard.reports'
 import { Route as DashboardReferralsRouteImport } from './routes/dashboard.referrals'
 import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
 import { Route as DashboardProductionRouteImport } from './routes/dashboard.production'
@@ -125,6 +126,11 @@ const DashboardSubscriptionRoute = DashboardSubscriptionRouteImport.update({
   path: '/subscription',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardReportsRoute = DashboardReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardReferralsRoute = DashboardReferralsRouteImport.update({
   id: '/referrals',
   path: '/referrals',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/production': typeof DashboardProductionRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -241,6 +248,7 @@ export interface FileRoutesByTo {
   '/dashboard/production': typeof DashboardProductionRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/dashboard/production': typeof DashboardProductionRoute
   '/dashboard/profile': typeof DashboardProfileRoute
   '/dashboard/referrals': typeof DashboardReferralsRoute
+  '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/dashboard/production'
     | '/dashboard/profile'
     | '/dashboard/referrals'
+    | '/dashboard/reports'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -337,6 +347,7 @@ export interface FileRouteTypes {
     | '/dashboard/production'
     | '/dashboard/profile'
     | '/dashboard/referrals'
+    | '/dashboard/reports'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/dashboard/production'
     | '/dashboard/profile'
     | '/dashboard/referrals'
+    | '/dashboard/reports'
     | '/dashboard/subscription'
     | '/photographers/$username'
     | '/photographers/join'
@@ -521,6 +533,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSubscriptionRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/reports': {
+      id: '/dashboard/reports'
+      path: '/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof DashboardReportsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/referrals': {
       id: '/dashboard/referrals'
       path: '/referrals'
@@ -650,6 +669,7 @@ interface DashboardRouteChildren {
   DashboardProductionRoute: typeof DashboardProductionRoute
   DashboardProfileRoute: typeof DashboardProfileRoute
   DashboardReferralsRoute: typeof DashboardReferralsRoute
+  DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
@@ -662,6 +682,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardProductionRoute: DashboardProductionRoute,
   DashboardProfileRoute: DashboardProfileRoute,
   DashboardReferralsRoute: DashboardReferralsRoute,
+  DashboardReportsRoute: DashboardReportsRoute,
   DashboardSubscriptionRoute: DashboardSubscriptionRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
