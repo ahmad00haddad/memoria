@@ -246,6 +246,85 @@ export type Database = {
           },
         ]
       }
+      delivery_galleries: {
+        Row: {
+          allow_downloads: boolean
+          booking_id: string
+          cover_path: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          photographer_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          allow_downloads?: boolean
+          booking_id: string
+          cover_path?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          photographer_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allow_downloads?: boolean
+          booking_id?: string
+          cover_path?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          photographer_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_galleries_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          gallery_id: string
+          id: string
+          position: number
+          storage_path: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          gallery_id: string
+          id?: string
+          position?: number
+          storage_path: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          gallery_id?: string
+          id?: string
+          position?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_photos_gallery_id_fkey"
+            columns: ["gallery_id"]
+            isOneToOne: false
+            referencedRelation: "delivery_galleries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           attachment_url: string | null
