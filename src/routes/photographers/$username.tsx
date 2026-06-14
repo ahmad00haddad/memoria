@@ -305,10 +305,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     try {
       const notes = [f.client_notes, f.remaining_note ? `الرصيد المتبقي: ${f.remaining_note}` : ""].filter(Boolean).join("\n");
       const items = [
-        { rule_id: selected.id, label: selected.label, price: Number(selected.price), qty: 1, kind: "main" as const },
-        ...selectedAddons.map((x) => ({
-          rule_id: x.rule.id, label: x.rule.label, price: Number(x.rule.price), qty: x.qty, kind: "addon" as const,
-        })),
+        { rule_id: selected.id, qty: 1 },
+        ...selectedAddons.map((x) => ({ rule_id: x.rule.id, qty: x.qty })),
       ];
       const res = await submitFn({
         data: {
@@ -316,14 +314,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           client_name: f.client_name,
           client_email: f.client_email.trim(),
           client_phone: f.client_phone,
-          service: selected.service,
           event_date: f.event_date,
           start_time: f.start_time || "12:00",
           end_time: f.end_time || "18:00",
           venue_address: f.venue_address || null,
-          base_price: basePrice,
-          total_price: total,
-          deposit_amount: deposit,
           items,
           client_notes: notes || null,
           privacy_level: f.privacy_level,
