@@ -1,90 +1,218 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Search, MapPin } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, MapPin, Star, X } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import {
+  searchPhotographers,
+  listPublishedCities,
+  type SearchResultItem,
+  type SearchSort,
+} from "@/lib/search.functions";
 
 export const Route = createFileRoute("/search")({
   component: SearchPage,
+  head: () => ({
+    meta: [
+      { title: "ابحث عن مصوّر عرسك | Royal Lens" },
+      {
+        name: "description",
+        content:
+          "اعثري على مصوّر عرسك المثالي في الأردن. فلترة بالمدينة والسعر والتاريخ المتاح وتقييمات حقيقية من العرائس.",
+      },
+    ],
+  }),
 });
-
-type Photographer = {
-  username: string;
-  display_name: string;
-  city: string | null;
-  bio: string | null;
-  avatar_url: string | null;
-  cover_url: string | null;
-  is_featured?: boolean;
-};
 
 function SearchPage() {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<Photographer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [city, setCity] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [date, setDate] = useState("");
+  const [sort, setSort] = useState<SearchSort>("featured");
   const navigate = useNavigate();
 
+  const runSearch = useServerFn(searchPhotographers);
+  const runCities = useServerFn(listPublishedCities);
+
+  const citiesQ = useQuery({
+    queryKey: ["search-cities"],
+    queryFn: () => runCities({}),
+    staleTime: 5 * 60_000,
+  });
+
+  // Debounce text input
+  const [debouncedQ, setDebouncedQ] = useState("");
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    const run = async () => {
-      let query = supabase
-        .from("profiles")
-        .select("username,display_name,city,bio,avatar_url,cover_url,is_featured")
-        .eq("is_published", true)
-        .order("is_featured", { ascending: false })
-        .limit(24);
-      if (q.trim()) {
-        query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%,city.ilike.%${q}%`);
-      }
-      const { data } = await query;
-      if (active) {
-        setResults((data ?? []) as Photographer[]);
-        setLoading(false);
-      }
-    };
-    const t = setTimeout(run, 200);
-    return () => {
-      active = false;
-      clearTimeout(t);
-    };
+    const t = setTimeout(() => setDebouncedQ(q), 250);
+    return () => clearTimeout(t);
   }, [q]);
+
+  const resultsQ = useQuery({
+    queryKey: ["search", debouncedQ, city, minPrice, maxPrice, date, sort],
+    queryFn: () =>
+      runSearch({
+        data: {
+          q: debouncedQ || undefined,
+          city: city || undefined,
+          min_price: minPrice ? Number(minPrice) : null,
+          max_price: maxPrice ? Number(maxPrice) : null,
+          available_date: date || null,
+          sort,
+        },
+      }),
+    placeholderData: (prev) => prev,
+  });
+
+  const results: SearchResultItem[] = resultsQ.data ?? [];
+  const hasFilters = useMemo(
+    () => !!(city || minPrice || maxPrice || date || debouncedQ),
+    [city, minPrice, maxPrice, date, debouncedQ],
+  );
+
+  const clearAll = () => {
+    setQ("");
+    setCity("");
+    setMinPrice("");
+    setMaxPrice("");
+    setDate("");
+    setSort("featured");
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12">
-        <div className="text-center mb-8">
+      <section className="container-editorial py-10 md:py-12">
+        <div className="text-center mb-6 md:mb-8">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">دليل المصوّرين</div>
-          <h1 className="font-serif text-4xl">اعثر على مصوّر عرسك</h1>
+          <h1 className="font-serif text-3xl md:text-4xl">اعثري على مصوّرة عرسك</h1>
+          <p className="text-sm text-muted-foreground mt-2">
+            {results.length > 0
+              ? `${results.length} مصوّرة متاحة${hasFilters ? " ضمن فلترك" : ""}`
+              : "أدخلي مدينتك أو ميزانيتك أو تاريخ حفلك لنُريك المصوّرات المتاحات."}
+          </p>
         </div>
 
+        {/* Filters */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             const direct = q.trim().replace(/^@/, "");
-            if (direct) navigate({ to: "/photographers/$username", params: { username: direct.toLowerCase() } });
+            if (direct && !/\s/.test(direct))
+              navigate({ to: "/photographers/$username", params: { username: direct.toLowerCase() } });
           }}
-          className="max-w-xl mx-auto relative mb-10"
+          className="rounded-md border border-border bg-card p-4 md:p-5 mb-6 md:mb-8 shadow-soft"
         >
-          <Search className="absolute top-1/2 -translate-y-1/2 start-4 h-4 w-4 text-muted-foreground" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="ابحث باسم المصوّر أو اسم المستخدم أو المدينة…"
-            autoCapitalize="none"
-            autoCorrect="off"
-            autoComplete="off"
-            spellCheck={false}
-            className="w-full rounded-sm border border-input bg-card ps-11 pe-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-gold/60"
-          />
+          <div className="grid gap-3 md:grid-cols-12">
+            <div className="md:col-span-4 relative">
+              <Search className="absolute top-1/2 -translate-y-1/2 start-3 h-4 w-4 text-muted-foreground" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="اسم المصوّرة، @المستخدم، أو وصف…"
+                autoCapitalize="none"
+                autoCorrect="off"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full rounded-sm border border-input bg-background ps-9 pe-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              />
+            </div>
+
+            <select
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className="md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+            >
+              <option value="">كل المدن</option>
+              {(citiesQ.data ?? []).map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+              placeholder="السعر من"
+              className="md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+            />
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              placeholder="إلى"
+              className="md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+            />
+
+            <input
+              type="date"
+              value={date}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setDate(e.target.value)}
+              className="md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 mt-3">
+            <label className="text-xs text-muted-foreground">ترتيب:</label>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SearchSort)}
+              className="rounded-sm border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gold/60"
+            >
+              <option value="featured">المميّزات أولاً</option>
+              <option value="rating">الأعلى تقييماً</option>
+              <option value="price_asc">السعر: الأقل أولاً</option>
+              <option value="price_desc">السعر: الأعلى أولاً</option>
+            </select>
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="ms-auto text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+              >
+                <X className="h-3 w-3" /> مسح الفلتر
+              </button>
+            )}
+          </div>
         </form>
 
-        {loading ? (
-          <p className="text-center text-muted-foreground">جاري التحميل…</p>
+        {/* Results */}
+        {resultsQ.isLoading ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-sm border border-border bg-card overflow-hidden animate-pulse">
+                <div className="aspect-[4/3] bg-muted" />
+                <div className="p-5 space-y-2">
+                  <div className="h-4 bg-muted rounded w-2/3" />
+                  <div className="h-3 bg-muted rounded w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : results.length === 0 ? (
-          <p className="text-center text-muted-foreground">لا توجد نتائج بعد. جرّب إدخال اسم مستخدم مباشر.</p>
+          <div className="text-center py-12">
+            <p className="text-muted-foreground mb-4">
+              لا توجد مصوّرات تطابق هذه الفلتر. جرّبي توسيع نطاق البحث أو إزالة بعض الشروط.
+            </p>
+            {hasFilters && (
+              <button
+                onClick={clearAll}
+                className="text-sm text-gold underline-offset-4 hover:underline"
+              >
+                مسح كل الفلاتر
+              </button>
+            )}
+          </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((p) => (
@@ -94,22 +222,44 @@ function SearchPage() {
                 params={{ username: p.username }}
                 className="group rounded-sm overflow-hidden border border-border bg-card shadow-soft hover:shadow-elegant transition"
               >
-                <div className="aspect-[4/3] bg-gradient-royal overflow-hidden">
-                  {p.cover_url && <img src={p.cover_url} alt={p.display_name} className="h-full w-full object-cover group-hover:scale-105 transition" />}
+                <div className="aspect-[4/3] bg-gradient-royal overflow-hidden relative">
+                  {p.cover_url && (
+                    <img
+                      src={p.cover_url}
+                      alt={p.display_name}
+                      loading="lazy"
+                      className="h-full w-full object-cover group-hover:scale-105 transition"
+                    />
+                  )}
+                  {p.is_featured && (
+                    <span className="absolute top-2 end-2 text-[10px] uppercase tracking-wider bg-gold text-background px-2 py-0.5 rounded-sm">
+                      مميّزة
+                    </span>
+                  )}
                 </div>
                 <div className="p-5">
-                  <div className="font-serif text-xl mb-1 flex items-center gap-2">
-                    {p.display_name}
-                    {p.is_featured && (
-                      <span className="text-[10px] uppercase tracking-wider bg-gold/15 text-gold px-2 py-0.5 rounded-sm border border-gold/30">مميّز</span>
+                  <div className="font-serif text-xl mb-1">{p.display_name}</div>
+                  <div className="text-xs text-muted-foreground mb-2">@{p.username}</div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center gap-3">
+                      {p.city && (
+                        <span className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3" /> {p.city}
+                        </span>
+                      )}
+                      {p.review_count > 0 && (
+                        <span className="flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-gold text-gold" />
+                          {p.avg_rating} ({p.review_count})
+                        </span>
+                      )}
+                    </div>
+                    {p.min_price != null && (
+                      <span className="text-foreground font-medium">
+                        من {p.min_price} د.أ
+                      </span>
                     )}
                   </div>
-                  <div className="text-xs text-muted-foreground mb-2">@{p.username}</div>
-                  {p.city && (
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" /> {p.city}
-                    </div>
-                  )}
                 </div>
               </Link>
             ))}
