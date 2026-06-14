@@ -205,7 +205,7 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
       .maybeSingle();
     if (bErr) throw new Error(bErr.message);
     if (!booking) throw new Error("الحجز غير موجود");
-    if (booking.status !== "completed" && booking.status !== "delivered") {
+    if (booking.status !== ("completed" as any)) {
       throw new Error("لا يمكن التقييم قبل اكتمال الحجز");
     }
 
