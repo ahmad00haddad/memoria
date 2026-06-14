@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
-import { confirmBookingAfterDeposit } from "@/lib/booking.functions";
+import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -23,6 +23,8 @@ function BookingDetail() {
   const [contract, setContract] = useState<any>(null);
   const [templates, setTemplates] = useState<any[]>([]);
   const confirmFn = useServerFn(confirmBookingAfterDeposit);
+  const softDeleteFn = useServerFn(softDeleteBooking);
+  const regenTokenFn = useServerFn(regenerateBookingToken);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -209,6 +211,22 @@ function BookingDetail() {
               {b.status !== "cancelled" && (
                 <button onClick={() => setStatus("cancelled")} className="inline-flex items-center gap-2 text-destructive border border-destructive/30 px-4 py-2 rounded-sm hover:bg-destructive/10"><XCircle className="h-4 w-4" /> إلغاء</button>
               )}
+              <button
+                onClick={async () => {
+                  if (!confirm("هل أنت متأكدة من حذف هذا الحجز؟ سيتم نقله للمحذوفات.")) return;
+                  try { await softDeleteFn({ data: { booking_id: id } }); toast.success("تم الحذف"); nav({ to: "/dashboard/bookings" }); }
+                  catch (e: any) { toast.error(e?.message || "تعذّر الحذف"); }
+                }}
+                className="inline-flex items-center gap-2 text-destructive border border-destructive/30 px-4 py-2 rounded-sm hover:bg-destructive/10"
+              ><Trash2 className="h-4 w-4" /> حذف الحجز</button>
+              <button
+                onClick={async () => {
+                  if (!confirm("سيتم إبطال الرابط الحالي وإنشاء رابط جديد. متابعة؟")) return;
+                  try { await regenTokenFn({ data: { booking_id: id } }); toast.success("تم تجديد الرابط"); await load(); }
+                  catch (e: any) { toast.error(e?.message || "تعذّر التجديد"); }
+                }}
+                className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-sm hover:bg-secondary"
+              ><Copy className="h-4 w-4" /> تجديد رابط التتبّع</button>
             </div>
           </div>
         </div>
