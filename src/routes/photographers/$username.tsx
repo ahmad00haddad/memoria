@@ -311,6 +311,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     if (!f.client_name || !f.client_phone || !f.client_email || !f.event_date || !selected) {
       return toast.error("الرجاء تعبئة الاسم والهاتف والإيميل والتاريخ واختيار الباقة");
     }
+    const start = f.start_time || "12:00";
+    const end = f.end_time || "18:00";
+    if (toMin(end) <= toMin(start)) {
+      return toast.error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
+    }
     if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
     if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
     setSubmitting(true);
@@ -327,8 +332,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           client_email: f.client_email.trim(),
           client_phone: f.client_phone,
           event_date: f.event_date,
-          start_time: f.start_time || "12:00",
-          end_time: f.end_time || "18:00",
+          start_time: start,
+          end_time: end,
           venue_address: f.venue_address || null,
           items,
           client_notes: notes || null,
