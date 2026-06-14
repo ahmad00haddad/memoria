@@ -47,7 +47,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     const ruleIds = data.items.map((i) => i.rule_id);
     const { data: rules, error: rulesErr } = await supabaseAdmin
       .from("pricing_rules")
-      .select("id, photographer_id, label, price, service, is_addon")
+      .select("id, photographer_id, label, price, service, package")
       .in("id", ruleIds);
     if (rulesErr) throw new Error(rulesErr.message);
     const ruleMap = new Map((rules ?? []).map((r: any) => [r.id, r]));
@@ -58,7 +58,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       }
     }
 
-    const mainItem = data.items.find((i) => !ruleMap.get(i.rule_id)!.is_addon);
+    const mainItem = data.items.find((i) => (ruleMap.get(i.rule_id) as any)!.package !== "addon");
     if (!mainItem) throw new Error("يجب اختيار باقة أساسية");
     const mainRule: any = ruleMap.get(mainItem.rule_id);
 
@@ -69,7 +69,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
         label: r.label,
         price: Number(r.price),
         qty: it.qty,
-        kind: r.is_addon ? ("addon" as const) : ("main" as const),
+        kind: r.package === "addon" ? ("addon" as const) : ("main" as const),
       };
     });
 
