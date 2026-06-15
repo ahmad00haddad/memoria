@@ -12,6 +12,8 @@ import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 
 function NotFoundComponent() {
   return (
@@ -103,6 +105,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        children: "(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
+      },
+      {
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
@@ -167,8 +172,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster position="top-center" richColors />
+      <ThemeProvider>
+        <ConfirmProvider>
+          <Outlet />
+          <Toaster position="top-center" richColors closeButton />
+        </ConfirmProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
