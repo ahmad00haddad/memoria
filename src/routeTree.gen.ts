@@ -43,6 +43,7 @@ import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.b
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
 import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
+import { Route as ApiPublicHooksEmailRemindersRouteImport } from './routes/api/public/hooks/email-reminders'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -214,6 +215,12 @@ const ApiPublicHooksIcalSyncRoute = ApiPublicHooksIcalSyncRouteImport.update({
   path: '/api/public/hooks/ical-sync',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksEmailRemindersRoute =
+  ApiPublicHooksEmailRemindersRouteImport.update({
+    id: '/api/public/hooks/email-reminders',
+    path: '/api/public/hooks/email-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -248,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
+  '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
@@ -281,6 +289,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings': typeof DashboardBookingsIndexRoute
+  '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
@@ -318,6 +327,7 @@ export interface FileRoutesById {
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
+  '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
@@ -356,6 +366,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings/'
+    | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/ical/$token'
   fileRoutesByTo: FileRoutesByTo
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings'
+    | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/ical/$token'
   id:
@@ -425,6 +437,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/bookings/$id'
     | '/dashboard/bookings/'
+    | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/ical/$token'
   fileRoutesById: FileRoutesById
@@ -447,6 +460,7 @@ export interface RootRouteChildren {
   PhotographersJoinRoute: typeof PhotographersJoinRoute
   ReviewTokenRoute: typeof ReviewTokenRoute
   TrackTokenRoute: typeof TrackTokenRoute
+  ApiPublicHooksEmailRemindersRoute: typeof ApiPublicHooksEmailRemindersRoute
   ApiPublicHooksIcalSyncRoute: typeof ApiPublicHooksIcalSyncRoute
   ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
@@ -691,6 +705,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksIcalSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/email-reminders': {
+      id: '/api/public/hooks/email-reminders'
+      path: '/api/public/hooks/email-reminders'
+      fullPath: '/api/public/hooks/email-reminders'
+      preLoaderRoute: typeof ApiPublicHooksEmailRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -769,6 +790,7 @@ const rootRouteChildren: RootRouteChildren = {
   PhotographersJoinRoute: PhotographersJoinRoute,
   ReviewTokenRoute: ReviewTokenRoute,
   TrackTokenRoute: TrackTokenRoute,
+  ApiPublicHooksEmailRemindersRoute: ApiPublicHooksEmailRemindersRoute,
   ApiPublicHooksIcalSyncRoute: ApiPublicHooksIcalSyncRoute,
   ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }
