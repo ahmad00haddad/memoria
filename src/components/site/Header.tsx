@@ -64,12 +64,11 @@ export function Header() {
             </Link>
           )}
           <ThemeToggle />
-          <Link
-            to={authed ? "/dashboard" : "/login"}
-            className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity"
-          >
-            {authed ? "لوحتي" : "تسجيل الدخول"}
-          </Link>
+          {authed ? (
+            <Link to="/dashboard" className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity">لوحتي</Link>
+          ) : (
+            <Link to="/login" className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity">تسجيل الدخول</Link>
+          )}
           <Sheet open={openMenu} onOpenChange={setOpenMenu}>
             <SheetTrigger asChild>
               <button className="md:hidden grid h-9 w-9 place-items-center rounded-sm border border-border/60 hover:bg-secondary" aria-label="القائمة">
@@ -86,11 +85,15 @@ export function Header() {
                 <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">الأسعار</Link></SheetClose>
                 {!isPhotographer && <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضم كمصوّر</Link></SheetClose>}
                 <div className="my-2 h-px bg-border" />
-                <SheetClose asChild>
-                  <Link to={authed ? "/dashboard" : "/login"} className="px-3 py-2.5 rounded-sm bg-charcoal text-ivory text-center hover:opacity-90">
-                    {authed ? "لوحتي" : "تسجيل الدخول"}
-                  </Link>
-                </SheetClose>
+                {authed ? (
+                  <SheetClose asChild>
+                    <Link to="/dashboard" className="px-3 py-2.5 rounded-sm bg-charcoal text-ivory text-center hover:opacity-90">لوحتي</Link>
+                  </SheetClose>
+                ) : (
+                  <SheetClose asChild>
+                    <Link to="/login" className="px-3 py-2.5 rounded-sm bg-charcoal text-ivory text-center hover:opacity-90">تسجيل الدخول</Link>
+                  </SheetClose>
+                )}
               </nav>
             </SheetContent>
           </Sheet>
