@@ -20,7 +20,15 @@ export const Route = createFileRoute("/photographers/$username")({
       { title: `${params.username} — احجز جلسة تصوير | EliteCapture` },
       { name: "description", content: `استعرض أعمال وأسعار المصوّر @${params.username} واحجز موعدك مباشرة.` },
       { property: "og:title", content: `${params.username} — مصوّر أعراس` },
+      { property: "og:description", content: `استعرض أعمال وأسعار المصوّر @${params.username} واحجز موعدك مباشرة عبر EliteCapture.` },
       { property: "og:type", content: "profile" },
+      { property: "og:url", content: `https://royal-lens-flow.lovable.app/photographers/${params.username}` },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: `${params.username} — مصوّر أعراس` },
+      { name: "twitter:description", content: `استعرض أعمال وأسعار المصوّر @${params.username}.` },
+    ],
+    links: [
+      { rel: "canonical", href: `https://royal-lens-flow.lovable.app/photographers/${params.username}` },
     ],
   }),
 });
@@ -92,6 +100,39 @@ function PhotographerPage() {
       setLoading(false);
     })();
   }, [username]);
+
+  // Inject JSON-LD structured data when profile + reviews are loaded (helps Google).
+  useEffect(() => {
+    if (!profile) return;
+    const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+    const ld: any = {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": `https://royal-lens-flow.lovable.app/photographers/${profile.username}`,
+      name: profile.display_name,
+      url: `https://royal-lens-flow.lovable.app/photographers/${profile.username}`,
+      image: profile.cover_url || profile.avatar_url || undefined,
+      description: profile.bio || undefined,
+      address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: "JO" } : undefined,
+      priceRange: "$$",
+      ...(reviews.length > 0
+        ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: avg.toFixed(1),
+              reviewCount: reviews.length,
+            },
+          }
+        : {}),
+    };
+    const el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.id = "photographer-jsonld";
+    el.text = JSON.stringify(ld);
+    document.querySelectorAll("#photographer-jsonld").forEach((n) => n.remove());
+    document.head.appendChild(el);
+    return () => { el.remove(); };
+  }, [profile, reviews]);
 
   if (loading) return <FallbackPage>جاري التحميل…</FallbackPage>;
   if (!profile) return <FallbackPage>لا يوجد مصوّر بهذا الاسم. <Link to="/search" className="underline">عُد للبحث</Link></FallbackPage>;
@@ -167,7 +208,7 @@ function PhotographerPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {profile.portfolio_urls!.slice(0, 12).map((u, i) => (
               <button type="button" key={i} onClick={() => setLightbox(u)} className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in">
-                <img src={u} alt="" className="w-full h-full object-cover hover:scale-105 transition" loading="lazy" />
+                <img src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" loading="lazy" decoding="async" />
               </button>
             ))}
           </div>

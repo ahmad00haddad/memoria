@@ -10,6 +10,8 @@ import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getG
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
 import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
+import { ShotList } from "@/components/ShotList";
+import { watermarkImageFile } from "@/lib/watermark";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -269,6 +271,7 @@ function BookingDetail() {
         <ProductionPanel b={b} onSetStage={setStage} onSaveLink={saveSelectionLink} />
 
         <GalleryPanel bookingId={id} clientToken={b.client_tracking_token} />
+        <ShotList bookingId={id} service={b.service} />
 
         <div className="mt-8 rounded-sm border border-border bg-card p-6">
           <h2 className="font-serif text-xl mb-4">الرسائل</h2>
@@ -383,6 +386,18 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
   const [photos, setPhotos] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [watermarkOn, setWatermarkOn] = useState(true);
+  const [watermarkText, setWatermarkText] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data } = await supabase.from("profiles").select("display_name,username").eq("id", session.user.id).maybeSingle();
+      const dn = (data?.display_name as string | undefined) || (data?.username as string | undefined) || "";
+      if (dn) setWatermarkText(`© ${dn}`);
+    })();
+  }, []);
 
   const load = async () => {
     const r = await fetchG({ data: { booking_id: bookingId } });
@@ -405,9 +420,14 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
       if (!session) throw new Error("جلسة منتهية");
       for (const f of files) {
         if (f.size > 25 * 1024 * 1024) { toast.error(`${f.name}: أكبر من 25MB`); continue; }
-        const ext = f.name.split(".").pop() || "jpg";
+        let fileToUpload: File = f;
+        if (watermarkOn && watermarkText.trim() && f.type.startsWith("image/")) {
+          try { fileToUpload = await watermarkImageFile(f, { text: watermarkText.trim(), mode: "tile" }); }
+          catch (err) { console.warn("watermark failed", err); }
+        }
+        const ext = fileToUpload.name.split(".").pop() || "jpg";
         const path = `${session.user.id}/${gallery.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("delivery-photos").upload(path, f, { contentType: f.type });
+        const { error: upErr } = await supabase.storage.from("delivery-photos").upload(path, fileToUpload, { contentType: fileToUpload.type });
         if (upErr) { toast.error(upErr.message); continue; }
         await add({ data: { gallery_id: gallery.id, storage_path: path } });
       }
@@ -459,6 +479,22 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
               <Copy className="h-4 w-4" /> رابط العميل
             </button>
             <span className="text-xs text-muted-foreground">{photos.length} صورة</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mb-4 p-3 rounded-sm bg-secondary/30 border border-border">
+            <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" checked={watermarkOn} onChange={(e) => setWatermarkOn(e.target.checked)} />
+              <span>علامة مائية تلقائية</span>
+            </label>
+            <input
+              type="text"
+              value={watermarkText}
+              onChange={(e) => setWatermarkText(e.target.value)}
+              placeholder="© اسم المصوّرة"
+              maxLength={80}
+              disabled={!watermarkOn}
+              className="flex-1 min-w-[180px] border border-input bg-background px-3 py-1.5 rounded-sm text-sm disabled:opacity-50"
+            />
+            <span className="text-xs text-muted-foreground">تُطبَّق على الصور قبل الرفع (مظهر قُطري شفاف).</span>
           </div>
           {photos.length === 0 ? (
             <p className="text-sm text-muted-foreground">لم تُرفع صور بعد.</p>

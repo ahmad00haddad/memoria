@@ -1,0 +1,21 @@
+{
+  "name": "EliteCapture — مصوّرو الأعراس في الأردن",
+  "short_name": "EliteCapture",
+  "description": "احجزي مصوّر عرسك بسهولة: مواعيد، أسعار، وعربون فوري.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "ar",
+  "dir": "rtl",
+  "background_color": "#0c0c0c",
+  "theme_color": "#0c0c0c",
+  "icons": [
+    {
+      "src": "/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -750,6 +750,53 @@ export type Database = {
         }
         Relationships: []
       }
+      shot_list_items: {
+        Row: {
+          booking_id: string
+          created_at: string
+          description: string | null
+          done_at: string | null
+          id: string
+          photographer_id: string
+          sort_order: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          description?: string | null
+          done_at?: string | null
+          id?: string
+          photographer_id: string
+          sort_order?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          description?: string | null
+          done_at?: string | null
+          id?: string
+          photographer_id?: string
+          sort_order?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shot_list_items_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_payments: {
         Row: {
           amount: number
@@ -956,6 +1003,10 @@ export type Database = {
       regenerate_booking_token: {
         Args: { _booking_id: string }
         Returns: string
+      }
+      seed_default_shot_list: {
+        Args: { _booking_id: string; _service: string }
+        Returns: undefined
       }
       seed_default_whatsapp_templates: {
         Args: { _photographer_id: string }
