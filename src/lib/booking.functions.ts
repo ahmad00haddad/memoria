@@ -147,6 +147,46 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       client: data.client_name,
     });
 
+    // Fire-and-forget emails — never block the booking on email failures.
+    try {
+      const { sendEmail, tplNewBookingForPhotographer, tplBookingReceivedForClient } =
+        await import("@/lib/email.server");
+      const { data: pUser } = await supabaseAdmin.auth.admin.getUserById(data.photographer_id);
+      const photographerEmail = pUser?.user?.email;
+      if (photographerEmail) {
+        const t1 = tplNewBookingForPhotographer({
+          photographer_name: profile.display_name || profile.username || "المصوّرة",
+          client_name: data.client_name,
+          service_label: summaryLabel,
+          event_date: data.event_date,
+          start_time: data.start_time,
+          total,
+          booking_id: row.id as string,
+        });
+        await sendEmail({
+          to: photographerEmail, subject: t1.subject, html: t1.html,
+          template: "new_booking_photographer",
+          related_booking_id: row.id as string,
+          related_user_id: data.photographer_id,
+        });
+      }
+      const t2 = tplBookingReceivedForClient({
+        client_name: data.client_name,
+        photographer_name: profile.display_name || profile.username || "المصوّرة",
+        event_date: data.event_date,
+        total,
+        deposit,
+        track_token: row.client_tracking_token as string,
+      });
+      await sendEmail({
+        to: data.client_email, subject: t2.subject, html: t2.html,
+        template: "booking_received_client",
+        related_booking_id: row.id as string,
+      });
+    } catch (e) {
+      console.error("[booking] email send failed", e);
+    }
+
     return {
       booking_id: row.id as string,
       tracking_token: row.client_tracking_token as string,
