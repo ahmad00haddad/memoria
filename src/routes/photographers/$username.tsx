@@ -208,7 +208,7 @@ function PhotographerPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {profile.portfolio_urls!.slice(0, 12).map((u, i) => (
               <button type="button" key={i} onClick={() => setLightbox(u)} className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in">
-                <img src={u} alt="" className="w-full h-full object-cover hover:scale-105 transition" loading="lazy" />
+                <img src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" loading="lazy" decoding="async" />
               </button>
             ))}
           </div>
