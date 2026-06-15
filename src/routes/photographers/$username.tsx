@@ -20,7 +20,15 @@ export const Route = createFileRoute("/photographers/$username")({
       { title: `${params.username} — احجز جلسة تصوير | EliteCapture` },
       { name: "description", content: `استعرض أعمال وأسعار المصوّر @${params.username} واحجز موعدك مباشرة.` },
       { property: "og:title", content: `${params.username} — مصوّر أعراس` },
+      { property: "og:description", content: `استعرض أعمال وأسعار المصوّر @${params.username} واحجز موعدك مباشرة عبر EliteCapture.` },
       { property: "og:type", content: "profile" },
+      { property: "og:url", content: `https://royal-lens-flow.lovable.app/photographers/${params.username}` },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: `${params.username} — مصوّر أعراس` },
+      { name: "twitter:description", content: `استعرض أعمال وأسعار المصوّر @${params.username}.` },
+    ],
+    links: [
+      { rel: "canonical", href: `https://royal-lens-flow.lovable.app/photographers/${params.username}` },
     ],
   }),
 });
