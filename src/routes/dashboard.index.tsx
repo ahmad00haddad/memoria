@@ -123,7 +123,7 @@ function Dashboard() {
   );
 }
 
-function QuickStart({ profile, pricingCount, bookingCount }: { profile: any; pricingCount: number; bookingCount: number }) {
+function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCount }: { profile: any; pricingCount: number; bookingCount: number; hasCliq: boolean; templatesCount: number }) {
   const steps = [
     {
       title: "أكملي الملف الشخصي",
@@ -138,6 +138,20 @@ function QuickStart({ profile, pricingCount, bookingCount }: { profile: any; pri
       done: pricingCount > 0,
       to: "/dashboard/pricing",
       cta: pricingCount > 0 ? `لديك ${pricingCount} باقة` : "أضيفي أول باقة",
+    },
+    {
+      title: "أضيفي وسائل الدفع والتواصل",
+      desc: "CliQ alias ورقم واتساب — يظهر للعميل بعد تأكيد الحجز.",
+      done: hasCliq,
+      to: "/dashboard/profile",
+      cta: hasCliq ? "تم الإعداد" : "أضيفي البيانات",
+    },
+    {
+      title: "جهّزي قوالب الواتساب",
+      desc: "6 قوالب جاهزة (ترحيب، عربون، تذكير، تسليم) لتوفير وقتك في الردود.",
+      done: templatesCount > 0,
+      to: "/dashboard/whatsapp-templates",
+      cta: templatesCount > 0 ? `لديك ${templatesCount} قالب` : "أضيفي القوالب",
     },
     {
       title: "افعّلي الظهور العام",
