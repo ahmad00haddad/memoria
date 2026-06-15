@@ -27,6 +27,7 @@ import { Route as TrackTokenRouteImport } from './routes/track.$token'
 import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
+import { Route as DashboardWhatsappTemplatesRouteImport } from './routes/dashboard.whatsapp-templates'
 import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
 import { Route as DashboardReportsRouteImport } from './routes/dashboard.reports'
 import { Route as DashboardReferralsRouteImport } from './routes/dashboard.referrals'
@@ -135,6 +136,12 @@ const PhotographersUsernameRoute = PhotographersUsernameRouteImport.update({
   path: '/photographers/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardWhatsappTemplatesRoute =
+  DashboardWhatsappTemplatesRouteImport.update({
+    id: '/whatsapp-templates',
+    path: '/whatsapp-templates',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardSubscriptionRoute = DashboardSubscriptionRouteImport.update({
   id: '/subscription',
   path: '/subscription',
@@ -247,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
+  '/dashboard/whatsapp-templates': typeof DashboardWhatsappTemplatesRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -281,6 +289,7 @@ export interface FileRoutesByTo {
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
+  '/dashboard/whatsapp-templates': typeof DashboardWhatsappTemplatesRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -319,6 +328,7 @@ export interface FileRoutesById {
   '/dashboard/referrals': typeof DashboardReferralsRoute
   '/dashboard/reports': typeof DashboardReportsRoute
   '/dashboard/subscription': typeof DashboardSubscriptionRoute
+  '/dashboard/whatsapp-templates': typeof DashboardWhatsappTemplatesRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/dashboard/referrals'
     | '/dashboard/reports'
     | '/dashboard/subscription'
+    | '/dashboard/whatsapp-templates'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/dashboard/referrals'
     | '/dashboard/reports'
     | '/dashboard/subscription'
+    | '/dashboard/whatsapp-templates'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
@@ -429,6 +441,7 @@ export interface FileRouteTypes {
     | '/dashboard/referrals'
     | '/dashboard/reports'
     | '/dashboard/subscription'
+    | '/dashboard/whatsapp-templates'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
@@ -593,6 +606,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhotographersUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/whatsapp-templates': {
+      id: '/dashboard/whatsapp-templates'
+      path: '/whatsapp-templates'
+      fullPath: '/dashboard/whatsapp-templates'
+      preLoaderRoute: typeof DashboardWhatsappTemplatesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/subscription': {
       id: '/dashboard/subscription'
       path: '/subscription'
@@ -752,6 +772,7 @@ interface DashboardRouteChildren {
   DashboardReferralsRoute: typeof DashboardReferralsRoute
   DashboardReportsRoute: typeof DashboardReportsRoute
   DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
+  DashboardWhatsappTemplatesRoute: typeof DashboardWhatsappTemplatesRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
@@ -765,6 +786,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardReferralsRoute: DashboardReferralsRoute,
   DashboardReportsRoute: DashboardReportsRoute,
   DashboardSubscriptionRoute: DashboardSubscriptionRoute,
+  DashboardWhatsappTemplatesRoute: DashboardWhatsappTemplatesRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 

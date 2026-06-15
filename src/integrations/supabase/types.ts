@@ -867,6 +867,42 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_templates: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          is_default: boolean
+          name: string
+          photographer_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          photographer_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          photographer_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -920,6 +956,10 @@ export type Database = {
       regenerate_booking_token: {
         Args: { _booking_id: string }
         Returns: string
+      }
+      seed_default_whatsapp_templates: {
+        Args: { _photographer_id: string }
+        Returns: undefined
       }
       soft_delete_booking: { Args: { _booking_id: string }; Returns: undefined }
     }
