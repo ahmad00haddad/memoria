@@ -4,7 +4,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
-import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, Copy, ArrowLeft, Bell, CircleDashed, ListChecks, TrendingUp, Send } from "lucide-react";
+import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, Copy, ArrowLeft, Bell, CircleDashed, ListChecks, TrendingUp, Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard/")({
@@ -16,6 +16,8 @@ function Dashboard() {
   const [sub, setSub] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [pricingCount, setPricingCount] = useState(0);
+  const [hasCliq, setHasCliq] = useState(false);
+  const [templatesCount, setTemplatesCount] = useState(0);
   const [stats, setStats] = useState({ confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, upcoming30: 0, pendingDepositsAmount: 0, deliveriesDueSoon: 0 });
   const navigate = useNavigate();
 
@@ -26,17 +28,20 @@ function Dashboard() {
         navigate({ to: "/login" });
         return;
       }
-      const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }] = await Promise.all([
+      const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }, { count: tplCount }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
-        supabase.from("photographer_private").select("ical_token").eq("user_id", session.user.id).maybeSingle(),
+        supabase.from("photographer_private").select("ical_token,cliq_alias,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
         supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
         supabase.from("bookings").select("status,total_price,deposit_amount,event_date,delivery_due_at,production_stage").eq("photographer_id", session.user.id).is("deleted_at", null),
         supabase.from("reviews").select("rating").eq("photographer_id", session.user.id),
         supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
+        supabase.from("whatsapp_templates").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       ]);
       setProfile({ ...(data ?? {}), ical_token: priv?.ical_token ?? null });
       setSub(s);
       setPricingCount(pricingRulesCount ?? 0);
+      setHasCliq(!!(priv?.cliq_alias || priv?.whatsapp || priv?.phone));
+      setTemplatesCount(tplCount ?? 0);
       const all = bks ?? [];
       const confirmed = all.filter((b: any) => b.status === "confirmed").length;
       const pending = all.filter((b: any) => b.status === "pending_deposit" || b.status === "quote").length;
@@ -94,7 +99,7 @@ function Dashboard() {
           <Stat icon={<Send className="h-5 w-5 text-violet-600" />} label="تسليمات خلال 7 أيام" value={stats.deliveriesDueSoon} />
         </div>
 
-        <QuickStart profile={profile} pricingCount={pricingCount} bookingCount={stats.confirmed + stats.pending + stats.completed} />
+        <QuickStart profile={profile} pricingCount={pricingCount} bookingCount={stats.confirmed + stats.pending + stats.completed} hasCliq={hasCliq} templatesCount={templatesCount} />
 
         {profile?.ical_token && <IcalBlock token={profile.ical_token} />}
 
@@ -106,6 +111,7 @@ function Dashboard() {
           <Card title="متابعة الإنتاج" desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." cta="افتح اللوحة" to="/dashboard/production" />
           <Card title="التقارير المالية" desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." cta="عرض التقارير" to="/dashboard/reports" />
           <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
+          <Card title="رسائل واتساب" desc="قوالب جاهزة (ترحيب، عربون، تذكير، تسليم) ترسلينها بنقرة." cta="إدارة القوالب" to="/dashboard/whatsapp-templates" icon={<MessageCircle className="h-4 w-4" />} />
           <Card title="الاشتراك" desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." cta="إدارة الاشتراك" to="/dashboard/subscription" />
           <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
           <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهرًا مجانيًا للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
