@@ -9,6 +9,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
 import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
+import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -168,7 +169,10 @@ function BookingDetail() {
       <Header />
       <section className="container-editorial py-12 max-w-4xl">
         <Link to="/dashboard/bookings" className="text-xs text-muted-foreground hover:text-gold">← الحجوزات</Link>
-        <h1 className="font-serif text-3xl mt-2 mb-2">{b.client_name}</h1>
+        <div className="mt-2 mb-2 flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-serif text-3xl">{b.client_name}</h1>
+          <WhatsAppQuickSend booking={b} />
+        </div>
         <div className="text-sm text-muted-foreground mb-6">{b.service === "photography" ? "تصوير فوتوغرافي" : "فيديو سينمائي"} · {new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}–{b.end_time?.slice(0,5)}</div>
 
         <div className="grid lg:grid-cols-2 gap-6">
