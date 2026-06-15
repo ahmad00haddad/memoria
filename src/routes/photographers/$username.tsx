@@ -101,6 +101,39 @@ function PhotographerPage() {
     })();
   }, [username]);
 
+  // Inject JSON-LD structured data when profile + reviews are loaded (helps Google).
+  useEffect(() => {
+    if (!profile) return;
+    const avg = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
+    const ld: any = {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": `https://royal-lens-flow.lovable.app/photographers/${profile.username}`,
+      name: profile.display_name,
+      url: `https://royal-lens-flow.lovable.app/photographers/${profile.username}`,
+      image: profile.cover_url || profile.avatar_url || undefined,
+      description: profile.bio || undefined,
+      address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: "JO" } : undefined,
+      priceRange: "$$",
+      ...(reviews.length > 0
+        ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: avg.toFixed(1),
+              reviewCount: reviews.length,
+            },
+          }
+        : {}),
+    };
+    const el = document.createElement("script");
+    el.type = "application/ld+json";
+    el.id = "photographer-jsonld";
+    el.text = JSON.stringify(ld);
+    document.querySelectorAll("#photographer-jsonld").forEach((n) => n.remove());
+    document.head.appendChild(el);
+    return () => { el.remove(); };
+  }, [profile, reviews]);
+
   if (loading) return <FallbackPage>جاري التحميل…</FallbackPage>;
   if (!profile) return <FallbackPage>لا يوجد مصوّر بهذا الاسم. <Link to="/search" className="underline">عُد للبحث</Link></FallbackPage>;
 
