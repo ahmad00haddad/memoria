@@ -378,6 +378,28 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
         link: `/dashboard/bookings/${bk.id}`,
       });
     }
+    // Send confirmation email to client (fire-and-forget).
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { sendEmail, tplDepositConfirmed } = await import("@/lib/email.server");
+      const { data: full } = await supabaseAdmin.from("bookings")
+        .select("client_email, client_name, event_date, client_tracking_token")
+        .eq("id", data.booking_id).maybeSingle();
+      const { data: prof } = await supabaseAdmin.from("profiles")
+        .select("display_name").eq("id", bk.photographer_id).maybeSingle();
+      if (full?.client_email) {
+        const t = tplDepositConfirmed({
+          client_name: full.client_name || "عميلتنا",
+          photographer_name: prof?.display_name || "المصوّرة",
+          event_date: String(full.event_date),
+          track_token: full.client_tracking_token!,
+        });
+        await sendEmail({
+          to: full.client_email, subject: t.subject, html: t.html,
+          template: "deposit_confirmed", related_booking_id: data.booking_id,
+        });
+      }
+    } catch (e) { console.error("[booking] deposit confirm email failed", e); }
     return { ok: true };
   });
 
