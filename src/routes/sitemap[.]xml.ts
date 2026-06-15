@@ -5,7 +5,7 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const base = process.env.SITE_URL ?? "https://elitecapture.lovable.app";
+        const base = process.env.SITE_URL ?? "https://royal-lens-flow.lovable.app";
         const { data } = await supabaseAdmin
           .from("profiles")
           .select("username,updated_at")
