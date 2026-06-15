@@ -8,6 +8,7 @@ import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, Badg
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
+import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -25,6 +26,7 @@ function BookingDetail() {
   const confirmFn = useServerFn(confirmBookingAfterDeposit);
   const softDeleteFn = useServerFn(softDeleteBooking);
   const regenTokenFn = useServerFn(regenerateBookingToken);
+  const sendDeliveryEmailFn = useServerFn(sendGalleryDeliveredEmail);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -68,6 +70,9 @@ function BookingDetail() {
       patch.status = "completed";
     }
     await supabase.from("bookings").update(patch).eq("id", id);
+    if (stage === "delivered") {
+      try { await sendDeliveryEmailFn({ data: { booking_id: id } }); } catch {}
+    }
     toast.success("تم تحديث المرحلة");
     load();
   };

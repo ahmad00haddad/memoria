@@ -370,6 +370,53 @@ export type Database = {
           },
         ]
       }
+      email_log: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          provider_id: string | null
+          recipient: string
+          related_booking_id: string | null
+          related_user_id: string | null
+          status: string
+          subject: string | null
+          template: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider_id?: string | null
+          recipient: string
+          related_booking_id?: string | null
+          related_user_id?: string | null
+          status?: string
+          subject?: string | null
+          template: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          provider_id?: string | null
+          recipient?: string
+          related_booking_id?: string | null
+          related_user_id?: string | null
+          status?: string
+          subject?: string | null
+          template?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_log_related_booking_id_fkey"
+            columns: ["related_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           attachment_url: string | null

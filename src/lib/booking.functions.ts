@@ -147,6 +147,46 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       client: data.client_name,
     });
 
+    // Fire-and-forget emails — never block the booking on email failures.
+    try {
+      const { sendEmail, tplNewBookingForPhotographer, tplBookingReceivedForClient } =
+        await import("@/lib/email.server");
+      const { data: pUser } = await supabaseAdmin.auth.admin.getUserById(data.photographer_id);
+      const photographerEmail = pUser?.user?.email;
+      if (photographerEmail) {
+        const t1 = tplNewBookingForPhotographer({
+          photographer_name: profile.display_name || profile.username || "المصوّرة",
+          client_name: data.client_name,
+          service_label: summaryLabel,
+          event_date: data.event_date,
+          start_time: data.start_time,
+          total,
+          booking_id: row.id as string,
+        });
+        await sendEmail({
+          to: photographerEmail, subject: t1.subject, html: t1.html,
+          template: "new_booking_photographer",
+          related_booking_id: row.id as string,
+          related_user_id: data.photographer_id,
+        });
+      }
+      const t2 = tplBookingReceivedForClient({
+        client_name: data.client_name,
+        photographer_name: profile.display_name || profile.username || "المصوّرة",
+        event_date: data.event_date,
+        total,
+        deposit,
+        track_token: row.client_tracking_token as string,
+      });
+      await sendEmail({
+        to: data.client_email, subject: t2.subject, html: t2.html,
+        template: "booking_received_client",
+        related_booking_id: row.id as string,
+      });
+    } catch (e) {
+      console.error("[booking] email send failed", e);
+    }
+
     return {
       booking_id: row.id as string,
       tracking_token: row.client_tracking_token as string,
@@ -338,6 +378,28 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
         link: `/dashboard/bookings/${bk.id}`,
       });
     }
+    // Send confirmation email to client (fire-and-forget).
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { sendEmail, tplDepositConfirmed } = await import("@/lib/email.server");
+      const { data: full } = await supabaseAdmin.from("bookings")
+        .select("client_email, client_name, event_date, client_tracking_token")
+        .eq("id", data.booking_id).maybeSingle();
+      const { data: prof } = await supabaseAdmin.from("profiles")
+        .select("display_name").eq("id", bk.photographer_id).maybeSingle();
+      if (full?.client_email) {
+        const t = tplDepositConfirmed({
+          client_name: full.client_name || "عميلتنا",
+          photographer_name: prof?.display_name || "المصوّرة",
+          event_date: String(full.event_date),
+          track_token: full.client_tracking_token!,
+        });
+        await sendEmail({
+          to: full.client_email, subject: t.subject, html: t.html,
+          template: "deposit_confirmed", related_booking_id: data.booking_id,
+        });
+      }
+    } catch (e) { console.error("[booking] deposit confirm email failed", e); }
     return { ok: true };
   });
 
