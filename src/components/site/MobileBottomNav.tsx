@@ -1,13 +1,20 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { LayoutDashboard, Calendar, ListChecks, User, Settings } from "lucide-react";
 
-const items = [
+type NavItem = {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+};
+
+const items: NavItem[] = [
   { to: "/dashboard", label: "الرئيسية", icon: LayoutDashboard, exact: true },
   { to: "/dashboard/bookings", label: "الحجوزات", icon: ListChecks },
   { to: "/dashboard/calendar", label: "التقويم", icon: Calendar },
   { to: "/dashboard/profile", label: "ملفّي", icon: User },
   { to: "/dashboard/subscription", label: "الاشتراك", icon: Settings },
-] as const;
+];
 
 export function MobileBottomNav() {
   const { pathname } = useLocation();
@@ -20,7 +27,7 @@ export function MobileBottomNav() {
           return (
             <li key={it.to}>
               <Link
-                to={it.to}
+                to={it.to as any}
                 className={`flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] transition-colors ${active ? "text-gold" : "text-muted-foreground hover:text-foreground"}`}
               >
                 <Icon className="h-5 w-5" />
