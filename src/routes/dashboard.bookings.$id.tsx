@@ -10,6 +10,8 @@ import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getG
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
 import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
+import { ShotList } from "@/components/ShotList";
+import { watermarkImageFile } from "@/lib/watermark";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -269,6 +271,7 @@ function BookingDetail() {
         <ProductionPanel b={b} onSetStage={setStage} onSaveLink={saveSelectionLink} />
 
         <GalleryPanel bookingId={id} clientToken={b.client_tracking_token} />
+        <ShotList bookingId={id} service={b.service} />
 
         <div className="mt-8 rounded-sm border border-border bg-card p-6">
           <h2 className="font-serif text-xl mb-4">الرسائل</h2>
