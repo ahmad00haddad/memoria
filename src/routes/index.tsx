@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import heroImg from "@/assets/hero-bride.jpg";
+import { useAuthState } from "@/hooks/use-auth-state";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -12,8 +13,8 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const [featured, setFeatured] = useState<any[]>([]);
-  const [isPhotographer, setIsPhotographer] = useState(false);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
+  const { loading: authLoading, isPhotographer, userId } = useAuthState();
   useEffect(() => {
     let active = true;
 
@@ -27,26 +28,20 @@ function Landing() {
         if (active) setFeatured(data ?? []);
       });
 
-    const loadAuthState = async (sessionOverride?: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
-      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
-
-      if (!active || !session) {
-        setIsPhotographer(false);
+    const loadTrialState = async () => {
+      if (!active || !userId || !isPhotographer) {
         setTrialDaysLeft(null);
         return;
       }
 
-      const [{ data: profile }, { data: sub }] = await Promise.all([
-        supabase.from("profiles").select("id").eq("id", session.user.id).maybeSingle(),
-        supabase.from("subscriptions").select("status,trial_ends_at,current_period_end").eq("photographer_id", session.user.id).maybeSingle(),
-      ]);
+      const { data: sub } = await supabase
+        .from("subscriptions")
+        .select("status,trial_ends_at,current_period_end")
+        .eq("photographer_id", userId)
+        .maybeSingle();
 
       if (!active) return;
-
-      const photographer = !!profile;
-      setIsPhotographer(photographer);
-
-      if (!photographer || !sub) {
+      if (!sub) {
         setTrialDaysLeft(null);
         return;
       }
@@ -60,18 +55,12 @@ function Landing() {
       setTrialDaysLeft(Math.max(0, Math.ceil((new Date(targetDate).getTime() - Date.now()) / 86400000)));
     };
 
-    loadAuthState();
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      queueMicrotask(() => {
-        void loadAuthState(session);
-      });
-    });
+    void loadTrialState();
 
     return () => {
       active = false;
-      data.subscription.unsubscribe();
     };
-  }, []);
+  }, [isPhotographer, userId]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,7 +90,7 @@ function Landing() {
                 ابحث عن مصوّر
                 <ArrowLeft className="h-4 w-4" />
               </Link>
-              {isPhotographer ? (
+              {authLoading || isPhotographer ? (
                 <Link
                   to="/dashboard"
                   className="inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition"
@@ -161,7 +150,7 @@ function Landing() {
             cta="ابحث عن مصوّر"
             href="/search"
           />
-          {!isPhotographer ? (
+          {!authLoading && !isPhotographer ? (
             <RoleCard
               title="مصوّر محترف"
               desc="أنشئ ملفك، حدّد أسعارك واربط تقويمك — ودع النظام يدير حجوزاتك."
