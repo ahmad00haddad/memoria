@@ -4,39 +4,30 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { useAuthState } from "@/hooks/use-auth-state";
 
 export function Header() {
   const [unread, setUnread] = useState(0);
-  const [authed, setAuthed] = useState(false);
-  const [isPhotographer, setIsPhotographer] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
+  const { loading: authLoading, authed, userId, isPhotographer } = useAuthState();
 
   useEffect(() => {
     let active = true;
-    const load = async (sessionOverride?: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
-      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
-      if (!active) return;
-      setAuthed(!!session);
-      setIsPhotographer(false);
-      if (session) {
-        const [{ count }, { data: profile }] = await Promise.all([
-          supabase.from("notifications").select("id", { count: "exact", head: true })
-            .eq("user_id", session.user.id).eq("is_read", false),
-          supabase.from("profiles").select("id").eq("id", session.user.id).maybeSingle(),
-        ]);
-        if (!active) return;
-        setUnread(count ?? 0);
-        setIsPhotographer(!!profile);
+    const loadUnread = async () => {
+      if (!userId) {
+        setUnread(0);
+        return;
       }
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("is_read", false);
+      if (active) setUnread(count ?? 0);
     };
-    load();
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      queueMicrotask(() => {
-        void load(session);
-      });
-    });
-    return () => { active = false; sub.subscription.unsubscribe(); };
-  }, []);
+    void loadUnread();
+    return () => { active = false; };
+  }, [userId]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
@@ -54,7 +45,7 @@ export function Header() {
           <Link to="/search" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">ابحث عن مصوّر</Link>
           <Link to="/guide" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">كيف يعمل</Link>
           <Link to="/pricing" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">الأسعار</Link>
-          {!isPhotographer && <Link to="/photographers/join" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">انضم كمصوّر</Link>}
+          {!authLoading && !authed && !isPhotographer && <Link to="/photographers/join" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">انضم كمصوّر</Link>}
           {authed && (
             <Link to="/notifications" className="relative px-3 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="إشعارات">
               <Bell className="h-5 w-5" />
@@ -64,7 +55,9 @@ export function Header() {
             </Link>
           )}
           <ThemeToggle />
-          {authed ? (
+          {authLoading ? (
+            <span className="hidden sm:inline-flex h-9 w-24 rounded-sm bg-secondary/70" aria-hidden="true" />
+          ) : authed ? (
             <Link to="/dashboard" className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity">لوحتي</Link>
           ) : (
             <Link to="/login" className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity">تسجيل الدخول</Link>
@@ -83,9 +76,11 @@ export function Header() {
                 <SheetClose asChild><Link to="/search" className="px-3 py-2.5 rounded-sm hover:bg-secondary">ابحث عن مصوّر</Link></SheetClose>
                 <SheetClose asChild><Link to="/guide" className="px-3 py-2.5 rounded-sm hover:bg-secondary">كيف يعمل</Link></SheetClose>
                 <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">الأسعار</Link></SheetClose>
-                {!isPhotographer && <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضم كمصوّر</Link></SheetClose>}
+                {!authLoading && !authed && !isPhotographer && <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضم كمصوّر</Link></SheetClose>}
                 <div className="my-2 h-px bg-border" />
-                {authed ? (
+                {authLoading ? (
+                  <div className="h-10 rounded-sm bg-secondary/70" aria-hidden="true" />
+                ) : authed ? (
                   <SheetClose asChild>
                     <Link to="/dashboard" className="px-3 py-2.5 rounded-sm bg-charcoal text-ivory text-center hover:opacity-90">لوحتي</Link>
                   </SheetClose>
