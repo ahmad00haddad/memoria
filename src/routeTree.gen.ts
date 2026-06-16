@@ -18,6 +18,7 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ForPhotographersRouteImport } from './routes/for-photographers'
 import { Route as ForClientsRouteImport } from './routes/for-clients'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -90,6 +91,11 @@ const GuideRoute = GuideRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForPhotographersRoute = ForPhotographersRouteImport.update({
+  id: '/for-photographers',
+  path: '/for-photographers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForClientsRoute = ForClientsRouteImport.update({
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/for-clients': typeof ForClientsRoute
+  '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/for-clients': typeof ForClientsRoute
+  '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
@@ -316,6 +324,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/for-clients': typeof ForClientsRoute
+  '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
@@ -357,6 +366,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/for-clients'
+    | '/for-photographers'
     | '/forgot-password'
     | '/guide'
     | '/login'
@@ -394,6 +404,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/for-clients'
+    | '/for-photographers'
     | '/forgot-password'
     | '/guide'
     | '/login'
@@ -432,6 +443,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/for-clients'
+    | '/for-photographers'
     | '/forgot-password'
     | '/guide'
     | '/login'
@@ -472,6 +484,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   ForClientsRoute: typeof ForClientsRoute
+  ForPhotographersRoute: typeof ForPhotographersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
@@ -554,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-photographers': {
+      id: '/for-photographers'
+      path: '/for-photographers'
+      fullPath: '/for-photographers'
+      preLoaderRoute: typeof ForPhotographersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/for-clients': {
@@ -819,6 +839,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
   ForClientsRoute: ForClientsRoute,
+  ForPhotographersRoute: ForPhotographersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
