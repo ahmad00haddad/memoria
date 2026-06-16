@@ -384,6 +384,7 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
   const add = useServerFn(addGalleryPhoto);
   const del = useServerFn(deleteGalleryPhoto);
   const upd = useServerFn(updateGallery);
+  const confirm = useConfirm();
   const [gallery, setGallery] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -441,7 +442,7 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
   };
 
   const remove = async (id: string) => {
-    if (!window.confirm("حذف هذه الصورة؟")) return;
+    if (!(await confirm({ title: "حذف هذه الصورة؟", confirmText: "حذف", destructive: true }))) return;
     try { await del({ data: { photo_id: id } }); await load(); }
     catch (e: any) { toast.error(e.message); }
   };
