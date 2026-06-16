@@ -13,6 +13,7 @@ import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 export const Route = createFileRoute("/track/$token")({
   component: TrackingPage,
@@ -22,6 +23,7 @@ type Booking = any;
 
 function TrackingPage() {
   const { token } = useParams({ from: "/track/$token" });
+  const confirm = useConfirm();
   const get = useServerFn(getBookingByToken);
   const sendDeposit = useServerFn(clientMarkDepositSent);
   const markReceived = useServerFn(clientMarkReceived);
@@ -114,7 +116,7 @@ function TrackingPage() {
   };
 
   const onReceived = async () => {
-    if (!window.confirm("هل تأكدتِ من استلام جميع الصور؟")) return;
+    if (!(await confirm({ title: "تأكيد الاستلام", description: "هل تأكدتِ من استلام جميع الصور؟", confirmText: "تأكيد" }))) return;
     try {
       await markReceived({ data: { token } });
       toast.success("شكرًا! تم تأكيد الاستلام.");

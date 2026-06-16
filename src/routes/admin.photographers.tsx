@@ -9,6 +9,8 @@ import {
 } from "@/lib/admin.functions";
 import { Eye, EyeOff, RefreshCw, Trash2, ExternalLink, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/components/ui/confirm-dialog";
+import { PageLoader } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/admin/photographers")({
   component: AdminPhotographers,
@@ -35,6 +37,7 @@ function AdminPhotographers() {
   const togglePub = useServerFn(adminTogglePublish);
   const renew = useServerFn(adminRenewSubscription);
   const del = useServerFn(adminDeletePhotographer);
+  const confirm = useConfirm();
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +68,12 @@ function AdminPhotographers() {
   const onDelete = async (r: Row) => {
     const c1 = window.prompt(`لحذف "${r.display_name}" نهائيًا اكتبي اسم المستخدم بالضبط: ${r.username}`);
     if (c1 !== r.username) { if (c1 !== null) toast.error("لم يتطابق الاسم"); return; }
-    if (!window.confirm("هذا الإجراء لا يمكن التراجع عنه. هل أنتِ متأكدة؟")) return;
+    if (!(await confirm({
+      title: "حذف المصوّرة نهائيًا",
+      description: "هذا الإجراء لا يمكن التراجع عنه وسيؤدي إلى مسح جميع البيانات.",
+      confirmText: "حذف نهائي",
+      destructive: true,
+    }))) return;
     try {
       await del({ data: { photographer_id: r.id } });
       toast.success("تم الحذف");
@@ -83,7 +91,7 @@ function AdminPhotographers() {
     } catch (e: any) { toast.error(e.message); }
   };
 
-  if (loading) return <div className="py-12 text-center text-muted-foreground">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
 
   return (
     <section>

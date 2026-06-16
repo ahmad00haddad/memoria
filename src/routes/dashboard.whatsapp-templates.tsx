@@ -5,6 +5,8 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2, Save, RefreshCw, MessageCircle, Info } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm-dialog";
+import { PageLoader } from "@/components/ui/loading";
 
 export const Route = createFileRoute("/dashboard/whatsapp-templates")({ component: TemplatesPage });
 
@@ -33,6 +35,7 @@ function TemplatesPage() {
   const [uid, setUid] = useState<string>("");
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const confirm = useConfirm();
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -80,7 +83,7 @@ function TemplatesPage() {
   };
 
   const remove = async (id: string) => {
-    if (!confirm("حذف هذا القالب؟")) return;
+    if (!(await confirm({ title: "حذف هذا القالب؟", confirmText: "حذف", destructive: true }))) return;
     const { error } = await supabase.from("whatsapp_templates").delete().eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("تم الحذف");
@@ -91,7 +94,7 @@ function TemplatesPage() {
     setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   };
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-background">

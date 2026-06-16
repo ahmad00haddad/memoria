@@ -12,12 +12,14 @@ import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 import { ShotList } from "@/components/ShotList";
 import { watermarkImageFile } from "@/lib/watermark";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
 function BookingDetail() {
   const { id } = Route.useParams();
   const nav = useNavigate();
+  const confirm = useConfirm();
   const [uid, setUid] = useState("");
   const [b, setB] = useState<any>(null);
   const [proofUrl, setProofUrl] = useState<string | null>(null);
@@ -224,7 +226,7 @@ function BookingDetail() {
               )}
               <button
                 onClick={async () => {
-                  if (!confirm("هل أنت متأكدة من حذف هذا الحجز؟ سيتم نقله للمحذوفات.")) return;
+                  if (!(await confirm({ title: "حذف الحجز", description: "سيتم نقله للمحذوفات. يمكن استرجاعه لاحقًا من سجل التدقيق.", confirmText: "حذف", destructive: true }))) return;
                   try { await softDeleteFn({ data: { booking_id: id } }); toast.success("تم الحذف"); nav({ to: "/dashboard/bookings" }); }
                   catch (e: any) { toast.error(e?.message || "تعذّر الحذف"); }
                 }}
@@ -232,7 +234,7 @@ function BookingDetail() {
               ><Trash2 className="h-4 w-4" /> حذف الحجز</button>
               <button
                 onClick={async () => {
-                  if (!confirm("سيتم إبطال الرابط الحالي وإنشاء رابط جديد. متابعة؟")) return;
+                  if (!(await confirm({ title: "تجديد رابط التتبّع", description: "سيتم إبطال الرابط الحالي وإنشاء رابط جديد.", confirmText: "تجديد" }))) return;
                   try { await regenTokenFn({ data: { booking_id: id } }); toast.success("تم تجديد الرابط"); await load(); }
                   catch (e: any) { toast.error(e?.message || "تعذّر التجديد"); }
                 }}
