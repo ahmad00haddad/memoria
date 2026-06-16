@@ -16,7 +16,7 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
 
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, username, display_name, is_published, avatar_url, created_at")
+      .select("id, username, display_name, is_published, avatar_url, created_at, deleted_at")
       .order("created_at", { ascending: false });
 
     const ids = (profiles ?? []).map((p: any) => p.id);
