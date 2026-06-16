@@ -45,6 +45,7 @@ export function Header() {
           <Link to="/search" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">ابحث عن مصوّر</Link>
           <Link to="/guide" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">كيف يعمل</Link>
           <Link to="/pricing" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">الأسعار</Link>
+          <Link to="/for-photographers" className="hidden lg:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">للمصوّرات</Link>
           {!authLoading && !authed && !isPhotographer && <Link to="/photographers/join" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">انضم كمصوّر</Link>}
           {authed && (
             <Link to="/notifications" className="relative px-3 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="إشعارات">
@@ -76,6 +77,8 @@ export function Header() {
                 <SheetClose asChild><Link to="/search" className="px-3 py-2.5 rounded-sm hover:bg-secondary">ابحث عن مصوّر</Link></SheetClose>
                 <SheetClose asChild><Link to="/guide" className="px-3 py-2.5 rounded-sm hover:bg-secondary">كيف يعمل</Link></SheetClose>
                 <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">الأسعار</Link></SheetClose>
+                <SheetClose asChild><Link to="/for-clients" className="px-3 py-2.5 rounded-sm hover:bg-secondary">للعملاء</Link></SheetClose>
+                <SheetClose asChild><Link to="/for-photographers" className="px-3 py-2.5 rounded-sm hover:bg-secondary">للمصوّرات</Link></SheetClose>
                 {!authLoading && !authed && !isPhotographer && <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضم كمصوّر</Link></SheetClose>}
                 <div className="my-2 h-px bg-border" />
                 {authLoading ? (
