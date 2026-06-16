@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuthState } from "@/hooks/use-auth-state";
 
 export const Route = createFileRoute("/pricing")({
   component: PricingPage,
@@ -21,36 +20,7 @@ const FEATURES = [
 ];
 
 function PricingPage() {
-  const [isPhotographer, setIsPhotographer] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    const load = async (sessionOverride?: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]) => {
-      const session = sessionOverride ?? (await supabase.auth.getSession()).data.session;
-
-      if (!active || !session) {
-        setIsPhotographer(false);
-        return;
-      }
-
-      const { data: profile } = await supabase.from("profiles").select("id").eq("id", session.user.id).maybeSingle();
-      if (!active) return;
-      setIsPhotographer(!!profile);
-    };
-
-    load();
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      queueMicrotask(() => {
-        void load(session);
-      });
-    });
-
-    return () => {
-      active = false;
-      data.subscription.unsubscribe();
-    };
-  }, []);
+  const { loading: authLoading, isPhotographer } = useAuthState();
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,10 +46,10 @@ function PricingPage() {
             </div>
             <p className="text-sm text-muted-foreground mb-6">جرّبي كل شيء قبل الالتزام. تبدأ تلقائيًا عند التسجيل.</p>
             <Link
-              to={isPhotographer ? "/dashboard" : "/photographers/join"}
+              to={authLoading || isPhotographer ? "/dashboard" : "/photographers/join"}
               className="block text-center w-full border border-charcoal text-charcoal py-3 rounded-sm hover:bg-secondary transition-colors"
             >
-              {isPhotographer ? "افتحي لوحة التحكم" : "ابدئي مجانًا"}
+              {authLoading || isPhotographer ? "افتحي لوحة التحكم" : "ابدئي مجانًا"}
             </Link>
           </div>
 
