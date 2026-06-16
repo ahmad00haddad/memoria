@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -98,7 +99,7 @@ function Contracts() {
     navigator.clipboard.writeText(url); toast.success("تم نسخ رابط التوقيع");
   };
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
   if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
 
   return (

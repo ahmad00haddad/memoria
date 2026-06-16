@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
@@ -27,7 +28,7 @@ function SignPage() {
     });
   }, [token]);
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
   if (!data) return <div className="min-h-screen grid place-items-center">العقد غير موجود</div>;
 
   const { contract, booking, photographer } = data;

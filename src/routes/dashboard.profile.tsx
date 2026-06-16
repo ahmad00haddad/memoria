@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -89,7 +90,7 @@ function ProfilePage() {
     toast.success("تم الحفظ");
   };
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-background">

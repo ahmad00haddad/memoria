@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -12,12 +13,14 @@ import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 import { ShotList } from "@/components/ShotList";
 import { watermarkImageFile } from "@/lib/watermark";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
 function BookingDetail() {
   const { id } = Route.useParams();
   const nav = useNavigate();
+  const confirm = useConfirm();
   const [uid, setUid] = useState("");
   const [b, setB] = useState<any>(null);
   const [proofUrl, setProofUrl] = useState<string | null>(null);
@@ -164,7 +167,7 @@ function BookingDetail() {
     navigator.clipboard.writeText(url); toast.success("تم نسخ رابط العقد");
   };
 
-  if (loading || !b) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading || !b) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-background">
@@ -224,7 +227,7 @@ function BookingDetail() {
               )}
               <button
                 onClick={async () => {
-                  if (!confirm("هل أنت متأكدة من حذف هذا الحجز؟ سيتم نقله للمحذوفات.")) return;
+                  if (!(await confirm({ title: "حذف الحجز", description: "سيتم نقله للمحذوفات. يمكن استرجاعه لاحقًا من سجل التدقيق.", confirmText: "حذف", destructive: true }))) return;
                   try { await softDeleteFn({ data: { booking_id: id } }); toast.success("تم الحذف"); nav({ to: "/dashboard/bookings" }); }
                   catch (e: any) { toast.error(e?.message || "تعذّر الحذف"); }
                 }}
@@ -232,7 +235,7 @@ function BookingDetail() {
               ><Trash2 className="h-4 w-4" /> حذف الحجز</button>
               <button
                 onClick={async () => {
-                  if (!confirm("سيتم إبطال الرابط الحالي وإنشاء رابط جديد. متابعة؟")) return;
+                  if (!(await confirm({ title: "تجديد رابط التتبّع", description: "سيتم إبطال الرابط الحالي وإنشاء رابط جديد.", confirmText: "تجديد" }))) return;
                   try { await regenTokenFn({ data: { booking_id: id } }); toast.success("تم تجديد الرابط"); await load(); }
                   catch (e: any) { toast.error(e?.message || "تعذّر التجديد"); }
                 }}
@@ -382,6 +385,7 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
   const add = useServerFn(addGalleryPhoto);
   const del = useServerFn(deleteGalleryPhoto);
   const upd = useServerFn(updateGallery);
+  const confirm = useConfirm();
   const [gallery, setGallery] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -439,7 +443,7 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
   };
 
   const remove = async (id: string) => {
-    if (!window.confirm("حذف هذه الصورة؟")) return;
+    if (!(await confirm({ title: "حذف هذه الصورة؟", confirmText: "حذف", destructive: true }))) return;
     try { await del({ data: { photo_id: id } }); await load(); }
     catch (e: any) { toast.error(e.message); }
   };

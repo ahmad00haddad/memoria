@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, Circle, Plus, Trash2, ListChecks, Sparkles, X } from "lucide-react";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 
 type Item = {
   id: string;
@@ -17,6 +18,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
   const [loading, setLoading] = useState(true);
   const [newTitle, setNewTitle] = useState("");
   const [busy, setBusy] = useState(false);
+  const confirm = useConfirm();
 
   const load = async () => {
     const { data } = await supabase
@@ -67,7 +69,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
   };
 
   const remove = async (id: string) => {
-    if (!window.confirm("حذف هذه اللقطة؟")) return;
+    if (!(await confirm({ title: "حذف هذه اللقطة؟", confirmText: "حذف", destructive: true }))) return;
     await supabase.from("shot_list_items").delete().eq("id", id);
     await load();
   };

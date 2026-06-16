@@ -1,4 +1,5 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -24,7 +25,7 @@ function AdminLayout() {
     })();
   }, [navigate]);
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
 
   if (!isAdmin) {
     return (

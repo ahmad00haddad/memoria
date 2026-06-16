@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -91,7 +92,7 @@ function SubscriptionPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
 
   const trialEnds = sub ? new Date(sub.trial_ends_at) : null;
   const periodEnds = sub?.current_period_end ? new Date(sub.current_period_end) : null;
