@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { ListSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
-import { CalendarCheck, Inbox } from "lucide-react";
+import { Inbox } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/bookings/")({ component: BookingsList });
 
