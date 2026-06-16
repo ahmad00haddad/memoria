@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { ListSkeleton } from "@/components/ui/loading";
+import { EmptyState } from "@/components/ui/empty-state";
+import { CalendarCheck, Inbox } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/bookings/")({ component: BookingsList });
 
@@ -30,8 +32,6 @@ function BookingsList() {
     })();
   }, [nav]);
 
-  if (loading) return <PageLoader />;
-  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
   const filtered = filter === "all" ? list : list.filter((b) => b.status === filter);
 
   return (
@@ -50,7 +50,11 @@ function BookingsList() {
           ))}
         </div>
 
-        {list.length === 0 && (
+        {loading ? (
+          <ListSkeleton rows={5} />
+        ) : loadError ? (
+          <div className="rounded-sm border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{loadError}</div>
+        ) : list.length === 0 ? (
           <div className="rounded-sm border border-border bg-card p-6 mb-6 shadow-soft">
             <h2 className="font-serif text-2xl mb-2">لا توجد حجوزات بعد</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -62,10 +66,16 @@ function BookingsList() {
               <Link to="/search" className="bg-charcoal text-ivory px-4 py-2 rounded-sm hover:opacity-90">معاينة تجربة العميل</Link>
             </div>
           </div>
-        )}
-
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={Inbox}
+            title="لا حجوزات بهذه الحالة"
+            description="غيّري الفلتر أعلاه لعرض حجوزات بحالات أخرى."
+            action={<button onClick={() => setFilter("all")} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary">عرض الكل</button>}
+          />
+        ) : (
         <div className="rounded-sm border border-border bg-card overflow-hidden">
-          {filtered.length === 0 ? <p className="p-6 text-sm text-muted-foreground">لا حجوزات.</p> : filtered.map((b) => (
+          {filtered.map((b) => (
             <Link key={b.id} to="/dashboard/bookings/$id" params={{ id: b.id }} className="block p-4 border-b border-border last:border-0 hover:bg-secondary/50">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -81,6 +91,7 @@ function BookingsList() {
             </Link>
           ))}
         </div>
+        )}
       </section>
       <Footer />
     </div>

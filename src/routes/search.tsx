@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, MapPin, Star, X } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { GridSkeleton } from "@/components/ui/loading";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -188,31 +190,18 @@ function SearchPage() {
 
         {/* Results */}
         {resultsQ.isLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-sm border border-border bg-card overflow-hidden animate-pulse">
-                <div className="aspect-[4/3] bg-muted" />
-                <div className="p-5 space-y-2">
-                  <div className="h-4 bg-muted rounded w-2/3" />
-                  <div className="h-3 bg-muted rounded w-1/3" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <GridSkeleton items={6} />
         ) : results.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              لا توجد مصوّرات تطابق هذه الفلتر. جرّبي توسيع نطاق البحث أو إزالة بعض الشروط.
-            </p>
-            {hasFilters && (
-              <button
-                onClick={clearAll}
-                className="text-sm text-gold underline-offset-4 hover:underline"
-              >
-                مسح كل الفلاتر
+          <EmptyState
+            icon={Search}
+            title="لا توجد نتائج"
+            description="لم نعثر على مصوّرات تطابق فلترك الحالي. جرّبي توسيع النطاق السعري، إزالة المدينة، أو تغيير التاريخ."
+            action={hasFilters ? (
+              <button onClick={clearAll} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 text-sm">
+                <X className="h-4 w-4" /> مسح كل الفلاتر
               </button>
-            )}
-          </div>
+            ) : undefined}
+          />
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((p) => (
