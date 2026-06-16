@@ -167,7 +167,7 @@ function BookingDetail() {
     navigator.clipboard.writeText(url); toast.success("تم نسخ رابط العقد");
   };
 
-  if (loading || !b) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading || !b) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-background">

@@ -41,7 +41,7 @@ function ReviewPage() {
     }
   };
 
-  if (isLoading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (isLoading) return <PageLoader />;
   if (!booking) return <div className="min-h-screen grid place-items-center">رابط غير صالح</div>;
 
   const status = (booking as any).status;

@@ -25,7 +25,7 @@ function AdminLayout() {
     })();
   }, [navigate]);
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
 
   if (!isAdmin) {
     return (

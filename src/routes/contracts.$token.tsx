@@ -28,7 +28,7 @@ function SignPage() {
     });
   }, [token]);
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
   if (!data) return <div className="min-h-screen grid place-items-center">العقد غير موجود</div>;
 
   const { contract, booking, photographer } = data;

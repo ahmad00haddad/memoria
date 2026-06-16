@@ -30,7 +30,7 @@ function BookingsList() {
     })();
   }, [nav]);
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
   if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
   const filtered = filter === "all" ? list : list.filter((b) => b.status === filter);
 

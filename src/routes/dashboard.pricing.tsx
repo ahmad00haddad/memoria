@@ -57,7 +57,7 @@ function PricingMgr() {
     setRules((data ?? []) as Rule[]);
   };
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
   if (loadError) {
     return (
       <div className="min-h-screen bg-background">

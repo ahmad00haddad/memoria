@@ -31,7 +31,7 @@ function ReferralsPage() {
     })();
   }, [navigate]);
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
 
   const link = `${typeof window !== "undefined" ? window.location.origin : ""}/photographers/join?ref=${profile?.referral_code ?? ""}`;
   const granted = refs.filter((r) => r.reward_granted).length;

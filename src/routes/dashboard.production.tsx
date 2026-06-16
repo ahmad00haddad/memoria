@@ -54,7 +54,7 @@ function ProductionBoard() {
     load(uid);
   };
 
-  if (loading) return <div className="min-h-screen grid place-items-center">جاري التحميل…</div>;
+  if (loading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-background">
