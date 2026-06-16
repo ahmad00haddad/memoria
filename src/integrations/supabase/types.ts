@@ -1004,6 +1004,10 @@ export type Database = {
         Args: { _booking_id: string }
         Returns: string
       }
+      restore_photographer: {
+        Args: { _photographer_id: string }
+        Returns: undefined
+      }
       seed_default_shot_list: {
         Args: { _booking_id: string; _service: string }
         Returns: undefined
@@ -1013,6 +1017,10 @@ export type Database = {
         Returns: undefined
       }
       soft_delete_booking: { Args: { _booking_id: string }; Returns: undefined }
+      soft_delete_photographer: {
+        Args: { _photographer_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "photographer" | "client"

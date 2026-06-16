@@ -6,8 +6,10 @@ import {
   adminTogglePublish,
   adminRenewSubscription,
   adminDeletePhotographer,
+  adminSoftDeletePhotographer,
+  adminRestorePhotographer,
 } from "@/lib/admin.functions";
-import { Eye, EyeOff, RefreshCw, Trash2, ExternalLink, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, RefreshCw, Trash2, ExternalLink, CheckCircle2, Clock, AlertTriangle, Archive, ArchiveRestore } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { PageLoader } from "@/components/ui/loading";
@@ -23,6 +25,7 @@ type Row = {
   is_published: boolean;
   avatar_url: string | null;
   created_at: string;
+  deleted_at?: string | null;
   bookings_count: number;
   reviews_count: number;
   subscription: {
@@ -37,6 +40,8 @@ function AdminPhotographers() {
   const togglePub = useServerFn(adminTogglePublish);
   const renew = useServerFn(adminRenewSubscription);
   const del = useServerFn(adminDeletePhotographer);
+  const softDel = useServerFn(adminSoftDeletePhotographer);
+  const restore = useServerFn(adminRestorePhotographer);
   const confirm = useConfirm();
 
   const [rows, setRows] = useState<Row[]>([]);
@@ -77,6 +82,27 @@ function AdminPhotographers() {
     try {
       await del({ data: { photographer_id: r.id } });
       toast.success("تم الحذف");
+      load();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const onArchive = async (r: Row) => {
+    if (!(await confirm({
+      title: "أرشفة المصوّرة",
+      description: "ستُخفى المصوّرة عن البحث العام مع الاحتفاظ بكل بياناتها. يمكن استرجاعها لاحقاً في أي وقت.",
+      confirmText: "أرشفة",
+    }))) return;
+    try {
+      await softDel({ data: { photographer_id: r.id } });
+      toast.success("تمت الأرشفة");
+      load();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const onRestore = async (r: Row) => {
+    try {
+      await restore({ data: { photographer_id: r.id } });
+      toast.success("تم الاسترجاع");
       load();
     } catch (e: any) { toast.error(e.message); }
   };
@@ -136,6 +162,8 @@ function AdminPhotographers() {
                 <td className="p-3">
                   {r.is_published ? (
                     <span className="text-xs inline-flex items-center gap-1 text-emerald-700"><Eye className="h-3.5 w-3.5" /> ظاهرة</span>
+                  ) : r.deleted_at ? (
+                    <span className="text-xs inline-flex items-center gap-1 text-amber-700"><Archive className="h-3.5 w-3.5" /> مؤرشفة</span>
                   ) : (
                     <span className="text-xs inline-flex items-center gap-1 text-muted-foreground"><EyeOff className="h-3.5 w-3.5" /> مخفية</span>
                   )}
@@ -154,6 +182,17 @@ function AdminPhotographers() {
                             className="text-xs px-2.5 py-1.5 rounded-sm bg-emerald-600 text-white hover:opacity-90 inline-flex items-center gap-1">
                       <RefreshCw className="h-3 w-3" /> تجديد
                     </button>
+                    {r.deleted_at ? (
+                      <button onClick={() => onRestore(r)}
+                              className="text-xs px-2.5 py-1.5 rounded-sm bg-amber-600 text-white hover:opacity-90 inline-flex items-center gap-1">
+                        <ArchiveRestore className="h-3 w-3" /> استرجاع
+                      </button>
+                    ) : (
+                      <button onClick={() => onArchive(r)}
+                              className="text-xs px-2.5 py-1.5 rounded-sm border border-amber-400 text-amber-700 hover:bg-amber-50 inline-flex items-center gap-1">
+                        <Archive className="h-3 w-3" /> أرشفة
+                      </button>
+                    )}
                     <button onClick={() => onDelete(r)}
                             className="text-xs px-2.5 py-1.5 rounded-sm bg-destructive text-destructive-foreground hover:opacity-90 inline-flex items-center gap-1">
                       <Trash2 className="h-3 w-3" /> حذف

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
 import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, Copy, ArrowLeft, Bell, CircleDashed, ListChecks, TrendingUp, Send, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { OnboardingWizard } from "@/components/OnboardingWizard";
 
 export const Route = createFileRoute("/dashboard/")({
   component: Dashboard,
@@ -63,10 +64,12 @@ function Dashboard() {
   }, [navigate]);
 
   if (loading) return <PageLoader />;
+  const onboardingNeeded = !profile?.display_name || !profile?.username || !profile?.avatar_url || pricingCount === 0;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
+      <OnboardingWizard shouldShow={onboardingNeeded} />
       <section className="container-editorial py-12">
         <div className="flex items-end justify-between mb-8">
           <div>

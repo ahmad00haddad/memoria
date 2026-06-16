@@ -16,7 +16,7 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
 
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, username, display_name, is_published, avatar_url, created_at")
+      .select("id, username, display_name, is_published, avatar_url, created_at, deleted_at")
       .order("created_at", { ascending: false });
 
     const ids = (profiles ?? []).map((p: any) => p.id);
@@ -86,6 +86,32 @@ export const adminDeletePhotographer = createServerFn({ method: "POST" })
     } catch (e) {
       // ignore — profile data already wiped
     }
+    return { ok: true };
+  });
+
+export const adminSoftDeletePhotographer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { photographer_id: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { error } = await supabase.rpc("soft_delete_photographer", {
+      _photographer_id: data.photographer_id,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminRestorePhotographer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { photographer_id: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { error } = await supabase.rpc("restore_photographer", {
+      _photographer_id: data.photographer_id,
+    });
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 

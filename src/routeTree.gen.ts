@@ -18,6 +18,8 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ForPhotographersRouteImport } from './routes/for-photographers'
+import { Route as ForClientsRouteImport } from './routes/for-clients'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -89,6 +91,16 @@ const GuideRoute = GuideRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForPhotographersRoute = ForPhotographersRouteImport.update({
+  id: '/for-photographers',
+  path: '/for-photographers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForClientsRoute = ForClientsRouteImport.update({
+  id: '/for-clients',
+  path: '/for-clients',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -233,6 +245,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
+  '/for-clients': typeof ForClientsRoute
+  '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
@@ -269,6 +283,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/for-clients': typeof ForClientsRoute
+  '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
@@ -307,6 +323,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
+  '/for-clients': typeof ForClientsRoute
+  '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
@@ -347,6 +365,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/for-clients'
+    | '/for-photographers'
     | '/forgot-password'
     | '/guide'
     | '/login'
@@ -383,6 +403,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/for-clients'
+    | '/for-photographers'
     | '/forgot-password'
     | '/guide'
     | '/login'
@@ -420,6 +442,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/dashboard'
+    | '/for-clients'
+    | '/for-photographers'
     | '/forgot-password'
     | '/guide'
     | '/login'
@@ -459,6 +483,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
+  ForClientsRoute: typeof ForClientsRoute
+  ForPhotographersRoute: typeof ForPhotographersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
@@ -541,6 +567,20 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-photographers': {
+      id: '/for-photographers'
+      path: '/for-photographers'
+      fullPath: '/for-photographers'
+      preLoaderRoute: typeof ForPhotographersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-clients': {
+      id: '/for-clients'
+      path: '/for-clients'
+      fullPath: '/for-clients'
+      preLoaderRoute: typeof ForClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -798,6 +838,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
+  ForClientsRoute: ForClientsRoute,
+  ForPhotographersRoute: ForPhotographersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
@@ -819,13 +861,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

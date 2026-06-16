@@ -23,6 +23,7 @@ function ProductionBoard() {
   const [uid, setUid] = useState("");
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeStage, setActiveStage] = useState<string>("awaiting");
 
   const load = async (id: string) => {
     const { data } = await supabase.from("bookings")
@@ -62,9 +63,30 @@ function ProductionBoard() {
       <section className="container-editorial py-12">
         <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-gold">← اللوحة</Link>
         <h1 className="font-serif text-4xl mt-2 mb-2">لوحة متابعة الإنتاج</h1>
-        <p className="text-sm text-muted-foreground mb-8 max-w-2xl">تابعي كل حجز من يوم التصوير حتى التسليم. حرّكي الحجز بين المراحل بأزرار التالي/السابق.</p>
+        <p className="text-sm text-muted-foreground mb-6 max-w-2xl">تابعي كل حجز من يوم التصوير حتى التسليم. حرّكي الحجز بين المراحل بأزرار التالي/السابق.</p>
 
-        <div className="grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
+        {/* Mobile stage selector */}
+        <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto">
+          <div className="flex gap-2 min-w-max pb-2">
+            {STAGES.map((s) => {
+              const count = bookings.filter((b) => (b.production_stage || "awaiting") === s.key).length;
+              const isActive = activeStage === s.key;
+              return (
+                <button
+                  key={s.key}
+                  onClick={() => setActiveStage(s.key)}
+                  className={`shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-sm border text-xs whitespace-nowrap transition ${isActive ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                >
+                  {s.icon}
+                  <span>{s.label}</span>
+                  <span className={`px-1.5 py-0.5 rounded-sm text-[10px] ${isActive ? "bg-ivory/20" : "bg-secondary"}`}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
           {STAGES.map((s) => {
             const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
             return (
@@ -97,6 +119,47 @@ function ProductionBoard() {
               </div>
             );
           })}
+        </div>
+
+        {/* Mobile single-column view */}
+        <div className="lg:hidden">
+          {(() => {
+            const s = STAGES.find((x) => x.key === activeStage) ?? STAGES[0];
+            const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
+            return (
+              <div className={`rounded-sm border ${s.color} p-3`}>
+                <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                  {s.icon}<span>{s.label}</span>
+                  <span className="ms-auto text-xs bg-white/70 px-2 py-0.5 rounded-sm">{items.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {items.map((b) => {
+                    const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
+                    return (
+                      <div key={b.id} className="bg-white rounded-sm border border-border p-4 text-sm space-y-2">
+                        <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-base hover:text-gold block">{b.client_name}</Link>
+                        <div className="text-xs text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
+                        {due !== null && s.key !== "delivered" && (
+                          <div className={`text-xs ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700" : "text-muted-foreground"}`}>
+                            {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
+                          </div>
+                        )}
+                        <div className="flex gap-2 pt-2 border-t border-border">
+                          <button onClick={() => move(b.id, -1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs">
+                            <ChevronRight className="h-4 w-4" /> السابق
+                          </button>
+                          <button onClick={() => move(b.id, 1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs">
+                            التالي <ChevronLeft className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">لا حجوزات في هذه المرحلة</p>}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </section>
       <Footer />
