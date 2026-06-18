@@ -13,6 +13,7 @@ import {
 import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X } from "lucide-react";
+import { Lightbox } from "@/components/Lightbox";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 
