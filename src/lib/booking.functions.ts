@@ -309,19 +309,19 @@ export const getPublicDepositInfo = createServerFn({ method: "POST" })
     return { cliq_alias: priv?.cliq_alias ?? null, bank_info: priv?.bank_info ?? null };
   });
 
-// Records a referral after a new photographer signs up. Called from the client after
-// the user has an active session, or right after signUp when email confirmation is off.
+// Records a referral after a new photographer signs up.
+// يتطلّب جلسة مسجّلة — يُؤخذ معرّف المستخدم من التوكن (لا يُمرَّر من العميل) لمنع الانتحال.
+import { requireSupabaseAuth as _ra } from "@/integrations/supabase/auth-middleware";
 export const recordReferralAfterSignup = createServerFn({ method: "POST" })
-  .inputValidator((d: { referral_code: string; new_user_id: string }) => {
+  .middleware([_ra])
+  .inputValidator((d: { referral_code: string }) => {
     if (!d || typeof d.referral_code !== "string" || d.referral_code.length === 0 || d.referral_code.length > 64) {
       throw new Error("invalid referral_code");
     }
-    if (typeof d.new_user_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.new_user_id)) {
-      throw new Error("invalid user id");
-    }
     return d;
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const newUserId = (context as any).userId as string;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: referrer } = await supabaseAdmin
       .from("profiles")
@@ -329,15 +329,14 @@ export const recordReferralAfterSignup = createServerFn({ method: "POST" })
       .eq("referral_code", data.referral_code)
       .maybeSingle();
     if (!referrer) return { ok: false, reason: "referrer not found" };
-    if (referrer.id === data.new_user_id) return { ok: false, reason: "self-referral" };
-    // Idempotent: ignore conflict on duplicate.
+    if (referrer.id === newUserId) return { ok: false, reason: "self-referral" };
     await supabaseAdmin
       .from("referrals")
-      .insert({ referrer_id: referrer.id, referred_id: data.new_user_id });
+      .insert({ referrer_id: referrer.id, referred_id: newUserId });
     await supabaseAdmin
       .from("profiles")
       .update({ referred_by: referrer.id })
-      .eq("id", data.new_user_id);
+      .eq("id", newUserId);
     return { ok: true };
   });
 

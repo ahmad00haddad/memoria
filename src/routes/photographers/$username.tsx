@@ -12,6 +12,7 @@ import { ar } from "date-fns/locale";
 import { format } from "date-fns";
 import { useServerFn } from "@tanstack/react-start";
 import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functions";
+import { Lightbox } from "@/components/Lightbox";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
@@ -87,7 +88,7 @@ function PhotographerPage() {
   const [loading, setLoading] = useState(true);
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const fetchDeposit = useServerFn(getPublicDepositInfo);
 
   useEffect(() => {
@@ -229,16 +230,17 @@ function PhotographerPage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {profile.portfolio_urls!.slice(0, 12).map((u, i) => (
-              <button type="button" key={i} onClick={() => setLightbox(u)} className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in">
+              <button type="button" key={i} onClick={() => setLightboxIdx(i)} className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in">
                 <img src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" loading="lazy" decoding="async" />
               </button>
             ))}
           </div>
-          {lightbox && (
-            <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
-              <button type="button" className="absolute top-4 left-4 text-white text-3xl leading-none" onClick={() => setLightbox(null)} aria-label="إغلاق">×</button>
-              <img src={lightbox} alt="" className="max-w-full max-h-full object-contain" onClick={(e) => e.stopPropagation()} />
-            </div>
+          {lightboxIdx !== null && (
+            <Lightbox
+              images={(profile.portfolio_urls ?? []).slice(0, 12)}
+              index={lightboxIdx}
+              onClose={() => setLightboxIdx(null)}
+            />
           )}
         </section>
       )}
