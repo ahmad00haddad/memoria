@@ -86,7 +86,7 @@ function JoinPage() {
     }
     // Record referral via secure server function (idempotent, no-op if no session yet).
     if (refCode && signUpData.user) {
-      try { await referralFn({ data: { referral_code: refCode, new_user_id: signUpData.user.id } }); } catch {}
+      try { await referralFn({ data: { referral_code: refCode } }); } catch {}
     }
     // If email confirmation is required, the session will be null.
     if (signUpData.session) {
