@@ -10,7 +10,12 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/hooks/email-reminders")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        // فحص أن النداء يأتي من pg_cron (apikey = المفتاح العام)
+        const apikey = request.headers.get("apikey") || request.headers.get("x-api-key");
+        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+          return new Response("Unauthorized", { status: 401 });
+        }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { sendEmail, tplEventReminder24h, tplSubscriptionExpiring } =
           await import("@/lib/email.server");

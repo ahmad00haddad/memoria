@@ -5,6 +5,12 @@ export const Route = createFileRoute("/api/public/hooks/ical-sync")({
   server: {
     handlers: {
       POST: async () => {
+        // محذوف لاحقاً — راجع التوقيع أدناه
+        return new Response("use signed handler", { status: 500 });
+      },
+    },
+  },
+});
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: rows, error } = await supabaseAdmin
           .from("photographer_private")
