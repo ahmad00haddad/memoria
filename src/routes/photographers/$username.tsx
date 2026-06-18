@@ -15,22 +15,44 @@ import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functi
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.username} — احجز جلسة تصوير | EliteCapture` },
-      { name: "description", content: `استعرض أعمال وأسعار المصوّر @${params.username} واحجز موعدك مباشرة.` },
-      { property: "og:title", content: `${params.username} — مصوّر أعراس` },
-      { property: "og:description", content: `استعرض أعمال وأسعار المصوّر @${params.username} واحجز موعدك مباشرة عبر EliteCapture.` },
+  loader: async ({ params }) => {
+    // SEO meta only — يجلب اسم العرض والصورة لاستخدامها في علامات الميتا.
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name,bio,city,cover_url,avatar_url")
+        .eq("username", params.username.trim().toLowerCase())
+        .eq("is_published", true)
+        .maybeSingle();
+      return { seo: data ?? null };
+    } catch {
+      return { seo: null };
+    }
+  },
+  head: ({ params, loaderData }) => {
+    const p = loaderData?.seo as any;
+    const name = p?.display_name || params.username;
+    const city = p?.city ? ` في ${p.city}` : "";
+    const desc = p?.bio?.slice(0, 155) || `استعرض أعمال وأسعار المصوّرة ${name}${city} واحجز موعدك مباشرة عبر EliteCapture.`;
+    const image = p?.cover_url || p?.avatar_url || undefined;
+    const url = `https://royal-lens-flow.lovable.app/photographers/${params.username}`;
+    const meta: Array<Record<string, string>> = [
+      { title: `${name} — مصوّرة أعراس${city} | EliteCapture` },
+      { name: "description", content: desc },
+      { property: "og:title", content: `${name} — مصوّرة أعراس${city}` },
+      { property: "og:description", content: desc },
       { property: "og:type", content: "profile" },
-      { property: "og:url", content: `https://royal-lens-flow.lovable.app/photographers/${params.username}` },
+      { property: "og:url", content: url },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: `${params.username} — مصوّر أعراس` },
-      { name: "twitter:description", content: `استعرض أعمال وأسعار المصوّر @${params.username}.` },
-    ],
-    links: [
-      { rel: "canonical", href: `https://royal-lens-flow.lovable.app/photographers/${params.username}` },
-    ],
-  }),
+      { name: "twitter:title", content: `${name} — مصوّرة أعراس${city}` },
+      { name: "twitter:description", content: desc },
+    ];
+    if (image) {
+      meta.push({ property: "og:image", content: image });
+      meta.push({ name: "twitter:image", content: image });
+    }
+    return { meta, links: [{ rel: "canonical", href: url }] };
+  },
 });
 
 type Profile = {
