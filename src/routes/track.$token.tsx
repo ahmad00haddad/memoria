@@ -293,7 +293,7 @@ function ClientGallery({ token }: { token: string }) {
   const fetchG = useServerFn(getGalleryByToken);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const load = async () => {
     try { setData(await fetchG({ data: { token } })); }
@@ -312,8 +312,8 @@ function ClientGallery({ token }: { token: string }) {
         <p className="text-sm text-muted-foreground">لم تُرفع صور بعد. ستظهر هنا فور التسليم.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-          {data.photos.map((p: any) => (
-            <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightbox(p.url)}>
+          {data.photos.map((p: any, idx: number) => (
+            <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightboxIdx(idx)}>
               {p.url && <img src={p.url} alt={p.caption ?? ""} loading="lazy" className="w-full h-full object-cover transition group-hover:scale-105" />}
               {data.gallery.allow_downloads && p.url && (
                 <button
@@ -346,11 +346,12 @@ function ClientGallery({ token }: { token: string }) {
           ))}
         </div>
       )}
-      {lightbox && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setLightbox(null)}>
-          <button className="absolute top-4 left-4 text-white p-2" onClick={() => setLightbox(null)}><X className="h-6 w-6" /></button>
-          <img src={lightbox} alt="" className="max-w-full max-h-full object-contain" onClick={(e) => e.stopPropagation()} />
-        </div>
+      {lightboxIdx !== null && (
+        <Lightbox
+          images={data.photos.map((p: any) => p.url).filter(Boolean)}
+          index={lightboxIdx}
+          onClose={() => setLightboxIdx(null)}
+        />
       )}
     </div>
   );
