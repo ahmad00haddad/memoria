@@ -30,6 +30,9 @@ export function OnboardingWizard({ shouldShow }: { shouldShow: boolean }) {
     setOpen(false);
   };
 
+  // إغلاق مؤقت (لإعادة الظهور لاحقاً) — يُستخدم عند الضغط على زر "افتح الصفحة"
+  const closeOnly = () => setOpen(false);
+
   const s = STEPS[step];
   const Icon = s.icon;
 
@@ -63,7 +66,7 @@ export function OnboardingWizard({ shouldShow }: { shouldShow: boolean }) {
                 <button onClick={() => setStep(step - 1)} className="text-sm px-4 py-2 border border-border rounded-sm hover:bg-secondary">السابق</button>
               )}
               {s.to ? (
-                <Link to={s.to} onClick={dismiss} className="text-sm px-4 py-2 rounded-sm bg-charcoal text-ivory hover:opacity-90 inline-flex items-center gap-2">
+                <Link to={s.to} onClick={closeOnly} className="text-sm px-4 py-2 rounded-sm bg-charcoal text-ivory hover:opacity-90 inline-flex items-center gap-2">
                   {s.cta} <ArrowLeft className="h-4 w-4" />
                 </Link>
               ) : null}
