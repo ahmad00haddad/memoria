@@ -4,13 +4,12 @@ import { runIcalSyncForUser } from "@/lib/ical-sync.functions";
 export const Route = createFileRoute("/api/public/hooks/ical-sync")({
   server: {
     handlers: {
-      POST: async () => {
-        // محذوف لاحقاً — راجع التوقيع أدناه
-        return new Response("use signed handler", { status: 500 });
-      },
-    },
-  },
-});
+      POST: async ({ request }) => {
+        // فحص أن النداء يأتي من pg_cron / Supabase (apikey = المفتاح العام)
+        const apikey = request.headers.get("apikey") || request.headers.get("x-api-key");
+        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+          return new Response("Unauthorized", { status: 401 });
+        }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: rows, error } = await supabaseAdmin
           .from("photographer_private")
