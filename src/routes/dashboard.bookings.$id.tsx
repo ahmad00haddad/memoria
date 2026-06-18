@@ -9,6 +9,7 @@ import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, Badg
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
+import { createContractForBooking } from "@/lib/contracts.functions";
 import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 import { ShotList } from "@/components/ShotList";
@@ -33,6 +34,7 @@ function BookingDetail() {
   const softDeleteFn = useServerFn(softDeleteBooking);
   const regenTokenFn = useServerFn(regenerateBookingToken);
   const sendDeliveryEmailFn = useServerFn(sendGalleryDeliveredEmail);
+  const createContractFn = useServerFn(createContractForBooking);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -154,11 +156,12 @@ function BookingDetail() {
       .replace(/\[العربون\]/g, String(b.deposit_amount))
       .replace(/\[رسوم الساعة الإضافية\]/g, String(b.overtime_fee_per_hour || 0))
       .replace(/\[مستوى الخصوصية\]/g, privacyLabels[b.privacy_level || 'public']);
-    const { error } = await supabase.from("contracts").insert({
-      booking_id: id, photographer_id: uid, body, client_name: b.client_name,
-    });
-    if (error) return toast.error(error.message);
-    toast.success("تم إنشاء العقد"); load();
+    try {
+      await createContractFn({ data: { booking_id: id, body, client_name: b.client_name } });
+      toast.success("تم إنشاء العقد"); load();
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر إنشاء العقد");
+    }
   };
 
   const copyContractLink = () => {

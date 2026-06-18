@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const signContract = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({
@@ -9,6 +9,7 @@ export const signContract = createServerFn({ method: "POST" })
     client_name: z.string().min(2).max(120),
   }).parse(d))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: c } = await supabaseAdmin.from("contracts").select("*").eq("sign_token", data.token).maybeSingle();
     if (!c) throw new Error("Contract not found");
     if (c.status === "signed") throw new Error("Already signed");
@@ -31,6 +32,7 @@ export const signContract = createServerFn({ method: "POST" })
 export const getContractByToken = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ token: z.string() }).parse(d))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: c } = await supabaseAdmin.from("contracts").select(
       "id, body, client_name, status, signed_at, client_signature, booking_id, photographer_id"
     ).eq("sign_token", data.token).maybeSingle();
@@ -45,4 +47,39 @@ export const getContractByToken = createServerFn({ method: "GET" })
       "phone,cliq_alias"
     ).eq("user_id", c.photographer_id).maybeSingle();
     return { contract: c, booking: b, photographer: { ...(p ?? {}), ...(pp ?? {}) } };
+  });
+
+// ينشئ عقدًا لحجز معيّن مع التحقق من ملكية المصوّر للحجز (يمنع إنشاء عقود على حجوزات الآخرين).
+export const createContractForBooking = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    booking_id: z.string().uuid(),
+    body: z.string().min(20).max(20000),
+    client_name: z.string().min(2).max(120),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    // تأكدي أن الحجز يخصّ هذه المصوّرة فعلاً
+    const { data: bk, error: bkErr } = await supabase
+      .from("bookings")
+      .select("id, photographer_id")
+      .eq("id", data.booking_id)
+      .maybeSingle();
+    if (bkErr) throw new Error(bkErr.message);
+    if (!bk) throw new Error("Booking not found");
+    if (bk.photographer_id !== userId) throw new Error("Forbidden");
+
+    // لا تكرّري عقدًا قائمًا
+    const { data: existing } = await supabase
+      .from("contracts").select("id").eq("booking_id", data.booking_id).maybeSingle();
+    if (existing) throw new Error("Contract already exists");
+
+    const { error } = await supabase.from("contracts").insert({
+      booking_id: data.booking_id,
+      photographer_id: userId,
+      body: data.body,
+      client_name: data.client_name,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

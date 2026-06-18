@@ -5,7 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { ListSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Inbox } from "lucide-react";
+import { Inbox, Search } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/bookings/")({ component: BookingsList });
 
@@ -14,6 +14,8 @@ function BookingsList() {
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [q, setQ] = useState("");
+  const [sort, setSort] = useState<"date_desc" | "date_asc" | "price_desc">("date_desc");
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,7 +34,21 @@ function BookingsList() {
     })();
   }, [nav]);
 
-  const filtered = filter === "all" ? list : list.filter((b) => b.status === filter);
+  const ql = q.trim().toLowerCase();
+  const filtered = list
+    .filter((b) => (filter === "all" ? true : b.status === filter))
+    .filter((b) =>
+      !ql
+        ? true
+        : (b.client_name || "").toLowerCase().includes(ql) ||
+          (b.venue_name || "").toLowerCase().includes(ql) ||
+          (b.client_phone || "").toLowerCase().includes(ql)
+    )
+    .sort((a, b) => {
+      if (sort === "price_desc") return Number(b.total_price) - Number(a.total_price);
+      if (sort === "date_asc") return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
+      return new Date(b.event_date).getTime() - new Date(a.event_date).getTime();
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,6 +64,27 @@ function BookingsList() {
           ].map((f) => (
             <button key={f.v} onClick={() => setFilter(f.v)} className={`px-3 py-1.5 rounded-sm border ${filter === f.v ? "bg-charcoal text-ivory border-charcoal" : "border-border hover:bg-secondary"}`}>{f.l}</button>
           ))}
+        </div>
+
+        <div className="grid gap-2 sm:grid-cols-[1fr_auto] mb-6">
+          <div className="relative">
+            <Search className="h-4 w-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground pointer-events-none" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="ابحثي باسم العميل، الموقع، أو رقم الجوال"
+              className="w-full ps-9 pe-3 py-2 text-sm border border-input rounded-sm bg-background"
+            />
+          </div>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as any)}
+            className="text-sm border border-input rounded-sm bg-background px-3 py-2"
+          >
+            <option value="date_desc">الأحدث أولاً</option>
+            <option value="date_asc">الأقدم أولاً</option>
+            <option value="price_desc">السعر الأعلى</option>
+          </select>
         </div>
 
         {loading ? (
