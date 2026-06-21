@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 function NotFoundComponent() {
   return (
@@ -194,6 +195,7 @@ function RootComponent() {
         <ConfirmProvider>
           <Outlet />
           <Toaster position="top-center" richColors closeButton />
+          <PWAInstallPrompt />
         </ConfirmProvider>
       </ThemeProvider>
     </QueryClientProvider>
