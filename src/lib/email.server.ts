@@ -11,7 +11,11 @@ type SendArgs = {
   related_user_id?: string | null;
 };
 
-const FROM = "Royal Lens Flow <onboarding@resend.dev>";
+// Configurable sender. In production set EMAIL_FROM to an address on a
+// VERIFIED Resend domain (e.g. "EliteCapture <noreply@your-domain.com>"),
+// otherwise emails will land in spam or be rejected. Falls back to the
+// Resend onboarding sender for local/dev only.
+const FROM = process.env.EMAIL_FROM || "EliteCapture <onboarding@resend.dev>";
 
 export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; id?: string; error?: string; skipped?: boolean }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
