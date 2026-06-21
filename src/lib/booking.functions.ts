@@ -98,33 +98,51 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
 
     const summaryLabel = `${mainRule.label}${items.length > 1 ? ` +${items.length - 1} إضافات` : ""}`;
 
-    const { data: row, error } = await supabaseAdmin
-      .from("bookings")
-      .insert({
+    // Atomic, conflict-guarded, idempotent booking creation (see migration
+    // 20260621120000_phase0_booking_integrity.sql). Re-checks availability on
+    // the server inside an advisory lock to prevent double-booking races, and
+    // de-duplicates identical submissions within a 2-minute window.
+    const { data: created, error } = await supabaseAdmin.rpc("create_booking_guarded", {
+      _payload: {
         photographer_id: data.photographer_id,
         client_name: data.client_name,
         client_email: data.client_email,
         client_phone: data.client_phone,
-        service: mainRule.service as any,
+        service: mainRule.service,
         event_date: data.event_date,
         start_time: data.start_time,
         end_time: data.end_time,
         venue_address: data.venue_address ?? null,
         base_price: basePrice,
-        travel_fee: 0,
         total_price: total,
         deposit_amount: deposit,
         privacy_level: data.privacy_level,
         photographer_can_publish: data.privacy_level === "public",
         client_notes: data.client_notes ?? null,
-        contract_agreed: true,
-        status: "pending_deposit" as any,
         addons: items,
-      })
-      .select("id, client_tracking_token")
-      .single();
+      },
+    } as any);
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("SLOT_CONFLICT")) throw new Error("هذا الوقت محجوز، يرجى اختيار وقت آخر");
+      if (msg.includes("DAY_UNAVAILABLE")) throw new Error("هذا اليوم غير متاح، يرجى اختيار يوم آخر");
+      throw new Error(msg);
+    }
+
+    const result = created as any;
+    const row = {
+      id: result.booking_id as string,
+      client_tracking_token: result.tracking_token as string,
+    };
+    // When the request was de-duplicated we must NOT re-send notifications/emails.
+    const deduped = result.deduped === true;
+    if (deduped) {
+      return {
+        booking_id: row.id,
+        tracking_token: row.client_tracking_token,
+      };
+    }
 
     const { data: priv } = await supabaseAdmin
       .from("photographer_private")
