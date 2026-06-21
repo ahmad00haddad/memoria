@@ -222,6 +222,20 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       console.error("[booking] email send failed", e);
     }
 
+    // Fire-and-forget WhatsApp notification to the photographer (no-op until
+    // WHATSAPP_API_TOKEN / WHATSAPP_PHONE_ID are configured).
+    try {
+      if (priv?.whatsapp) {
+        const { sendWhatsApp } = await import("@/lib/whatsapp.server");
+        await sendWhatsApp(
+          priv.whatsapp,
+          `طلب حجز جديد من ${data.client_name} — ${summaryLabel} بتاريخ ${data.event_date}.\nراجعيه: /dashboard/bookings/${row.id}`,
+        );
+      }
+    } catch (e) {
+      console.error("[booking] whatsapp notify failed", e);
+    }
+
     return {
       booking_id: row.id as string,
       tracking_token: row.client_tracking_token as string,
