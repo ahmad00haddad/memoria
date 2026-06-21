@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>غير متصل — EliteCapture</title>
+    <style>
+      :root { color-scheme: light dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #0c0c0c;
+        color: #f5f0e8;
+        font-family: system-ui, "Segoe UI", Tahoma, sans-serif;
+        padding: 24px;
+        text-align: center;
+      }
+      .card { max-width: 420px; }
+      h1 { font-size: 1.6rem; margin: 0 0 12px; }
+      p { opacity: 0.75; line-height: 1.8; margin: 0 0 24px; }
+      button {
+        background: #c8a96a;
+        color: #0c0c0c;
+        border: 0;
+        border-radius: 6px;
+        padding: 12px 28px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .logo { font-size: 0.75rem; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.6; margin-bottom: 16px; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="logo">EliteCapture</div>
+      <h1>لا يوجد اتصال بالإنترنت</h1>
+      <p>يبدو أنكِ غير متصلة بالشبكة حالياً. تحقّقي من اتصالك ثم أعيدي المحاولة.</p>
+      <button onclick="location.reload()">إعادة المحاولة</button>
+    </div>
+  </body>
+</html>

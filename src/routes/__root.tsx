@@ -82,7 +82,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "theme-color", content: "#0c0c0c" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "EliteCapture" },
       { title: "EliteCapture — منصة مصوّري الأعراس في الأردن" },
       { name: "description", content: "احجز مصوّر عرسك بسهولة: مواعيد، أسعار، وعربون فوري دون واتساب." },
       { property: "og:title", content: "EliteCapture — منصة مصوّري الأعراس في الأردن" },
@@ -169,6 +174,19 @@ function RootComponent() {
 
     return () => subscription.unsubscribe();
   }, [queryClient, router]);
+
+  // Register the service worker for installable PWA + offline support.
+  useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+    const onLoad = () => {
+      navigator.serviceWorker.register("/sw.js").catch((err) => {
+        console.error("[pwa] service worker registration failed", err);
+      });
+    };
+    if (document.readyState === "complete") onLoad();
+    else window.addEventListener("load", onLoad, { once: true });
+    return () => window.removeEventListener("load", onLoad);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
