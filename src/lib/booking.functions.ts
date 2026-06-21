@@ -14,6 +14,7 @@ type SubmitInput = {
   items: BookingItemInput[];
   client_notes?: string | null;
   privacy_level: "public" | "private_only";
+  captcha_token?: string | null;
 };
 
 function validateInput(d: SubmitInput): SubmitInput {
@@ -48,6 +49,22 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
   .inputValidator((d: SubmitInput) => validateInput(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Phase 1 anti-abuse — Turnstile verification (no-op until configured)
+    // followed by a DB-backed per-email rate limit (5 requests / hour).
+    const { verifyTurnstile } = await import("@/lib/turnstile.server");
+    const captcha = await verifyTurnstile(data.captcha_token ?? null);
+    if (!captcha.ok) throw new Error("فشل التحقق الأمني، يرجى المحاولة مجدداً");
+
+    const rlKey = `booking:${data.photographer_id}:${(data.client_email || "").toLowerCase()}`;
+    const { data: allowed } = await supabaseAdmin.rpc("app_rate_limit", {
+      _key: rlKey,
+      _max: 5,
+      _window_seconds: 3600,
+    } as any);
+    if (allowed === false) {
+      throw new Error("لقد أرسلتِ عدداً كبيراً من الطلبات، يرجى المحاولة بعد قليل");
+    }
 
     // Server-side authoritative price recompute.
     const ruleIds = data.items.map((i) => i.rule_id);

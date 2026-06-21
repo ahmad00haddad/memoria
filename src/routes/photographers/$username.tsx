@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send } from "lucide-react";
+import { Instagram, Copy, Share2, Star, CheckCircle2, Send } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { useServerFn } from "@tanstack/react-start";
 import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functions";
 import { Lightbox } from "@/components/Lightbox";
+import { Turnstile, isTurnstileEnabled } from "@/components/Turnstile";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
@@ -288,9 +289,9 @@ function PhotographerPage() {
           {profile.instagram && (
             <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
           )}
-          {profile.whatsapp && (
-            <a href={`https://wa.me/${profile.whatsapp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
-          )}
+          {/* Route all enquiries through the tracked booking flow instead of
+              exposing the photographer's WhatsApp number publicly. */}
+          <a href="#booking" className="h-12 px-5 grid place-items-center rounded-full border border-border hover:bg-secondary text-sm font-medium"><span className="inline-flex items-center gap-2"><Send className="h-4 w-4 text-gold" /> ابدئي الحجز</span></a>
           <button
             onClick={() => {
               const url = typeof window !== "undefined" ? window.location.href : "";
@@ -317,6 +318,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ token: string } | null>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
   const navigate = useNavigate();
   const submitFn = useServerFn(submitBookingRequest);
   const mainPackages = pricing.filter((p) => p.package !== "addon");
@@ -383,6 +385,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     }
     if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
     if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
+    if (isTurnstileEnabled() && !captchaToken) return toast.error("يرجى إكمال التحقق الأمني");
     setSubmitting(true);
     try {
       const notes = [f.client_notes, f.remaining_note ? `الرصيد المتبقي: ${f.remaining_note}` : ""].filter(Boolean).join("\n");
@@ -403,6 +406,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           items,
           client_notes: notes || null,
           privacy_level: f.privacy_level,
+          captcha_token: captchaToken || null,
         },
       });
       setSuccess({ token: res.tracking_token });
@@ -436,7 +440,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   }
 
   return (
-    <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft">
+    <div id="booking" className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft scroll-mt-24">
       <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Book in simple steps</div>
       <h2 className="font-serif text-3xl mb-6">احجزي بخطوات بسيطة</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -572,6 +576,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         </div>
       )}
       {hasConflict && <p className="text-sm text-destructive mt-3">⚠️ يتعارض مع فترة محجوزة</p>}
+      <Turnstile onVerify={setCaptchaToken} />
       <button onClick={submit} disabled={submitting} className="w-full mt-5 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60">
         <Send className="h-4 w-4" /> {submitting ? "جاري الإرسال…" : "إرسال طلب الحجز"}
       </button>
