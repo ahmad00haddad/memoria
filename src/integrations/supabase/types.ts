@@ -52,11 +52,6 @@ export type Database = {
       }
       bookings: {
         Row: {
-          cancellation_reason: string | null
-          cancelled_at: string | null
-          cancelled_by: string | null
-          refund_amount: number | null
-          refund_status: string | null
           addons: Json | null
           base_price: number
           client_email: string
@@ -73,10 +68,7 @@ export type Database = {
           delivery_days_promised: number | null
           delivery_due_at: string | null
           deposit_amount: number
-          deposit_checkout_session_id: string | null
           deposit_confirmed_at: string | null
-          deposit_payment_intent_id: string | null
-          deposit_payment_provider: string | null
           deposit_proof_url: string | null
           deposit_sent_at: string | null
           edited_photos_count: number | null
@@ -108,11 +100,6 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
-          cancellation_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
-          refund_amount?: number | null
-          refund_status?: string | null
           addons?: Json | null
           base_price?: number
           client_email: string
@@ -129,10 +116,7 @@ export type Database = {
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
-          deposit_checkout_session_id?: string | null
           deposit_confirmed_at?: string | null
-          deposit_payment_intent_id?: string | null
-          deposit_payment_provider?: string | null
           deposit_proof_url?: string | null
           deposit_sent_at?: string | null
           edited_photos_count?: number | null
@@ -164,11 +148,6 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
-          cancellation_reason?: string | null
-          cancelled_at?: string | null
-          cancelled_by?: string | null
-          refund_amount?: number | null
-          refund_status?: string | null
           addons?: Json | null
           base_price?: number
           client_email?: string
@@ -185,10 +164,7 @@ export type Database = {
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
-          deposit_checkout_session_id?: string | null
           deposit_confirmed_at?: string | null
-          deposit_payment_intent_id?: string | null
-          deposit_payment_provider?: string | null
           deposit_proof_url?: string | null
           deposit_sent_at?: string | null
           edited_photos_count?: number | null
@@ -512,44 +488,6 @@ export type Database = {
         }
         Relationships: []
       }
-      payment_events: {
-        Row: {
-          created_at: string
-          event_type: string | null
-          id: string
-          processed_at: string
-          provider: string
-          related_booking_id: string | null
-          related_user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          event_type?: string | null
-          id: string
-          processed_at?: string
-          provider: string
-          related_booking_id?: string | null
-          related_user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          event_type?: string | null
-          id?: string
-          processed_at?: string
-          provider?: string
-          related_booking_id?: string | null
-          related_user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payment_events_related_booking_id_fkey"
-            columns: ["related_booking_id"]
-            isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       photographer_private: {
         Row: {
           bank_info: string | null
@@ -670,8 +608,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          deposit_refund_percent: number | null
-          deposit_refund_policy: string
           avatar_url: string | null
           base_location: string | null
           bio: string | null
@@ -699,8 +635,6 @@ export type Database = {
           username: string
         }
         Insert: {
-          deposit_refund_percent?: number | null
-          deposit_refund_policy?: string
           avatar_url?: string | null
           base_location?: string | null
           bio?: string | null
@@ -728,8 +662,6 @@ export type Database = {
           username: string
         }
         Update: {
-          deposit_refund_percent?: number | null
-          deposit_refund_policy?: string
           avatar_url?: string | null
           base_location?: string | null
           bio?: string | null
@@ -1045,35 +977,6 @@ export type Database = {
         Returns: undefined
       }
       client_mark_received: { Args: { _token: string }; Returns: undefined }
-      approve_review: { Args: { _review_id: string }; Returns: undefined }
-      reject_review: { Args: { _review_id: string }; Returns: undefined }
-      log_audit: {
-        Args: {
-          _action: string
-          _entity_type: string
-          _entity_id: string
-          _before?: Json
-          _after?: Json
-        }
-        Returns: undefined
-      }
-      cancel_booking: {
-        Args: { _booking_id: string; _reason: string }
-        Returns: Json
-      }
-      client_cancel_booking: {
-        Args: { _token: string; _reason: string }
-        Returns: Json
-      }
-      confirm_booking_deposit_paid: {
-        Args: {
-          _booking_id: string
-          _provider: string
-          _session?: string
-          _intent?: string
-        }
-        Returns: Json
-      }
       delete_photographer_cascade: {
         Args: { _photographer_id: string }
         Returns: undefined
@@ -1100,17 +1003,6 @@ export type Database = {
       regenerate_booking_token: {
         Args: { _booking_id: string }
         Returns: string
-      }
-      renew_subscription_paid: {
-        Args: {
-          _photographer_id: string
-          _months: number
-          _provider?: string
-          _intent?: string
-          _amount?: number
-          _currency?: string
-        }
-        Returns: Json
       }
       restore_photographer: {
         Args: { _photographer_id: string }
