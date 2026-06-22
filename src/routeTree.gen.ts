@@ -19,9 +19,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForPhotographersRouteImport } from './routes/for-photographers'
-import { Route as AppRouteImport } from './routes/app'
 import { Route as ForClientsRouteImport } from './routes/for-clients'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
@@ -101,11 +101,6 @@ const ForPhotographersRoute = ForPhotographersRouteImport.update({
   path: '/for-photographers',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/app',
-  path: '/app',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ForClientsRoute = ForClientsRouteImport.update({
   id: '/for-clients',
   path: '/for-clients',
@@ -114,6 +109,11 @@ const ForClientsRoute = ForClientsRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -262,8 +262,8 @@ const ApiPublicHooksEmailRemindersRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/dashboard': typeof DashboardRouteWithChildren
   '/app': typeof AppRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -346,8 +346,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
-  '/dashboard': typeof DashboardRouteWithChildren
   '/app': typeof AppRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -391,8 +391,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
-    | '/dashboard'
     | '/app'
+    | '/dashboard'
     | '/for-clients'
     | '/for-photographers'
     | '/forgot-password'
@@ -474,8 +474,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
-    | '/dashboard'
     | '/app'
+    | '/dashboard'
     | '/for-clients'
     | '/for-photographers'
     | '/forgot-password'
@@ -518,8 +518,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
-  DashboardRoute: typeof DashboardRouteWithChildren
   AppRoute: typeof AppRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   ForClientsRoute: typeof ForClientsRoute
   ForPhotographersRoute: typeof ForPhotographersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -614,13 +614,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForPhotographersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/for-clients': {
       id: '/for-clients'
       path: '/for-clients'
@@ -633,6 +626,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -898,8 +898,8 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
-  DashboardRoute: DashboardRouteWithChildren,
   AppRoute: AppRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   ForClientsRoute: ForClientsRoute,
   ForPhotographersRoute: ForPhotographersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
