@@ -10,6 +10,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
 import { createContractForBooking } from "@/lib/contracts.functions";
+import { cancelBooking } from "@/lib/cancellation.functions";
 import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 import { ShotList } from "@/components/ShotList";
@@ -33,6 +34,7 @@ function BookingDetail() {
   const confirmFn = useServerFn(confirmBookingAfterDeposit);
   const softDeleteFn = useServerFn(softDeleteBooking);
   const regenTokenFn = useServerFn(regenerateBookingToken);
+  const cancelFn = useServerFn(cancelBooking);
   const sendDeliveryEmailFn = useServerFn(sendGalleryDeliveredEmail);
   const createContractFn = useServerFn(createContractForBooking);
 
