@@ -1045,6 +1045,18 @@ export type Database = {
         Returns: undefined
       }
       client_mark_received: { Args: { _token: string }; Returns: undefined }
+      approve_review: { Args: { _review_id: string }; Returns: undefined }
+      reject_review: { Args: { _review_id: string }; Returns: undefined }
+      log_audit: {
+        Args: {
+          _action: string
+          _entity_type: string
+          _entity_id: string
+          _before?: Json
+          _after?: Json
+        }
+        Returns: undefined
+      }
       cancel_booking: {
         Args: { _booking_id: string; _reason: string }
         Returns: Json

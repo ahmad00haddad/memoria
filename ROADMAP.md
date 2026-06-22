@@ -69,6 +69,20 @@ Add a dedicated 192×192 icon (currently reusing 512).
 
 ---
 
+## ✅ Priority 3 — Review moderation + extended audit (PR — feat/priority-3-reviews-audit)
+- migration `20260622140000_review_moderation_and_audit.sql`:
+  - التقييمات الجديدة `is_published` default = **false** (لا نلمس القائمة).
+  - `approve_review` / `reject_review` (أدمن) + دالة `log_audit` عامة.
+  - توسيع التدقيق: `soft_delete_booking` / `admin_renew_subscription` / `admin_set_published`
+    تسجّل الآن في `audit_logs` (إضافةً لـ confirm في server fn، وcancel من الأولوية 2).
+- `submitReviewByToken` ينشئ التقييم غير منشور (pending moderation).
+- server fns: `listReviewsAdmin` / `adminApproveReview` / `adminRejectReview`.
+- route أدمن `/admin/reviews` + رابط تنقّل في `/admin`.
+
+**Post-merge:** شغّل الـ migration. التقييمات القائمة تبقى منشورة؛ الجديدة تمرّ بالمراجعة.
+
+---
+
 ## 🔭 Phase 3 — Growth features (need external accounts/secrets)
 
 ### 3.1 Online deposit payment gateway 🔴 (highest business impact)

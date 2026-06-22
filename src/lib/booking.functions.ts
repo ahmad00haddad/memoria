@@ -290,7 +290,8 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
         client_name: (data.client_name || booking.client_name || "عميلة").slice(0, 120),
         rating: data.rating,
         comment: data.comment ?? null,
-        is_published: true,
+        // مراجعة قبل النشر: التقييمات الجديدة تبدأ غير منشورة حتى يعتمدها الأدمن.
+        is_published: false,
       } as any);
     if (error) {
       if ((error as any).code === "23505" || /duplicate|unique/i.test(error.message)) {
@@ -298,7 +299,7 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
       }
       throw new Error(error.message);
     }
-    return { ok: true };
+    return { ok: true, pending_moderation: true };
   });
 
 // Public: deposit info shown on the photographer's public profile to clients (anon).
@@ -386,6 +387,17 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     if (!bk.deposit_confirmed_at) patch.deposit_confirmed_at = new Date().toISOString();
     const { error: uerr } = await supabase.from("bookings").update(patch).eq("id", data.booking_id);
     if (uerr) throw new Error(uerr.message);
+    // سجلّ تدقيق (عبر service-role لتجاوز RLS على audit_logs).
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin.from("audit_logs").insert({
+        action: "booking.confirm_deposit",
+        actor_id: userId,
+        entity_type: "booking",
+        entity_id: data.booking_id,
+        after_data: { status: "confirmed" } as any,
+      });
+    } catch (e) { console.error("[booking] audit log failed", e); }
     // Notify the client (if they have an account linked)
     if (bk.client_user_id) {
       await supabase.from("notifications").insert({
