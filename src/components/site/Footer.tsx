@@ -15,6 +15,7 @@ export function Footer() {
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">للعملاء</div>
           <ul className="space-y-2">
             <li><Link to="/search" className="hover:text-gold">ابحث عن مصوّر</Link></li>
+            <li><Link to="/app" className="hover:text-gold">حمّل التطبيق</Link></li>
             <li><a href="#how" className="hover:text-gold">كيف يعمل النظام</a></li>
           </ul>
         </div>
