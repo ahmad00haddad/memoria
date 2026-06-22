@@ -83,6 +83,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "EliteCapture" },
       { title: "EliteCapture — منصة مصوّري الأعراس في الأردن" },
       { name: "description", content: "احجز مصوّر عرسك بسهولة: مواعيد، أسعار، وعربون فوري دون واتساب." },
       { property: "og:title", content: "EliteCapture — منصة مصوّري الأعراس في الأردن" },
@@ -169,6 +173,35 @@ function RootComponent() {
 
     return () => subscription.unsubscribe();
   }, [queryClient, router]);
+
+  // PWA (PR4): تسجيل الـ service worker + التقاط حدث التثبيت لاستخدامه في صفحة /app.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if ("serviceWorker" in navigator) {
+      const onLoad = () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      };
+      window.addEventListener("load", onLoad);
+      // إن كانت الصفحة محمّلة مسبقاً
+      if (document.readyState === "complete") onLoad();
+    }
+
+    const onBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      (window as any).__deferredInstallPrompt = e;
+      window.dispatchEvent(new Event("pwa-installable"));
+    };
+    const onInstalled = () => {
+      (window as any).__deferredInstallPrompt = null;
+    };
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
