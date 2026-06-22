@@ -10,9 +10,11 @@ import {
   clientMarkReceived,
   clientAddNote,
 } from "@/lib/booking.functions";
+import { clientCancelBooking } from "@/lib/cancellation.functions";
+import { createDepositCheckout, isPaymentsEnabled } from "@/lib/payments.functions";
 import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X } from "lucide-react";
+import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, CreditCard, XCircle } from "lucide-react";
 import { Lightbox } from "@/components/Lightbox";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -30,10 +32,15 @@ function TrackingPage() {
   const sendDeposit = useServerFn(clientMarkDepositSent);
   const markReceived = useServerFn(clientMarkReceived);
   const addNote = useServerFn(clientAddNote);
+  const cancelFn = useServerFn(clientCancelBooking);
+  const checkoutFn = useServerFn(createDepositCheckout);
+  const isPayEnabledFn = useServerFn(isPaymentsEnabled);
 
   const [b, setB] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [payLoading, setPayLoading] = useState(false);
+  const [payEnabled, setPayEnabled] = useState(false);
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [newNote, setNewNote] = useState("");
@@ -48,6 +55,29 @@ function TrackingPage() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [token]);
+
+  // اكتشف ما إذا كانت بوّابة الدفع الإلكترونية مهيّأة (لإظهار زر الدفع أونلاين)
+  useEffect(() => {
+    (async () => {
+      try { const r: any = await isPayEnabledFn(); setPayEnabled(!!r?.enabled); } catch {}
+    })();
+    /* eslint-disable-next-line */
+  }, []);
+
+  // عرض إشعار عند العودة من بوّابة الدفع
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    const status = u.searchParams.get("payment");
+    if (status === "success") {
+      toast.success("تم استلام دفعتك. يتم تأكيد الحجز خلال لحظات…");
+      u.searchParams.delete("payment");
+      window.history.replaceState({}, "", u.toString());
+    } else if (status === "cancelled") {
+      toast.message("أُلغي الدفع. يمكنك المحاولة مجدّداً أو استخدام طريقة CliQ اليدوية.");
+      u.searchParams.delete("payment");
+      window.history.replaceState({}, "", u.toString());
+    }
+  }, []);
 
   // Polling refresh — keeps gallery/messages live without realtime RLS gymnastics
   useEffect(() => {
@@ -126,6 +156,32 @@ function TrackingPage() {
     } catch (e: any) { toast.error(e.message); }
   };
 
+  const onPayOnline = async () => {
+    setPayLoading(true);
+    try {
+      const res: any = await checkoutFn({ data: { token } });
+      if (!res?.configured || !res?.url) {
+        toast.error("الدفع الإلكتروني غير متاح حالياً. استخدمي CliQ.");
+        return;
+      }
+      window.location.href = res.url;
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر بدء الدفع");
+    } finally {
+      setPayLoading(false);
+    }
+  };
+
+  const onClientCancel = async () => {
+    const reason = window.prompt("سبب الإلغاء (اختياري):") ?? "";
+    if (!(await confirm({ title: "إلغاء الطلب", description: "سيتم إلغاء طلب الحجز نهائياً. لا يمكنك الإلغاء بعد تأكيد المصوّرة.", confirmText: "إلغاء الطلب", destructive: true }))) return;
+    try {
+      await cancelFn({ data: { token, reason: reason || null } });
+      toast.success("تم إلغاء الطلب");
+      load();
+    } catch (e: any) { toast.error(e?.message || "تعذّر الإلغاء"); }
+  };
+
   const ph = b.photographer;
   const stages = [
     { key: "request", label: "طلب الحجز", done: true, icon: <CheckCircle2 className="h-5 w-5" /> },
@@ -199,6 +255,17 @@ function TrackingPage() {
             </div>
             <p className="text-sm mb-4">حوّلي مبلغ <span className="font-semibold">{Number(b.deposit_amount).toLocaleString("ar-JO")} د.أ</span> ثم ارفعي إثبات التحويل أدناه.</p>
 
+            {payEnabled && b.status !== "cancelled" && (
+              <div className="bg-card border border-emerald-200 rounded-sm p-3 mb-4">
+                <div className="text-xs uppercase tracking-[0.2em] text-emerald-700 mb-2">طريقة سريعة — دفع إلكتروني</div>
+                <button onClick={onPayOnline} disabled={payLoading}
+                        className="w-full bg-emerald-600 text-white py-2.5 rounded-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60">
+                  <CreditCard className="h-4 w-4" /> {payLoading ? "جاري التحويل…" : "ادفعي العربون أونلاين الآن"}
+                </button>
+                <div className="text-[11px] text-muted-foreground mt-2 text-center">— أو استخدمي CliQ يدوياً أدناه —</div>
+              </div>
+            )}
+
             {ph.cliq_alias && (
               <div className="bg-card border border-border rounded-sm p-3 mb-3 flex items-center justify-between">
                 <div>
@@ -227,6 +294,28 @@ function TrackingPage() {
                 <Upload className="h-4 w-4" /> {uploading ? "جاري الإرسال…" : "تم إرسال العربون"}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Client cancellation — only before confirmation */}
+        {(b.status === "quote" || b.status === "pending_deposit") && (
+          <div className="rounded-sm border border-border bg-card p-4 mb-6 flex items-center justify-between gap-3 text-sm">
+            <div>
+              <div className="font-medium">تحتاجين لإلغاء الطلب؟</div>
+              <div className="text-xs text-muted-foreground">يمكن الإلغاء فقط قبل تأكيد المصوّرة للحجز.</div>
+            </div>
+            <button onClick={onClientCancel} className="text-destructive border border-destructive/30 px-3 py-2 rounded-sm hover:bg-destructive/10 inline-flex items-center gap-2 shrink-0">
+              <XCircle className="h-4 w-4" /> إلغاء الطلب
+            </button>
+          </div>
+        )}
+
+        {b.status === "cancelled" && (
+          <div className="rounded-sm border border-destructive/30 bg-destructive/5 p-4 mb-6 text-sm">
+            <div className="font-medium text-destructive mb-1">تم إلغاء هذا الحجز</div>
+            {Number(b.refund_amount || 0) > 0 && (
+              <div>تمت الموافقة على استرداد {b.refund_amount} د.أ. الحالة: {b.refund_status === "pending" ? "قيد المعالجة" : b.refund_status}.</div>
+            )}
           </div>
         )}
 

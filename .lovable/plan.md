@@ -1,101 +1,61 @@
+# الخطة القادمة — إغلاق ما بدأه Claude وتشغيله فعلياً
 
-## الجزء الأول: لوحة الأدمن الشاملة `/admin`
+## المرحلة 1 — تشغيل ما تم بناؤه (أولوية قصوى)
+الـ backend مكتوب لكن غير مُفعَّل بالكامل على قاعدة البيانات، والـ frontend لا يستخدم نصف الميزات الجديدة.
 
-صفحة رئيسية للأدمن (محمية بـ `has_role(admin)`) تحتوي تبويبات:
+### 1.1 تطبيق الـ migrations الأربع
+- `20260621120000_phase0_booking_integrity.sql`
+- `20260622120000_payments_integration.sql`
+- `20260622130000_booking_cancellation.sql`
+- `20260622140000_review_moderation_and_audit.sql`
 
-### 1) إدارة المصورات `/admin/photographers`
-جدول بكل المصورات يعرض: الاسم، @username، حالة الاشتراك (تجريبي/نشط/منتهي/قيد المراجعة)، تاريخ انتهاء الفترة، عدد الحجوزات، عدد التقييمات.
-عمليات لكل صف:
-- **إخفاء/إظهار الصفحة** (toggle `is_published`) — يدوي من الأدمن.
-- **تجديد الاشتراك** — نافذة منبثقة لاختيار المدة (1، 3، 6، 12 شهر) → يحدّث `subscriptions.current_period_end` ويضع الحالة `active`. يُسجَّل سجل في `subscription_payments` بطريقة `manual_admin`.
-- **تعليق الاشتراك** (status = `expired`) → يخفي الصفحة تلقائيًا.
-- **حذف المصورة نهائيًا** — تأكيد مزدوج. يحذف: الحجوزات، الرسائل، التقييمات، العقود، قوالب العقود، التسعير، أيام العطل، المدفوعات، الاشتراك، الأدوار، الملف الشخصي. (CASCADE عبر دالة `delete_photographer_cascade` بصلاحية SECURITY DEFINER).
+تشغيل واحد عبر `supabase--migration`، ثم تحديث `types.ts`.
 
-### 2) إخفاء تلقائي للمصورات غير المشتركات
-تريغر/دالة `is_subscription_active` موجودة. نضيف **سياسة قراءة عامة محدّثة** للملفات الشخصية:
-- العامة يرون الملف فقط إذا `is_published = true` **و** `is_subscription_active(id) = true`.
-- المالكة والأدمن يرون دائمًا.
+### 1.2 واجهات Priority 2 (الإلغاء + الاسترداد) — `frontend فقط`
+- `/track/$token`: زر "إلغاء الطلب" يظهر فقط إذا `status ∈ {quote, pending_deposit}` → يستدعي `clientCancelBooking`.
+- `/dashboard/bookings/$id`: زر "إلغاء الحجز" + حقل سبب → `cancelBooking` + عرض `refund_amount/status` بعد الإلغاء.
+- `/dashboard/profile`: قسم "سياسة استرداد العربون" (full/partial/none + نسبة) → `updateRefundPolicy`.
 
-(الموجود حاليًا: `(is_published = true) OR (auth.uid() = id)` — سيتم تشديده).
+### 1.3 واجهات Priority 1 (دفع العربون أونلاين) — `frontend فقط`
+- `/track/$token`: زر "ادفع العربون أونلاين" بجانب مسار CliQ اليدوي، يظهر فقط لو `isPaymentConfigured` (نمرر العلَم من server fn).
+- معالجة `?payment=success` / `?payment=cancelled` على نفس الصفحة (toast فقط — التأكيد يأتي من webhook).
 
-### 3) لوحة المدفوعات (موجودة `/admin/subscriptions`) — رابط من اللوحة الجديدة.
-
----
-
-## الجزء الثاني: إعادة هيكلة تدفق الحجز
-
-### الحالة الحالية
-زر "إرسال الطلب عبر الواتساب" يفتح `wa.me` مباشرة → لا يوجد سجل ولا تتبع للعميل.
-
-### التدفق الجديد
-
-**خطوة 1 — العميل يملأ نموذج الحجز في صفحة المصورة**
-نفس الحقول الحالية (اسم، إيميل، هاتف، تاريخ، وقت، خدمة، باقة، ملاحظات). زر جديد: **"إرسال الطلب"** بدل واتساب.
-
-**خطوة 2 — عند الإرسال**
-1. إنشاء سطر في `bookings` بحالة `quote` (موجود حاليًا).
-2. توليد **رمز تتبع للعميل** `client_tracking_token` (عمود جديد، UUID عشوائي).
-3. ربط `client_user_id` إذا كان مسجلًا، وإلا يبقى `null` والوصول عبر التوكن.
-4. استدعاء server function `notifyPhotographerNewBooking`:
-   - يرسل واتساب للمصورة عبر **رابط CallMeBot / WhatsApp Cloud API** (يحتاج توكن — سنطلبه من المستخدم). كحل أولي بدون توكن خارجي: نستخدم **إيميل فقط** ونعرض على المستخدم خيار إضافة WhatsApp Cloud API لاحقًا.
-   - يرسل إيميل للمصورة عبر بنية الإيميلات في Lovable (`scaffold_transactional_email`) مع تفاصيل الحجز ورابط `/dashboard/bookings/{id}`.
-   - يرسل إيميل للعميل بتأكيد الاستلام + رابط التتبع `/track/{token}` + تعليمات إرسال العربون.
-5. شاشة نجاح للعميل: "تم إرسال طلبك. الخطوة التالية: أرسلي العربون بقيمة X د.أ على CliQ alias `xxxx`، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز" + زر "اذهب لصفحة التتبع".
-
-**خطوة 3 — صفحة تتبع العميل `/track/$token`** (عامة، بدون تسجيل دخول، مدخولة بالتوكن)
-تعرض:
-- ملخص الحجز (التاريخ، الباقة، السعر، حالة الحجز، حالة الإنتاج).
-- **تايملاين** بصري: طلب مُستلم ✓ → عربون ⏳ → مؤكّد → تصوير → تحرير → تسليم.
-- **إجراءات للعميل:**
-  - زر "تم إرسال العربون" + حقل لرفع إثبات التحويل (يستخدم bucket `deposit-proofs` الموجود) + خانة مرجع التحويل.
-  - حقل ملاحظات (`client_notes`).
-  - زر "تم استلام الصور" (يظهر فقط بعد حالة `delivered`).
-  - نموذج رسائل مبسّط (يستخدم جدول `messages` الموجود — مع توسعة RLS للسماح بالكتابة بالتوكن).
-- معلومات تواصل المصورة (واتساب/إيميل) للحالات الطارئة فقط.
-
-**خطوة 4 — جانب المصورة**
-في `/dashboard/bookings/$id`:
-- إشعار "حجز جديد بانتظار مراجعتك" + زر "اعتماد ومتابعة".
-- عند تأكيد استلام العربون من المصورة → تتغير حالة الحجز إلى `confirmed`، ويتلقى العميل إيميلًا.
+### 1.4 شارة "بانتظار المراجعة" للتقييمات
+- في `/dashboard/reports` أو صفحة جديدة `/dashboard/reviews`: عرض التقييمات الواردة وحالتها (pending/published).
+- يُكمل ما هو موجود في `/admin/reviews`.
 
 ---
 
-## التغييرات التقنية
+## المرحلة 2 — إغلاق الفجوات الفنية في طبقة Claude
 
-### قاعدة البيانات (Migration)
-- إضافة عمود `bookings.client_tracking_token TEXT DEFAULT replace(gen_random_uuid()::text,'-','')` فريد.
-- إضافة `bookings.deposit_sent_at`، `bookings.deposit_confirmed_at`، `bookings.client_received_at`.
-- إضافة سياسات RLS:
-  - قراءة `bookings` و`messages` بالتوكن عبر دالة `get_booking_by_token(token)` security definer.
-  - تحديث `bookings` (deposit_proof_url, client_notes, deposit_sent_at) بالتوكن.
-- تشديد سياسة `profiles` لإخفاء غير المشتركات عن العموم.
-- دالة `delete_photographer_cascade(uuid)` للأدمن.
-- دالة `admin_renew_subscription(uuid, months int)` للأدمن.
+### 2.1 تنفيذ الاسترداد الفعلي
+- `payments.server.ts`: إضافة `refundPayment(intentId, amount)` في واجهة `PaymentProvider` + تنفيذ Stripe.
+- في `cancel_booking` أو server fn جديدة `processRefund(bookingId)`: استدعاء الـ refund إذا `refund_status='pending'`، ثم تحديث الحالة عبر webhook `charge.refunded`.
 
-### Server Functions جديدة
-- `src/lib/admin.functions.ts`: `listPhotographersAdmin`, `togglePublish`, `renewSubscription`, `deletePhotographer`.
-- `src/lib/booking.functions.ts`: `submitBookingRequest` (ينشئ الحجز + يرسل الإشعارات), `getBookingByToken`, `markDepositSent` (مع رفع الإثبات), `clientUpdateBooking`.
+### 2.2 تجديد اشتراك ذاتي (للمصوّرة، بلا أدمن)
+- إضافة `createSubscriptionCheckout(months)` في `payments.functions.ts` (مُصادَق).
+- صفحة `/dashboard/subscription`: زر "جدّدي الآن" يفتح Checkout.
+- Webhook الدفع: ربط `subscription_payment` بـ `renew_subscription_paid` (قائم) — التأكد فقط من mapping `client_reference_id`.
 
-### الإيميلات
-- تشغيل البنية التحتية للإيميلات: `setup_email_infra` ثم `scaffold_transactional_email`.
-- 3 قوالب: `new-booking-photographer`, `booking-received-client`, `booking-confirmed-client`.
+### 2.3 WhatsApp في كل نقاط التحوّل
+حالياً مُستخدم في الإلغاء فقط. إضافته إلى:
+- `submitBookingRequest` → إشعار المصوّرة برسالة جديدة.
+- `confirm_booking_deposit_paid` (داخل webhook) → إشعار العميل بتأكيد الحجز.
+- `email-reminders` → نسخة WhatsApp للتذكير 24h.
 
-### الواتساب (سري)
-خياران للمستخدمة:
-- **مبدئيًا**: إيميل فقط (يعمل فورًا بعد إعداد البنية).
-- **اختياري**: WhatsApp Cloud API (تحتاج رقم Business و Token من Meta) — سنطلب السر `WHATSAPP_API_TOKEN` و`WHATSAPP_PHONE_ID` لاحقًا إذا أردتِ.
-
-### واجهة جديدة
-- `/admin` لوحة رئيسية بتبويبات.
-- `/admin/photographers` جدول الإدارة.
-- `/track/$token` صفحة تتبع العميل.
-- تعديل نموذج الحجز في `src/routes/photographers/$username.tsx` لإزالة زر الواتساب وإضافة المنطق الجديد.
-- شاشة نجاح بعد الإرسال.
+كلها env-gated (`isWhatsAppConfigured()` موجود).
 
 ---
 
-## أسئلة سريعة قبل البدء
+## المرحلة 3 — Phase 3.6/3.7 من ROADMAP (قابلة للتأجيل)
+- **Analytics للمصوّرة**: توسيع `/dashboard/reports` بـ conversion rate، monthly revenue، lead source.
+- **HyperPay (دينار أردني)**: تنفيذ الـ provider لإطلاق فعلي محلياً.
+- **Cloudflare Images / WebP** للمعارض.
+- **Audit RLS**: مراجعة كاملة لسياسات `contracts` و`notifications` (مذكور في "Standing security checklist").
 
-1. **الواتساب السري للمصورة**: هل أبدأ بالإيميل فقط الآن، ونضيف WhatsApp Cloud API لاحقًا عند توفر التوكن؟ (أنصح بذلك لتجنّب الانتظار)
-2. **حساب الأدمن**: من سيكون أول أدمن؟ أعطيني الإيميل لأضيف له دور `admin` في قاعدة البيانات.
-3. **حذف المصورة**: هل أحتفظ بسجل بسيط بحذفها (audit log) للرجوع لاحقًا، أم حذف نهائي كامل بلا أثر؟
+---
+
+## الترتيب المقترح
+أقترح البدء بـ **المرحلة 1 كاملة دفعة واحدة** (تطبيق migrations + كل الواجهات الناقصة)، لأنها تجعل ما بناه Claude يعمل فعلاً للمستخدمات. ثم نقرّر بين 2.1 (refund فعلي) أو 2.2 (تجديد ذاتي) أو 2.3 (WhatsApp) حسب الأولوية لديك.
+
+أي مرحلة نبدأ بها؟

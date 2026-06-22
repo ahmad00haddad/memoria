@@ -10,6 +10,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
 import { createContractForBooking } from "@/lib/contracts.functions";
+import { cancelBooking } from "@/lib/cancellation.functions";
 import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 import { ShotList } from "@/components/ShotList";
@@ -33,6 +34,7 @@ function BookingDetail() {
   const confirmFn = useServerFn(confirmBookingAfterDeposit);
   const softDeleteFn = useServerFn(softDeleteBooking);
   const regenTokenFn = useServerFn(regenerateBookingToken);
+  const cancelFn = useServerFn(cancelBooking);
   const sendDeliveryEmailFn = useServerFn(sendGalleryDeliveredEmail);
   const createContractFn = useServerFn(createContractForBooking);
 
@@ -123,6 +125,22 @@ function BookingDetail() {
     load();
   };
 
+  const onCancel = async () => {
+    const reason = window.prompt("سبب الإلغاء (اختياري):") ?? "";
+    if (!(await confirm({ title: "إلغاء الحجز", description: "سيتم إلغاء الحجز نهائياً. إذا تأكّد العربون فسيُحسب الاسترداد حسب سياستك.", confirmText: "إلغاء الحجز", destructive: true }))) return;
+    try {
+      const res: any = await cancelFn({ data: { booking_id: id, reason: reason || null } });
+      if (Number(res?.refund_amount) > 0) {
+        toast.success(`تم الإلغاء. مبلغ الاسترداد: ${res.refund_amount} د.أ — قيد المعالجة.`);
+      } else {
+        toast.success("تم إلغاء الحجز");
+      }
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر الإلغاء");
+    }
+  };
+
   const send = async () => {
     if (!text.trim()) return;
     const body = text.trim();
@@ -206,6 +224,17 @@ function BookingDetail() {
 
             <DeliveryCountdown b={b} />
 
+            {b.status === "cancelled" && (
+              <div className="mb-4 rounded-sm border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                <div className="font-medium text-destructive mb-1">حجز ملغى</div>
+                {b.cancelled_at && <div className="text-xs text-muted-foreground">تاريخ الإلغاء: {new Date(b.cancelled_at).toLocaleString("ar-JO")}</div>}
+                {b.cancellation_reason && <div className="mt-1">السبب: {b.cancellation_reason}</div>}
+                {Number(b.refund_amount || 0) > 0 && (
+                  <div className="mt-1">استرداد: <strong>{b.refund_amount} د.أ</strong> — الحالة: {b.refund_status === "pending" ? "قيد المعالجة" : b.refund_status === "refunded" ? "تم الردّ" : b.refund_status}</div>
+                )}
+              </div>
+            )}
+
             {proofUrl && (
               <div className="mb-4">
                 <div className="text-xs text-muted-foreground mb-2">إثبات العربون:</div>
@@ -225,8 +254,8 @@ function BookingDetail() {
               {!b.delivered_at && b.status !== "cancelled" && (
                 <button onClick={markDelivered} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تسليم الصور وإنهاء</button>
               )}
-              {b.status !== "cancelled" && (
-                <button onClick={() => setStatus("cancelled")} className="inline-flex items-center gap-2 text-destructive border border-destructive/30 px-4 py-2 rounded-sm hover:bg-destructive/10"><XCircle className="h-4 w-4" /> إلغاء</button>
+              {b.status !== "cancelled" && b.status !== "completed" && (
+                <button onClick={onCancel} className="inline-flex items-center gap-2 text-destructive border border-destructive/30 px-4 py-2 rounded-sm hover:bg-destructive/10"><XCircle className="h-4 w-4" /> إلغاء الحجز</button>
               )}
               <button
                 onClick={async () => {

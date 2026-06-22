@@ -54,6 +54,9 @@ export type Database = {
         Row: {
           addons: Json | null
           base_price: number
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           client_email: string
           client_name: string
           client_notes: string | null
@@ -68,7 +71,10 @@ export type Database = {
           delivery_days_promised: number | null
           delivery_due_at: string | null
           deposit_amount: number
+          deposit_checkout_session_id: string | null
           deposit_confirmed_at: string | null
+          deposit_payment_intent_id: string | null
+          deposit_payment_provider: string | null
           deposit_proof_url: string | null
           deposit_sent_at: string | null
           edited_photos_count: number | null
@@ -86,6 +92,8 @@ export type Database = {
           photos_promised: number | null
           privacy_level: string
           production_stage: string
+          refund_amount: number | null
+          refund_status: string | null
           selection_link: string | null
           service: Database["public"]["Enums"]["service_type"]
           start_time: string
@@ -102,6 +110,9 @@ export type Database = {
         Insert: {
           addons?: Json | null
           base_price?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           client_email: string
           client_name: string
           client_notes?: string | null
@@ -116,7 +127,10 @@ export type Database = {
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
+          deposit_checkout_session_id?: string | null
           deposit_confirmed_at?: string | null
+          deposit_payment_intent_id?: string | null
+          deposit_payment_provider?: string | null
           deposit_proof_url?: string | null
           deposit_sent_at?: string | null
           edited_photos_count?: number | null
@@ -134,6 +148,8 @@ export type Database = {
           photos_promised?: number | null
           privacy_level?: string
           production_stage?: string
+          refund_amount?: number | null
+          refund_status?: string | null
           selection_link?: string | null
           service: Database["public"]["Enums"]["service_type"]
           start_time: string
@@ -150,6 +166,9 @@ export type Database = {
         Update: {
           addons?: Json | null
           base_price?: number
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           client_email?: string
           client_name?: string
           client_notes?: string | null
@@ -164,7 +183,10 @@ export type Database = {
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
+          deposit_checkout_session_id?: string | null
           deposit_confirmed_at?: string | null
+          deposit_payment_intent_id?: string | null
+          deposit_payment_provider?: string | null
           deposit_proof_url?: string | null
           deposit_sent_at?: string | null
           edited_photos_count?: number | null
@@ -182,6 +204,8 @@ export type Database = {
           photos_promised?: number | null
           privacy_level?: string
           production_stage?: string
+          refund_amount?: number | null
+          refund_status?: string | null
           selection_link?: string | null
           service?: Database["public"]["Enums"]["service_type"]
           start_time?: string
@@ -488,6 +512,44 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_events: {
+        Row: {
+          created_at: string
+          event_type: string | null
+          id: string
+          processed_at: string
+          provider: string
+          related_booking_id: string | null
+          related_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string | null
+          id: string
+          processed_at?: string
+          provider: string
+          related_booking_id?: string | null
+          related_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string | null
+          id?: string
+          processed_at?: string
+          provider?: string
+          related_booking_id?: string | null
+          related_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_related_booking_id_fkey"
+            columns: ["related_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photographer_private: {
         Row: {
           bank_info: string | null
@@ -617,6 +679,8 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           deposit_percent: number
+          deposit_refund_percent: number | null
+          deposit_refund_policy: string
           display_name: string
           equipment: string | null
           fixed_deposit: number | null
@@ -644,6 +708,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           deposit_percent?: number
+          deposit_refund_percent?: number | null
+          deposit_refund_policy?: string
           display_name: string
           equipment?: string | null
           fixed_deposit?: number | null
@@ -671,6 +737,8 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           deposit_percent?: number
+          deposit_refund_percent?: number | null
+          deposit_refund_policy?: string
           display_name?: string
           equipment?: string | null
           fixed_deposit?: number | null
@@ -963,9 +1031,18 @@ export type Database = {
         Args: { _photographer_id: string; _published: boolean }
         Returns: undefined
       }
+      approve_review: { Args: { _review_id: string }; Returns: undefined }
+      cancel_booking: {
+        Args: { _booking_id: string; _reason: string }
+        Returns: Json
+      }
       client_add_note: {
         Args: { _note: string; _token: string }
         Returns: undefined
+      }
+      client_cancel_booking: {
+        Args: { _reason: string; _token: string }
+        Returns: Json
       }
       client_mark_deposit_sent: {
         Args: {
@@ -977,6 +1054,16 @@ export type Database = {
         Returns: undefined
       }
       client_mark_received: { Args: { _token: string }; Returns: undefined }
+      confirm_booking_deposit_paid: {
+        Args: {
+          _booking_id: string
+          _intent?: string
+          _provider: string
+          _session?: string
+        }
+        Returns: Json
+      }
+      create_booking_guarded: { Args: { _payload: Json }; Returns: Json }
       delete_photographer_cascade: {
         Args: { _photographer_id: string }
         Returns: undefined
@@ -984,6 +1071,16 @@ export type Database = {
       get_booking_by_token: { Args: { _token: string }; Returns: Json }
       get_photographer_busy_dates: { Args: { _pid: string }; Returns: string[] }
       get_referrer_id: { Args: { _code: string }; Returns: string }
+      has_booking_conflict: {
+        Args: {
+          _date: string
+          _end: string
+          _exclude?: string
+          _pid: string
+          _start: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -999,10 +1096,31 @@ export type Database = {
         Args: { _photographer_id: string }
         Returns: boolean
       }
+      log_audit: {
+        Args: {
+          _action: string
+          _after?: Json
+          _before?: Json
+          _entity_id: string
+          _entity_type: string
+        }
+        Returns: undefined
+      }
       refresh_featured_photographers: { Args: never; Returns: undefined }
       regenerate_booking_token: {
         Args: { _booking_id: string }
         Returns: string
+      }
+      reject_review: { Args: { _review_id: string }; Returns: undefined }
+      renew_subscription_paid: {
+        Args: {
+          _amount: number
+          _months: number
+          _photographer_id: string
+          _provider: string
+          _ref: string
+        }
+        Returns: undefined
       }
       restore_photographer: {
         Args: { _photographer_id: string }

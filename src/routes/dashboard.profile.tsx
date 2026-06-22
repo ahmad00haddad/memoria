@@ -6,11 +6,14 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { updateRefundPolicy } from "@/lib/cancellation.functions";
 
 export const Route = createFileRoute("/dashboard/profile")({ component: ProfilePage });
 
 function ProfilePage() {
   const nav = useNavigate();
+  const updRefundFn = useServerFn(updateRefundPolicy);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uid, setUid] = useState("");
@@ -85,6 +88,16 @@ function ProfilePage() {
       cliq_alias: p.cliq_alias ?? null,
       bank_info: p.bank_info ?? null,
     }, { onConflict: "user_id" });
+    // سياسة استرداد العربون عبر server fn مُصادَق (تتحقّق من ownership)
+    try {
+      await updRefundFn({ data: {
+        policy: (p.deposit_refund_policy as any) || "full",
+        percent: p.deposit_refund_policy === "partial" ? Number(p.deposit_refund_percent || 0) : null,
+      }});
+    } catch (e: any) {
+      setSaving(false);
+      return toast.error(e?.message || "تعذّر حفظ سياسة الاسترداد");
+    }
     setSaving(false);
     if (error || pErr) return toast.error((error ?? pErr)!.message);
     toast.success("تم الحفظ");
@@ -159,6 +172,31 @@ function ProfilePage() {
               <input type="checkbox" checked={!!p.is_published} onChange={(e) => setP({ ...p, is_published: e.target.checked })} />
               نشر ملفي للعموم
             </label>
+          </Card>
+
+          <Card title="سياسة استرداد العربون عند الإلغاء">
+            <p className="text-xs text-muted-foreground -mt-2">
+              تُطبَّق هذه السياسة تلقائياً عند إلغاء حجز مؤكَّد العربون. لا تؤثّر على الحجوزات قبل تأكيد العربون.
+            </p>
+            <div className="grid sm:grid-cols-3 gap-2">
+              {[
+                { v: "full", l: "استرداد كامل" },
+                { v: "partial", l: "استرداد جزئي" },
+                { v: "none", l: "لا استرداد" },
+              ].map((o) => (
+                <label key={o.v} className={`flex items-center gap-2 border rounded-sm px-3 py-2 text-sm cursor-pointer ${ (p.deposit_refund_policy || "full") === o.v ? "border-gold bg-gold/5" : "border-border"}`}>
+                  <input
+                    type="radio" name="refundPolicy" value={o.v}
+                    checked={(p.deposit_refund_policy || "full") === o.v}
+                    onChange={() => setP({ ...p, deposit_refund_policy: o.v })}
+                  />
+                  {o.l}
+                </label>
+              ))}
+            </div>
+            {(p.deposit_refund_policy === "partial") && (
+              <Field label="نسبة الاسترداد % (0-100)" type="number" v={p.deposit_refund_percent} on={(v) => setP({ ...p, deposit_refund_percent: v })} />
+            )}
           </Card>
 
           <button onClick={save} disabled={saving} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">

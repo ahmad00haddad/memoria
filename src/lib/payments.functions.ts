@@ -1,5 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 
+// ----- Public capability check (لمعرفة ما إذا كانت بوّابة الدفع مفعّلة) -----
+export const isPaymentsEnabled = createServerFn({ method: "GET" }).handler(async () => {
+  const { isPaymentConfigured, activeProviderName } = await import("@/lib/payments.server");
+  return { enabled: isPaymentConfigured(), provider: activeProviderName() };
+});
+
 // ============================================================================
 // payments.functions.ts — دوال الدفع المُعرَّضة للعميل (server-fns)
 // ----------------------------------------------------------------------------
