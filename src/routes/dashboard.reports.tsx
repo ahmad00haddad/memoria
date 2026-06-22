@@ -1,7 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useMemo, useState } from "react";
 import { Header } from "@/components/site/Header";
+import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { DollarSign, TrendingUp, Wallet, Clock, CheckCircle2, Download } from "lucide-react";
@@ -111,7 +112,7 @@ function ReportsPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12">
-        <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-gold">← اللوحة</Link>
+        <BackToDashboard />
         <div className="flex flex-wrap items-end justify-between gap-3 mt-2 mb-8">
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">تقارير مالية</div>

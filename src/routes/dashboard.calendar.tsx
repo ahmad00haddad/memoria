@@ -1,7 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
+import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -137,7 +138,7 @@ function CalendarPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12 max-w-3xl">
-        <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-gold">← اللوحة</Link>
+        <BackToDashboard />
         <h1 className="font-serif text-4xl mt-2 mb-8">التقويم وإدارة التوفر</h1>
 
         <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">

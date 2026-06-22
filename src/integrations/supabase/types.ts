@@ -691,6 +691,7 @@ export type Database = {
           is_published: boolean
           min_session_minutes: number
           portfolio_urls: string[]
+          quickstart_dismissed_at: string | null
           referral_code: string | null
           referred_by: string | null
           tagline: string | null
@@ -720,6 +721,7 @@ export type Database = {
           is_published?: boolean
           min_session_minutes?: number
           portfolio_urls?: string[]
+          quickstart_dismissed_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
           tagline?: string | null
@@ -749,6 +751,7 @@ export type Database = {
           is_published?: boolean
           min_session_minutes?: number
           portfolio_urls?: string[]
+          quickstart_dismissed_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
           tagline?: string | null
