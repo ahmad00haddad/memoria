@@ -68,7 +68,10 @@ export type Database = {
           delivery_days_promised: number | null
           delivery_due_at: string | null
           deposit_amount: number
+          deposit_checkout_session_id: string | null
           deposit_confirmed_at: string | null
+          deposit_payment_intent_id: string | null
+          deposit_payment_provider: string | null
           deposit_proof_url: string | null
           deposit_sent_at: string | null
           edited_photos_count: number | null
@@ -116,7 +119,10 @@ export type Database = {
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
+          deposit_checkout_session_id?: string | null
           deposit_confirmed_at?: string | null
+          deposit_payment_intent_id?: string | null
+          deposit_payment_provider?: string | null
           deposit_proof_url?: string | null
           deposit_sent_at?: string | null
           edited_photos_count?: number | null
@@ -164,7 +170,10 @@ export type Database = {
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
+          deposit_checkout_session_id?: string | null
           deposit_confirmed_at?: string | null
+          deposit_payment_intent_id?: string | null
+          deposit_payment_provider?: string | null
           deposit_proof_url?: string | null
           deposit_sent_at?: string | null
           edited_photos_count?: number | null
@@ -487,6 +496,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payment_events: {
+        Row: {
+          created_at: string
+          event_type: string | null
+          id: string
+          processed_at: string
+          provider: string
+          related_booking_id: string | null
+          related_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string | null
+          id: string
+          processed_at?: string
+          provider: string
+          related_booking_id?: string | null
+          related_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string | null
+          id?: string
+          processed_at?: string
+          provider?: string
+          related_booking_id?: string | null
+          related_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_related_booking_id_fkey"
+            columns: ["related_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       photographer_private: {
         Row: {
@@ -977,6 +1024,15 @@ export type Database = {
         Returns: undefined
       }
       client_mark_received: { Args: { _token: string }; Returns: undefined }
+      confirm_booking_deposit_paid: {
+        Args: {
+          _booking_id: string
+          _provider: string
+          _session?: string
+          _intent?: string
+        }
+        Returns: Json
+      }
       delete_photographer_cascade: {
         Args: { _photographer_id: string }
         Returns: undefined
@@ -1003,6 +1059,17 @@ export type Database = {
       regenerate_booking_token: {
         Args: { _booking_id: string }
         Returns: string
+      }
+      renew_subscription_paid: {
+        Args: {
+          _photographer_id: string
+          _months: number
+          _provider?: string
+          _intent?: string
+          _amount?: number
+          _currency?: string
+        }
+        Returns: Json
       }
       restore_photographer: {
         Args: { _photographer_id: string }

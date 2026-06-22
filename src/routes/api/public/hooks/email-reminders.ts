@@ -64,40 +64,46 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
           if (r.ok) results.reminders++; else results.errors++;
         }
 
-        // ----- 2) Subscription expiry warnings (3 days out) -----
-        const in3 = new Date(); in3.setDate(in3.getDate() + 3);
-        const in4 = new Date(); in4.setDate(in4.getDate() + 4);
-        const { data: subs } = await supabaseAdmin
-          .from("subscriptions")
-          .select("photographer_id, current_period_end, status")
-          .eq("status", "active")
-          .gte("current_period_end", in3.toISOString())
-          .lt("current_period_end", in4.toISOString());
+        // ----- 2) Subscription expiry warnings (7 days + 3 days out) -----
+        // نافذتان للتذكير قبل انتهاء الاشتراك. لكل نافذة قالب مستقل
+        // (subscription_expiring_7d / _3d) فيكون منع التكرار مستقلاً لكل نافذة.
+        for (const daysLeft of [7, 3]) {
+          const winStart = new Date(); winStart.setDate(winStart.getDate() + daysLeft);
+          const winEnd = new Date(); winEnd.setDate(winEnd.getDate() + daysLeft + 1);
+          const template = `subscription_expiring_${daysLeft}d`;
 
-        for (const s of subs ?? []) {
-          const { data: prior } = await supabaseAdmin
-            .from("email_log").select("id")
-            .eq("template", "subscription_expiring")
-            .eq("related_user_id", s.photographer_id)
-            .gte("created_at", since).limit(1);
-          if (prior && prior.length > 0) continue;
+          const { data: subs } = await supabaseAdmin
+            .from("subscriptions")
+            .select("photographer_id, current_period_end, status")
+            .eq("status", "active")
+            .gte("current_period_end", winStart.toISOString())
+            .lt("current_period_end", winEnd.toISOString());
 
-          const { data: u } = await supabaseAdmin.auth.admin.getUserById(s.photographer_id);
-          const email = u?.user?.email;
-          if (!email) continue;
-          const { data: prof } = await supabaseAdmin
-            .from("profiles").select("display_name").eq("id", s.photographer_id).maybeSingle();
+          for (const s of subs ?? []) {
+            const { data: prior } = await supabaseAdmin
+              .from("email_log").select("id")
+              .eq("template", template)
+              .eq("related_user_id", s.photographer_id)
+              .gte("created_at", since).limit(1);
+            if (prior && prior.length > 0) continue;
 
-          const t = tplSubscriptionExpiring({
-            photographer_name: prof?.display_name || "المصوّرة",
-            days_left: 3,
-          });
-          const r = await sendEmail({
-            to: email, subject: t.subject, html: t.html,
-            template: "subscription_expiring",
-            related_user_id: s.photographer_id,
-          });
-          if (r.ok) results.subs++; else results.errors++;
+            const { data: u } = await supabaseAdmin.auth.admin.getUserById(s.photographer_id);
+            const email = u?.user?.email;
+            if (!email) continue;
+            const { data: prof } = await supabaseAdmin
+              .from("profiles").select("display_name").eq("id", s.photographer_id).maybeSingle();
+
+            const t = tplSubscriptionExpiring({
+              photographer_name: prof?.display_name || "المصوّرة",
+              days_left: daysLeft,
+            });
+            const r = await sendEmail({
+              to: email, subject: t.subject, html: t.html,
+              template,
+              related_user_id: s.photographer_id,
+            });
+            if (r.ok) results.subs++; else results.errors++;
+          }
         }
 
         return Response.json({ ok: true, ...results, ran_for: ymd });
