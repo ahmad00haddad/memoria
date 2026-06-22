@@ -125,6 +125,22 @@ function BookingDetail() {
     load();
   };
 
+  const onCancel = async () => {
+    const reason = window.prompt("سبب الإلغاء (اختياري):") ?? "";
+    if (!(await confirm({ title: "إلغاء الحجز", description: "سيتم إلغاء الحجز نهائياً. إذا تأكّد العربون فسيُحسب الاسترداد حسب سياستك.", confirmText: "إلغاء الحجز", destructive: true }))) return;
+    try {
+      const res: any = await cancelFn({ data: { booking_id: id, reason: reason || null } });
+      if (Number(res?.refund_amount) > 0) {
+        toast.success(`تم الإلغاء. مبلغ الاسترداد: ${res.refund_amount} د.أ — قيد المعالجة.`);
+      } else {
+        toast.success("تم إلغاء الحجز");
+      }
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر الإلغاء");
+    }
+  };
+
   const send = async () => {
     if (!text.trim()) return;
     const body = text.trim();
