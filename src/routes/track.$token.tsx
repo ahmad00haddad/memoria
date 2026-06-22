@@ -10,9 +10,11 @@ import {
   clientMarkReceived,
   clientAddNote,
 } from "@/lib/booking.functions";
+import { clientCancelBooking } from "@/lib/cancellation.functions";
+import { createDepositCheckout, isPaymentsEnabled } from "@/lib/payments.functions";
 import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X } from "lucide-react";
+import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, CreditCard, XCircle } from "lucide-react";
 import { Lightbox } from "@/components/Lightbox";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -30,10 +32,15 @@ function TrackingPage() {
   const sendDeposit = useServerFn(clientMarkDepositSent);
   const markReceived = useServerFn(clientMarkReceived);
   const addNote = useServerFn(clientAddNote);
+  const cancelFn = useServerFn(clientCancelBooking);
+  const checkoutFn = useServerFn(createDepositCheckout);
+  const isPayEnabledFn = useServerFn(isPaymentsEnabled);
 
   const [b, setB] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [payLoading, setPayLoading] = useState(false);
+  const [payEnabled, setPayEnabled] = useState(false);
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [newNote, setNewNote] = useState("");
@@ -48,6 +55,29 @@ function TrackingPage() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [token]);
+
+  // اكتشف ما إذا كانت بوّابة الدفع الإلكترونية مهيّأة (لإظهار زر الدفع أونلاين)
+  useEffect(() => {
+    (async () => {
+      try { const r: any = await isPayEnabledFn(); setPayEnabled(!!r?.enabled); } catch {}
+    })();
+    /* eslint-disable-next-line */
+  }, []);
+
+  // عرض إشعار عند العودة من بوّابة الدفع
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    const status = u.searchParams.get("payment");
+    if (status === "success") {
+      toast.success("تم استلام دفعتك. يتم تأكيد الحجز خلال لحظات…");
+      u.searchParams.delete("payment");
+      window.history.replaceState({}, "", u.toString());
+    } else if (status === "cancelled") {
+      toast.message("أُلغي الدفع. يمكنك المحاولة مجدّداً أو استخدام طريقة CliQ اليدوية.");
+      u.searchParams.delete("payment");
+      window.history.replaceState({}, "", u.toString());
+    }
+  }, []);
 
   // Polling refresh — keeps gallery/messages live without realtime RLS gymnastics
   useEffect(() => {
@@ -124,6 +154,32 @@ function TrackingPage() {
       toast.success("شكرًا! تم تأكيد الاستلام.");
       load();
     } catch (e: any) { toast.error(e.message); }
+  };
+
+  const onPayOnline = async () => {
+    setPayLoading(true);
+    try {
+      const res: any = await checkoutFn({ data: { token } });
+      if (!res?.configured || !res?.url) {
+        toast.error("الدفع الإلكتروني غير متاح حالياً. استخدمي CliQ.");
+        return;
+      }
+      window.location.href = res.url;
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر بدء الدفع");
+    } finally {
+      setPayLoading(false);
+    }
+  };
+
+  const onClientCancel = async () => {
+    const reason = window.prompt("سبب الإلغاء (اختياري):") ?? "";
+    if (!(await confirm({ title: "إلغاء الطلب", description: "سيتم إلغاء طلب الحجز نهائياً. لا يمكنك الإلغاء بعد تأكيد المصوّرة.", confirmText: "إلغاء الطلب", destructive: true }))) return;
+    try {
+      await cancelFn({ data: { token, reason: reason || null } });
+      toast.success("تم إلغاء الطلب");
+      load();
+    } catch (e: any) { toast.error(e?.message || "تعذّر الإلغاء"); }
   };
 
   const ph = b.photographer;
