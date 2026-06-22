@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, CreditCard, LayoutDashboard } from "lucide-react";
+import { Users, CreditCard, LayoutDashboard, Star } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -50,6 +50,7 @@ function AdminLayout() {
           <TabLink to="/admin" exact icon={<LayoutDashboard className="h-4 w-4" />} label="نظرة عامة" />
           <TabLink to="/admin/photographers" icon={<Users className="h-4 w-4" />} label="المصورات" />
           <TabLink to="/admin/subscriptions" icon={<CreditCard className="h-4 w-4" />} label="المدفوعات" />
+          <TabLink to="/admin/reviews" icon={<Star className="h-4 w-4" />} label="التقييمات" />
         </nav>
         <Outlet />
       </div>

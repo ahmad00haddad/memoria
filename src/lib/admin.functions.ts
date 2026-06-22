@@ -40,6 +40,64 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
     }));
   });
 
+// ----- مراجعة التقييمات (Reviews moderation) -----
+export const listReviewsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: reviews } = await supabaseAdmin
+      .from("reviews")
+      .select("id, photographer_id, booking_id, client_name, rating, comment, is_published, created_at")
+      .order("created_at", { ascending: false });
+
+    // ربط أسماء المصوّرات (تجميعة واحدة — تفادي N+1).
+    const ids = [...new Set((reviews ?? []).map((r: any) => r.photographer_id))];
+    const { data: profiles } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name").in("id", ids)
+      : { data: [] as any[] };
+    const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+
+    return (reviews ?? []).map((r: any) => ({
+      ...r,
+      profile: profMap.get(r.photographer_id) ?? null,
+    }));
+  });
+
+export const adminApproveReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { review_id: string }) => {
+    if (!d || typeof d.review_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.review_id)) {
+      throw new Error("invalid review_id");
+    }
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { error } = await supabase.rpc("approve_review", { _review_id: data.review_id });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminRejectReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { review_id: string }) => {
+    if (!d || typeof d.review_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.review_id)) {
+      throw new Error("invalid review_id");
+    }
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { error } = await supabase.rpc("reject_review", { _review_id: data.review_id });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const adminTogglePublish = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { photographer_id: string; published: boolean }) => d)
