@@ -122,6 +122,15 @@ Replace the manual CliQ + proof-upload flow with automatic deposit collection.
 
 ---
 
+## 🎨 UI notes for Lovable (تصميم — تُكمَّل في Lovable)
+- **لوحة متابعة الإنتاج (`/dashboard/production`)**: ألوان المراحل فاتحة فقط
+  (`bg-*-50`) وغير واضحة، وتنكسر في الوضع الداكن (لا توجد مقابلات `dark:`).
+  المطلوب: تباين أوضح + `dark:` لكل لون، مع إبقاء مفاتيح المراحل كما هي.
+- **سلوك التمرير عند الرجوع**: صفحات `/dashboard/*` تُظهر `PageLoader` عند كل
+  دخول (إعادة تركيب) فيُفقد موضع التمرير عند الرجوع رغم تفعيل `scrollRestoration`.
+  تحسين مقترح لاحقاً: تحميل البيانات عبر route loaders أو إبقاء المحتوى السابق
+  بدل استبداله بـ loader كامل.
+
 ## 🔒 Standing security checklist
 - [ ] Audit live RLS policies; ensure no unintended `USING (true)` remains
       (notably `contracts`, `notifications`).

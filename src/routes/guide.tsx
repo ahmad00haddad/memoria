@@ -2,8 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Search, Calendar, FileSignature, CreditCard, Camera, PackageCheck,
   UserPlus, Image as ImageIcon, DollarSign, Bell, MessageSquare, Star,
-  ShieldCheck, Sparkles, ArrowLeft, CheckCircle2,
+  ShieldCheck, Sparkles, ArrowLeft, CheckCircle2, ChevronRight,
 } from "lucide-react";
+import { Header } from "@/components/site/Header";
+import { Footer } from "@/components/site/Footer";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -136,9 +138,17 @@ function StepCard({ step, index, accent }: { step: Step; index: number; accent: 
 function GuidePage() {
   return (
     <div className="min-h-screen bg-background" dir="rtl">
+      {/* الشريط العلوي المشترك — كان مفقوداً في هذه الصفحة فيتعذّر الرجوع */}
+      <Header />
       {/* Hero */}
       <header className="border-b bg-gradient-to-b from-primary/5 to-background">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+          <Link
+            to="/"
+            className="mb-4 inline-flex items-center gap-1.5 rounded-sm border border-input bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-accent"
+          >
+            <ChevronRight className="h-4 w-4" /> العودة للرئيسية
+          </Link>
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             <Sparkles className="h-3.5 w-3.5" /> دليل شامل خطوة بخطوة
           </div>
@@ -217,6 +227,7 @@ function GuidePage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

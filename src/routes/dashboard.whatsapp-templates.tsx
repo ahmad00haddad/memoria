@@ -1,6 +1,7 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
+import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -100,7 +101,7 @@ function TemplatesPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12">
-        <Link to="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">← العودة للوحة</Link>
+        <BackToDashboard />
         <div className="flex items-end justify-between mt-2 mb-6">
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">قوالب جاهزة</div>

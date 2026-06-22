@@ -5,7 +5,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
-import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, Copy, ArrowLeft, Bell, CircleDashed, ListChecks, TrendingUp, Send, MessageCircle } from "lucide-react";
+import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, ArrowLeft, Bell, CircleDashed, ListChecks, TrendingUp, Send, MessageCircle, X, PartyPopper } from "lucide-react";
 import { toast } from "sonner";
 import { OnboardingWizard } from "@/components/OnboardingWizard";
 
@@ -21,6 +21,7 @@ function Dashboard() {
   const [hasCliq, setHasCliq] = useState(false);
   const [templatesCount, setTemplatesCount] = useState(0);
   const [stats, setStats] = useState({ confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, upcoming30: 0, pendingDepositsAmount: 0, deliveriesDueSoon: 0 });
+  const [qsDismissed, setQsDismissed] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,6 +64,23 @@ function Dashboard() {
     })();
   }, [navigate]);
 
+  // إخفاء "حالة الجاهزية" نهائياً (يُحفظ في قاعدة البيانات ليبقى مخفياً عبر كل الأجهزة).
+  const dismissQuickStart = async () => {
+    setQsDismissed(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("profiles")
+          .update({ quickstart_dismissed_at: new Date().toISOString() })
+          .eq("id", session.user.id);
+      }
+      toast.success("تم إخفاء حالة الجاهزية");
+    } catch {
+      toast.error("تعذّر الحفظ، حاولي مجدداً");
+    }
+  };
+
   if (loading) return <PageLoader />;
   const onboardingNeeded = !profile?.display_name || !profile?.username || !profile?.avatar_url || pricingCount === 0;
 
@@ -103,9 +121,16 @@ function Dashboard() {
           <Stat icon={<Send className="h-5 w-5 text-violet-600" />} label="تسليمات خلال 7 أيام" value={stats.deliveriesDueSoon} />
         </div>
 
-        <QuickStart profile={profile} pricingCount={pricingCount} bookingCount={stats.confirmed + stats.pending + stats.completed} hasCliq={hasCliq} templatesCount={templatesCount} />
-
-        {profile?.ical_token && <IcalBlock token={profile.ical_token} />}
+        {!profile?.quickstart_dismissed_at && !qsDismissed && (
+          <QuickStart
+            profile={profile}
+            pricingCount={pricingCount}
+            bookingCount={stats.confirmed + stats.pending + stats.completed}
+            hasCliq={hasCliq}
+            templatesCount={templatesCount}
+            onDismiss={dismissQuickStart}
+          />
+        )}
 
         <div className="grid gap-6 md:grid-cols-3">
           <Card title="الملف الشخصي" desc="الصور، النبذة، المعدّات، التواصل، إعدادات الحجز." cta="تعديل الملف" to="/dashboard/profile" />
@@ -127,7 +152,7 @@ function Dashboard() {
   );
 }
 
-function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCount }: { profile: any; pricingCount: number; bookingCount: number; hasCliq: boolean; templatesCount: number }) {
+function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCount, onDismiss }: { profile: any; pricingCount: number; bookingCount: number; hasCliq: boolean; templatesCount: number; onDismiss: () => void }) {
   const steps = [
     {
       title: "أكملي الملف الشخصي",
@@ -173,12 +198,41 @@ function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCou
     },
   ];
 
+  const allDone = steps.every((s) => s.done);
+
   return (
     <div className="mb-8 rounded-sm border border-border bg-card p-6 shadow-soft">
-      <div className="flex items-center gap-2 mb-4">
-        <ListChecks className="h-5 w-5 text-gold" />
-        <h2 className="font-serif text-2xl">حالة الجاهزية</h2>
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          <ListChecks className="h-5 w-5 text-gold" />
+          <h2 className="font-serif text-2xl">حالة الجاهزية</h2>
+        </div>
+        {/* زر إغلاق دائم — يُخفي اللوحة للأبد (يُحفظ في قاعدة البيانات) */}
+        <button
+          onClick={onDismiss}
+          className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary"
+          aria-label="إخفاء حالة الجاهزية"
+          title="إخفاء حالة الجاهزية نهائياً"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
+
+      {allDone && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950/40">
+          <div className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
+            <PartyPopper className="h-5 w-5" />
+            أكملتِ كل الخطوات — حسابك جاهز تماماً! 🎉
+          </div>
+          <button
+            onClick={onDismiss}
+            className="inline-flex items-center gap-2 rounded-sm bg-emerald-600 px-4 py-2 text-sm text-white hover:opacity-90"
+          >
+            <CheckCircle2 className="h-4 w-4" /> تم — أخفِ هذه اللوحة
+          </button>
+        </div>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {steps.map((step) => (
           <div key={step.title} className="rounded-sm border border-border bg-background p-4">
@@ -203,22 +257,6 @@ function Stat({ icon, label, value }: { icon: any; label: string; value: any }) 
     <div className="rounded-sm border border-border bg-card p-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">{icon}<span>{label}</span></div>
       <div className="font-serif text-2xl">{value}</div>
-    </div>
-  );
-}
-
-function IcalBlock({ token }: { token: string }) {
-  const url = typeof window !== "undefined" ? `${window.location.origin}/api/public/ical/${token}` : "";
-  return (
-    <div className="mb-8 rounded-sm border border-border bg-card p-4 flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <div className="text-xs uppercase tracking-[0.2em] text-gold mb-1">مزامنة Google Calendar</div>
-        <div className="text-sm text-muted-foreground">انسخ الرابط وأضفه في Google Calendar → Other calendars → From URL</div>
-      </div>
-      <div className="flex gap-2 items-center">
-        <code className="text-xs bg-secondary px-2 py-1 rounded-sm max-w-[260px] truncate">{url}</code>
-        <button onClick={() => { navigator.clipboard.writeText(url); toast.success("تم النسخ"); }} className="inline-flex items-center gap-1 border border-border px-3 py-2 rounded-sm hover:bg-secondary text-sm"><Copy className="h-4 w-4" /> نسخ</button>
-      </div>
     </div>
   );
 }

@@ -1,7 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/site/Header";
+import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, Clock, Upload, Copy, AlertTriangle, CreditCard } from "lucide-react";
@@ -107,7 +108,7 @@ function SubscriptionPage() {
       <Header />
       <section className="container-editorial py-12 max-w-4xl">
         <div className="mb-8">
-          <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-gold">← العودة للوحة</Link>
+          <BackToDashboard />
           <div className="text-xs uppercase tracking-[0.3em] text-gold mt-2 mb-1">الاشتراك</div>
           <h1 className="font-serif text-4xl">إدارة اشتراكك</h1>
         </div>

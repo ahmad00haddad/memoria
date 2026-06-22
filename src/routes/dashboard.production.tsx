@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
+import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,6 +10,10 @@ import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCirc
 
 export const Route = createFileRoute("/dashboard/production")({ component: ProductionBoard });
 
+// ملاحظة لـ Lovable (UI/تصميم — #3): ألوان المراحل أدناه فاتحة فقط (bg-*-50)
+// وتظهر باهتة/غير واضحة، وتنكسر في الوضع الداكن لعدم وجود مقابلات dark:.
+// المطلوب لاحقاً: تباين أوضح لكل مرحلة + إضافة dark: لكل لون (نص وخلفية وحدود)،
+// مع إبقاء مفاتيح المراحل (key) كما هي حتى لا يتأثّر المنطق.
 const STAGES: { key: string; label: string; icon: any; color: string }[] = [
   { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-4 w-4" />, color: "bg-slate-50 border-slate-200" },
   { key: "shooting", label: "يوم التصوير", icon: <Camera className="h-4 w-4" />, color: "bg-amber-50 border-amber-200" },
@@ -61,7 +66,7 @@ function ProductionBoard() {
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12">
-        <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-gold">← اللوحة</Link>
+        <BackToDashboard />
         <h1 className="font-serif text-4xl mt-2 mb-2">لوحة متابعة الإنتاج</h1>
         <p className="text-sm text-muted-foreground mb-6 max-w-2xl">تابعي كل حجز من يوم التصوير حتى التسليم. حرّكي الحجز بين المراحل بأزرار التالي/السابق.</p>
 

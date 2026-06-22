@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
+import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Copy, Gift, Users } from "lucide-react";
@@ -40,6 +41,7 @@ function ReferralsPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12 max-w-3xl">
+        <div className="mb-4"><BackToDashboard /></div>
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">برنامج الإحالة</div>
         <h1 className="font-serif text-4xl mb-2">ادعُ زميلة، اربحا شهرًا مجانيًا</h1>
         <p className="text-muted-foreground mb-8">عند انضمام مصوّرة جديدة عبر رابطك وإكمال أول اشتراك، تحصلان على شهر مجاني للطرفين.</p>
