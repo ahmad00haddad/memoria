@@ -30,6 +30,43 @@ secrets and are scoped here with concrete implementation notes.
 **Next for app stores:** PWABuilder → Google Play (TWA); Capacitor → App Store.
 Add a dedicated 192×192 icon (currently reusing 512).
 
+## ✅ Priority 1 — Online deposit payments & auto subscription billing (PR — feat/priority-1-payments-subscriptions)
+طبقة مدفوعات provider-agnostic + webhook موثّق + تجديد اشتراك تلقائي. كلها env-gated
+(عند غياب المفاتيح: no-op آمن، ويبقى CliQ اليدوي + التجديد اليدوي عبر الأدمن فعّالين).
+
+- **`payments.server.ts`** — واجهة موحّدة `PaymentProvider` (`createDepositCheckout`,
+  `verifyWebhook`, `getPaymentStatus`). تنفيذ Stripe مرجعي عبر REST + Web Crypto
+  (متوافق مع Cloudflare Workers، بلا SDK). هيكل HyperPay (JOD) جاهز للتنفيذ لاحقاً.
+- **`createDepositCheckout` (server fn)** — عام، server-authoritative بالرمز (token)
+  لا بـ booking_id من العميل؛ يعيد حساب مبلغ العربون من قاعدة البيانات.
+- **webhook `api/public/hooks/payment`** — تحقّق توقيع + idempotency عبر جدول
+  `payment_events` + تأكيد ذرّي للعربون (`confirm_booking_deposit_paid`) + إيميل/واتساب.
+- **فوترة اشتراك تلقائية** — `renew_subscription_paid` (تمديد `current_period_end`)،
+  وتوسيع `email-reminders` لتذكيرات قبل الانتهاء بـ 7 و3 أيام.
+- **`whatsapp.server.ts`** — مساعد WhatsApp Cloud API (env-gated، no-op آمن).
+- migration: `20260622120000_payments_integration.sql` (أعمدة ربط الدفع + `payment_events` +
+  الدوال أعلاه، RLS مُفعّل على الجدول الجديد). تحديث `types.ts`.
+
+**Post-merge:** شغّل الـ migration؛ اضبط `PAYMENT_PROVIDER` + `STRIPE_SECRET_KEY` +
+`STRIPE_WEBHOOK_SECRET` (وللإنتاج بالدينار: HyperPay)؛ اضبط نقطة webhook لدى المزوّد على
+`/api/public/hooks/payment`؛ اختياري: `WHATSAPP_API_TOKEN` + `WHATSAPP_PHONE_ID`،
+و`PUBLIC_APP_URL`.
+
+---
+
+## ✅ Priority 2 — Cancellation & deposit refund (PR — feat/priority-2-cancellation-refund)
+- migration `20260622130000_booking_cancellation.sql`: أعمدة `cancelled_at`,
+  `cancellation_reason`, `cancelled_by`, `refund_amount`, `refund_status` على bookings؛
+  سياسة استرداد على profiles (`deposit_refund_policy` full/partial/none + `deposit_refund_percent`).
+- `cancel_booking(_id,_reason)` — المصوّرة/الأدمن، أي حالة غير completed؛ يحسب الاسترداد
+  حسب السياسة، يسجّل في audit_logs، ويُشعر العميل (in-app + إيميل + واتساب).
+- `client_cancel_booking(_token,_reason)` — العميل عبر الرمز، فقط قبل `confirmed`؛ يُشعر المصوّرة.
+- server fns: `cancelBooking`, `clientCancelBooking`, `updateRefundPolicy` + قالب بريد `tplBookingCancelled`.
+- حالة `cancelled` تُحرّر الموعد تلقائياً (مستثناة أصلاً من `has_booking_conflict` — تم التحقّق).
+
+**Post-merge:** شغّل الـ migration. (الاسترداد الفعلي عبر بوّابة الدفع يُوصَّل لاحقاً عبر
+`refund_status='pending'` — هوك جاهز للربط مع gateway refund API.)
+
 ---
 
 ## 🔭 Phase 3 — Growth features (need external accounts/secrets)
