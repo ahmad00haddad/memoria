@@ -41,10 +41,12 @@ import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calend
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookings'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminPhotographersRouteImport } from './routes/admin.photographers'
 import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
+import { Route as ApiPublicHooksPaymentRouteImport } from './routes/api/public/hooks/payment'
 import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
 import { Route as ApiPublicHooksEmailRemindersRouteImport } from './routes/api/public/hooks/email-reminders'
 
@@ -209,6 +211,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminReviewsRoute = AdminReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPhotographersRoute = AdminPhotographersRouteImport.update({
   id: '/photographers',
   path: '/photographers',
@@ -227,6 +234,11 @@ const DashboardBookingsIdRoute = DashboardBookingsIdRouteImport.update({
 const ApiPublicIcalTokenRoute = ApiPublicIcalTokenRouteImport.update({
   id: '/api/public/ical/$token',
   path: '/api/public/ical/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksPaymentRoute = ApiPublicHooksPaymentRouteImport.update({
+  id: '/api/public/hooks/payment',
+  path: '/api/public/hooks/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicHooksIcalSyncRoute = ApiPublicHooksIcalSyncRouteImport.update({
@@ -257,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
@@ -279,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
+  '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesByTo {
@@ -295,6 +309,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
@@ -316,6 +331,7 @@ export interface FileRoutesByTo {
   '/dashboard/bookings': typeof DashboardBookingsIndexRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
+  '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRoutesById {
@@ -335,6 +351,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/reviews': typeof AdminReviewsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
@@ -357,6 +374,7 @@ export interface FileRoutesById {
   '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
+  '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
 }
 export interface FileRouteTypes {
@@ -377,6 +395,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/admin/photographers'
+    | '/admin/reviews'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/bookings'
@@ -399,6 +418,7 @@ export interface FileRouteTypes {
     | '/dashboard/bookings/'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
+    | '/api/public/hooks/payment'
     | '/api/public/ical/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -415,6 +435,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/admin/photographers'
+    | '/admin/reviews'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/calendar'
@@ -436,6 +457,7 @@ export interface FileRouteTypes {
     | '/dashboard/bookings'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
+    | '/api/public/hooks/payment'
     | '/api/public/ical/$token'
   id:
     | '__root__'
@@ -454,6 +476,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/admin/photographers'
+    | '/admin/reviews'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/bookings'
@@ -476,6 +499,7 @@ export interface FileRouteTypes {
     | '/dashboard/bookings/'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
+    | '/api/public/hooks/payment'
     | '/api/public/ical/$token'
   fileRoutesById: FileRoutesById
 }
@@ -501,6 +525,7 @@ export interface RootRouteChildren {
   TrackTokenRoute: typeof TrackTokenRoute
   ApiPublicHooksEmailRemindersRoute: typeof ApiPublicHooksEmailRemindersRoute
   ApiPublicHooksIcalSyncRoute: typeof ApiPublicHooksIcalSyncRoute
+  ApiPublicHooksPaymentRoute: typeof ApiPublicHooksPaymentRoute
   ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
 
@@ -730,6 +755,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/reviews': {
+      id: '/admin/reviews'
+      path: '/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AdminReviewsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/photographers': {
       id: '/admin/photographers'
       path: '/photographers'
@@ -758,6 +790,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicIcalTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/payment': {
+      id: '/api/public/hooks/payment'
+      path: '/api/public/hooks/payment'
+      fullPath: '/api/public/hooks/payment'
+      preLoaderRoute: typeof ApiPublicHooksPaymentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/ical-sync': {
       id: '/api/public/hooks/ical-sync'
       path: '/api/public/hooks/ical-sync'
@@ -777,12 +816,14 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminPhotographersRoute: typeof AdminPhotographersRoute
+  AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminPhotographersRoute: AdminPhotographersRoute,
+  AdminReviewsRoute: AdminReviewsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -856,6 +897,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrackTokenRoute: TrackTokenRoute,
   ApiPublicHooksEmailRemindersRoute: ApiPublicHooksEmailRemindersRoute,
   ApiPublicHooksIcalSyncRoute: ApiPublicHooksIcalSyncRoute,
+  ApiPublicHooksPaymentRoute: ApiPublicHooksPaymentRoute,
   ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }
 export const routeTree = rootRouteImport
