@@ -54,6 +54,21 @@ Add a dedicated 192×192 icon (currently reusing 512).
 
 ---
 
+## ✅ Priority 2 — Cancellation & deposit refund (PR — feat/priority-2-cancellation-refund)
+- migration `20260622130000_booking_cancellation.sql`: أعمدة `cancelled_at`,
+  `cancellation_reason`, `cancelled_by`, `refund_amount`, `refund_status` على bookings؛
+  سياسة استرداد على profiles (`deposit_refund_policy` full/partial/none + `deposit_refund_percent`).
+- `cancel_booking(_id,_reason)` — المصوّرة/الأدمن، أي حالة غير completed؛ يحسب الاسترداد
+  حسب السياسة، يسجّل في audit_logs، ويُشعر العميل (in-app + إيميل + واتساب).
+- `client_cancel_booking(_token,_reason)` — العميل عبر الرمز، فقط قبل `confirmed`؛ يُشعر المصوّرة.
+- server fns: `cancelBooking`, `clientCancelBooking`, `updateRefundPolicy` + قالب بريد `tplBookingCancelled`.
+- حالة `cancelled` تُحرّر الموعد تلقائياً (مستثناة أصلاً من `has_booking_conflict` — تم التحقّق).
+
+**Post-merge:** شغّل الـ migration. (الاسترداد الفعلي عبر بوّابة الدفع يُوصَّل لاحقاً عبر
+`refund_status='pending'` — هوك جاهز للربط مع gateway refund API.)
+
+---
+
 ## 🔭 Phase 3 — Growth features (need external accounts/secrets)
 
 ### 3.1 Online deposit payment gateway 🔴 (highest business impact)

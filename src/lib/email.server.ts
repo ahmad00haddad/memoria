@@ -206,3 +206,33 @@ export function tplSubscriptionExpiring(args: {
       { label: "تجديد الاشتراك", url: `${appBase()}/dashboard/subscription` }),
   };
 }
+
+export function tplBookingCancelled(args: {
+  client_name: string; photographer_name: string; event_date: string;
+  refund_amount: number; by: "photographer" | "client";
+  track_token?: string; booking_id?: string;
+}) {
+  // عند الإلغاء من المصوّرة: رسالة للعميل (مع معلومات الاسترداد إن وُجدت).
+  // عند الإلغاء من العميل: رسالة للمصوّرة (إشعار).
+  if (args.by === "photographer") {
+    const refundBlock = args.refund_amount > 0
+      ? `<p>سيتم رد عربون بقيمة <strong style="color:#a07a32;">${args.refund_amount.toFixed(2)} د.أ</strong> حسب سياسة الاسترداد.</p>`
+      : "";
+    return {
+      subject: "تم إلغاء حجزك",
+      html: layout("تم إلغاء الحجز", `
+        <p>مرحباً ${escapeHtml(args.client_name)},</p>
+        <p>نأسف لإبلاغك بأنّه تم إلغاء حجزك مع <strong>${escapeHtml(args.photographer_name)}</strong> بتاريخ <strong>${escapeHtml(args.event_date)}</strong>.</p>
+        ${refundBlock}
+        <p>للاستفسار يمكنك متابعة صفحة الحجز أو التواصل مع المصوّرة.</p>`,
+        args.track_token ? { label: "صفحة الحجز", url: `${appBase()}/track/${args.track_token}` } : undefined),
+    };
+  }
+  return {
+    subject: `ألغى ${args.client_name} طلب الحجز`,
+    html: layout("ألغى العميل الحجز", `
+      <p>مرحباً ${escapeHtml(args.photographer_name)},</p>
+      <p>قام <strong>${escapeHtml(args.client_name)}</strong> بإلغاء طلب الحجز بتاريخ <strong>${escapeHtml(args.event_date)}</strong> قبل التأكيد. أصبح الموعد متاحاً مجدداً.</p>`,
+      args.booking_id ? { label: "فتح الحجز", url: `${appBase()}/dashboard/bookings/${args.booking_id}` } : undefined),
+  };
+}

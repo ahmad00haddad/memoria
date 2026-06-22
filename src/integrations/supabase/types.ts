@@ -52,6 +52,11 @@ export type Database = {
       }
       bookings: {
         Row: {
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          refund_amount: number | null
+          refund_status: string | null
           addons: Json | null
           base_price: number
           client_email: string
@@ -103,6 +108,11 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          refund_amount?: number | null
+          refund_status?: string | null
           addons?: Json | null
           base_price?: number
           client_email: string
@@ -154,6 +164,11 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          refund_amount?: number | null
+          refund_status?: string | null
           addons?: Json | null
           base_price?: number
           client_email?: string
@@ -655,6 +670,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          deposit_refund_percent: number | null
+          deposit_refund_policy: string
           avatar_url: string | null
           base_location: string | null
           bio: string | null
@@ -682,6 +699,8 @@ export type Database = {
           username: string
         }
         Insert: {
+          deposit_refund_percent?: number | null
+          deposit_refund_policy?: string
           avatar_url?: string | null
           base_location?: string | null
           bio?: string | null
@@ -709,6 +728,8 @@ export type Database = {
           username: string
         }
         Update: {
+          deposit_refund_percent?: number | null
+          deposit_refund_policy?: string
           avatar_url?: string | null
           base_location?: string | null
           bio?: string | null
@@ -1024,6 +1045,14 @@ export type Database = {
         Returns: undefined
       }
       client_mark_received: { Args: { _token: string }; Returns: undefined }
+      cancel_booking: {
+        Args: { _booking_id: string; _reason: string }
+        Returns: Json
+      }
+      client_cancel_booking: {
+        Args: { _token: string; _reason: string }
+        Returns: Json
+      }
       confirm_booking_deposit_paid: {
         Args: {
           _booking_id: string
