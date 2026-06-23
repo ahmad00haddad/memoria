@@ -1,1 +1,257 @@
-Ly8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQovLyB3aGF0c2FwcC5zZXJ2ZXIudHMg4oCUINmF2LPYp9i52K8gV2hhdHNBcHAgQ2xvdWQgQVBJICjYrtin2K/ZhdmKINmB2YLYt9iMIGVudi1nYXRlZCkKLy8gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQovLyDYp9mE2LPZhNmI2YMgKNi52YTZiSDZhtmF2LcgZW1haWwuc2VydmVyLnRzKToKLy8gICAqINi52YbYryDYutmK2KfYqCBXSEFUU0FQUF9BUElfVE9LRU4g2KPZiCBXSEFUU0FQUF9QSE9ORV9JRCDihpIgbm8tb3Ag2KLZhdmGIChza2lwcGVkPXRydWUpCi8vICAgICDZiNmE2Kcg2YrYsdmF2Yog2K7Yt9ij2Ysg2KXYt9mE2KfZgtin2YvYjCDYrdiq2Ykg2YTYpyDZitiq2LnYt9mR2YQg2KrYr9mB2YIg2KfZhNit2KzYsi/Yp9mE2K/Zgdi5LgovLyAgICogV29ya2Vycy1zYWZlOiDZitiz2KrYrtiv2YUgZmV0Y2gg2YHZgti3LgovLwovLyBzZW5kV2hhdHNBcHBOb3RpZmljYXRpb24g4oCUINin2YTZhdit2LHZgyDYp9mE2LDZg9mKINmE2YTYpdi02LnYp9ix2KfYqiDYp9mE2KrZhNmC2KfYptmK2Kk6Ci8vICAg2YrYqNit2Ksg2KPZiNmE2KfZiyDYudmGINmC2KfZhNioINmF2K7Ytdi1INmE2YTZhdi12YjYsdipICh3aGF0c2FwcF90ZW1wbGF0ZXMp2Iwg2YHYpdmGINmE2YUg2YrYrNivCi8vICAg2YrYs9iq2K7Yr9mFINin2YTZgtin2YTYqCDYp9mE2KfZgdiq2LHYp9i22Yog2YTZhNmG2LjYp9mFLiDZitiz2KrYqNiv2YQg2KfZhNmF2KrYutmK2LHYp9iqINiq2YTZgtin2KbZitin2YsuCi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCmV4cG9ydCBmdW5jdGlvbiBpc1doYXRzQXBwQ29uZmlndXJlZCgpOiBib29sZWFuIHsKICByZXR1cm4gQm9vbGVhbihwcm9jZXNzLmVudi5XSEFUU0FQUF9BUElfVE9LRU4gJiYgcHJvY2Vzcy5lbnYuV0hBVFNBUFBfUEhPTkVfSUQpOwp9CgovKiog2KrYt9io2YrYuSDYsdmC2YUg2KfZhNmH2KfYqtmBINil2YTZiSDYp9mE2LXZiti62Kkg2KfZhNiv2YjZhNmK2Kkg2KfZhNiq2Yog2YrYqtmI2YLYudmH2Kcg2YjYp9iq2LPYp9ioICjYo9ix2YLYp9mFINmB2YLYtykuICovCmZ1bmN0aW9uIG5vcm1hbGl6ZVBob25lKHBob25lOiBzdHJpbmcpOiBzdHJpbmcgewogIGxldCBwID0gKHBob25lIHx8ICIiKS5yZXBsYWNlKC9bXlxkK10vZywgIiIpOwogIGlmIChwLnN0YXJ0c1dpdGgoIisiKSkgcCA9IHAuc2xpY2UoMSk7CiAgaWYgKHAuc3RhcnRzV2l0aCgiMDAiKSkgcCA9IHAuc2xpY2UoMik7CiAgaWYgKHAuc3RhcnRzV2l0aCgiMCIpKSBwID0gIjk2MiIgKyBwLnNsaWNlKDEpOwogIHJldHVybiBwOwp9CgpleHBvcnQgdHlwZSBXaGF0c0FwcFJlc3VsdCA9IHsgb2s6IGJvb2xlYW47IGlkPzogc3RyaW5nOyBlcnJvcj86IHN0cmluZzsgc2tpcHBlZD86IGJvb2xlYW4gfTsKCi8qKgogKiDYpdix2LPYp9mEINix2LPYp9mE2Kkg2YbYtdmK2Kkg2KjYs9mK2LfYqSDYudio2LEgV2hhdHNBcHAgQ2xvdWQgQVBJLgogKiDZitmP2YHYttmR2YQg2YTYp9it2YLYp9mLINin2LPYqtiu2K/Yp9mFINin2YTZgtmI2KfZhNioINin2YTZhdi52KrZhdiv2KkgKHRlbXBsYXRlcykg2YTZhNix2LPYp9im2YQg2K7Yp9ix2Kwg2YbYp9mB2LDYqSAyNCDYs9in2LnYqdibCiAqINij2Y/YqNmC2YrYqiDYp9mE2YjYp9is2YfYqSDYqNiz2YrYt9ipINmE2KrYs9mH2YrZhCDYp9mE2KrZiNiz2LnYqSDZhdmGIExvdmFibGUuCiAqLwpleHBvcnQgYXN5bmMgZnVuY3Rpb24gc2VuZFdoYXRzQXBwVGV4dCh0bzogc3RyaW5nLCBib2R5OiBzdHJpbmcpOiBQcm9taXNlPFdoYXRzQXBwUmVzdWx0PiB7CiAgY29uc3QgdG9rZW4gPSBwcm9jZXNzLmVudi5XSEFUU0FQUF9BUElfVE9LRU47CiAgY29uc3QgcGhvbmVJZCA9IHByb2Nlc3MuZW52LldIQVRTQVBQX1BIT05FX0lEOwoKICBpZiAoIXRva2VuIHx8ICFwaG9uZUlkKSByZXR1cm4geyBvazogZmFsc2UsIHNraXBwZWQ6IHRydWUgfTsKCiAgY29uc3QgcmVjaXBpZW50ID0gbm9ybWFsaXplUGhvbmUodG8pOwogIGlmICghcmVjaXBpZW50IHx8IHJlY2lwaWVudC5sZW5ndGggPCA4KSByZXR1cm4geyBvazogZmFsc2UsIGVycm9yOiAiaW52YWxpZCByZWNpcGllbnQgcGhvbmUiIH07CgogIHRyeSB7CiAgICBjb25zdCByZXMgPSBhd2FpdCBmZXRjaChgaHR0cHM6Ly9ncmFwaC5mYWNlYm9vay5jb20vdjIxLjAvJHtwaG9uZUlkfS9tZXNzYWdlc2AsIHsKICAgICAgbWV0aG9kOiAiUE9TVCIsCiAgICAgIGhlYWRlcnM6IHsKICAgICAgICBBdXRob3JpemF0aW9uOiBgQmVhcmVyICR7dG9rZW59YCwKICAgICAgICAiQ29udGVudC1UeXBlIjogImFwcGxpY2F0aW9uL2pzb24iLAogICAgICB9LAogICAgICBib2R5OiBKU09OLnN0cmluZ2lmeSh7CiAgICAgICAgbWVzc2FnaW5nX3Byb2R1Y3Q6ICJ3aGF0c2FwcCIsCiAgICAgICAgdG86IHJlY2lwaWVudCwKICAgICAgICB0eXBlOiAidGV4dCIsCiAgICAgICAgdGV4dDogeyBib2R5IH0sCiAgICAgIH0pLAogICAgfSk7CiAgICBjb25zdCBqc29uOiBhbnkgPSBhd2FpdCByZXMuanNvbigpLmNhdGNoKCgpID0+ICh7fSkpOwogICAgaWYgKCFyZXMub2spIHsKICAgICAgcmV0dXJuIHsgb2s6IGZhbHNlLCBlcnJvcjoganNvbj8uZXJyb3I/Lm1lc3NhZ2UgfHwgYEhUVFAgJHtyZXMuc3RhdHVzfWAgfTsKICAgIH0KICAgIHJldHVybiB7IG9rOiB0cnVlLCBpZDoganNvbj8ubWVzc2FnZXM/LlswXT8uaWQgfTsKICB9IGNhdGNoIChlOiBhbnkpIHsKICAgIHJldHVybiB7IG9rOiBmYWxzZSwgZXJyb3I6IFN0cmluZyhlPy5tZXNzYWdlIHx8IGUpIH07CiAgfQp9CgovLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci8vIHNlbmRXaGF0c0FwcE5vdGlmaWNhdGlvbiDigJQg2KfZhNmF2K3YsdmDINin2YTYsNmD2Yog2YTZhNil2LTYudin2LHYp9iqINin2YTYqtmE2YLYp9im2YrYqQovLyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKLy8g2KfZhNmB2KbYp9iqINin2YTZhdiv2LnZiNmF2KkgKGNhdGVnb3JpZXMpOgovLyAgICJ3ZWxjb21lIiAgICAgICDigJQg2KfYs9iq2YLYqNin2YQg2LfZhNioINin2YTYrdis2LIgKNmE2YTYudix2YjYsykKLy8gICAiY29uZmlybWVkIiAgICAg4oCUINiq2KPZg9mK2K8g2KfZhNit2KzYsiDYqNi52K8g2KfYs9iq2YTYp9mFINin2YTYudix2KjZiNmGCi8vICAgInNob290aW5nIiAgICAgIOKAlCDYqtiw2YPZitixINmK2YjZhSDYp9mE2KrYtdmI2YrYsQovLyAgICJlZGl0aW5nIiAgICAgICDigJQg2KXYudmE2KfZhSDYqNij2YYg2KfZhNi12YjYsSDZgdmKINmF2LHYrdmE2Kkg2KfZhNmF2YjZhtiq2KfYrAovLyAgICJkZWxpdmVyeSIgICAgICDigJQg2KXYudmE2KfZhSDYqNis2KfZh9iy2YrYqSDYp9mE2LXZiNixINmE2YTZhdi02KfZh9iv2Kkv2KfZhNiq2K3ZhdmK2YQKLy8gICAicmV2aWV3IiAgICAgICAg4oCUINi32YTYqCDYqtmC2YrZitmFINin2YTZhdi12YjYsdipCi8vICAgImNhbmNlbGxhdGlvbiIgIOKAlCDYpdi02LnYp9ixINin2YTYpdmE2LrYp9ihCi8vIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAovLyDYp9mE2YLZiNin2YTYqCDYp9mE2KfZgdiq2LHYp9i22YrYqSDZhNmE2YbYuNin2YUgKNio2KfZhNi52LHYqNmK2Kkg2KfZhNin2K3Yqtix2KfZgdmK2KkpCi8vIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgAoKdHlwZSBOb3RpZmljYXRpb25DYXRlZ29yeSA9CiAgfCAid2VsY29tZSIKICB8ICJjb25maXJtZWQiCiAgfCAic2hvb3RpbmciCiAgfCAiZWRpdGluZyIKICB8ICJkZWxpdmVyeSIKICB8ICJyZXZpZXciCiAgfCAiY2FuY2VsbGF0aW9uIjsKCnR5cGUgVGVtcGxhdGVWYXJzID0gewogIGNsaWVudF9uYW1lOiBzdHJpbmc7CiAgcGhvdG9ncmFwaGVyX25hbWU6IHN0cmluZzsKICBldmVudF9kYXRlOiBzdHJpbmc7CiAgZGVwb3NpdF9hbW91bnQ/OiBzdHJpbmc7CiAgdG90YWxfcHJpY2U/OiBzdHJpbmc7CiAgc2VydmljZT86IHN0cmluZzsKICB0cmFja2luZ191cmw/OiBzdHJpbmc7CiAgdmVudWU/OiBzdHJpbmc7CiAgcmVmdW5kX25vdGU/OiBzdHJpbmc7Cn07CgpmdW5jdGlvbiBidWlsZERlZmF1bHRNZXNzYWdlKGNhdGVnb3J5OiBOb3RpZmljYXRpb25DYXRlZ29yeSwgdmFyczogVGVtcGxhdGVWYXJzKTogc3RyaW5nIHsKICBjb25zdCB7CiAgICBjbGllbnRfbmFtZSwgcGhvdG9ncmFwaGVyX25hbWUsIGV2ZW50X2RhdGUsCiAgICBkZXBvc2l0X2Ftb3VudCwgdG90YWxfcHJpY2UsIHNlcnZpY2UsCiAgICB0cmFja2luZ191cmwsIHZlbnVlLCByZWZ1bmRfbm90ZSwKICB9ID0gdmFyczsKCiAgc3dpdGNoIChjYXRlZ29yeSkgewogICAgY2FzZSAid2VsY29tZSI6CiAgICAgIHJldHVybiBbCiAgICAgICAgYNmF2LHYrdio2KfZiyAke2NsaWVudF9uYW1lfSDwn5GLYCwKICAgICAgICBgYCwKICAgICAgICBg2KrZhSDYp9iz2KrZhNin2YUg2LfZhNioINit2KzYstmDINmF2Lkg2KfZhNmF2LXZiNix2KkgKiR7cGhvdG9ncmFwaGVyX25hbWV9KiDYqNiq2KfYsdmK2K4gKiR7ZXZlbnRfZGF0ZX0qINio2YbYrNin2K0uYCwKICAgICAgICBzZXJ2aWNlID8gYNin2YTYrtiv2YXYqTogJHtzZXJ2aWNlfWAgOiBudWxsLAogICAgICAgIHZlbnVlID8gYNin2YTZhdmD2KfZhjogJHt2ZW51ZX1gIDogbnVsbCwKICAgICAgICBkZXBvc2l0X2Ftb3VudCA/IGDZhdio2YTYuiDYp9mE2LnYsdio2YjZhjogKiR7ZGVwb3NpdF9hbW91bnR9INiv2YrZhtin2LEqYCA6IG51bGwsCiAgICAgICAgYGAsCiAgICAgICAgYNmK2YXZg9mG2YMg2YXYqtin2KjYudipINit2KfZhNipINit2KzYstmDINmB2Yog2KPZiiDZiNmC2Kog2YXZhiDYp9mE2LHYp9io2Lcg2KfZhNiq2KfZhNmKOmAsCiAgICAgICAgdHJhY2tpbmdfdXJsID8gdHJhY2tpbmdfdXJsIDogbnVsbCwKICAgICAgICBgYCwKICAgICAgICBg2LPZitiq2YjYp9i12YQg2YXYudmDINmB2LHZitmCIEVsaXRlQ2FwdHVyZSDZgtix2YrYqNin2Ysg2YTYqtij2YPZitivINin2YTYrdis2LIuIOKcqGAsCiAgICAgIF0uZmlsdGVyKEJvb2xlYW4pLmpvaW4oIlxuIik7CgogICAgY2FzZSAiY29uZmlybWVkIjoKICAgICAgcmV0dXJuIFsKICAgICAgICBg2KrZh9in2YbZitmG2KcgJHtjbGllbnRfbmFtZX0hIPCfjolgLAogICAgICAgIGBgLAogICAgICAgIGDYqtmFICrYqtij2YPZitivINit2KzYstmDKiDZhdi5INin2YTZhdi12YjYsdipICoke3Bob3RvZ3JhcGhlcl9uYW1lfSog2KjYqtin2LHZitiuICoke2V2ZW50X2RhdGV9Ki5gLAogICAgICAgIHRvdGFsX3ByaWNlID8gYNin2YTZhdio2YTYuiDYp9mE2KXYrNmF2KfZhNmKOiAke3RvdGFsX3ByaWNlfSDYr9mK2YbYp9ixYCA6IG51bGwsCiAgICAgICAgYGAsCiAgICAgICAgYNmK2YXZg9mG2YMg2YXYqtin2KjYudipINiq2YHYp9i12YrZhCDYrdis2LLZgzpgLAogICAgICAgIHRyYWNraW5nX3VybCA/IHRyYWNraW5nX3VybCA6IG51bGwsCiAgICAgICAgYGAsCiAgICAgICAgYNmG2KrYt9mE2Lkg2YTYqti12YjZitixINmK2YjZhdmDINin2YTYp9iz2KrYq9mG2KfYptmKISDwn5O4YCwKICAgICAgXS5maWx0ZXIoQm9vbGVhbikuam9pbigiXG4iKTsKCiAgICBjYXNlICJzaG9vdGluZyI6CiAgICAgIHJldHVybiBbCiAgICAgICAgYNiq2LDZg9mK2LE6ICR7Y2xpZW50X25hbWV9IPCfk4VgLAogICAgICAgIGBgLAogICAgICAgIGDZhdmI2LnYryDYrNmE2LPYqSDYp9mE2KrYtdmI2YrYsSDZhdi5ICoke3Bob3RvZ3JhcGhlcl9uYW1lfSog2LrYr9in2YsgKiR7ZXZlbnRfZGF0ZX0qLmAsCiAgICAgICAgdmVudWUgPyBg2KfZhNmF2YPYp9mGOiAke3ZlbnVlfWAgOiBudWxsLAogICAgICAgIGBgLAogICAgICAgIGDZhtiq2YXZhtmJINmE2YPZkCDZitmI2YXYp9mLINix2KfYpti52KfZiyDZhdmE2YrYptin2Ysg2KjYp9mE2LDZg9ix2YrYp9iqINin2YTYrNmF2YrZhNipISDwn5KQYCwKICAgICAgICB0cmFja2luZ191cmwgPyBgXG7Ysdin2KjYtyDYqtiq2KjYuSDYrdis2LLZgzogJHt0cmFja2luZ191cmx9YCA6IG51bGwsCiAgICAgIF0uZmlsdGVyKEJvb2xlYW4pLmpvaW4oIlxuIik7CgogICAgY2FzZSAiZWRpdGluZyI6CiAgICAgIHJldHVybiBbCiAgICAgICAgYNmF2LHYrdio2KfZiyAke2NsaWVudF9uYW1lfSDwn46oYCwKICAgICAgICBgYCwKICAgICAgICBg2LXZiNix2YMg2YXYuSAqJHtwaG90b2dyYXBoZXJfbmFtZX0qINmB2Yog2YXYsdit2YTYqSDYp9mE2YXZiNmG2KrYp9isINmI2KfZhNmF2LnYp9mE2KzYqSDYrdin2YTZitin2YsuYCwKICAgICAgICBg2LPZhtmP2KjZhNi62YMg2YHZiNixINin2YPYqtmF2KfZhNmH2Kcg2YjYrNin2YfYstmK2KrZh9inINmE2YTZhdi02KfZh9iv2KkuYCwKICAgICAgICBgYCwKICAgICAgICB0cmFja2luZ191cmwgPyBg2YXYqtin2KjYudipINin2YTYrdis2LI6ICR7dHJhY2tpbmdfdXJsfWAgOiBudWxsLAogICAgICBdLmZpbHRlcihCb29sZWFuKS5qb2luKCJcbiIpOwoKICAgIGNhc2UgImRlbGl2ZXJ5IjoKICAgICAgcmV0dXJuIFsKICAgICAgICBg2LXZiNix2YMg2KzYp9mH2LLYqSEgJHtjbGllbnRfbmFtZX0g8J+Mn2AsCiAgICAgICAgYGAsCiAgICAgICAgYNmK2LPYudiv2YbYpyDYpdio2YTYp9i62YMg2KjYo9mGICoke3Bob3RvZ3JhcGhlcl9uYW1lfSog2YLYryDYo9mG2YfYqiDYqti12YjZitixINmI2KrYudiv2YrZhCDYtdmI2LEg2YrZiNmF2YMg2KfZhNiu2KfYtS5gLAogICAgICAgIGBgLAogICAgICAgIGDYp9i22LrYt9mKINi52YTZiSDYp9mE2LHYp9io2Lcg2KPYr9mG2KfZhyDZhNmF2LTYp9mH2K/YqSDZhdi52LHYttmDINin2YTYrtin2LU6YCwKICAgICAgICB0cmFja2luZ191cmwgPyB0cmFja2luZ191cmwgOiBudWxsLAogICAgICAgIGBgLAogICAgICAgIHRvdGFsX3ByaWNlID8gYNmE2KrYrdmF2YrZhCDYp9mE2LXZiNixINio2KzZiNiv2Kkg2LnYp9mE2YrYqSDZg9in2YXZhNip2Iwg2YrZj9ix2KzZiSDYpdiq2YXYp9mFINin2YTYr9mB2LnYqSDYp9mE2YbZh9in2KbZitipLmAgOiBudWxsLAogICAgICAgIGBgLAogICAgICAgIGDZhtiq2YXZhtmJINij2YYg2KrZg9mI2YbZiiDYsdin2LbZitipINi52YYg2YfYsNmHINin2YTYsNmD2LHZitin2Kog2KfZhNir2YXZitmG2KkuIPCfkp5gLAogICAgICBdLmZpbHRlcihCb29sZWFuKS5qb2luKCJcbiIpOwoKICAgIGNhc2UgInJldmlldyI6CiAgICAgIHJldHVybiBbCiAgICAgICAgYNmF2LHYrdio2KfZiyAke2NsaWVudF9uYW1lfSDirZBgLAogICAgICAgIGBgLAogICAgICAgIGDZhtij2YXZhCDYo9mG2YPZkCDYo9it2KjYqNiq2ZAg2LXZiNix2YMg2YXYuSAqJHtwaG90b2dyYXBoZXJfbmFtZX0qIWAsCiAgICAgICAgYGAsCiAgICAgICAgYNix2KPZitmD2ZAg2YrZj9iz2KfYudivINin2YTYudix2KfYptizINin2YTYo9iu2LHZitin2Kog2YHZiiDYp9mE2KfYrtiq2YrYp9ixLiDZh9mEINmK2YXZg9mG2YPZkCDZhdi02KfYsdmD2Kkg2KrYrNix2KjYqtmD2J9gLAogICAgICAgIHRyYWNraW5nX3VybCA/IGBcbtiq2YLZitmK2YUg2KfZhNmF2LXZiNix2Kk6ICR7dHJhY2tpbmdfdXJsfWAgOiBudWxsLAogICAgICBdLmZpbHRlcihCb29sZWFuKS5qb2luKCJcbiIpOwoKICAgIGNhc2UgImNhbmNlbGxhdGlvbiI6CiAgICAgIHJldHVybiBbCiAgICAgICAgYNil2LTYudin2LEg2KXZhNi62KfYoTogJHtjbGllbnRfbmFtZX1gLAogICAgICAgIGBgLAogICAgICAgIGDYqtmFINil2YTYutin2KEg2K3YrNiy2YMg2YXYuSAqJHtwaG90b2dyYXBoZXJfbmFtZX0qINio2KrYp9ix2YrYriAqJHtldmVudF9kYXRlfSouYCwKICAgICAgICByZWZ1bmRfbm90ZSA/IGBcbiR7cmVmdW5kX25vdGV9YCA6IG51bGwsCiAgICAgICAgYGAsCiAgICAgICAgYNmE2KPZiiDYp9iz2KrZgdiz2KfYsdiMINmK2Y/Ysdis2Ykg2KfZhNiq2YjYp9i12YQg2YXYudmG2Kcg2LnYqNixIEVsaXRlQ2FwdHVyZS5gLAogICAgICBdLmZpbHRlcihCb29sZWFuKS5qb2luKCJcbiIpOwoKICAgIGRlZmF1bHQ6CiAgICAgIHJldHVybiBg2YXYsdit2KjYp9mLICR7Y2xpZW50X25hbWV92Iwg2KrYrdiv2YrYqyDZhdmGIEVsaXRlQ2FwdHVyZSDYqNiu2LXZiNi1INit2KzYstmDINmF2LkgJHtwaG90b2dyYXBoZXJfbmFtZX0uYDsKICB9Cn0KCi8qKiDYp9iz2KrYqNiv2KfZhCDYp9mE2YXYqti62YrYsdin2Kog2YHZiiDZgtin2YTYqCDZhdiu2LXYtSDZhdmGINin2YTZhdi12YjYsdipICovCmZ1bmN0aW9uIGludGVycG9sYXRlVGVtcGxhdGUodGVtcGxhdGU6IHN0cmluZywgdmFyczogVGVtcGxhdGVWYXJzKTogc3RyaW5nIHsKICByZXR1cm4gdGVtcGxhdGUKICAgIC5yZXBsYWNlKC9ce1x7Y2xpZW50X25hbWVcfVx9L2csIHZhcnMuY2xpZW50X25hbWUgfHwgIiIpCiAgICAucmVwbGFjZSgvXHtce3Bob3RvZ3JhcGhlcl9uYW1lXH1cfS9nLCB2YXJzLnBob3RvZ3JhcGhlcl9uYW1lIHx8ICIiKQogICAgLnJlcGxhY2UoL1x7XHtldmVudF9kYXRlXH1cfS9nLCB2YXJzLmV2ZW50X2RhdGUgfHwgIiIpCiAgICAucmVwbGFjZSgvXHtce2RlcG9zaXRfYW1vdW50XH1cfS9nLCB2YXJzLmRlcG9zaXRfYW1vdW50IHx8ICIiKQogICAgLnJlcGxhY2UoL1x7XHt0b3RhbF9wcmljZVx9XH0vZywgdmFycy50b3RhbF9wcmljZSB8fCAiIikKICAgIC5yZXBsYWNlKC9ce1x7c2VydmljZVx9XH0vZywgdmFycy5zZXJ2aWNlIHx8ICIiKQogICAgLnJlcGxhY2UoL1x7XHt0cmFja2luZ191cmxcfVx9L2csIHZhcnMudHJhY2tpbmdfdXJsIHx8ICIiKQogICAgLnJlcGxhY2UoL1x7XHt2ZW51ZVx9XH0vZywgdmFycy52ZW51ZSB8fCAiIik7Cn0KCi8qKgogKiDZhdit2LHZgyDYp9mE2KXYtNi52KfYsdin2Kog2KfZhNiw2YPZiiDigJQg2YrZj9ix2LPZhCDYsdiz2KfZhNipINmI2KfYqtiz2KfYqCDZhdiu2LXYtdipINij2Ygg2KfZgdiq2LHYp9i22YrYqQogKiDZhNmE2LnZhdmK2YQg2KjZhtin2KHZiyDYudmE2Ykg2K3Yp9mE2Kkg2KfZhNit2KzYsi4KICoKICogQHBhcmFtIHBob3RvZ3JhcGhlcklkIC0g2YXYudix2ZHZgSDYp9mE2YXYtdmI2LHYqSAo2YTYrNmE2Kgg2YLZiNin2YTYqNmH2Kcg2KfZhNmF2K7Ytdi12KkpCiAqIEBwYXJhbSB0byAgICAgICAgICAgICAtINix2YLZhSDZh9in2KrZgSDYp9mE2LnZhdmK2YQKICogQHBhcmFtIGNhdGVnb3J5ICAgICAgIC0g2YHYptipINin2YTYrdiv2KsKICogQHBhcmFtIHZhcnMgICAgICAgICAgIC0g2YXYqti62YrYsdin2Kog2KfZhNix2LPYp9mE2KkKICovCmV4cG9ydCBhc3luYyBmdW5jdGlvbiBzZW5kV2hhdHNBcHBOb3RpZmljYXRpb24oCiAgcGhvdG9ncmFwaGVySWQ6IHN0cmluZywKICB0bzogc3RyaW5nIHwgbnVsbCB8IHVuZGVmaW5lZCwKICBjYXRlZ29yeTogTm90aWZpY2F0aW9uQ2F0ZWdvcnksCiAgdmFyczogVGVtcGxhdGVWYXJzLAopOiBQcm9taXNlPFdoYXRzQXBwUmVzdWx0PiB7CiAgaWYgKCFpc1doYXRzQXBwQ29uZmlndXJlZCgpKSByZXR1cm4geyBvazogZmFsc2UsIHNraXBwZWQ6IHRydWUgfTsKICBpZiAoIXRvKSByZXR1cm4geyBvazogZmFsc2UsIGVycm9yOiAibm8gcGhvbmUgbnVtYmVyIiB9OwoKICBsZXQgbWVzc2FnZUJvZHk6IHN0cmluZzsKCiAgdHJ5IHsKICAgIC8vINit2KfZiNmEINis2YTYqCDZgtin2YTYqCDZhdiu2LXYtSDZhNmE2YXYtdmI2LHYqSDZhdmGINmC2KfYudiv2Kkg2KfZhNio2YrYp9mG2KfYqgogICAgY29uc3QgeyBzdXBhYmFzZUFkbWluIH0gPSBhd2FpdCBpbXBvcnQoIkAvaW50ZWdyYXRpb25zL3N1cGFiYXNlL2NsaWVudC5zZXJ2ZXIiKTsKICAgIGNvbnN0IHsgZGF0YTogdHBsIH0gPSBhd2FpdCBzdXBhYmFzZUFkbWluCiAgICAgIC5mcm9tKCJ3aGF0c2FwcF90ZW1wbGF0ZXMiKQogICAgICAuc2VsZWN0KCJib2R5IikKICAgICAgLmVxKCJwaG90b2dyYXBoZXJfaWQiLCBwaG90b2dyYXBoZXJJZCkKICAgICAgLmVxKCJjYXRlZ29yeSIsIGNhdGVnb3J5KQogICAgICAub3JkZXIoInNvcnRfb3JkZXIiLCB7IGFzY2VuZGluZzogdHJ1ZSB9KQogICAgICAubGltaXQoMSkKICAgICAgLm1heWJlU2luZ2xlKCk7CgogICAgaWYgKHRwbD8uYm9keSkgewogICAgICAvLyDYp9iz2KrYrtiv2YUg2KfZhNmC2KfZhNioINin2YTZhdiu2LXYtSDZhdi5INin2LPYqtio2K/Yp9mEINin2YTZhdiq2LrZitix2KfYqgogICAgICBtZXNzYWdlQm9keSA9IGludGVycG9sYXRlVGVtcGxhdGUodHBsLmJvZHksIHZhcnMpOwogICAgfSBlbHNlIHsKICAgICAgLy8g2KfZhNmC2KfZhNioINin2YTYp9mB2KrYsdin2LbZiiDZhNmE2YbYuNin2YUKICAgICAgbWVzc2FnZUJvZHkgPSBidWlsZERlZmF1bHRNZXNzYWdlKGNhdGVnb3J5LCB2YXJzKTsKICAgIH0KICB9IGNhdGNoIChlKSB7CiAgICAvLyDYpdiw2Kcg2YHYtNmEINis2YTYqCDYp9mE2YLYp9mE2KjYjCDYp9iz2KrYrtiv2YUg2KfZhNin2YHYqtix2KfYttmKICjZhNinINiq2YPYs9ixINin2YTYpdi02LnYp9ixKQogICAgbWVzc2FnZUJvZHkgPSBidWlsZERlZmF1bHRNZXNzYWdlKGNhdGVnb3J5LCB2YXJzKTsKICB9CgogIHJldHVybiBzZW5kV2hhdHNBcHBUZXh0KHRvLCBtZXNzYWdlQm9keSk7Cn0K
+// ============================================================================
+// whatsapp.server.ts — مساعد WhatsApp Cloud API (خادمي فقط، env-gated)
+// ----------------------------------------------------------------------------
+// السلوك (على نمط email.server.ts):
+//   * عند غياب WHATSAPP_API_TOKEN أو WHATSAPP_PHONE_ID → no-op آمن (skipped=true)
+//     ولا يرمي خطأً إطلاقاً، حتى لا يتعطّل تدفق الحجز/الدفع.
+//   * Workers-safe: يستخدم fetch فقط.
+//
+// sendWhatsAppNotification — المحرك الذكي للإشعارات التلقائية:
+//   يبحث أولاً عن قالب مخصص للمصورة (whatsapp_templates)، فإن لم يجد
+//   يستخدم القالب الافتراضي للنظام. يستبدل المتغيرات تلقائياً.
+// ============================================================================
+
+export function isWhatsAppConfigured(): boolean {
+  return Boolean(process.env.WHATSAPP_API_TOKEN && process.env.WHATSAPP_PHONE_ID);
+}
+
+/** تطبيع رقم الهاتف إلى الصيغة الدولية التي يتوقعها واتساب (أرقام فقط). */
+function normalizePhone(phone: string): string {
+  let p = (phone || "").replace(/[^\d+]/g, "");
+  if (p.startsWith("+")) p = p.slice(1);
+  if (p.startsWith("00")) p = p.slice(2);
+  if (p.startsWith("0")) p = "962" + p.slice(1);
+  return p;
+}
+
+export type WhatsAppResult = { ok: boolean; id?: string; error?: string; skipped?: boolean };
+
+/**
+ * إرسال رسالة نصية بسيطة عبر WhatsApp Cloud API.
+ * يُفضّل لاحقاً استخدام القوالب المعتمدة (templates) للرسائل خارج نافذة 24 ساعة؛
+ * أُبقيت الواجهة بسيطة لتسهيل التوسعة من Lovable.
+ */
+export async function sendWhatsAppText(to: string, body: string): Promise<WhatsAppResult> {
+  const token = process.env.WHATSAPP_API_TOKEN;
+  const phoneId = process.env.WHATSAPP_PHONE_ID;
+
+  if (!token || !phoneId) return { ok: false, skipped: true };
+
+  const recipient = normalizePhone(to);
+  if (!recipient || recipient.length < 8) return { ok: false, error: "invalid recipient phone" };
+
+  try {
+    const res = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        to: recipient,
+        type: "text",
+        text: { body },
+      }),
+    });
+    const json: any = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      return { ok: false, error: json?.error?.message || `HTTP ${res.status}` };
+    }
+    return { ok: true, id: json?.messages?.[0]?.id };
+  } catch (e: any) {
+    return { ok: false, error: String(e?.message || e) };
+  }
+}
+
+// ============================================================================
+// sendWhatsAppNotification — المحرك الذكي للإشعارات التلقائية
+// ─────────────────────────────────────────────────────────────────────────────
+// الفئات المدعومة (categories):
+//   "welcome"       — استقبال طلب الحجز (للعروس)
+//   "confirmed"     — تأكيد الحجز بعد استلام العربون
+//   "shooting"      — تذكير يوم التصوير
+//   "editing"       — إعلام بأن الصور في مرحلة المونتاج
+//   "delivery"      — إعلام بجاهزية الصور للمشاهدة/التحميل
+//   "review"        — طلب تقييم المصورة
+//   "cancellation"  — إشعار الإلغاء
+// ─────────────────────────────────────────────────────────────────────────────
+// القوالب الافتراضية للنظام (بالعربية الاحترافية)
+// ─────────────────────────────────────────────────────────────────────────────
+
+type NotificationCategory =
+  | "welcome"
+  | "confirmed"
+  | "shooting"
+  | "editing"
+  | "delivery"
+  | "review"
+  | "cancellation";
+
+type TemplateVars = {
+  client_name: string;
+  photographer_name: string;
+  event_date: string;
+  deposit_amount?: string;
+  total_price?: string;
+  service?: string;
+  tracking_url?: string;
+  venue?: string;
+  refund_note?: string;
+};
+
+function buildDefaultMessage(category: NotificationCategory, vars: TemplateVars): string {
+  const {
+    client_name, photographer_name, event_date,
+    deposit_amount, total_price, service,
+    tracking_url, venue, refund_note,
+  } = vars;
+
+  switch (category) {
+    case "welcome":
+      return [
+        `مرحباً ${client_name} 👋`,
+        ``,
+        `تم استلام طلب حجزك مع المصورة *${photographer_name}* بتاريخ *${event_date}* بنجاح.`,
+        service ? `الخدمة: ${service}` : null,
+        venue ? `المكان: ${venue}` : null,
+        deposit_amount ? `مبلغ العربون: *${deposit_amount} دينار*` : null,
+        ``,
+        `يمكنك متابعة حالة حجزك في أي وقت من الرابط التالي:`,
+        tracking_url ? tracking_url : null,
+        ``,
+        `سيتواصل معك فريق EliteCapture قريباً لتأكيد الحجز. ✨`,
+      ].filter(Boolean).join("\n");
+
+    case "confirmed":
+      return [
+        `تهانينا ${client_name}! 🎉`,
+        ``,
+        `تم *تأكيد حجزك* مع المصورة *${photographer_name}* بتاريخ *${event_date}*.`,
+        total_price ? `المبلغ الإجمالي: ${total_price} دينار` : null,
+        ``,
+        `يمكنك متابعة تفاصيل حجزك:`,
+        tracking_url ? tracking_url : null,
+        ``,
+        `نتطلع لتصوير يومك الاستثنائي! 📸`,
+      ].filter(Boolean).join("\n");
+
+    case "shooting":
+      return [
+        `تذكير: ${client_name} 📅`,
+        ``,
+        `موعد جلسة التصوير مع *${photographer_name}* غداً *${event_date}*.`,
+        venue ? `المكان: ${venue}` : null,
+        ``,
+        `نتمنى لكِ يوماً رائعاً مليئاً بالذكريات الجميلة! 💐`,
+        tracking_url ? `\nرابط تتبع حجزك: ${tracking_url}` : null,
+      ].filter(Boolean).join("\n");
+
+    case "editing":
+      return [
+        `مرحباً ${client_name} 🎨`,
+        ``,
+        `صورك مع *${photographer_name}* في مرحلة المونتاج والمعالجة حالياً.`,
+        `سنُبلغك فور اكتمالها وجاهزيتها للمشاهدة.`,
+        ``,
+        tracking_url ? `متابعة الحجز: ${tracking_url}` : null,
+      ].filter(Boolean).join("\n");
+
+    case "delivery":
+      return [
+        `صورك جاهزة! ${client_name} 🌟`,
+        ``,
+        `يسعدنا إبلاغك بأن *${photographer_name}* قد أنهت تصوير وتعديل صور يومك الخاص.`,
+        ``,
+        `اضغطي على الرابط أدناه لمشاهدة معرضك الخاص:`,
+        tracking_url ? tracking_url : null,
+        ``,
+        total_price ? `لتحميل الصور بجودة عالية كاملة، يُرجى إتمام الدفعة النهائية.` : null,
+        ``,
+        `نتمنى أن تكوني راضية عن هذه الذكريات الثمينة. 💞`,
+      ].filter(Boolean).join("\n");
+
+    case "review":
+      return [
+        `مرحباً ${client_name} ⭐`,
+        ``,
+        `نأمل أنكِ أحببتِ صورك مع *${photographer_name}*!`,
+        ``,
+        `رأيكِ يُساعد العرائس الأخريات في الاختيار. هل يمكنكِ مشاركة تجربتك؟`,
+        tracking_url ? `\nتقييم المصورة: ${tracking_url}` : null,
+      ].filter(Boolean).join("\n");
+
+    case "cancellation":
+      return [
+        `إشعار إلغاء: ${client_name}`,
+        ``,
+        `تم إلغاء حجزك مع *${photographer_name}* بتاريخ *${event_date}*.`,
+        refund_note ? `\n${refund_note}` : null,
+        ``,
+        `لأي استفسار، يُرجى التواصل معنا عبر EliteCapture.`,
+      ].filter(Boolean).join("\n");
+
+    default:
+      return `مرحباً ${client_name}، تحديث من EliteCapture بخصوص حجزك مع ${photographer_name}.`;
+  }
+}
+
+/** استبدال المتغيرات في قالب مخصص من المصورة */
+function interpolateTemplate(template: string, vars: TemplateVars): string {
+  return template
+    .replace(/\{\{client_name\}\}/g, vars.client_name || "")
+    .replace(/\{\{photographer_name\}\}/g, vars.photographer_name || "")
+    .replace(/\{\{event_date\}\}/g, vars.event_date || "")
+    .replace(/\{\{deposit_amount\}\}/g, vars.deposit_amount || "")
+    .replace(/\{\{total_price\}\}/g, vars.total_price || "")
+    .replace(/\{\{service\}\}/g, vars.service || "")
+    .replace(/\{\{tracking_url\}\}/g, vars.tracking_url || "")
+    .replace(/\{\{venue\}\}/g, vars.venue || "");
+}
+
+/**
+ * محرك الإشعارات الذكي — يُرسل رسالة واتساب مخصصة أو افتراضية
+ * للعميل بناءً على حالة الحجز.
+ *
+ * @param photographerId - معرّف المصورة (لجلب قوالبها المخصصة)
+ * @param to             - رقم هاتف العميل
+ * @param category       - فئة الحدث
+ * @param vars           - متغيرات الرسالة
+ */
+export async function sendWhatsAppNotification(
+  photographerId: string,
+  to: string | null | undefined,
+  category: NotificationCategory,
+  vars: TemplateVars,
+): Promise<WhatsAppResult> {
+  if (!isWhatsAppConfigured()) return { ok: false, skipped: true };
+  if (!to) return { ok: false, error: "no phone number" };
+
+  let messageBody: string;
+
+  try {
+    // حاول جلب قالب مخصص للمصورة من قاعدة البيانات
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: tpl } = await supabaseAdmin
+      .from("whatsapp_templates")
+      .select("body")
+      .eq("photographer_id", photographerId)
+      .eq("category", category)
+      .order("sort_order", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (tpl?.body) {
+      // استخدم القالب المخصص مع استبدال المتغيرات
+      messageBody = interpolateTemplate(tpl.body, vars);
+    } else {
+      // القالب الافتراضي للنظام
+      messageBody = buildDefaultMessage(category, vars);
+    }
+  } catch (e) {
+    // إذا فشل جلب القالب، استخدم الافتراضي (لا تكسر الإشعار)
+    messageBody = buildDefaultMessage(category, vars);
+  }
+
+  return sendWhatsAppText(to, messageBody);
+}

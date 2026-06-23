@@ -1,1 +1,324 @@
-aW1wb3J0IHsgY3JlYXRlU2VydmVyRm4gfSBmcm9tICJAdGFuc3RhY2svcmVhY3Qtc3RhcnQiOwoKZnVuY3Rpb24gaXNVdWlkKHM6IGFueSkgeyByZXR1cm4gdHlwZW9mIHMgPT09ICJzdHJpbmciICYmIC9eWzAtOWEtZi1dezM2fSQvaS50ZXN0KHMpOyB9CmZ1bmN0aW9uIGlzVG9rZW4oczogYW55KSB7IHJldHVybiB0eXBlb2YgcyA9PT0gInN0cmluZyIgJiYgL15bMC05YS1mXXsxNiw2NH0kL2kudGVzdChzKTsgfQoKLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQovLyBJbWFnZSBVUkwgT3B0aW1pemF0aW9uIEhlbHBlcnMKLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQpleHBvcnQgZnVuY3Rpb24gb3B0aW1pemVkSW1hZ2VVcmwoCiAgdXJsOiBzdHJpbmcgfCBudWxsIHwgdW5kZWZpbmVkLAogIG9wdHM6IHsgd2lkdGg/OiBudW1iZXI7IHF1YWxpdHk/OiBudW1iZXI7IGZvcm1hdD86ICJ3ZWJwIiB8ICJhdXRvIiB9ID0ge30KKTogc3RyaW5nIHwgbnVsbCB7CiAgaWYgKCF1cmwpIHJldHVybiBudWxsOwogIGNvbnN0IHsgd2lkdGggPSA4MDAsIHF1YWxpdHkgPSA4NSwgZm9ybWF0ID0gImF1dG8iIH0gPSBvcHRzOwoKICBjb25zdCBjZlpvbmUgPSB0eXBlb2YgcHJvY2VzcyAhPT0gInVuZGVmaW5lZCIgPyBwcm9jZXNzLmVudj8uQ0xPVURGTEFSRV9JTUFHRVNfWk9ORSA6IG51bGw7CiAgaWYgKGNmWm9uZSAmJiB1cmwuc3RhcnRzV2l0aCgiaHR0cHM6Ly8iKSkgewogICAgcmV0dXJuIGBodHRwczovLyR7Y2Zab25lfS9jZG4tY2dpL2ltYWdlL3dpZHRoPSR7d2lkdGh9LHF1YWxpdHk9JHtxdWFsaXR5fSxmb3JtYXQ9JHtmb3JtYXR9LyR7dXJsfWA7CiAgfQoKICBpZiAodXJsLmluY2x1ZGVzKCIvc3RvcmFnZS92MS9vYmplY3QvcHVibGljLyIpKSB7CiAgICBjb25zdCBzZXAgPSB1cmwuaW5jbHVkZXMoIj8iKSA/ICImIiA6ICI/IjsKICAgIHJldHVybiBgJHt1cmx9JHtzZXB9d2lkdGg9JHt3aWR0aH0mcXVhbGl0eT0ke3F1YWxpdHl9YDsKICB9CgogIHJldHVybiB1cmw7Cn0KCmV4cG9ydCBmdW5jdGlvbiByZXNwb25zaXZlU3JjU2V0KHVybDogc3RyaW5nIHwgbnVsbCB8IHVuZGVmaW5lZCk6IHN0cmluZyB8IHVuZGVmaW5lZCB7CiAgaWYgKCF1cmwpIHJldHVybiB1bmRlZmluZWQ7CiAgY29uc3Qgc2l6ZXMgPSBbNDAwLCA4MDAsIDEyMDAsIDE2MDBdOwogIHJldHVybiBzaXplcwogICAgLm1hcCgodykgPT4gYCR7b3B0aW1pemVkSW1hZ2VVcmwodXJsLCB7IHdpZHRoOiB3IH0pIHx8IHVybH0gJHt3fXdgKQogICAgLmpvaW4oIiwgIik7Cn0KCi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLy8gZ2V0R2FsbGVyeUJ5VG9rZW4g4oCUIENsaWVudCB2aWV3IHZpYSB0cmFja2luZyB0b2tlbgovLyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKLy8g2YXZhti32YIg2KfZhNiq2LPZhNmK2YUg2KfZhNir2YbYp9im2Yog2KfZhNit2KfZhNipIChEdWFsLVN0YXRlIERlbGl2ZXJ5KToKLy8KLy8gICAxLiDYp9mE2YXYtdmI2LHYqSDYqtix2YHYuSDZhtiz2K7YqtmK2YYg2LnZhtivINin2YTYqtmB2LnZitmEOgovLyAgICAgICAgLSBvcmlnaW5hbHMve3VpZH0ve2dhbGxlcnlfaWR9L3tmaWxlX2lkfS5qcGcgIOKGkiDYp9mE2KPYtdmE2YrYqSDYp9mE2YbYuNmK2YHYqQovLyAgICAgICAgLSBwcmV2aWV3cy97dWlkfS97Z2FsbGVyeV9pZH0ve2ZpbGVfaWR9LmpwZyAgIOKGkiDYp9mE2YXYrdmF2YrYqSDYqNi52YTYp9mF2Kkg2YXYp9im2YrYqQovLwovLyAgIDIuINin2YTYs9mK2LHZgdixINmK2KrYrdmC2YIg2YXZhiDYrdin2YTYqSDYp9mE2K/Zgdi5INin2YTZhtmH2KfYptmKIChmaW5hbF9wYWlkX2F0KSDZhNmD2YQg2K3YrNiyOgovLyAgICAgICAgLSDYpdiw2Kcg2YTZhSDZitmP2K/Zgdi5IOKGkiDZitmP2LnZitivINix2YjYp9io2Lcg2YXYpNmC2KrYqSDZhNmE2YXYs9in2LEgcHJldmlld3MvICjYqNi52YTYp9mF2Kkg2YXYp9im2YrYqSkKLy8gICAgICAgIC0g2KXYsNinINiv2Y/Zgdi5ICAgICDihpIg2YrZj9i52YrYryDYsdmI2KfYqNi3INmF2KTZgtiq2Kkg2YTZhNmF2LPYp9ixIG9yaWdpbmFscy8gKNmG2LjZitmB2Kkg2YjYqNis2YjYr9ipINi52KfZhNmK2KkpCi8vCi8vICAgMy4g2KXYsNinINmE2YUg2KrZj9mI2KzYryDZhtiz2K7YqSBvcmlnaW5hbHMvICjYp9mE2YXYtdmI2LEg2YTZhSDZitmB2LnZkdmEINiu2YrYp9ixINin2YTYsdmB2Lkg2KfZhNir2YbYp9im2Yop2IwKLy8gICAgICDZitmP2LnZitivINin2YTYsdin2KjYtyDYp9mE2YXZiNis2YjYryDYo9mK2KfZiyDZg9in2YYg4oCUINmE2Kcg2YrZg9iz2LEg2KfZhNiq2KzYsdio2Kkg2KfZhNit2KfZhNmK2KkuCi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KCmV4cG9ydCBjb25zdCBnZXRHYWxsZXJ5QnlUb2tlbiA9IGNyZWF0ZVNlcnZlckZuKHsgbWV0aG9kOiAiUE9TVCIgfSkKICAuaW5wdXRWYWxpZGF0b3IoKGQ6IHsgdG9rZW46IHN0cmluZyB9KSA9PiB7CiAgICBpZiAoIWlzVG9rZW4oZD8udG9rZW4pKSB0aHJvdyBuZXcgRXJyb3IoImludmFsaWQgdG9rZW4iKTsKICAgIHJldHVybiBkOwogIH0pCiAgLmhhbmRsZXIoYXN5bmMgKHsgZGF0YSB9KSA9PiB7CiAgICBjb25zdCB7IHN1cGFiYXNlQWRtaW4gfSA9IGF3YWl0IGltcG9ydCgiQC9pbnRlZ3JhdGlvbnMvc3VwYWJhc2UvY2xpZW50LnNlcnZlciIpOwoKICAgIC8vIOKUgOKUgCAxLiDYqtit2YLZgiDZhdmGINi12K3YqSDYsdmF2LIg2KfZhNiq2KrYqNi5IOKUgOKUgAogICAgY29uc3QgeyBkYXRhOiBiayB9ID0gYXdhaXQgc3VwYWJhc2VBZG1pbgogICAgICAuZnJvbSgiYm9va2luZ3MiKQogICAgICAuc2VsZWN0KCJpZCxjbGllbnRfbmFtZSxwaG90b2dyYXBoZXJfaWQsZmluYWxfcGFpZF9hdCxzdGF0dXMiKQogICAgICAuZXEoImNsaWVudF90cmFja2luZ190b2tlbiIsIGRhdGEudG9rZW4pCiAgICAgIC5tYXliZVNpbmdsZSgpOwogICAgaWYgKCFiaykgdGhyb3cgbmV3IEVycm9yKCJpbnZhbGlkIHRva2VuIik7CgogICAgLy8g4pSA4pSAIDIuINiq2K3ZgtmCINmF2YYg2K3Yp9mE2Kkg2KfZhNiv2YHYuSDYp9mE2YbZh9in2KbZiiDilIDilIAKICAgIGNvbnN0IGZpbmFsUGFpZCA9CiAgICAgIEJvb2xlYW4oYmsuZmluYWxfcGFpZF9hdCkgfHwKICAgICAgYmsuc3RhdHVzID09PSAiY29tcGxldGVkIjsKCiAgICAvLyDilIDilIAgMy4g2KzZhNioINin2YTZhdi52LHYtiDilIDilIAKICAgIGNvbnN0IHsgZGF0YTogZyB9ID0gYXdhaXQgc3VwYWJhc2VBZG1pbgogICAgICAuZnJvbSgiZGVsaXZlcnlfZ2FsbGVyaWVzIikKICAgICAgLnNlbGVjdCgiKiIpCiAgICAgIC5lcSgiYm9va2luZ19pZCIsIGJrLmlkKQogICAgICAubWF5YmVTaW5nbGUoKTsKICAgIGlmICghZykgcmV0dXJuIHsgZ2FsbGVyeTogbnVsbCwgcGhvdG9zOiBbXSBhcyBhbnlbXSwgZmluYWxfcGFpZDogZmluYWxQYWlkIH07CgogICAgaWYgKGcuZXhwaXJlc19hdCAmJiBuZXcgRGF0ZShnLmV4cGlyZXNfYXQpLmdldFRpbWUoKSA8IERhdGUubm93KCkpIHsKICAgICAgcmV0dXJuIHsgZ2FsbGVyeTogbnVsbCwgcGhvdG9zOiBbXSwgZXhwaXJlZDogdHJ1ZSwgZmluYWxfcGFpZDogZmluYWxQYWlkIH07CiAgICB9CgogICAgLy8g4pSA4pSAIDQuINis2YTYqCDYp9mE2LXZiNixIOKUgOKUgAogICAgY29uc3QgeyBkYXRhOiBwaG90b3MgfSA9IGF3YWl0IHN1cGFiYXNlQWRtaW4KICAgICAgLmZyb20oImRlbGl2ZXJ5X3Bob3RvcyIpCiAgICAgIC5zZWxlY3QoImlkLHN0b3JhZ2VfcGF0aCxjYXB0aW9uLHBvc2l0aW9uIikKICAgICAgLmVxKCJnYWxsZXJ5X2lkIiwgZy5pZCkKICAgICAgLm9yZGVyKCJwb3NpdGlvbiIsIHsgYXNjZW5kaW5nOiB0cnVlIH0pOwoKICAgIC8vIOKUgOKUgCA1LiDYqtit2K/ZitivINin2YTZhdiz2KfYsSDYp9mE2LXYrdmK2K0g2KjZhtin2KHZiyDYudmE2Ykg2K3Yp9mE2Kkg2KfZhNiv2YHYuSDilIDilIAKICAgIC8vICAgc3RvcmFnZV9wYXRoINin2YTZhdiu2LLZhiDYr9in2KbZhdin2Ysg2YfZiCDZhdiz2KfYsSDYp9mE2LnZhNin2YXYqSDYp9mE2YXYp9im2YrYqSAocHJldmlld3MvINij2Ygg2KfZhNmF2LPYp9ixINin2YTZgtiv2YrZhSkKICAgIC8vICAg2KXYsNinINiv2Y/Zgdi52Iwg2YbYrdin2YjZhCDYqtio2K/ZitmE2Ycg2KjYp9mE2YXYs9in2LEg2KfZhNij2LXZhNmKIG9yaWdpbmFscy8g2KPZiNmE2KfZiy4KICAgIGNvbnN0IHJlc29sdmVTdG9yYWdlUGF0aCA9IChzdG9yYWdlUGF0aDogc3RyaW5nKTogc3RyaW5nID0+IHsKICAgICAgaWYgKCFmaW5hbFBhaWQpIHJldHVybiBzdG9yYWdlUGF0aDsgLy8g2YTZhSDZitmP2K/Zgdi5IOKGkiDYp9mE2YXYrdmF2YrYqQogICAgICAvLyDYrdin2YjZhCDYqtit2YjZitmEINmF2LPYp9ixIHByZXZpZXdzIOKGkiBvcmlnaW5hbHMKICAgICAgaWYgKHN0b3JhZ2VQYXRoLmluY2x1ZGVzKCIvcHJldmlld3MvIikpIHsKICAgICAgICByZXR1cm4gc3RvcmFnZVBhdGgucmVwbGFjZSgiL3ByZXZpZXdzLyIsICIvb3JpZ2luYWxzLyIpOwogICAgICB9CiAgICAgIC8vINin2YTZhdiz2KfYsdin2Kog2KfZhNmC2K/ZitmF2KkgKNmC2KjZhCDZhti42KfZhSDYp9mE2KvZhtin2KbZiikg4oaSINij2LnYryDZg9mF2Kcg2YfZiiDYqNi52K8g2KfZhNiv2YHYuQogICAgICByZXR1cm4gc3RvcmFnZVBhdGg7CiAgICB9OwoKICAgIGNvbnN0IHNpZ25lZFVybER1cmF0aW9uID0gZmluYWxQYWlkCiAgICAgID8gNjAgKiA2MCAqIDI0ICogMzAgIC8vIDMwINmK2YjZhdin2Ysg2YTZhNmG2LPYrtipINin2YTYo9i12YTZitipINio2LnYryDYp9mE2K/Zgdi5CiAgICAgIDogNjAgKiA2MCAqIDI0ICogNzsgIC8vIDcg2KPZitin2YUg2YTZhNmF2LnYp9mK2YbYqSDYp9mE2YXYrdmF2YrYqQoKICAgIGNvbnN0IHdpdGhVcmxzID0gYXdhaXQgUHJvbWlzZS5hbGwoKHBob3RvcyA/PyBbXSkubWFwKGFzeW5jIChwKSA9PiB7CiAgICAgIGNvbnN0IHJlc29sdmVkUGF0aCA9IHJlc29sdmVTdG9yYWdlUGF0aChwLnN0b3JhZ2VfcGF0aCk7CiAgICAgIC8vINis2LHZkdioINin2YTZhdiz2KfYsSDYp9mE2YXYrdmI2ZHZhCDYo9mI2YTYp9mL2Jsg2KXZhiDZgdi02YTYjCDYp9ix2KzYuSDZhNmE2YXYs9in2LEg2KfZhNij2LXZhNmKCiAgICAgIGxldCBzaWduZWRVcmw6IHN0cmluZyB8IG51bGwgPSBudWxsOwogICAgICBjb25zdCB7IGRhdGE6IHMxIH0gPSBhd2FpdCBzdXBhYmFzZUFkbWluLnN0b3JhZ2UKICAgICAgICAuZnJvbSgiZGVsaXZlcnktcGhvdG9zIikKICAgICAgICAuY3JlYXRlU2lnbmVkVXJsKHJlc29sdmVkUGF0aCwgc2lnbmVkVXJsRHVyYXRpb24pOwogICAgICBzaWduZWRVcmwgPSBzMT8uc2lnbmVkVXJsID8/IG51bGw7CgogICAgICBpZiAoIXNpZ25lZFVybCAmJiByZXNvbHZlZFBhdGggIT09IHAuc3RvcmFnZV9wYXRoKSB7CiAgICAgICAgLy8g2KfZhNmF2LPYp9ixINin2YTYo9i12YTZiiDYutmK2LEg2YXZiNis2YjYryDYqNi52K8gKNmF2LXZiNixINmE2YUg2YrZj9mB2LnZkdmEINin2YTYsdmB2Lkg2KfZhNir2YbYp9im2Yog2KjYudivKQogICAgICAgIGNvbnN0IHsgZGF0YTogczIgfSA9IGF3YWl0IHN1cGFiYXNlQWRtaW4uc3RvcmFnZQogICAgICAgICAgLmZyb20oImRlbGl2ZXJ5LXBob3RvcyIpCiAgICAgICAgICAuY3JlYXRlU2lnbmVkVXJsKHAuc3RvcmFnZV9wYXRoLCBzaWduZWRVcmxEdXJhdGlvbik7CiAgICAgICAgc2lnbmVkVXJsID0gczI/LnNpZ25lZFVybCA/PyBudWxsOwogICAgICB9CgogICAgICByZXR1cm4gewogICAgICAgIGlkOiBwLmlkLAogICAgICAgIGNhcHRpb246IHAuY2FwdGlvbiwKICAgICAgICBwb3NpdGlvbjogcC5wb3NpdGlvbiwKICAgICAgICB1cmw6IHNpZ25lZFVybCwKICAgICAgICAvLyDZhNmE2YjYp9is2YfYqTog2YfZhCDZh9iw2Ycg2KfZhNi12YjYsdipINio2KzZiNiv2Kkg2YPYp9mF2YTYqdifCiAgICAgICAgaXNfb3JpZ2luYWw6IGZpbmFsUGFpZCwKICAgICAgfTsKICAgIH0pKTsKCiAgICBsZXQgY292ZXJVcmw6IHN0cmluZyB8IG51bGwgPSBudWxsOwogICAgaWYgKGcuY292ZXJfcGF0aCkgewogICAgICBjb25zdCBjb3ZlclBhdGggPSBmaW5hbFBhaWQgJiYgZy5jb3Zlcl9wYXRoLmluY2x1ZGVzKCIvcHJldmlld3MvIikKICAgICAgICA/IGcuY292ZXJfcGF0aC5yZXBsYWNlKCIvcHJldmlld3MvIiwgIi9vcmlnaW5hbHMvIikKICAgICAgICA6IGcuY292ZXJfcGF0aDsKICAgICAgY29uc3QgeyBkYXRhOiBjIH0gPSBhd2FpdCBzdXBhYmFzZUFkbWluLnN0b3JhZ2UKICAgICAgICAuZnJvbSgiZGVsaXZlcnktcGhvdG9zIikKICAgICAgICAuY3JlYXRlU2lnbmVkVXJsKGNvdmVyUGF0aCwgc2lnbmVkVXJsRHVyYXRpb24pOwogICAgICBpZiAoYz8uc2lnbmVkVXJsKSB7CiAgICAgICAgY292ZXJVcmwgPSBjLnNpZ25lZFVybDsKICAgICAgfSBlbHNlIGlmIChjb3ZlclBhdGggIT09IGcuY292ZXJfcGF0aCkgewogICAgICAgIGNvbnN0IHsgZGF0YTogYzIgfSA9IGF3YWl0IHN1cGFiYXNlQWRtaW4uc3RvcmFnZQogICAgICAgICAgLmZyb20oImRlbGl2ZXJ5LXBob3RvcyIpCiAgICAgICAgICAuY3JlYXRlU2lnbmVkVXJsKGcuY292ZXJfcGF0aCwgc2lnbmVkVXJsRHVyYXRpb24pOwogICAgICAgIGNvdmVyVXJsID0gYzI/LnNpZ25lZFVybCA/PyBudWxsOwogICAgICB9CiAgICB9CgogICAgcmV0dXJuIHsKICAgICAgZ2FsbGVyeTogewogICAgICAgIGlkOiBnLmlkLAogICAgICAgIHRpdGxlOiBnLnRpdGxlLAogICAgICAgIC8vINin2YTYs9mF2KfYrSDYqNin2YTYqtmG2LLZitmEINmB2YLYtyDYpdiw2Kcg2K/Zgdi5INin2YTYudmF2YrZhCDZg9in2YXZhNin2Ysg2YjZhdmG2K3YqiDYp9mE2YXYtdmI2LHYqSDYp9mE2KXYsNmGCiAgICAgICAgYWxsb3dfZG93bmxvYWRzOiBmaW5hbFBhaWQgJiYgQm9vbGVhbihnLmFsbG93X2Rvd25sb2FkcyksCiAgICAgICAgZXhwaXJlc19hdDogZy5leHBpcmVzX2F0LAogICAgICAgIGNvdmVyX3VybDogY292ZXJVcmwsCiAgICAgIH0sCiAgICAgIHBob3Rvczogd2l0aFVybHMsCiAgICAgIGZpbmFsX3BhaWQ6IGZpbmFsUGFpZCwKICAgIH07CiAgfSk7CgovLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci8vIGdldE1lc3NhZ2VzQnlUb2tlbiDigJQgQ2xpZW50LXNpZGUgbWVzc2FnZXMgdmlhIHRyYWNraW5nIHRva2VuCi8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KZXhwb3J0IGNvbnN0IGdldE1lc3NhZ2VzQnlUb2tlbiA9IGNyZWF0ZVNlcnZlckZuKHsgbWV0aG9kOiAiUE9TVCIgfSkKICAuaW5wdXRWYWxpZGF0b3IoKGQ6IHsgdG9rZW46IHN0cmluZyB9KSA9PiB7CiAgICBpZiAoIWlzVG9rZW4oZD8udG9rZW4pKSB0aHJvdyBuZXcgRXJyb3IoImludmFsaWQgdG9rZW4iKTsKICAgIHJldHVybiBkOwogIH0pCiAgLmhhbmRsZXIoYXN5bmMgKHsgZGF0YSB9KSA9PiB7CiAgICBjb25zdCB7IHN1cGFiYXNlQWRtaW4gfSA9IGF3YWl0IGltcG9ydCgiQC9pbnRlZ3JhdGlvbnMvc3VwYWJhc2UvY2xpZW50LnNlcnZlciIpOwogICAgY29uc3QgeyBkYXRhOiBiayB9ID0gYXdhaXQgc3VwYWJhc2VBZG1pbi5mcm9tKCJib29raW5ncyIpLnNlbGVjdCgiaWQscGhvdG9ncmFwaGVyX2lkLGNsaWVudF9uYW1lIikKICAgICAgLmVxKCJjbGllbnRfdHJhY2tpbmdfdG9rZW4iLCBkYXRhLnRva2VuKS5tYXliZVNpbmdsZSgpOwogICAgaWYgKCFiaykgdGhyb3cgbmV3IEVycm9yKCJpbnZhbGlkIHRva2VuIik7CiAgICBjb25zdCB7IGRhdGE6IG1zZ3MgfSA9IGF3YWl0IHN1cGFiYXNlQWRtaW4uZnJvbSgibWVzc2FnZXMiKS5zZWxlY3QoImlkLHNlbmRlcl9pZCxzZW5kZXJfbmFtZSxib2R5LGNyZWF0ZWRfYXQscmVhZF9hdCIpCiAgICAgIC5lcSgiYm9va2luZ19pZCIsIGJrLmlkKS5vcmRlcigiY3JlYXRlZF9hdCIsIHsgYXNjZW5kaW5nOiB0cnVlIH0pLmxpbWl0KDUwMCk7CiAgICByZXR1cm4geyBib29raW5nX2lkOiBiay5pZCwgcGhvdG9ncmFwaGVyX2lkOiBiay5waG90b2dyYXBoZXJfaWQsIG1lc3NhZ2VzOiBtc2dzID8/IFtdIH07CiAgfSk7CgpleHBvcnQgY29uc3Qgc2VuZE1lc3NhZ2VCeVRva2VuID0gY3JlYXRlU2VydmVyRm4oeyBtZXRob2Q6ICJQT1NUIiB9KQogIC5pbnB1dFZhbGlkYXRvcigoZDogeyB0b2tlbjogc3RyaW5nOyBib2R5OiBzdHJpbmcgfSkgPT4gewogICAgaWYgKCFpc1Rva2VuKGQ/LnRva2VuKSkgdGhyb3cgbmV3IEVycm9yKCJpbnZhbGlkIHRva2VuIik7CiAgICBpZiAoIWQ/LmJvZHkgfHwgdHlwZW9mIGQuYm9keSAhPT0gInN0cmluZyIpIHRocm93IG5ldyBFcnJvcigiaW52YWxpZCBib2R5Iik7CiAgICBjb25zdCBib2R5ID0gZC5ib2R5LnRyaW0oKTsKICAgIGlmIChib2R5Lmxlbmd0aCA9PT0gMCB8fCBib2R5Lmxlbmd0aCA+IDIwMDApIHRocm93IG5ldyBFcnJvcigiaW52YWxpZCBib2R5IGxlbmd0aCIpOwogICAgcmV0dXJuIHsgdG9rZW46IGQudG9rZW4sIGJvZHkgfTsKICB9KQogIC5oYW5kbGVyKGFzeW5jICh7IGRhdGEgfSkgPT4gewogICAgY29uc3QgeyBzdXBhYmFzZUFkbWluIH0gPSBhd2FpdCBpbXBvcnQoIkAvaW50ZWdyYXRpb25zL3N1cGFiYXNlL2NsaWVudC5zZXJ2ZXIiKTsKICAgIGNvbnN0IHsgZGF0YTogYmsgfSA9IGF3YWl0IHN1cGFiYXNlQWRtaW4uZnJvbSgiYm9va2luZ3MiKS5zZWxlY3QoImlkLGNsaWVudF9uYW1lIikuZXEoImNsaWVudF90cmFja2luZ190b2tlbiIsIGRhdGEudG9rZW4pLm1heWJlU2luZ2xlKCk7CiAgICBpZiAoIWJrKSB0aHJvdyBuZXcgRXJyb3IoImludmFsaWQgdG9rZW4iKTsKICAgIGNvbnN0IHNpbmNlSXNvID0gbmV3IERhdGUoRGF0ZS5ub3coKSAtIDYwXzAwMCkudG9JU09TdHJpbmcoKTsKICAgIGNvbnN0IHsgY291bnQgfSA9IGF3YWl0IHN1cGFiYXNlQWRtaW4KICAgICAgLmZyb20oIm1lc3NhZ2VzIikKICAgICAgLnNlbGVjdCgiaWQiLCB7IGNvdW50OiAiZXhhY3QiLCBoZWFkOiB0cnVlIH0pCiAgICAgIC5lcSgiYm9va2luZ19pZCIsIGJrLmlkKQogICAgICAuaXMoInNlbmRlcl9pZCIsIG51bGwpCiAgICAgIC5ndGUoImNyZWF0ZWRfYXQiLCBzaW5jZUlzbyk7CiAgICBpZiAoKGNvdW50ID8/IDApID49IDEwKSB7CiAgICAgIHRocm93IG5ldyBFcnJvcigi2KPYsdiz2YTYqtmQINix2LPYp9im2YQg2YPYq9mK2LHYqSDZgdmKINmI2YLYqiDZgti12YrYsdiMINin2YTYsdis2KfYoSDYp9mE2KfZhtiq2LjYp9ixINmC2YTZitmE2KfZiy4iKTsKICAgIH0KICAgIGNvbnN0IHsgZXJyb3IgfSA9IGF3YWl0IHN1cGFiYXNlQWRtaW4uZnJvbSgibWVzc2FnZXMiKS5pbnNlcnQoewogICAgICBib29raW5nX2lkOiBiay5pZCwgc2VuZGVyX2lkOiBudWxsLCBzZW5kZXJfbmFtZTogYmsuY2xpZW50X25hbWUgfHwgItin2YTYudmF2YrZhCIsIGJvZHk6IGRhdGEuYm9keSwKICAgIH0pOwogICAgaWYgKGVycm9yKSB0aHJvdyBuZXcgRXJyb3IoZXJyb3IubWVzc2FnZSk7CiAgICByZXR1cm4geyBvazogdHJ1ZSB9OwogIH0pOwoKLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQovLyBQaG90b2dyYXBoZXItc2lkZSBnYWxsZXJ5IG1hbmFnZW1lbnQKLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQppbXBvcnQgeyByZXF1aXJlU3VwYWJhc2VBdXRoIH0gZnJvbSAiQC9pbnRlZ3JhdGlvbnMvc3VwYWJhc2UvYXV0aC1taWRkbGV3YXJlIjsKCmV4cG9ydCBjb25zdCBlbnN1cmVHYWxsZXJ5ID0gY3JlYXRlU2VydmVyRm4oeyBtZXRob2Q6ICJQT1NUIiB9KQogIC5taWRkbGV3YXJlKFtyZXF1aXJlU3VwYWJhc2VBdXRoXSkKICAuaW5wdXRWYWxpZGF0b3IoKGQ6IHsgYm9va2luZ19pZDogc3RyaW5nIH0pID0+IHsKICAgIGlmICghaXNVdWlkKGQ/LmJvb2tpbmdfaWQpKSB0aHJvdyBuZXcgRXJyb3IoImludmFsaWQgYm9va2luZ19pZCIpOwogICAgcmV0dXJuIGQ7CiAgfSkKICAuaGFuZGxlcihhc3luYyAoeyBkYXRhLCBjb250ZXh0IH0pID0+IHsKICAgIGNvbnN0IHsgc3VwYWJhc2UsIHVzZXJJZCB9ID0gY29udGV4dDsKICAgIGNvbnN0IHsgZGF0YTogYmsgfSA9IGF3YWl0IHN1cGFiYXNlLmZyb20oImJvb2tpbmdzIikuc2VsZWN0KCJpZCxwaG90b2dyYXBoZXJfaWQsY2xpZW50X25hbWUiKS5lcSgiaWQiLCBkYXRhLmJvb2tpbmdfaWQpLm1heWJlU2luZ2xlKCk7CiAgICBpZiAoIWJrIHx8IGJrLnBob3RvZ3JhcGhlcl9pZCAhPT0gdXNlcklkKSB0aHJvdyBuZXcgRXJyb3IoImZvcmJpZGRlbiIpOwogICAgY29uc3QgeyBkYXRhOiBleGlzdGluZyB9ID0gYXdhaXQgc3VwYWJhc2UuZnJvbSgiZGVsaXZlcnlfZ2FsbGVyaWVzIikuc2VsZWN0KCIqIikuZXEoImJvb2tpbmdfaWQiLCBkYXRhLmJvb2tpbmdfaWQpLm1heWJlU2luZ2xlKCk7CiAgICBpZiAoZXhpc3RpbmcpIHJldHVybiBleGlzdGluZzsKICAgIGNvbnN0IHsgZGF0YTogY3JlYXRlZCwgZXJyb3IgfSA9IGF3YWl0IHN1cGFiYXNlLmZyb20oImRlbGl2ZXJ5X2dhbGxlcmllcyIpLmluc2VydCh7CiAgICAgIGJvb2tpbmdfaWQ6IGRhdGEuYm9va2luZ19pZCwgcGhvdG9ncmFwaGVyX2lkOiB1c2VySWQsIHRpdGxlOiBg2LXZiNixICR7YmsuY2xpZW50X25hbWV9YCwKICAgIH0pLnNlbGVjdCgiKiIpLnNpbmdsZSgpOwogICAgaWYgKGVycm9yKSB0aHJvdyBuZXcgRXJyb3IoZXJyb3IubWVzc2FnZSk7CiAgICByZXR1cm4gY3JlYXRlZDsKICB9KTsKCmV4cG9ydCBjb25zdCB1cGRhdGVHYWxsZXJ5ID0gY3JlYXRlU2VydmVyRm4oeyBtZXRob2Q6ICJQT1NUIiB9KQogIC5taWRkbGV3YXJlKFtyZXF1aXJlU3VwYWJhc2VBdXRoXSkKICAuaW5wdXRWYWxpZGF0b3IoKGQ6IHsgZ2FsbGVyeV9pZDogc3RyaW5nOyB0aXRsZT86IHN0cmluZzsgYWxsb3dfZG93bmxvYWRzPzogYm9vbGVhbjsgZXhwaXJlc19hdD86IHN0cmluZyB8IG51bGwgfSkgPT4gewogICAgaWYgKCFpc1V1aWQoZD8uZ2FsbGVyeV9pZCkpIHRocm93IG5ldyBFcnJvcigiaW52YWxpZCBnYWxsZXJ5X2lkIik7CiAgICByZXR1cm4gZDsKICB9KQogIC5oYW5kbGVyKGFzeW5jICh7IGRhdGEsIGNvbnRleHQgfSkgPT4gewogICAgY29uc3QgeyBkYXRhOiBnIH0gPSBhd2FpdCBjb250ZXh0LnN1cGFiYXNlCiAgICAgIC5mcm9tKCJkZWxpdmVyeV9nYWxsZXJpZXMiKQogICAgICAuc2VsZWN0KCJpZCwgcGhvdG9ncmFwaGVyX2lkIikKICAgICAgLmVxKCJpZCIsIGRhdGEuZ2FsbGVyeV9pZCkKICAgICAgLm1heWJlU2luZ2xlKCk7CiAgICBpZiAoIWcgfHwgZy5waG90b2dyYXBoZXJfaWQgIT09IGNvbnRleHQudXNlcklkKSB0aHJvdyBuZXcgRXJyb3IoImZvcmJpZGRlbiIpOwogICAgY29uc3QgcGF0Y2g6IGFueSA9IHt9OwogICAgaWYgKHR5cGVvZiBkYXRhLnRpdGxlID09PSAic3RyaW5nIikgcGF0Y2gudGl0bGUgPSBkYXRhLnRpdGxlLnNsaWNlKDAsIDIwMCk7CiAgICBpZiAodHlwZW9mIGRhdGEuYWxsb3dfZG93bmxvYWRzID09PSAiYm9vbGVhbiIpIHBhdGNoLmFsbG93X2Rvd25sb2FkcyA9IGRhdGEuYWxsb3dfZG93bmxvYWRzOwogICAgaWYgKGRhdGEuZXhwaXJlc19hdCAhPT0gdW5kZWZpbmVkKSBwYXRjaC5leHBpcmVzX2F0ID0gZGF0YS5leHBpcmVzX2F0OwogICAgY29uc3QgeyBlcnJvciB9ID0gYXdhaXQgY29udGV4dC5zdXBhYmFzZS5mcm9tKCJkZWxpdmVyeV9nYWxsZXJpZXMiKS51cGRhdGUocGF0Y2gpLmVxKCJpZCIsIGRhdGEuZ2FsbGVyeV9pZCk7CiAgICBpZiAoZXJyb3IpIHRocm93IG5ldyBFcnJvcihlcnJvci5tZXNzYWdlKTsKICAgIHJldHVybiB7IG9rOiB0cnVlIH07CiAgfSk7CgovLyDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIAKLy8gYWRkR2FsbGVyeVBob3RvIOKAlCDZitmP2LPYrNmR2YQg2YXYs9in2LEg2KfZhNi12YjYsdipINio2LnYryDYsdmB2LnZh9inINmF2YYg2KfZhNmF2KrYtdmB2K0KLy8gc3RvcmFnZV9wYXRoOiDZitis2Kgg2KPZhiDZitmD2YjZhiDZhdiz2KfYsSDYp9mE2YbYs9iu2Kkg2KfZhNmF2K3ZhdmK2Kkg2KjYp9mE2LnZhNin2YXYqSDYp9mE2YXYp9im2YrYqSAocHJldmlld3MvKQovLyAgICAgICAgICAgICAgINmI2YXYs9in2LEg2KfZhNmG2LPYrtipINin2YTYo9i12YTZitipINmK2Y/Ys9iq2YbYqtisINii2YTZitin2Ysg2YHZiiBnZXRHYWxsZXJ5QnlUb2tlbi4KLy8g4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSACmV4cG9ydCBjb25zdCBhZGRHYWxsZXJ5UGhvdG8gPSBjcmVhdGVTZXJ2ZXJGbih7IG1ldGhvZDogIlBPU1QiIH0pCiAgLm1pZGRsZXdhcmUoW3JlcXVpcmVTdXBhYmFzZUF1dGhdKQogIC5pbnB1dFZhbGlkYXRvcigoZDogeyBnYWxsZXJ5X2lkOiBzdHJpbmc7IHN0b3JhZ2VfcGF0aDogc3RyaW5nOyBjYXB0aW9uPzogc3RyaW5nIHwgbnVsbCB9KSA9PiB7CiAgICBpZiAoIWlzVXVpZChkPy5nYWxsZXJ5X2lkKSkgdGhyb3cgbmV3IEVycm9yKCJpbnZhbGlkIGdhbGxlcnlfaWQiKTsKICAgIGlmICghZD8uc3RvcmFnZV9wYXRoIHx8IHR5cGVvZiBkLnN0b3JhZ2VfcGF0aCAhPT0gInN0cmluZyIgfHwgZC5zdG9yYWdlX3BhdGgubGVuZ3RoID4gNTAwKSB0aHJvdyBuZXcgRXJyb3IoImludmFsaWQgcGF0aCIpOwogICAgcmV0dXJuIGQ7CiAgfSkKICAuaGFuZGxlcihhc3luYyAoeyBkYXRhLCBjb250ZXh0IH0pID0+IHsKICAgIGNvbnN0IHsgZGF0YTogZyB9ID0gYXdhaXQgY29udGV4dC5zdXBhYmFzZS5mcm9tKCJkZWxpdmVyeV9nYWxsZXJpZXMiKS5zZWxlY3QoInBob3RvZ3JhcGhlcl9pZCIpLmVxKCJpZCIsIGRhdGEuZ2FsbGVyeV9pZCkubWF5YmVTaW5nbGUoKTsKICAgIGlmICghZyB8fCBnLnBob3RvZ3JhcGhlcl9pZCAhPT0gY29udGV4dC51c2VySWQpIHRocm93IG5ldyBFcnJvcigiZm9yYmlkZGVuIik7CiAgICBpZiAoIWRhdGEuc3RvcmFnZV9wYXRoLnN0YXJ0c1dpdGgoYCR7Y29udGV4dC51c2VySWR9L2ApKSB0aHJvdyBuZXcgRXJyb3IoImludmFsaWQgcGF0aCBzY29wZSIpOwogICAgY29uc3QgeyBkYXRhOiBtYXhQb3MgfSA9IGF3YWl0IGNvbnRleHQuc3VwYWJhc2UuZnJvbSgiZGVsaXZlcnlfcGhvdG9zIikuc2VsZWN0KCJwb3NpdGlvbiIpLmVxKCJnYWxsZXJ5X2lkIiwgZGF0YS5nYWxsZXJ5X2lkKS5vcmRlcigicG9zaXRpb24iLCB7IGFzY2VuZGluZzogZmFsc2UgfSkubGltaXQoMSkubWF5YmVTaW5nbGUoKTsKICAgIGNvbnN0IHBvc2l0aW9uID0gKG1heFBvcz8ucG9zaXRpb24gPz8gMCkgKyAxOwogICAgY29uc3QgeyBlcnJvciB9ID0gYXdhaXQgY29udGV4dC5zdXBhYmFzZS5mcm9tKCJkZWxpdmVyeV9waG90b3MiKS5pbnNlcnQoewogICAgICBnYWxsZXJ5X2lkOiBkYXRhLmdhbGxlcnlfaWQsIHN0b3JhZ2VfcGF0aDogZGF0YS5zdG9yYWdlX3BhdGgsIGNhcHRpb246IGRhdGEuY2FwdGlvbiA/PyBudWxsLCBwb3NpdGlvbiwKICAgIH0pOwogICAgaWYgKGVycm9yKSB0aHJvdyBuZXcgRXJyb3IoZXJyb3IubWVzc2FnZSk7CiAgICByZXR1cm4geyBvazogdHJ1ZSB9OwogIH0pOwoKZXhwb3J0IGNvbnN0IGRlbGV0ZUdhbGxlcnlQaG90byA9IGNyZWF0ZVNlcnZlckZuKHsgbWV0aG9kOiAiUE9TVCIgfSkKICAubWlkZGxld2FyZShbcmVxdWlyZVN1cGFiYXNlQXV0aF0pCiAgLmlucHV0VmFsaWRhdG9yKChkOiB7IHBob3RvX2lkOiBzdHJpbmcgfSkgPT4gewogICAgaWYgKCFpc1V1aWQoZD8ucGhvdG9faWQpKSB0aHJvdyBuZXcgRXJyb3IoImludmFsaWQgcGhvdG9faWQiKTsKICAgIHJldHVybiBkOwogIH0pCiAgLmhhbmRsZXIoYXN5bmMgKHsgZGF0YSwgY29udGV4dCB9KSA9PiB7CiAgICBjb25zdCB7IGRhdGE6IHBoIH0gPSBhd2FpdCBjb250ZXh0LnN1cGFiYXNlLmZyb20oImRlbGl2ZXJ5X3Bob3RvcyIpLnNlbGVjdCgic3RvcmFnZV9wYXRoLGdhbGxlcnlfaWQsZGVsaXZlcnlfZ2FsbGVyaWVzIWlubmVyKHBob3RvZ3JhcGhlcl9pZCkiKS5lcSgiaWQiLCBkYXRhLnBob3RvX2lkKS5tYXliZVNpbmdsZSgpOwogICAgaWYgKCFwaCB8fCAocGggYXMgYW55KS5kZWxpdmVyeV9nYWxsZXJpZXMucGhvdG9ncmFwaGVyX2lkICE9PSBjb250ZXh0LnVzZXJJZCkgdGhyb3cgbmV3IEVycm9yKCJmb3JiaWRkZW4iKTsKICAgIC8vINin2K3YsNmBINmD2YTYpyDYp9mE2YbYs9iu2KrZitmGINil2YYg2YjZj9is2K/YqtinCiAgICBjb25zdCBwcmV2aWV3UGF0aCA9IChwaCBhcyBhbnkpLnN0b3JhZ2VfcGF0aCBhcyBzdHJpbmc7CiAgICBjb25zdCBvcmlnaW5hbFBhdGggPSBwcmV2aWV3UGF0aC5pbmNsdWRlcygiL3ByZXZpZXdzLyIpCiAgICAgID8gcHJldmlld1BhdGgucmVwbGFjZSgiL3ByZXZpZXdzLyIsICIvb3JpZ2luYWxzLyIpCiAgICAgIDogbnVsbDsKICAgIGNvbnN0IHBhdGhzVG9EZWxldGUgPSBbcHJldmlld1BhdGgsIC4uLihvcmlnaW5hbFBhdGggPyBbb3JpZ2luYWxQYXRoXSA6IFtdKV07CiAgICBhd2FpdCBjb250ZXh0LnN1cGFiYXNlLnN0b3JhZ2UuZnJvbSgiZGVsaXZlcnktcGhvdG9zIikucmVtb3ZlKHBhdGhzVG9EZWxldGUpOwogICAgYXdhaXQgY29udGV4dC5zdXBhYmFzZS5mcm9tKCJkZWxpdmVyeV9waG90b3MiKS5kZWxldGUoKS5lcSgiaWQiLCBkYXRhLnBob3RvX2lkKTsKICAgIHJldHVybiB7IG9rOiB0cnVlIH07CiAgfSk7CgpleHBvcnQgY29uc3QgZ2V0R2FsbGVyeUZvclBob3RvZ3JhcGhlciA9IGNyZWF0ZVNlcnZlckZuKHsgbWV0aG9kOiAiUE9TVCIgfSkKICAubWlkZGxld2FyZShbcmVxdWlyZVN1cGFiYXNlQXV0aF0pCiAgLmlucHV0VmFsaWRhdG9yKChkOiB7IGJvb2tpbmdfaWQ6IHN0cmluZyB9KSA9PiB7CiAgICBpZiAoIWlzVXVpZChkPy5ib29raW5nX2lkKSkgdGhyb3cgbmV3IEVycm9yKCJpbnZhbGlkIGJvb2tpbmdfaWQiKTsKICAgIHJldHVybiBkOwogIH0pCiAgLmhhbmRsZXIoYXN5bmMgKHsgZGF0YSwgY29udGV4dCB9KSA9PiB7CiAgICBjb25zdCB7IGRhdGE6IGcgfSA9IGF3YWl0IGNvbnRleHQuc3VwYWJhc2UuZnJvbSgiZGVsaXZlcnlfZ2FsbGVyaWVzIikuc2VsZWN0KCIqIikuZXEoImJvb2tpbmdfaWQiLCBkYXRhLmJvb2tpbmdfaWQpLm1heWJlU2luZ2xlKCk7CiAgICBpZiAoIWcpIHJldHVybiB7IGdhbGxlcnk6IG51bGwsIHBob3RvczogW10gYXMgYW55W10gfTsKICAgIGlmIChnLnBob3RvZ3JhcGhlcl9pZCAhPT0gY29udGV4dC51c2VySWQpIHRocm93IG5ldyBFcnJvcigiZm9yYmlkZGVuIik7CiAgICBjb25zdCB7IGRhdGE6IHBob3RvcyB9ID0gYXdhaXQgY29udGV4dC5zdXBhYmFzZS5mcm9tKCJkZWxpdmVyeV9waG90b3MiKS5zZWxlY3QoImlkLHN0b3JhZ2VfcGF0aCxjYXB0aW9uLHBvc2l0aW9uIikuZXEoImdhbGxlcnlfaWQiLCBnLmlkKS5vcmRlcigicG9zaXRpb24iKTsKICAgIGNvbnN0IHdpdGhVcmxzID0gYXdhaXQgUHJvbWlzZS5hbGwoKHBob3RvcyA/PyBbXSkubWFwKGFzeW5jIChwKSA9PiB7CiAgICAgIGNvbnN0IHsgZGF0YTogcyB9ID0gYXdhaXQgY29udGV4dC5zdXBhYmFzZS5zdG9yYWdlLmZyb20oImRlbGl2ZXJ5LXBob3RvcyIpLmNyZWF0ZVNpZ25lZFVybChwLnN0b3JhZ2VfcGF0aCwgNjAgKiA2MCk7CiAgICAgIHJldHVybiB7IGlkOiBwLmlkLCBjYXB0aW9uOiBwLmNhcHRpb24sIHBvc2l0aW9uOiBwLnBvc2l0aW9uLCB1cmw6IHM/LnNpZ25lZFVybCA/PyBudWxsLCBzdG9yYWdlX3BhdGg6IHAuc3RvcmFnZV9wYXRoIH07CiAgICB9KSk7CiAgICByZXR1cm4geyBnYWxsZXJ5OiBnLCBwaG90b3M6IHdpdGhVcmxzIH07CiAgfSk7Cg==
+import { createServerFn } from "@tanstack/react-start";
+
+function isUuid(s: any) { return typeof s === "string" && /^[0-9a-f-]{36}$/i.test(s); }
+function isToken(s: any) { return typeof s === "string" && /^[0-9a-f]{16,64}$/i.test(s); }
+
+// ============================================================================
+// Image URL Optimization Helpers
+// ============================================================================
+export function optimizedImageUrl(
+  url: string | null | undefined,
+  opts: { width?: number; quality?: number; format?: "webp" | "auto" } = {}
+): string | null {
+  if (!url) return null;
+  const { width = 800, quality = 85, format = "auto" } = opts;
+
+  const cfZone = typeof process !== "undefined" ? process.env?.CLOUDFLARE_IMAGES_ZONE : null;
+  if (cfZone && url.startsWith("https://")) {
+    return `https://${cfZone}/cdn-cgi/image/width=${width},quality=${quality},format=${format}/${url}`;
+  }
+
+  if (url.includes("/storage/v1/object/public/")) {
+    const sep = url.includes("?") ? "&" : "?";
+    return `${url}${sep}width=${width}&quality=${quality}`;
+  }
+
+  return url;
+}
+
+export function responsiveSrcSet(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  const sizes = [400, 800, 1200, 1600];
+  return sizes
+    .map((w) => `${optimizedImageUrl(url, { width: w }) || url} ${w}w`)
+    .join(", ");
+}
+
+// ============================================================================
+// getGalleryByToken — Client view via tracking token
+// ─────────────────────────────────────────────────────────────────────────────
+// منطق التسليم الثنائي الحالة (Dual-State Delivery):
+//
+//   1. المصورة ترفع نسختين عند التفعيل:
+//        - originals/{uid}/{gallery_id}/{file_id}.jpg  → الأصلية النظيفة
+//        - previews/{uid}/{gallery_id}/{file_id}.jpg   → المحمية بعلامة مائية
+//
+//   2. السيرفر يتحقق من حالة الدفع النهائي (final_paid_at) لكل حجز:
+//        - إذا لم يُدفع → يُعيد روابط مؤقتة للمسار previews/ (بعلامة مائية)
+//        - إذا دُفع     → يُعيد روابط مؤقتة للمسار originals/ (نظيفة وبجودة عالية)
+//
+//   3. إذا لم تُوجد نسخة originals/ (المصور لم يفعّل خيار الرفع الثنائي)،
+//      يُعيد الرابط الموجود أياً كان — لا يكسر التجربة الحالية.
+// ============================================================================
+
+export const getGalleryByToken = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string }) => {
+    if (!isToken(d?.token)) throw new Error("invalid token");
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // ── 1. تحقق من صحة رمز التتبع ──
+    const { data: bk } = await supabaseAdmin
+      .from("bookings")
+      .select("id,client_name,photographer_id,final_paid_at,status")
+      .eq("client_tracking_token", data.token)
+      .maybeSingle();
+    if (!bk) throw new Error("invalid token");
+
+    // ── 2. تحقق من حالة الدفع النهائي ──
+    const finalPaid =
+      Boolean(bk.final_paid_at) ||
+      bk.status === "completed";
+
+    // ── 3. جلب المعرض ──
+    const { data: g } = await supabaseAdmin
+      .from("delivery_galleries")
+      .select("*")
+      .eq("booking_id", bk.id)
+      .maybeSingle();
+    if (!g) return { gallery: null, photos: [] as any[], final_paid: finalPaid };
+
+    if (g.expires_at && new Date(g.expires_at).getTime() < Date.now()) {
+      return { gallery: null, photos: [], expired: true, final_paid: finalPaid };
+    }
+
+    // ── 4. جلب الصور ──
+    const { data: photos } = await supabaseAdmin
+      .from("delivery_photos")
+      .select("id,storage_path,caption,position")
+      .eq("gallery_id", g.id)
+      .order("position", { ascending: true });
+
+    // ── 5. تحديد المسار الصحيح بناءً على حالة الدفع ──
+    //   storage_path المخزن دائماً هو مسار العلامة المائية (previews/ أو المسار القديم)
+    //   إذا دُفع، نحاول تبديله بالمسار الأصلي originals/ أولاً.
+    const resolveStoragePath = (storagePath: string): string => {
+      if (!finalPaid) return storagePath; // لم يُدفع → المحمية
+      // حاول تحويل مسار previews → originals
+      if (storagePath.includes("/previews/")) {
+        return storagePath.replace("/previews/", "/originals/");
+      }
+      // المسارات القديمة (قبل نظام الثنائي) → أعد كما هي بعد الدفع
+      return storagePath;
+    };
+
+    const signedUrlDuration = finalPaid
+      ? 60 * 60 * 24 * 30  // 30 يوماً للنسخة الأصلية بعد الدفع
+      : 60 * 60 * 24 * 7;  // 7 أيام للمعاينة المحمية
+
+    const withUrls = await Promise.all((photos ?? []).map(async (p) => {
+      const resolvedPath = resolveStoragePath(p.storage_path);
+      // جرّب المسار المحوّل أولاً؛ إن فشل، ارجع للمسار الأصلي
+      let signedUrl: string | null = null;
+      const { data: s1 } = await supabaseAdmin.storage
+        .from("delivery-photos")
+        .createSignedUrl(resolvedPath, signedUrlDuration);
+      signedUrl = s1?.signedUrl ?? null;
+
+      if (!signedUrl && resolvedPath !== p.storage_path) {
+        // المسار الأصلي غير موجود بعد (مصور لم يُفعّل الرفع الثنائي بعد)
+        const { data: s2 } = await supabaseAdmin.storage
+          .from("delivery-photos")
+          .createSignedUrl(p.storage_path, signedUrlDuration);
+        signedUrl = s2?.signedUrl ?? null;
+      }
+
+      return {
+        id: p.id,
+        caption: p.caption,
+        position: p.position,
+        url: signedUrl,
+        // للواجهة: هل هذه الصورة بجودة كاملة؟
+        is_original: finalPaid,
+      };
+    }));
+
+    let coverUrl: string | null = null;
+    if (g.cover_path) {
+      const coverPath = finalPaid && g.cover_path.includes("/previews/")
+        ? g.cover_path.replace("/previews/", "/originals/")
+        : g.cover_path;
+      const { data: c } = await supabaseAdmin.storage
+        .from("delivery-photos")
+        .createSignedUrl(coverPath, signedUrlDuration);
+      if (c?.signedUrl) {
+        coverUrl = c.signedUrl;
+      } else if (coverPath !== g.cover_path) {
+        const { data: c2 } = await supabaseAdmin.storage
+          .from("delivery-photos")
+          .createSignedUrl(g.cover_path, signedUrlDuration);
+        coverUrl = c2?.signedUrl ?? null;
+      }
+    }
+
+    return {
+      gallery: {
+        id: g.id,
+        title: g.title,
+        // السماح بالتنزيل فقط إذا دفع العميل كاملاً ومنحت المصورة الإذن
+        allow_downloads: finalPaid && Boolean(g.allow_downloads),
+        expires_at: g.expires_at,
+        cover_url: coverUrl,
+      },
+      photos: withUrls,
+      final_paid: finalPaid,
+    };
+  });
+
+// ============================================================================
+// getMessagesByToken — Client-side messages via tracking token
+// ============================================================================
+export const getMessagesByToken = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string }) => {
+    if (!isToken(d?.token)) throw new Error("invalid token");
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: bk } = await supabaseAdmin.from("bookings").select("id,photographer_id,client_name")
+      .eq("client_tracking_token", data.token).maybeSingle();
+    if (!bk) throw new Error("invalid token");
+    const { data: msgs } = await supabaseAdmin.from("messages").select("id,sender_id,sender_name,body,created_at,read_at")
+      .eq("booking_id", bk.id).order("created_at", { ascending: true }).limit(500);
+    return { booking_id: bk.id, photographer_id: bk.photographer_id, messages: msgs ?? [] };
+  });
+
+export const sendMessageByToken = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; body: string }) => {
+    if (!isToken(d?.token)) throw new Error("invalid token");
+    if (!d?.body || typeof d.body !== "string") throw new Error("invalid body");
+    const body = d.body.trim();
+    if (body.length === 0 || body.length > 2000) throw new Error("invalid body length");
+    return { token: d.token, body };
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: bk } = await supabaseAdmin.from("bookings").select("id,client_name").eq("client_tracking_token", data.token).maybeSingle();
+    if (!bk) throw new Error("invalid token");
+    const sinceIso = new Date(Date.now() - 60_000).toISOString();
+    const { count } = await supabaseAdmin
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("booking_id", bk.id)
+      .is("sender_id", null)
+      .gte("created_at", sinceIso);
+    if ((count ?? 0) >= 10) {
+      throw new Error("أرسلتِ رسائل كثيرة في وقت قصير، الرجاء الانتظار قليلاً.");
+    }
+    const { error } = await supabaseAdmin.from("messages").insert({
+      booking_id: bk.id, sender_id: null, sender_name: bk.client_name || "العميل", body: data.body,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ============================================================================
+// Photographer-side gallery management
+// ============================================================================
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+export const ensureGallery = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string }) => {
+    if (!isUuid(d?.booking_id)) throw new Error("invalid booking_id");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: bk } = await supabase.from("bookings").select("id,photographer_id,client_name").eq("id", data.booking_id).maybeSingle();
+    if (!bk || bk.photographer_id !== userId) throw new Error("forbidden");
+    const { data: existing } = await supabase.from("delivery_galleries").select("*").eq("booking_id", data.booking_id).maybeSingle();
+    if (existing) return existing;
+    const { data: created, error } = await supabase.from("delivery_galleries").insert({
+      booking_id: data.booking_id, photographer_id: userId, title: `صور ${bk.client_name}`,
+    }).select("*").single();
+    if (error) throw new Error(error.message);
+    return created;
+  });
+
+export const updateGallery = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { gallery_id: string; title?: string; allow_downloads?: boolean; expires_at?: string | null }) => {
+    if (!isUuid(d?.gallery_id)) throw new Error("invalid gallery_id");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: g } = await context.supabase
+      .from("delivery_galleries")
+      .select("id, photographer_id")
+      .eq("id", data.gallery_id)
+      .maybeSingle();
+    if (!g || g.photographer_id !== context.userId) throw new Error("forbidden");
+    const patch: any = {};
+    if (typeof data.title === "string") patch.title = data.title.slice(0, 200);
+    if (typeof data.allow_downloads === "boolean") patch.allow_downloads = data.allow_downloads;
+    if (data.expires_at !== undefined) patch.expires_at = data.expires_at;
+    const { error } = await context.supabase.from("delivery_galleries").update(patch).eq("id", data.gallery_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// addGalleryPhoto — يُسجّل مسار الصورة بعد رفعها من المتصفح
+// storage_path: يجب أن يكون مسار النسخة المحمية بالعلامة المائية (previews/)
+//               ومسار النسخة الأصلية يُستنتج آلياً في getGalleryByToken.
+// ─────────────────────────────────────────────────────────────────────────────
+export const addGalleryPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { gallery_id: string; storage_path: string; caption?: string | null }) => {
+    if (!isUuid(d?.gallery_id)) throw new Error("invalid gallery_id");
+    if (!d?.storage_path || typeof d.storage_path !== "string" || d.storage_path.length > 500) throw new Error("invalid path");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: g } = await context.supabase.from("delivery_galleries").select("photographer_id").eq("id", data.gallery_id).maybeSingle();
+    if (!g || g.photographer_id !== context.userId) throw new Error("forbidden");
+    if (!data.storage_path.startsWith(`${context.userId}/`)) throw new Error("invalid path scope");
+    const { data: maxPos } = await context.supabase.from("delivery_photos").select("position").eq("gallery_id", data.gallery_id).order("position", { ascending: false }).limit(1).maybeSingle();
+    const position = (maxPos?.position ?? 0) + 1;
+    const { error } = await context.supabase.from("delivery_photos").insert({
+      gallery_id: data.gallery_id, storage_path: data.storage_path, caption: data.caption ?? null, position,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteGalleryPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { photo_id: string }) => {
+    if (!isUuid(d?.photo_id)) throw new Error("invalid photo_id");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: ph } = await context.supabase.from("delivery_photos").select("storage_path,gallery_id,delivery_galleries!inner(photographer_id)").eq("id", data.photo_id).maybeSingle();
+    if (!ph || (ph as any).delivery_galleries.photographer_id !== context.userId) throw new Error("forbidden");
+    // احذف كلا النسختين إن وُجدتا
+    const previewPath = (ph as any).storage_path as string;
+    const originalPath = previewPath.includes("/previews/")
+      ? previewPath.replace("/previews/", "/originals/")
+      : null;
+    const pathsToDelete = [previewPath, ...(originalPath ? [originalPath] : [])];
+    await context.supabase.storage.from("delivery-photos").remove(pathsToDelete);
+    await context.supabase.from("delivery_photos").delete().eq("id", data.photo_id);
+    return { ok: true };
+  });
+
+export const getGalleryForPhotographer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string }) => {
+    if (!isUuid(d?.booking_id)) throw new Error("invalid booking_id");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { data: g } = await context.supabase.from("delivery_galleries").select("*").eq("booking_id", data.booking_id).maybeSingle();
+    if (!g) return { gallery: null, photos: [] as any[] };
+    if (g.photographer_id !== context.userId) throw new Error("forbidden");
+    const { data: photos } = await context.supabase.from("delivery_photos").select("id,storage_path,caption,position").eq("gallery_id", g.id).order("position");
+    const withUrls = await Promise.all((photos ?? []).map(async (p) => {
+      const { data: s } = await context.supabase.storage.from("delivery-photos").createSignedUrl(p.storage_path, 60 * 60);
+      return { id: p.id, caption: p.caption, position: p.position, url: s?.signedUrl ?? null, storage_path: p.storage_path };
+    }));
+    return { gallery: g, photos: withUrls };
+  });
