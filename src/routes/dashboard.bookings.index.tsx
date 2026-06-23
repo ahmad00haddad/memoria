@@ -1,14 +1,43 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { ListSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Inbox, Search } from "lucide-react";
+import {
+  Inbox, Search, CheckCircle2, XCircle, Calendar, User, DollarSign, ChevronLeft,
+} from "lucide-react";
 
 export const Route = createFileRoute("/dashboard/bookings/")({ component: BookingsList });
+
+const STATUS_LABELS: Record<string, string> = {
+  pending_deposit: "بانتظار العربون",
+  quote:           "عرض سعر",
+  confirmed:       "مؤكّد",
+  shooting:        "يوم التصوير",
+  canceled:        "ملغى",
+  completed:       "مكتمل",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  pending_deposit: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  quote:           "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  confirmed:       "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  shooting:        "bg-purple-500/10 text-purple-400 border-purple-500/20",
+  canceled:        "bg-red-500/10 text-red-400 border-red-500/20",
+  completed:       "bg-sky-500/10 text-sky-400 border-sky-500/20",
+};
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("ar-JO", {
+    year: "numeric", month: "long", day: "numeric",
+  });
+}
 
 function BookingsList() {
   const nav = useNavigate();
@@ -24,145 +53,200 @@ function BookingsList() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return nav({ to: "/login" });
-        const { data, error } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).is("deleted_at", null).order("event_date", { ascending: false });
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("*")
+          .eq("photographer_id", session.user.id)
+          .is("deleted_at", null)
+          .order("event_date", { ascending: false });
         if (error) throw error;
         setList(data ?? []);
       } catch (error: any) {
-        setLoadError(error?.message || "تعذّر تحميل الحجوزات.");
+        setLoadError(error?.message || "تعذّر تحميل الحجوزات");
       } finally {
         setLoading(false);
       }
     })();
   }, [nav]);
 
-  const ql = q.trim().toLowerCase();
-  const filtered = list
-    .filter((b) => (filter === "all" ? true : b.status === filter))
-    .filter((b) =>
-      !ql
-        ? true
-        : (b.client_name || "").toLowerCase().includes(ql) ||
-          (b.venue_name || "").toLowerCase().includes(ql) ||
-          (b.client_phone || "").toLowerCase().includes(ql)
-    )
+  const handleConfirm = async (id: string) => {
+    const { error } = await supabase
+      .from("bookings")
+      .update({ status: "confirmed" })
+      .eq("id", id);
+    if (error) { toast.error("تعذّر تأكيد الحجز"); return; }
+    setList((prev) => prev.map((b) => b.id === id ? { ...b, status: "confirmed" } : b));
+    toast.success("تم تأكيد الحجز ✓");
+  };
+
+  const handleCancel = async (id: string) => {
+    const { error } = await supabase
+      .from("bookings")
+      .update({ status: "canceled" })
+      .eq("id", id);
+    if (error) { toast.error("تعذّر إلغاء الحجز"); return; }
+    setList((prev) => prev.map((b) => b.id === id ? { ...b, status: "canceled" } : b));
+    toast.error("تم إلغاء الحجز");
+  };
+
+  const displayed = list
+    .filter((b) => filter === "all" || b.status === filter)
+    .filter((b) => {
+      if (!q) return true;
+      const name = (b.client_name || b.bride_name || "").toLowerCase();
+      return name.includes(q.toLowerCase());
+    })
     .sort((a, b) => {
-      if (sort === "price_desc") return Number(b.total_price) - Number(a.total_price);
       if (sort === "date_asc") return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
+      if (sort === "price_desc") return (b.total_price ?? 0) - (a.total_price ?? 0);
       return new Date(b.event_date).getTime() - new Date(a.event_date).getTime();
     });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground" dir="rtl">
       <Header />
-      <section className="container-editorial py-12 max-w-5xl">
+      <main className="max-w-2xl mx-auto px-4 py-8 space-y-5 pb-24">
         <BackToDashboard />
-        <h1 className="font-serif text-4xl mt-2 mb-6">الحجوزات</h1>
 
-        {/* ✅ حقل البحث النصي */}
-        <div className="relative mb-4">
+        <div className="flex items-center justify-between">
+          <h1 className="font-serif text-2xl">الحجوزات</h1>
+          <span className="text-xs text-muted-foreground border border-border rounded-sm px-2 py-1">
+            {list.length} حجز
+          </span>
+        </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <input
-            type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="ابحث بالاسم أو التاريخ أو الهاتف…"
-            className="w-full border border-input bg-background rounded-sm px-4 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-ring/30"
+            placeholder="ابحثي باسم العميلة…"
+            className="w-full bg-card border border-border rounded-sm py-2 ps-9 pe-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-gold"
           />
-          {q && (
-            <button
-              onClick={() => setQ("")}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              ✕
-            </button>
-          )}
         </div>
 
-        <div className="flex gap-2 mb-4 flex-wrap text-sm">
+        {/* Filters */}
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
           {[
-            { v: "all", l: "الكل" }, { v: "quote", l: "عروض أسعار" }, { v: "pending_deposit", l: "بانتظار العربون" },
-            { v: "confirmed", l: "مؤكّد" }, { v: "completed", l: "منجز" }, { v: "cancelled", l: "ملغى" },
+            { value: "all", label: "الكل" },
+            { value: "pending_deposit", label: "بانتظار العربون" },
+            { value: "confirmed", label: "مؤكّد" },
+            { value: "canceled", label: "ملغى" },
+            { value: "completed", label: "مكتمل" },
           ].map((f) => (
-            <button key={f.v} onClick={() => setFilter(f.v)} className={`px-3 py-1.5 rounded-sm border ${filter === f.v ? "bg-charcoal text-ivory border-charcoal" : "border-border hover:bg-secondary"}`}>{f.l}</button>
+            <button
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-sm border transition-colors ${
+                filter === f.value
+                  ? "border-gold text-gold bg-gold/5"
+                  : "border-border text-muted-foreground hover:border-foreground/40"
+              }`}
+            >
+              {f.label}
+            </button>
           ))}
-        </div>
-
-        <div className="grid gap-2 sm:grid-cols-[1fr_auto] mb-6">
-          <div className="relative">
-            <Search className="h-4 w-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground pointer-events-none" />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="ابحثي باسم العميل، الموقع، أو رقم الجوال"
-              className="w-full ps-9 pe-3 py-2 text-sm border border-input rounded-sm bg-background"
-            />
-          </div>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as any)}
-            className="text-sm border border-input rounded-sm bg-background px-3 py-2"
+            className="ms-auto flex-shrink-0 bg-card border border-border rounded-sm px-2 py-1.5 text-xs text-muted-foreground focus:outline-none"
           >
             <option value="date_desc">الأحدث أولاً</option>
             <option value="date_asc">الأقدم أولاً</option>
-            <option value="price_desc">السعر الأعلى</option>
+            <option value="price_desc">الأعلى سعراً</option>
           </select>
         </div>
 
-        {loading ? (
-          <ListSkeleton rows={5} />
-        ) : loadError ? (
-          <div className="rounded-sm border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{loadError}</div>
-        ) : list.length === 0 ? (
-          <div className="rounded-sm border border-border bg-card p-6 mb-6 shadow-soft">
-            <h2 className="font-serif text-2xl mb-2">لا توجد حجوزات بعد</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              هذه الصفحة ليست فارغة بسبب خطأ، بل لأن العملاء لم يرسلوا أي طلب بعد. لبدء استقبال الطلبات يجب أولًا إكمال الملف الشخصي ثم إضافة الباقات ونشر الملف العام.
-            </p>
-            <div className="flex flex-wrap gap-3 text-sm">
-              <Link to="/dashboard/profile" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">إكمال الملف</Link>
-              <Link to="/dashboard/pricing" className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">إضافة باقات</Link>
-              <Link to="/search" className="bg-charcoal text-ivory px-4 py-2 rounded-sm hover:opacity-90">معاينة تجربة العميل</Link>
-            </div>
-          </div>
-        ) : filtered.length === 0 ? (
+        {/* Swipe hint */}
+        <p className="text-center text-[11px] text-muted-foreground/50 hidden md:block">
+          اسحب للتأكيد أو الإلغاء على الجوّال
+        </p>
+        <p className="text-center text-[11px] text-muted-foreground/50 md:hidden">
+          ← اسحب لليسار للإلغاء · اسحب لليمين للتأكيد →
+        </p>
+
+        {loading && <ListSkeleton />}
+        {loadError && <p className="text-center text-sm text-red-400 py-8">{loadError}</p>}
+
+        {!loading && !loadError && displayed.length === 0 && (
           <EmptyState
             icon={Inbox}
-            title="لا حجوزات بهذه الحالة"
-            description="غيّري الفلتر أعلاه لعرض حجوزات بحالات أخرى."
-            action={<button onClick={() => setFilter("all")} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary">عرض الكل</button>}
+            title="لا توجد حجوزات"
+            description={q || filter !== "all" ? "حاولي تغيير الفلتر أو البحث" : "لم تستلمي أي حجز بعد"}
           />
-        ) : (
-        <div className="rounded-sm border border-border bg-card overflow-hidden">
-          {filtered.map((b) => (
-            <Link key={b.id} to="/dashboard/bookings/$id" params={{ id: b.id }} className="block p-4 border-b border-border last:border-0 hover:bg-secondary/50">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium">{b.client_name} <span className="text-xs text-muted-foreground">— {b.service === "photography" ? "تصوير" : "فيديو"}</span></div>
-                  <div className="text-xs text-muted-foreground mt-1">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0, 5)}–{b.end_time?.slice(0, 5)}</div>
-                  {b.venue_name && <div className="text-xs text-muted-foreground">{b.venue_name}</div>}
-                </div>
-                <div className="text-right">
-                  <div className="font-serif text-lg">{Number(b.total_price).toLocaleString("ar-JO")} د.أ</div>
-                  <StatusBadge s={b.status} />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
         )}
-      </section>
+
+        {!loading && !loadError && displayed.length > 0 && (
+          <div className="space-y-3">
+            {displayed.map((booking) => (
+              <div key={booking.id} className="relative overflow-hidden rounded-sm">
+                {/* Background hints */}
+                <div className="absolute inset-y-0 start-0 flex items-center px-4 bg-red-500/10">
+                  <XCircle className="h-5 w-5 text-red-500" />
+                </div>
+                <div className="absolute inset-y-0 end-0 flex items-center px-4 bg-emerald-500/10">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                </div>
+
+                {/* Draggable card */}
+                <motion.div
+                  drag="x"
+                  dragConstraints={{ left: -80, right: 80 }}
+                  dragElastic={0.1}
+                  onDragEnd={(_, { offset, velocity }) => {
+                    if (offset.x < -60 || velocity.x < -400) handleCancel(booking.id);
+                    if (offset.x > 60 || velocity.x > 400) handleConfirm(booking.id);
+                  }}
+                  className="relative bg-card border border-border rounded-sm p-4 cursor-grab active:cursor-grabbing"
+                  whileDrag={{ boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-sm border ${STATUS_COLORS[booking.status] ?? "bg-muted text-muted-foreground border-border"}`}>
+                      {STATUS_LABELS[booking.status] ?? booking.status}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      #{String(booking.id).slice(-6).toUpperCase()}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="h-3.5 w-3.5 text-gold flex-shrink-0" />
+                    <span className="text-sm font-medium truncate">
+                      {booking.client_name || booking.bride_name || "عميل غير محدد"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mb-3">
+                    <Calendar className="h-3.5 w-3.5 text-gold flex-shrink-0" />
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(booking.event_date)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-border pt-3 mt-1">
+                    <div className="flex items-center gap-1.5">
+                      <DollarSign className="h-3.5 w-3.5 text-gold" />
+                      <span className="text-sm font-semibold text-gold">
+                        {booking.total_price ? `${Number(booking.total_price).toLocaleString("ar-JO")} د.أ` : "—"}
+                      </span>
+                    </div>
+                    <Link
+                      to="/dashboard/bookings/$id"
+                      params={{ id: booking.id }}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      التفاصيل
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </motion.div>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
       <Footer />
     </div>
   );
-}
-
-function StatusBadge({ s }: { s: string }) {
-  const m: Record<string, { l: string; c: string }> = {
-    quote: { l: "عرض سعر", c: "bg-secondary" },
-    pending_deposit: { l: "بانتظار العربون", c: "bg-amber-100 text-amber-800" },
-    confirmed: { l: "مؤكّد", c: "bg-emerald-100 text-emerald-800" },
-    completed: { l: "منجز", c: "bg-charcoal text-ivory" },
-    cancelled: { l: "ملغى", c: "bg-destructive/10 text-destructive" },
-  };
-  const x = m[s] ?? m.quote;
-  return <span className={`text-[10px] mt-1 inline-block px-2 py-0.5 rounded-sm ${x.c}`}>{x.l}</span>;
 }
