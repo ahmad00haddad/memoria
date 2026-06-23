@@ -15,6 +15,7 @@ import { useEffect } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { LazyMotion, domAnimation } from "framer-motion";
 
 function NotFoundComponent() {
   return (
@@ -208,9 +209,11 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ConfirmProvider>
-          <SmoothScroll />
-          <Outlet />
-          <Toaster position="top-center" richColors closeButton />
+          <LazyMotion features={domAnimation}>
+            <SmoothScroll />
+            <Outlet />
+            <Toaster position="top-center" richColors closeButton />
+          </LazyMotion>
         </ConfirmProvider>
       </ThemeProvider>
     </QueryClientProvider>
