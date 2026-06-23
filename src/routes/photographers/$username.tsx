@@ -399,6 +399,16 @@ function PhotographerPage() {
   );
 }
 
+function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-1">{label}</div>
+      <div className="font-serif text-2xl leading-none">{value}</div>
+      {sub && <div className="text-[11px] opacity-60 mt-1 truncate">{sub}</div>}
+    </div>
+  );
+}
+
 function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
   const [f, setF] = useState({
     client_name: "", client_phone: "", client_email: "", event_date: "", start_time: "", end_time: "",
