@@ -92,6 +92,34 @@ function LoginPage() {
           <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
             {loading ? "جاري الدخول…" : "دخول"}
           </button>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">أو</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            disabled={loading}
+            onClick={async () => {
+              setErr(null);
+              setLoading(true);
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: { redirectTo: `${window.location.origin}/dashboard` },
+              });
+              setLoading(false);
+              if (error) setErr("تعذّر تسجيل الدخول عبر Google. حاول مجدداً.");
+            }}
+            className="w-full border border-border py-3 rounded-sm hover:bg-secondary disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
+          >
+            {/* Lovable AI: replace with Google icon if desired */}
+            <span>تسجيل الدخول بواسطة Google</span>
+          </button>
           <p className="text-sm text-center text-muted-foreground">
             مصوّر جديد؟ <Link to="/photographers/join" className="text-gold underline">أنشئ حسابًا</Link>
           </p>

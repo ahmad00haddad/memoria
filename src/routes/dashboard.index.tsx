@@ -31,6 +31,20 @@ function Dashboard() {
         navigate({ to: "/login" });
         return;
       }
+
+      // Process pending referral after OAuth signup (Google)
+      try {
+        const pendingRef = sessionStorage.getItem("pending_referral_code");
+        if (pendingRef) {
+          const { recordReferralAfterSignup } = await import("@/lib/booking.functions");
+          await recordReferralAfterSignup({ data: { referral_code: pendingRef } });
+          sessionStorage.removeItem("pending_referral_code");
+          toast.success("تم تطبيق رمز الإحالة بنجاح!");
+        }
+      } catch (e) {
+        // Silently ignore if referral was already recorded or invalid
+        sessionStorage.removeItem("pending_referral_code");
+      }
       const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }, { count: tplCount }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
         supabase.from("photographer_private").select("ical_token,cliq_alias,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
