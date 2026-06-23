@@ -108,8 +108,25 @@ function SubscriptionPage() {
     try {
       const ext = file.name.split(".").pop() || "jpg";
       const path = `${userId}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("payment-proofs").upload(path, file);
-      if (upErr) throw upErr;
+      // ✅ رفع آمن مع معالجة شاملة للأخطاء
+      const { uploadFile } = await import("@/lib/upload");
+      // ✅ رفع آمن مع معالجة شاملة للأخطاء
+      const { uploadFile } = await import("@/lib/upload");
+      const ext2 = file.name.split(".").pop() || "jpg";
+      const uploadPath = `${userId}/${Date.now()}.${ext2}`;
+      const uploadResult = await uploadFile(file, {
+        bucket: "payment-proofs",
+        path: uploadPath,
+        maxMb: 5,
+        allowedTypes: "image_or_pdf",
+        upsert: false,
+      });
+      if (!uploadResult.ok) {
+        toast.error(uploadResult.userMessage);
+        setUploading(false);
+        return;
+      }
+      const path = uploadResult.path;
       const { error: insErr } = await supabase.from("subscription_payments").insert({
         photographer_id: userId,
         amount: PRICE_USD,

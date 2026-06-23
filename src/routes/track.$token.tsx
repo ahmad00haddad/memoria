@@ -121,24 +121,41 @@ function TrackingPage() {
       let proofPath: string | null = null;
       const file = fileRef.current?.files?.[0];
       if (file) {
-        // Server-side hardening: validate size & MIME client-side too
-        const MAX = 5 * 1024 * 1024; // 5 MB
-        const ALLOWED = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
-        if (file.size > MAX) { toast.error("حجم الملف يجب أن لا يتجاوز 5 ميجابايت"); setUploading(false); return; }
-        if (!ALLOWED.includes(file.type)) { toast.error("الصيغة غير مدعومة. JPG / PNG / WEBP / PDF فقط"); setUploading(false); return; }
-        const ext = file.name.split(".").pop() || "jpg";
-        const path = `public-tokens/${token}/${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage.from("deposit-proofs").upload(path, file);
-        if (upErr) throw upErr;
-        proofPath = path;
+        // ✅ رفع آمن مع معالجة كاملة للأخطاء
+        const { uploadFile } = await import("@/lib/upload");
+        const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+        const uploadResult = await uploadFile(file, {
+          bucket: "deposit-proofs",
+          path: `public-tokens/${token}/${Date.now()}.${ext}`,
+          maxMb: 5,
+          allowedTypes: "image_or_pdf",
+          upsert: false,
+        });
+        if (!uploadResult.ok) {
+          toast.error(uploadResult.userMessage);
+          setUploading(false);
+          return;
+        }
+        proofPath = uploadResult.path;
       }
       await sendDeposit({ data: { token, proof_path: proofPath, reference: reference || null, note: note || null } });
       toast.success("تم إبلاغ المصورة. ستتم مراجعة الإثبات قريبًا.");
       setReference(""); setNote("");
       if (fileRef.current) fileRef.current.value = "";
       load();
-    } catch (e: any) { toast.error(e.message || "فشل الإرسال"); }
-    finally { setUploading(false); }
+    } catch (e: any) {
+      // إذا كان الخطأ من الشبكة أو انتهاء الجلسة
+      const msg = e?.message || "";
+      if (msg.includes("jwt") || msg.includes("auth")) {
+        toast.error("انتهت جلستك. يرجى تحديث الصفحة وإعادة المحاولة.");
+      } else if (msg.includes("network") || msg.includes("fetch")) {
+        toast.error("انقطع الاتصال. تحقق من الإنترنت وأعد المحاولة.");
+      } else {
+        toast.error(msg || "تعذّر إرسال الطلب. يرجى المحاولة مجدداً.");
+      }
+    } finally {
+      setUploading(false);
+    }
   };
 
   const onAddNote = async () => {
