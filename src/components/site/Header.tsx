@@ -164,12 +164,12 @@ function NavLink({
   className?: string;
 }) {
   return (
-    <Link to={to} className={`relative group px-2 py-1 rounded-sm transition-colors ${className}`}>
+    <Link to={to as any} className={`relative group px-2 py-1 rounded-sm hover:bg-secondary transition-colors ${className}`}>
       <span className="relative z-10">{children}</span>
       <motion.span
-        className="absolute bottom-0 left-0 h-px bg-gold"
-        initial={{ width: 0 }}
-        whileHover={{ width: "100%" }}
+        className="absolute bottom-0 left-0 right-0 h-px bg-gold origin-left"
+        initial={{ scaleX: 0 }}
+        whileHover={{ scaleX: 1 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
       />
     </Link>
