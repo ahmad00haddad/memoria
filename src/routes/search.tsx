@@ -81,7 +81,7 @@ function SearchPage() {
   const hasFilters = useMemo(
     () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0),
     [city, minPrice, maxPrice, date, debouncedQ, minRating],
-  );],
+  );
   );
 
   const clearAll = () => {
