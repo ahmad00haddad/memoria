@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Camera, Bell, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
@@ -9,7 +10,15 @@ import { useAuthState } from "@/hooks/use-auth-state";
 export function Header() {
   const [unread, setUnread] = useState(0);
   const [openMenu, setOpenMenu] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { loading: authLoading, authed, userId, isPhotographer } = useAuthState();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -66,8 +75,14 @@ export function Header() {
   }, [userId]);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
-      <div className="container-editorial flex h-16 items-center justify-between">
+    <header
+      className={`sticky top-0 z-40 border-b transition-all duration-300 ${
+        scrolled
+          ? "bg-background/95 backdrop-blur-sm border-border/50 py-1"
+          : "bg-background/60 backdrop-blur-md border-transparent py-2"
+      }`}
+    >
+      <div className="container-editorial flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
           <div className="grid h-9 w-9 place-items-center rounded-sm bg-gradient-gold">
             <Camera className="h-4 w-4 text-charcoal" />
@@ -78,11 +93,13 @@ export function Header() {
           </div>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
-          <Link to="/search" className="hidden sm:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">ابحث عن مصوّر</Link>
-          <Link to="/guide" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">كيف يعمل</Link>
-          <Link to="/pricing" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">الأسعار</Link>
-          <Link to="/for-photographers" className="hidden lg:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">للمصوّرات</Link>
-          {!authLoading && !authed && !isPhotographer && <Link to="/photographers/join" className="hidden md:inline-flex px-3 py-2 rounded-sm hover:bg-secondary transition-colors">انضم كمصوّر</Link>}
+          <NavLink to="/search" className="hidden sm:inline-flex">ابحث عن مصوّر</NavLink>
+          <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
+          <NavLink to="/pricing" className="hidden md:inline-flex">الأسعار</NavLink>
+          <NavLink to="/for-photographers" className="hidden lg:inline-flex">للمصوّرات</NavLink>
+          {!authLoading && !authed && !isPhotographer && (
+            <NavLink to="/photographers/join" className="hidden md:inline-flex">انضم كمصوّر</NavLink>
+          )}
           {authed && (
             <Link to="/notifications" className="relative px-3 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="إشعارات">
               <Bell className="h-5 w-5" />
@@ -134,5 +151,27 @@ export function Header() {
         </nav>
       </div>
     </header>
+  );
+}
+
+function NavLink({
+  to,
+  children,
+  className = "",
+}: {
+  to: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <Link to={to} className={`relative group px-2 py-1 rounded-sm transition-colors ${className}`}>
+      <span className="relative z-10">{children}</span>
+      <motion.span
+        className="absolute bottom-0 left-0 h-px bg-gold"
+        initial={{ width: 0 }}
+        whileHover={{ width: "100%" }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+      />
+    </Link>
   );
 }
