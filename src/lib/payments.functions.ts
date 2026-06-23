@@ -147,6 +147,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
     const amount = monthlyPrice * data.months;
     const currency = (process.env.PAYMENT_CURRENCY || "JOD").toUpperCase();
     const base = process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://elitecapture.com";
+    const base = process.env.PUBLIC_APP_URL || "https://royal-lens-flow.lovable.app";
 
     const checkout = await provider.createDepositCheckout({
       // نُعيد استخدام createDepositCheckout مع metadata مختلفة
