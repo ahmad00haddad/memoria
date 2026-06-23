@@ -82,10 +82,10 @@ function BookingsList() {
   const handleCancel = async (id: string) => {
     const { error } = await supabase
       .from("bookings")
-      .update({ status: "canceled" })
+      .update({ status: "cancelled" })
       .eq("id", id);
     if (error) { toast.error("تعذّر إلغاء الحجز"); return; }
-    setList((prev) => prev.map((b) => b.id === id ? { ...b, status: "canceled" } : b));
+    setList((prev) => prev.map((b) => b.id === id ? { ...b, status: "cancelled" } : b));
     toast.error("تم إلغاء الحجز");
   };
 
