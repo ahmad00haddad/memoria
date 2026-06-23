@@ -35,7 +35,9 @@ function ReferralsPage() {
   if (loading) return <PageLoader />;
 
   const link = `${typeof window !== "undefined" ? window.location.origin : ""}/photographers/join?ref=${profile?.referral_code ?? ""}`;
-  const granted = refs.filter((r) => r.reward_granted).length;
+  const grantedCount = refs.filter((r) => r.reward_granted).length;
+  // كل إحالة ناجحة = 14 يومًا مجانيًا للداعية (الخيار 1)
+  const earnedDays = grantedCount * 14;
 
   return (
     <div className="min-h-screen bg-background">
