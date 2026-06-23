@@ -283,8 +283,6 @@ function TrackingPage() {
           </ol>
         </div>
 
-        <BookingTimeline status={data.booking?.status ?? 'pending_deposit'} />
-
         {/* Booking summary */}
         <div className="rounded-sm border border-border bg-card p-5 mb-6 text-sm">
           <div className="grid sm:grid-cols-2 gap-3 mb-4">
