@@ -8,6 +8,7 @@ import { Footer } from "@/components/site/Footer";
 import heroImg from "@/assets/hero-bride.jpg";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
+import { HeroParallax } from "@/components/HeroParallax";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -133,13 +134,16 @@ function Landing() {
             animate="visible"
           >
             <div className="absolute -inset-4 bg-gradient-royal rounded-sm -z-10" />
-            <img
-              src={heroImg}
-              alt="عروس في إطلالة سينمائية"
-              width={1080}
-              height={1600}
-              className="w-full h-[480px] sm:h-[560px] object-cover rounded-sm shadow-elegant"
-            />
+            <HeroParallax className="overflow-hidden rounded-sm" strength={60}>
+              <img
+                data-parallax-target
+                src={heroImg}
+                alt="عروس في إطلالة سينمائية"
+                width={1080}
+                height={1600}
+                className="w-full h-[480px] sm:h-[560px] object-cover rounded-sm shadow-elegant will-change-transform"
+              />
+            </HeroParallax>
             <motion.div
               animate={float}
               className="absolute -bottom-6 -start-6 sm:-start-10 bg-card border border-border rounded-sm p-4 shadow-soft max-w-[260px]"
