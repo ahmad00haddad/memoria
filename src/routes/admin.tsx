@@ -1,10 +1,11 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+// Admin Refunds route registered below
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, CreditCard, LayoutDashboard, Star } from "lucide-react";
+import { Users, CreditCard, LayoutDashboard, Star, DollarSign } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -51,6 +52,7 @@ function AdminLayout() {
           <TabLink to="/admin/photographers" icon={<Users className="h-4 w-4" />} label="المصورات" />
           <TabLink to="/admin/subscriptions" icon={<CreditCard className="h-4 w-4" />} label="المدفوعات" />
           <TabLink to="/admin/reviews" icon={<Star className="h-4 w-4" />} label="التقييمات" />
+          <TabLink to="/admin/refunds" icon={<DollarSign className="h-4 w-4" />} label="الاستردادات" />
         </nav>
         <Outlet />
       </div>

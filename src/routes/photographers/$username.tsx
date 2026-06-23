@@ -113,7 +113,19 @@ function PhotographerPage() {
         ]);
         setPricing((p ?? []) as Pricing[]);
         setReviews(r ?? []);
-        setUnavail(((u ?? []) as any[]).map((x: any) => (typeof x === "string" ? x : x.date ?? x.get_photographer_busy_dates)).filter(Boolean));
+        // ✅ إصلاح: تحليل نتيجة RPC بشكل صحيح بدون الاعتماد على اسم الدالة كـ key
+        // RPC قد يُعيد string مباشرة أو object بمفاتيح متعددة
+        setUnavail(((u ?? []) as any[]).map((x: any) => {
+          if (typeof x === "string") return x;
+          // محاولة استخراج الـ date من أي مفتاح ممكن
+          if (x && typeof x === "object") {
+            if (typeof x.date === "string") return x.date;
+            // أخذ أول قيمة string في الـ object
+            const firstStr = Object.values(x).find((v) => typeof v === "string");
+            if (firstStr) return firstStr as string;
+          }
+          return null;
+        }).filter(Boolean) as string[]);
         setBookedSlots((bk ?? []) as any);
         try {
           const dep = await fetchDeposit({ data: { username: normalizedUsername } });

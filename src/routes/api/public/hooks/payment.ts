@@ -47,11 +47,12 @@ export const Route = createFileRoute("/api/public/hooks/payment")({
 
         // 2) Idempotency: نطالب بالحدث أولاً؛ التعارض = سبق معالجته.
         const obj = evt.object || {};
-        const meta = (obj.metadata || {}) as Record<string, string>;
+        // دعم كل من Stripe (metadata) وHyperPay (customParameters في metadata)
+        const meta = (obj.metadata || obj.customParameters || {}) as Record<string, string>;
         const kind = meta.kind || (obj.subscription ? "subscription" : "deposit");
         const relatedBookingId =
           kind === "deposit" ? (meta.booking_id || obj.client_reference_id || null) : null;
-        const relatedUserId = kind === "subscription" ? meta.photographer_id || null : null;
+        const relatedUserId = kind === "subscription" ? (meta.photographer_id || null) : null;
 
         const { error: claimErr } = await supabaseAdmin.from("payment_events").insert({
           id: evt.event_id,

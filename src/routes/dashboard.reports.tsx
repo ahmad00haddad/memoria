@@ -68,6 +68,30 @@ function ReportsPage() {
     const completedRevenue = filtered.filter((b) => b.status === "completed").reduce((s, b) => s + Number(b.total_price ?? 0), 0);
     const upcomingRevenue = filtered.filter((b) => b.status === "confirmed" && b.event_date && new Date(b.event_date).getTime() >= now).reduce((s, b) => s + Number(b.total_price ?? 0), 0);
     const pendingDeposits = filtered.filter((b) => b.status === "pending_deposit").reduce((s, b) => s + Number(b.deposit_amount ?? 0), 0);
+    // ✅ إضافة: معدل التحويل + أعلى خدمة + مقارنة بالشهر الماضي
+    const totalRequests = filtered.length;
+    const confirmedCount = filtered.filter((b) => ["confirmed", "completed"].includes(b.status)).length;
+    const conversionRate = totalRequests > 0 ? Math.round((confirmedCount / totalRequests) * 100) : 0;
+
+    // أكثر خدمة طلباً
+    const svcCount: Record<string, number> = {};
+    for (const b of filtered) {
+      if (b.service) svcCount[b.service] = (svcCount[b.service] || 0) + 1;
+    }
+    const topService = Object.entries(svcCount).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+
+    // مقارنة بالشهر الماضي
+    const startOfThisMonth = new Date(); startOfThisMonth.setDate(1); startOfThisMonth.setHours(0,0,0,0);
+    const startOfLastMonth = new Date(startOfThisMonth); startOfLastMonth.setMonth(startOfLastMonth.getMonth() - 1);
+    const thisMonthBks = bookings.filter((b) => b.event_date && new Date(b.event_date) >= startOfThisMonth);
+    const lastMonthBks = bookings.filter((b) => {
+      const d = b.event_date ? new Date(b.event_date) : null;
+      return d && d >= startOfLastMonth && d < startOfThisMonth;
+    });
+    const thisMonthRevenue = thisMonthBks.filter((b) => ["confirmed","completed"].includes(b.status)).reduce((s, b) => s + Number(b.total_price ?? 0), 0);
+    const lastMonthRevenue = lastMonthBks.filter((b) => ["confirmed","completed"].includes(b.status)).reduce((s, b) => s + Number(b.total_price ?? 0), 0);
+    const revenueGrowth = lastMonthRevenue > 0 ? Math.round(((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100) : null;
+
     const avgTicket = earned.length ? totalRevenue / earned.length : 0;
 
     // Monthly buckets (last 12 months of events)
@@ -100,8 +124,14 @@ function ReportsPage() {
     const statusCounts: Record<string, number> = {};
     filtered.forEach((b) => { statusCounts[b.status] = (statusCounts[b.status] ?? 0) + 1; });
 
-    return { totalRevenue, completedRevenue, upcomingRevenue, pendingDeposits, avgTicket, monthly, peak, services, statusCounts, count: earned.length };
-  }, [filtered, now]);
+    return {
+      totalRevenue, completedRevenue, upcomingRevenue, pendingDeposits,
+      avgTicket, monthly, peak, services, statusCounts,
+      count: earned.length,
+      // ✅ إضافة: معدل التحويل + أعلى خدمة + مقارنة الأشهر
+      conversionRate, topService, thisMonthRevenue, lastMonthRevenue, revenueGrowth,
+    };
+  }, [filtered, bookings, now]);
 
   const exportCsv = () => {
     const rows = [["id", "client", "service", "event_date", "status", "total_price", "deposit_amount", "deposit_confirmed_at", "delivered_at"]];
@@ -154,11 +184,44 @@ function ReportsPage() {
             <p className="text-muted-foreground">لا توجد حجوزات في هذه الفترة الزمنية بعد.</p>
           </div>
         )}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
           <Stat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="إجمالي الإيرادات" value={`${stats.totalRevenue.toFixed(0)} د.أ`} sub={`${stats.count} حجز`} />
           <Stat icon={<CheckCircle2 className="h-5 w-5 text-emerald-700" />} label="مكتمل ومحصّل" value={`${stats.completedRevenue.toFixed(0)} د.أ`} />
           <Stat icon={<TrendingUp className="h-5 w-5 text-blue-600" />} label="إيرادات قادمة" value={`${stats.upcomingRevenue.toFixed(0)} د.أ`} sub="حجوزات مؤكّدة قادمة" />
           <Stat icon={<Clock className="h-5 w-5 text-amber-600" />} label="عرابين معلّقة" value={`${stats.pendingDeposits.toFixed(0)} د.أ`} sub="لم يصل العربون بعد" />
+        </div>
+
+        {/* ✅ إضافة: بطاقات التحليلات المتقدمة */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Stat
+            icon={<TrendingUp className="h-5 w-5 text-purple-600" />}
+            label="معدّل التحويل"
+            value={`${stats.conversionRate}%`}
+            sub="من الطلبات → حجوزات مؤكّدة"
+          />
+          <Stat
+            icon={<DollarSign className="h-5 w-5 text-cyan-600" />}
+            label="هذا الشهر"
+            value={`${stats.thisMonthRevenue.toFixed(0)} د.أ`}
+            sub={stats.revenueGrowth !== null
+              ? stats.revenueGrowth >= 0
+                ? `▲ ${stats.revenueGrowth}% عن الشهر الماضي`
+                : `▼ ${Math.abs(stats.revenueGrowth)}% عن الشهر الماضي`
+              : "لا يوجد شهر مقارنة"}
+            subColor={stats.revenueGrowth !== null && stats.revenueGrowth >= 0 ? "text-emerald-600" : "text-red-500"}
+          />
+          <Stat
+            icon={<CheckCircle2 className="h-5 w-5 text-indigo-600" />}
+            label="أعلى خدمة"
+            value={stats.topService === "photography" ? "تصوير" : stats.topService === "cinematic_video" ? "فيديو سينمائي" : stats.topService ?? "—"}
+            sub="الأكثر طلباً"
+          />
+          <Stat
+            icon={<DollarSign className="h-5 w-5 text-orange-600" />}
+            label="متوسط التذكرة"
+            value={`${(stats.avgTicket || 0).toFixed(0)} د.أ`}
+            sub="لكل حجز مؤكّد"
+          />
         </div>
 
         <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
@@ -208,12 +271,12 @@ function ReportsPage() {
   );
 }
 
-function Stat({ icon, label, value, sub }: { icon: any; label: string; value: any; sub?: string }) {
+function Stat({ icon, label, value, sub, subColor }: { icon: any; label: string; value: any; sub?: string; subColor?: string }) {
   return (
     <div className="rounded-sm border border-border bg-card p-4">
       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">{icon}<span>{label}</span></div>
       <div className="font-serif text-2xl">{value}</div>
-      {sub && <div className="text-xs text-muted-foreground mt-1">{sub}</div>}
+      {sub && <div className={["text-xs mt-1", subColor ?? "text-muted-foreground"].join(" ")}>{sub}</div>}
     </div>
   );
 }
