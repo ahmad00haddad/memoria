@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
+import { SmoothScroll } from "@/components/SmoothScroll";
 
 function NotFoundComponent() {
   return (
@@ -207,6 +208,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <ConfirmProvider>
+          <SmoothScroll />
           <Outlet />
           <Toaster position="top-center" richColors closeButton />
         </ConfirmProvider>
