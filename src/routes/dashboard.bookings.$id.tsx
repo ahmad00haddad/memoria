@@ -11,11 +11,17 @@ import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getG
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
 import { createContractForBooking } from "@/lib/contracts.functions";
 import { cancelBooking } from "@/lib/cancellation.functions";
-import { sendGalleryDeliveredEmail } from "@/lib/email.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 import { ShotList } from "@/components/ShotList";
 import { watermarkImageFile } from "@/lib/watermark";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+// استبدال الكتابات المباشرة بـ server functions آمنة (لها audit trail + تحقق ملكية)
+import {
+  updateProductionStage,
+  markFinalPaymentReceived,
+  updateBookingStatus,
+  saveBookingSelectionLink,
+} from "@/lib/production.functions";
 
 export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
 
@@ -35,8 +41,12 @@ function BookingDetail() {
   const softDeleteFn = useServerFn(softDeleteBooking);
   const regenTokenFn = useServerFn(regenerateBookingToken);
   const cancelFn = useServerFn(cancelBooking);
-  const sendDeliveryEmailFn = useServerFn(sendGalleryDeliveredEmail);
   const createContractFn = useServerFn(createContractForBooking);
+  // Server functions آمنة بديلاً عن الكتابة المباشرة
+  const updateStageFn = useServerFn(updateProductionStage);
+  const markFinalPaidFn = useServerFn(markFinalPaymentReceived);
+  const updateStatusFn = useServerFn(updateBookingStatus);
+  const saveSelectionFn = useServerFn(saveBookingSelectionLink);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -71,31 +81,31 @@ function BookingDetail() {
     return () => { supabase.removeChannel(ch); };
   }, [id, uid]);
 
+  // ✅ آمن: server fn تتحقق من الملكية + تسجّل في audit_logs + ترسل إيميل التسليم
   const setStage = async (stage: string) => {
-    const patch: any = { production_stage: stage };
-    if (stage === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
-    if (stage === "delivered") {
-      patch.editing_completed_at = new Date().toISOString();
-      patch.delivered_at = new Date().toISOString();
-      patch.status = "completed";
+    try {
+      await updateStageFn({ data: { booking_id: id, stage } });
+      toast.success("تم تحديث المرحلة");
+      load();
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر تحديث المرحلة");
     }
-    await supabase.from("bookings").update(patch).eq("id", id);
-    if (stage === "delivered") {
-      try { await sendDeliveryEmailFn({ data: { booking_id: id } }); } catch {}
-    }
-    toast.success("تم تحديث المرحلة");
-    load();
   };
 
+  // ✅ آمن: server fn تتحقق من الملكية + تُشعر العميل بالرابط
   const saveSelectionLink = async (link: string) => {
-    await supabase.from("bookings").update({ selection_link: link }).eq("id", id);
-    toast.success("تم حفظ الرابط");
-    load();
+    try {
+      await saveSelectionFn({ data: { booking_id: id, link } });
+      toast.success("تم حفظ الرابط وإشعار العميل");
+      load();
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر حفظ الرابط");
+    }
   };
 
   const setStatus = async (status: "quote" | "pending_deposit" | "confirmed" | "completed" | "cancelled") => {
     if (status === "confirmed") {
-      // Server-side fn requires deposit proof / sent flag.
+      // Server fn تتطلب إثبات العربون — لا تغيير
       try { await confirmFn({ data: { booking_id: id } }); }
       catch (e: any) { return toast.error(e?.message || "تعذّر التأكيد"); }
       toast.success("تم تأكيد الحجز");
@@ -107,22 +117,30 @@ function BookingDetail() {
       }
       return;
     }
-    await supabase.from("bookings").update({ status }).eq("id", id);
-    toast.success("تم تحديث الحالة");
-    await load();
+    // ✅ آمن: server fn بدلاً من الكتابة المباشرة
+    try {
+      await updateStatusFn({ data: { booking_id: id, status: status as any } });
+      toast.success("تم تحديث الحالة");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر تحديث الحالة");
+    }
   };
 
+  // ✅ آمن: server fn تتحقق من الملكية + تسجّل في audit_logs
   const markFinalPaid = async () => {
-    const amount = b.total_price - (b.deposit_amount || 0);
-    await supabase.from("bookings").update({ final_paid_at: new Date().toISOString(), final_paid_amount: amount }).eq("id", id);
-    toast.success("تم تسجيل الدفعة النهائية");
-    load();
+    try {
+      await markFinalPaidFn({ data: { booking_id: id } });
+      toast.success("تم تسجيل الدفعة النهائية");
+      load();
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر تسجيل الدفعة");
+    }
   };
 
+  // ✅ آمن: يستخدم setStage الذي يستدعي server fn
   const markDelivered = async () => {
-    await supabase.from("bookings").update({ delivered_at: new Date().toISOString(), status: "completed" }).eq("id", id);
-    toast.success("تم تسجيل تسليم الصور");
-    load();
+    await setStage("delivered");
   };
 
   const onCancel = async () => {

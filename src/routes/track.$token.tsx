@@ -1,6 +1,6 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { useServerFn } from "@tanstack/react-start";
@@ -44,6 +44,10 @@ function TrackingPage() {
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [newNote, setNewNote] = useState("");
+  // ✅ إصلاح: Dialog حقيقي بدلاً من window.prompt
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
@@ -172,14 +176,24 @@ function TrackingPage() {
     }
   };
 
-  const onClientCancel = async () => {
-    const reason = window.prompt("سبب الإلغاء (اختياري):") ?? "";
-    if (!(await confirm({ title: "إلغاء الطلب", description: "سيتم إلغاء طلب الحجز نهائياً. لا يمكنك الإلغاء بعد تأكيد المصوّرة.", confirmText: "إلغاء الطلب", destructive: true }))) return;
+  // ✅ إصلاح: فتح Dialog بدلاً من window.prompt (يعمل في PWA + كل المتصفحات)
+  const onClientCancel = () => {
+    setShowCancelDialog(true);
+  };
+
+  const handleConfirmCancel = async () => {
+    setCancelLoading(true);
     try {
-      await cancelFn({ data: { token, reason: reason || null } });
+      await cancelFn({ data: { token, reason: cancelReason.trim() || null } });
       toast.success("تم إلغاء الطلب");
+      setShowCancelDialog(false);
+      setCancelReason("");
       load();
-    } catch (e: any) { toast.error(e?.message || "تعذّر الإلغاء"); }
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر الإلغاء");
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   const ph = b.photographer;
@@ -365,6 +379,59 @@ function TrackingPage() {
         <ClientGallery token={token} />
         <ClientChat token={token} clientName={b.client_name} />
       </section>
+
+      {/* ✅ Dialog إلغاء الطلب — بديل window.prompt يعمل في PWA وكل المتصفحات */}
+      {showCancelDialog && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-background border border-border rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h2 className="font-serif text-xl mb-2">إلغاء طلب الحجز</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              سيتم إلغاء طلبك نهائياً. لا يمكن الإلغاء بعد تأكيد المصوّرة للحجز.
+            </p>
+
+            {/* سياسة الاسترداد */}
+            {b?.refund_policy_text && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4 text-sm">
+                <p className="font-medium text-amber-800 dark:text-amber-300 mb-1">سياسة استرداد العربون:</p>
+                <p className="text-amber-700 dark:text-amber-400">{b.refund_policy_text}</p>
+              </div>
+            )}
+
+            <label className="block text-sm font-medium mb-2">
+              سبب الإلغاء <span className="text-muted-foreground">(اختياري)</span>
+            </label>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="اكتبي سبب الإلغاء هنا…"
+              rows={3}
+              maxLength={2000}
+              className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-destructive/30"
+            />
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              {cancelReason.length}/2000
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => { setShowCancelDialog(false); setCancelReason(""); }}
+                disabled={cancelLoading}
+                className="px-4 py-2 text-sm border border-border rounded-md hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                تراجع
+              </button>
+              <button
+                onClick={handleConfirmCancel}
+                disabled={cancelLoading}
+                className="px-4 py-2 text-sm bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {cancelLoading ? "جاري الإلغاء…" : "تأكيد الإلغاء"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );

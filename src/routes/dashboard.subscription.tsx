@@ -5,8 +5,10 @@ import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Clock, Upload, Copy, AlertTriangle, CreditCard } from "lucide-react";
+import { CheckCircle2, Clock, Upload, Copy, AlertTriangle, CreditCard, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { createSubscriptionCheckout } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/dashboard/subscription")({
   component: SubscriptionPage,
@@ -43,7 +45,10 @@ function SubscriptionPage() {
   const [userId, setUserId] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [reference, setReference] = useState("");
+  const [onlinePayLoading, setOnlinePayLoading] = useState(false);
+  const [selectedMonths, setSelectedMonths] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
+  const checkoutFn = useServerFn(createSubscriptionCheckout);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -62,6 +67,40 @@ function SubscriptionPage() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+
+  // ✅ دفع الاشتراك أونلاين عبر بوّابة الدفع
+  const handleOnlinePayment = async () => {
+    setOnlinePayLoading(true);
+    try {
+      const res: any = await checkoutFn({ data: { months: selectedMonths } });
+      if (!res?.configured || !res?.url) {
+        toast.message("الدفع الإلكتروني غير متاح حالياً. استخدمي CliQ للدفع اليدوي.");
+        return;
+      }
+      window.location.href = res.url;
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر بدء عملية الدفع");
+    } finally {
+      setOnlinePayLoading(false);
+    }
+  };
+
+  // عرض رسالة نجاح/إلغاء الدفع عند العودة من بوّابة الدفع
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    const status = u.searchParams.get("payment");
+    if (status === "success") {
+      toast.success("تم استلام دفعتك! سيتم تفعيل الاشتراك خلال لحظات…");
+      u.searchParams.delete("payment");
+      window.history.replaceState({}, "", u.toString());
+      setTimeout(() => load(), 3000);
+    } else if (status === "cancelled") {
+      toast.message("أُلغي الدفع. يمكنك المحاولة مجدداً أو استخدام CliQ.");
+      u.searchParams.delete("payment");
+      window.history.replaceState({}, "", u.toString());
+    }
+    // eslint-disable-next-line
+  }, []);
 
   const handleProofUpload = async (file: File) => {
     if (!userId) return;

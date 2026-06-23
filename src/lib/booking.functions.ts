@@ -244,7 +244,13 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
   });
 
 export const clientMarkReceived = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string }) => d)
+  .inputValidator((d: { token: string }) => {
+    // ✅ تحقق من صيغة الـ token (إصلاح: كان يمرر أي مدخل بدون تحقق)
+    if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) {
+      throw new Error("invalid token");
+    }
+    return d;
+  })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("client_mark_received", { _token: data.token });
@@ -253,7 +259,14 @@ export const clientMarkReceived = createServerFn({ method: "POST" })
   });
 
 export const clientAddNote = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string; note: string }) => d)
+  .inputValidator((d: { token: string; note: string }) => {
+    if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) {
+      throw new Error("invalid token");
+    }
+    if (!d.note || typeof d.note !== "string" || d.note.trim().length === 0) throw new Error("الملاحظة مطلوبة");
+    if (d.note.length > 4000) throw new Error("الملاحظة طويلة جداً (4000 حرف كحد أقصى)");
+    return { token: d.token, note: d.note.trim() };
+  })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("client_add_note", { _token: data.token, _note: data.note });

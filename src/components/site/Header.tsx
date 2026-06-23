@@ -13,11 +13,10 @@ export function Header() {
 
   useEffect(() => {
     let active = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
     const loadUnread = async () => {
-      if (!userId) {
-        setUnread(0);
-        return;
-      }
+      if (!userId) { setUnread(0); return; }
       const { count } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
@@ -25,8 +24,45 @@ export function Header() {
         .eq("is_read", false);
       if (active) setUnread(count ?? 0);
     };
+
     void loadUnread();
-    return () => { active = false; };
+
+    // ✅ Real-time: الاشتراك في الإشعارات الجديدة فوراً بدون polling
+    if (userId) {
+      channel = supabase
+        .channel(`notif-badge-${userId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            if (active) setUnread((prev) => prev + 1);
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${userId}`,
+          },
+          () => {
+            // عند قراءة الإشعارات، أعد حساب العدد
+            if (active) void loadUnread();
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      active = false;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   return (
