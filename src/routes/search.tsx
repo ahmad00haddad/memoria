@@ -35,6 +35,8 @@ function SearchPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [date, setDate] = useState("");
   const [sort, setSort] = useState<SearchSort>("featured");
+  // ✅ إضافة: فلتر التقييم الأدنى
+  const [minRating, setMinRating] = useState<number>(0);
   const navigate = useNavigate();
 
   const runSearch = useServerFn(searchPhotographers);
@@ -70,7 +72,7 @@ function SearchPage() {
   });
 
   const results: SearchResultItem[] = resultsQ.data ?? [];
-  const hasFilters = useMemo(
+  
     () => !!(city || minPrice || maxPrice || date || debouncedQ),
     [city, minPrice, maxPrice, date, debouncedQ],
   );
@@ -93,7 +95,7 @@ function SearchPage() {
           <h1 className="font-serif text-3xl md:text-4xl">اعثري على مصوّرة عرسك</h1>
           <p className="text-sm text-muted-foreground mt-2">
             {results.length > 0
-              ? `${results.length} مصوّرة متاحة${hasFilters ? " ضمن فلترك" : ""}`
+              ? `${displayResults.length} مصوّرة متاحة${hasFilters ? " ضمن فلترك" : ""}`
               : "أدخلي مدينتك أو ميزانيتك أو تاريخ حفلك لنُريك المصوّرات المتاحات."}
           </p>
         </div>
@@ -195,7 +197,7 @@ function SearchPage() {
           </div>
         ) : resultsQ.isLoading ? (
           <GridSkeleton items={6} />
-        ) : results.length === 0 ? (
+        ) : displayResults.length === 0 ? (
           <EmptyState
             icon={Search}
             title="لا توجد نتائج"
@@ -208,7 +210,7 @@ function SearchPage() {
           />
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {results.map((p) => (
+            {displayResults.map((p) => (
               <Link
                 key={p.username}
                 to="/photographers/$username"
