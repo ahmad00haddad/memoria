@@ -21,7 +21,11 @@ function JoinPage() {
 
   useEffect(() => {
     const ref = new URLSearchParams(window.location.search).get("ref");
-    if (ref) setRefCode(ref);
+    if (ref) {
+      setRefCode(ref);
+      // Persist referral code for OAuth flow (Google signup)
+      try { sessionStorage.setItem("pending_referral_code", ref); } catch {}
+    }
   }, []);
 
   const upd = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -129,6 +133,36 @@ function JoinPage() {
           {err && <p className="text-sm text-destructive">{err}</p>}
           <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
             {loading ? "جاري الإنشاء…" : "إنشاء حسابي"}
+          </button>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">أو</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            disabled={loading}
+            onClick={async () => {
+              setErr(null);
+              setLoading(true);
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: `${window.location.origin}/dashboard`,
+                },
+              });
+              setLoading(false);
+              if (error) setErr("تعذّر التسجيل عبر Google. حاول مجدداً.");
+            }}
+            className="w-full border border-border py-3 rounded-sm hover:bg-secondary disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
+          >
+            {/* Lovable AI: replace with Google icon if desired */}
+            <span>التسجيل بواسطة Google</span>
           </button>
           <p className="text-sm text-center text-muted-foreground">
             لديك حساب؟ <Link to="/login" className="text-gold underline">تسجيل الدخول</Link>
