@@ -72,9 +72,16 @@ function SearchPage() {
   });
 
   const results: SearchResultItem[] = resultsQ.data ?? [];
-  
-    () => !!(city || minPrice || maxPrice || date || debouncedQ),
-    [city, minPrice, maxPrice, date, debouncedQ],
+
+  // ✅ تطبيق فلتر التقييم client-side بعد جلب النتائج
+  const displayResults = minRating > 0
+    ? results.filter((r) => r.avg_rating >= minRating)
+    : results;
+
+  const hasFilters = useMemo(
+    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0),
+    [city, minPrice, maxPrice, date, debouncedQ, minRating],
+  );],
   );
 
   const clearAll = () => {
@@ -84,6 +91,7 @@ function SearchPage() {
     setMaxPrice("");
     setDate("");
     setSort("featured");
+    setMinRating(0);
   };
 
   return (

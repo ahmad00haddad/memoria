@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // robots.txt — يُوجّه محركات البحث
-const BASE_URL = process.env.PUBLIC_APP_URL || "https://royal-lens-flow.lovable.app";
+const BASE_URL = process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://elitecapture.com";
 
 export const Route = createFileRoute("/robots[.]txt")({
   server: {

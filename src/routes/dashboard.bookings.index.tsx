@@ -58,6 +58,25 @@ function BookingsList() {
         <BackToDashboard />
         <h1 className="font-serif text-4xl mt-2 mb-6">الحجوزات</h1>
 
+        {/* ✅ حقل البحث النصي */}
+        <div className="relative mb-4">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="ابحث بالاسم أو التاريخ أو الهاتف…"
+            className="w-full border border-input bg-background rounded-sm px-4 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-ring/30"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
         <div className="flex gap-2 mb-4 flex-wrap text-sm">
           {[
             { v: "all", l: "الكل" }, { v: "quote", l: "عروض أسعار" }, { v: "pending_deposit", l: "بانتظار العربون" },
