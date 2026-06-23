@@ -43,8 +43,8 @@ function ReferralsPage() {
       <section className="container-editorial py-12 max-w-3xl">
         <div className="mb-4"><BackToDashboard /></div>
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">برنامج الإحالة</div>
-        <h1 className="font-serif text-4xl mb-2">ادعُ زميلة، اربحا شهرًا مجانيًا</h1>
-        <p className="text-muted-foreground mb-8">عند انضمام مصوّرة جديدة عبر رابطك وإكمال أول اشتراك، تحصلان على شهر مجاني للطرفين.</p>
+        <h1 className="font-serif text-4xl mb-2">ادعُ زميلة، اربحي 14 يومًا مجانيًا</h1>
+        <p className="text-muted-foreground mb-8">عند انضمام مصوّرة جديدة عبر رابطك واشتراكها المدفوع الأول، تحصلين على 14 يومًا مجانيًا إضافية.</p>
 
         <div className="border border-border rounded-sm p-6 bg-card mb-6">
           <div className="text-sm text-muted-foreground mb-2">رابطك الخاص</div>
@@ -73,7 +73,7 @@ function ReferralsPage() {
         </div>
 
         <div className="text-xs text-muted-foreground border-t border-border pt-4">
-          <strong>كيف يعمل؟</strong> أرسلي الرابط لزميلة. حين تُكمل تسجيلها وتُفعّل اشتراكها الأول، يُضاف شهر مجاني تلقائيًا لاشتراكَيكما عند مراجعة الإدارة.
+          <strong>كيف يعمل؟</strong> أرسلي الرابط لزميلة. حين تُكمل تسجيلها وتُفعّل اشتراكها الأول، يُضاف 14 يومًا مجانيًا تلقائيًا لاشتراكَيكما عند مراجعة الإدارة.
         </div>
       </section>
       <Footer />
