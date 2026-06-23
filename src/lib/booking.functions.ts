@@ -415,7 +415,7 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: bk, error } = await supabase
       .from("bookings")
-      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id")
+      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id, client_phone, client_tracking_token, client_name, event_date, total_price")
       .eq("id", data.booking_id)
       .maybeSingle();
     if (error) throw new Error(error.message);
