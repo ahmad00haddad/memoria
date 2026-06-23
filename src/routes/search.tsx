@@ -273,17 +273,14 @@ function SearchPage() {
 }
 
 function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number }) {
-  // Bento variety: featured + every 5th get a taller aspect; otherwise rotate 4:3 / 1:1 / 3:4.
-  const aspects = ["aspect-[4/5]", "aspect-[1/1]", "aspect-[3/4]", "aspect-[4/3]"];
-  const isTall = p.is_featured || idx % 5 === 0;
-  const aspectClass = isTall ? "aspect-[3/4]" : aspects[idx % aspects.length];
-
+  void idx;
+  const aspectClass = "aspect-[4/5]";
   return (
     <motion.article
       variants={fadeUp}
       whileHover={{ y: -6 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="masonry-item"
+      className="h-full"
     >
       <Link
         to="/photographers/$username"
