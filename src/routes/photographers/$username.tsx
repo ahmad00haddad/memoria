@@ -13,6 +13,8 @@ import { format } from "date-fns";
 import { useServerFn } from "@tanstack/react-start";
 import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functions";
 import { Lightbox } from "@/components/Lightbox";
+// ✅ إضافة: تحسين الصور (WebP + responsive) عبر Cloudflare Images أو Supabase Transform
+import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,

@@ -4,7 +4,59 @@ function isUuid(s: any) { return typeof s === "string" && /^[0-9a-f-]{36}$/i.tes
 function isToken(s: any) { return typeof s === "string" && /^[0-9a-f]{16,64}$/i.test(s); }
 
 // Client view via tracking token — returns gallery metadata + signed photo URLs
-export const getGalleryByToken = createServerFn({ method: "POST" })
+// ============================================================================
+// Image URL Optimization Helpers
+// ----------------------------------------------------------------------------
+// يُنشئ روابط صور محسّنة عبر Cloudflare Images Transform أو Supabase Storage
+// Transform. يُستخدم لتحسين سرعة التحميل وتوفير عرض النطاق الترددي.
+//
+// للتفعيل: اضبط CLOUDFLARE_IMAGES_ZONE=your-zone.domain.com
+//          أو اتركه فارغاً لاستخدام Supabase Storage Transform مباشرة
+// ============================================================================
+
+/**
+ * يُعيد رابط صورة محسّن بالأبعاد والجودة المطلوبة.
+ * يدعم:
+ *   - Cloudflare Images: /cdn-cgi/image/width=800,quality=85,format=auto/{original}
+ *   - Supabase Storage Transform: ?width=800&quality=85
+ *   - Original URL: إذا لم تتوفر أي خدمة تحسين
+ */
+export function optimizedImageUrl(
+  url: string | null | undefined,
+  opts: { width?: number; quality?: number; format?: "webp" | "auto" } = {}
+): string | null {
+  if (!url) return null;
+  const { width = 800, quality = 85, format = "auto" } = opts;
+
+  // Cloudflare Images Transform
+  const cfZone = typeof process !== "undefined" ? process.env?.CLOUDFLARE_IMAGES_ZONE : null;
+  if (cfZone && url.startsWith("https://")) {
+    return `https://${cfZone}/cdn-cgi/image/width=${width},quality=${quality},format=${format}/${url}`;
+  }
+
+  // Supabase Storage Transform (للصور المخزّنة في Supabase Storage)
+  if (url.includes("/storage/v1/object/public/")) {
+    const sep = url.includes("?") ? "&" : "?";
+    return `${url}${sep}width=${width}&quality=${quality}`;
+  }
+
+  // رابط خارجي — إرجاعه كما هو
+  return url;
+}
+
+/**
+ * يُعيد srcset للصور المتجاوبة (responsive images)
+ * للاستخدام في: <img srcSet={responsiveSrcSet(url)} sizes="(max-width: 640px) 100vw, 50vw" />
+ */
+export function responsiveSrcSet(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  const sizes = [400, 800, 1200, 1600];
+  return sizes
+    .map((w) => `${optimizedImageUrl(url, { width: w }) || url} ${w}w`)
+    .join(", ");
+}
+
+ = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string }) => {
     if (!isToken(d?.token)) throw new Error("invalid token");
     return d;
