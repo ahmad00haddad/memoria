@@ -8,7 +8,6 @@ import { GridSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { staggerContainer, fadeUp, cardHover } from "@/lib/animations";
 import {
   searchPhotographers,
   listPublishedCities,
