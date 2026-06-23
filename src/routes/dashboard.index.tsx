@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,8 @@ import { signOut } from "@/lib/auth";
 import { Clock, CheckCircle2, AlertTriangle, Sparkles, Calendar, DollarSign, Star, ArrowLeft, Bell, CircleDashed, ListChecks, TrendingUp, Send, MessageCircle, X, PartyPopper } from "lucide-react";
 import { toast } from "sonner";
 import { OnboardingWizard } from "@/components/OnboardingWizard";
+import { staggerContainer, fadeUp } from "@/lib/animations";
+import { useCountUp } from "@/hooks/use-count-up";
 
 export const Route = createFileRoute("/dashboard/")({
   component: Dashboard,
@@ -121,32 +124,43 @@ function Dashboard() {
 
         <SubscriptionBanner sub={sub} />
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Stat icon={<Calendar className="h-5 w-5 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
-          <Stat icon={<Clock className="h-5 w-5 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
-          <Stat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="الإيرادات" value={`${stats.revenue.toFixed(0)} د.أ`} />
-          <Stat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating ? stats.avgRating.toFixed(1) : "—"} />
-        </div>
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <NumStat icon={<Calendar className="h-5 w-5 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
+          <NumStat icon={<Clock className="h-5 w-5 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
+          <NumStat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="الإيرادات" value={stats.revenue} suffix=" د.أ" />
+          <NumStat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
+        </motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Stat icon={<TrendingUp className="h-5 w-5 text-emerald-700" />} label="إيرادات هذا الشهر" value={`${stats.monthRevenue.toFixed(0)} د.أ`} />
-          <Stat icon={<Calendar className="h-5 w-5 text-blue-600" />} label="حجوزات خلال 30 يوماً" value={stats.upcoming30} />
-          <Stat icon={<DollarSign className="h-5 w-5 text-amber-600" />} label="عرابين معلّقة" value={`${stats.pendingDepositsAmount.toFixed(0)} د.أ`} />
-          <Stat icon={<Send className="h-5 w-5 text-violet-600" />} label="تسليمات خلال 7 أيام" value={stats.deliveriesDueSoon} />
-        </div>
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <NumStat icon={<TrendingUp className="h-5 w-5 text-emerald-700" />} label="إيرادات هذا الشهر" value={stats.monthRevenue} suffix=" د.أ" />
+          <NumStat icon={<Calendar className="h-5 w-5 text-blue-600" />} label="حجوزات خلال 30 يوماً" value={stats.upcoming30} />
+          <NumStat icon={<DollarSign className="h-5 w-5 text-amber-600" />} label="عرابين معلّقة" value={stats.pendingDepositsAmount} suffix=" د.أ" />
+          <NumStat icon={<Send className="h-5 w-5 text-violet-600" />} label="تسليمات خلال 7 أيام" value={stats.deliveriesDueSoon} />
+        </motion.div>
 
-        {!profile?.quickstart_dismissed_at && !qsDismissed && (
-          <QuickStart
-            profile={profile}
-            pricingCount={pricingCount}
-            bookingCount={stats.confirmed + stats.pending + stats.completed}
-            hasCliq={hasCliq}
-            templatesCount={templatesCount}
-            onDismiss={dismissQuickStart}
-          />
-        )}
+        <AnimatePresence initial={false}>
+          {!profile?.quickstart_dismissed_at && !qsDismissed && (
+            <motion.div
+              key="qs"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0, scale: 0.98 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
+            >
+              <QuickStart
+                profile={profile}
+                pricingCount={pricingCount}
+                bookingCount={stats.confirmed + stats.pending + stats.completed}
+                hasCliq={hasCliq}
+                templatesCount={templatesCount}
+                onDismiss={dismissQuickStart}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3">
           <Card title="الملف الشخصي" desc="الصور، النبذة، المعدّات، التواصل، إعدادات الحجز." cta="تعديل الملف" to="/dashboard/profile" />
           <Card title="بطاقة الأسعار" desc="باقات التصوير والفيديو والإضافات." cta="إدارة الأسعار" to="/dashboard/pricing" />
           <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
@@ -159,7 +173,7 @@ function Dashboard() {
           <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
           <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهرًا مجانيًا للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
           <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={profile?.username ? `/photographers/${profile.username}` : undefined} external={!!profile?.username} disabled={!profile?.username} />
-        </div>
+        </motion.div>
       </section>
       <Footer />
     </div>
@@ -272,6 +286,17 @@ function Stat({ icon, label, value }: { icon: any; label: string; value: any }) 
       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">{icon}<span>{label}</span></div>
       <div className="font-serif text-2xl">{value}</div>
     </div>
+  );
+}
+
+function NumStat({ icon, label, value, suffix = "", fractionDigits = 0, fallback }: { icon: any; label: string; value: number; suffix?: string; fractionDigits?: number; fallback?: string }) {
+  const animated = useCountUp(Number.isFinite(value) ? value : 0);
+  const display = fallback ?? `${animated.toFixed(fractionDigits)}${suffix}`;
+  return (
+    <motion.div variants={fadeUp} className="rounded-sm border border-border bg-card p-4 hover:shadow-soft transition-shadow">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">{icon}<span>{label}</span></div>
+      <div className="font-serif text-2xl tabular-nums">{display}</div>
+    </motion.div>
   );
 }
 

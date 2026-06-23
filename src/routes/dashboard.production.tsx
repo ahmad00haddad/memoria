@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
@@ -10,17 +11,14 @@ import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCirc
 
 export const Route = createFileRoute("/dashboard/production")({ component: ProductionBoard });
 
-// ملاحظة لـ Lovable (UI/تصميم — #3): ألوان المراحل أدناه فاتحة فقط (bg-*-50)
-// وتظهر باهتة/غير واضحة، وتنكسر في الوضع الداكن لعدم وجود مقابلات dark:.
-// المطلوب لاحقاً: تباين أوضح لكل مرحلة + إضافة dark: لكل لون (نص وخلفية وحدود)،
-// مع إبقاء مفاتيح المراحل (key) كما هي حتى لا يتأثّر المنطق.
+// ألوان المراحل: تباين أوضح + دعم dark mode كامل (نص وخلفية وحدود)
 const STAGES: { key: string; label: string; icon: any; color: string }[] = [
-  { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-4 w-4" />, color: "bg-slate-50 border-slate-200" },
-  { key: "shooting", label: "يوم التصوير", icon: <Camera className="h-4 w-4" />, color: "bg-amber-50 border-amber-200" },
-  { key: "selecting", label: "اختيار الصور", icon: <ImageIcon className="h-4 w-4" />, color: "bg-blue-50 border-blue-200" },
-  { key: "editing", label: "قيد التحرير", icon: <Edit3 className="h-4 w-4" />, color: "bg-violet-50 border-violet-200" },
-  { key: "ready", label: "جاهز للتسليم", icon: <Send className="h-4 w-4" />, color: "bg-emerald-50 border-emerald-200" },
-  { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-4 w-4" />, color: "bg-secondary border-border" },
+  { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-4 w-4" />, color: "bg-slate-100 border-slate-300 text-slate-900 dark:bg-slate-900/40 dark:border-slate-700 dark:text-slate-100" },
+  { key: "shooting", label: "يوم التصوير", icon: <Camera className="h-4 w-4" />, color: "bg-amber-100 border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-100" },
+  { key: "selecting", label: "اختيار الصور", icon: <ImageIcon className="h-4 w-4" />, color: "bg-blue-100 border-blue-300 text-blue-900 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-100" },
+  { key: "editing", label: "قيد التحرير", icon: <Edit3 className="h-4 w-4" />, color: "bg-violet-100 border-violet-300 text-violet-900 dark:bg-violet-950/40 dark:border-violet-800 dark:text-violet-100" },
+  { key: "ready", label: "جاهز للتسليم", icon: <Send className="h-4 w-4" />, color: "bg-emerald-100 border-emerald-300 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-100" },
+  { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-4 w-4" />, color: "bg-secondary border-border text-foreground" },
 ];
 
 function ProductionBoard() {
@@ -117,29 +115,39 @@ function ProductionBoard() {
               <div key={s.key} className={`rounded-sm border ${s.color} p-3 min-h-[200px]`}>
                 <div className="flex items-center gap-2 text-sm font-semibold mb-3">
                   {s.icon}<span>{s.label}</span>
-                  <span className="ms-auto text-xs bg-white/70 px-2 py-0.5 rounded-sm">{items.length}</span>
+                  <span className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-sm">{items.length}</span>
                 </div>
-                <div className="space-y-2">
+                <motion.div className="space-y-2" layout>
+                  <AnimatePresence mode="popLayout">
                   {items.map((b) => {
                     const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
                     return (
-                      <div key={b.id} className="bg-white rounded-sm border border-border p-3 text-xs space-y-1.5">
+                      <motion.div
+                        key={b.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="bg-card text-foreground rounded-sm border border-border p-3 text-xs space-y-1.5"
+                      >
                         <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-sm hover:text-gold block">{b.client_name}</Link>
                         <div className="text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
                         {due !== null && s.key !== "delivered" && (
-                          <div className={due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700" : "text-muted-foreground"}>
+                          <div className={due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
                             {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
                           </div>
                         )}
                         <div className="flex gap-1 pt-1">
-                          <button onClick={() => move(b.id, -1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="السابق"><ChevronRight className="h-3 w-3" /></button>
-                          <button onClick={() => move(b.id, 1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="التالي"><ChevronLeft className="h-3 w-3" /></button>
+                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, -1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="السابق"><ChevronRight className="h-3 w-3" /></motion.button>
+                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, 1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="التالي"><ChevronLeft className="h-3 w-3" /></motion.button>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
+                  </AnimatePresence>
                   {items.length === 0 && <p className="text-[11px] text-muted-foreground text-center py-4">—</p>}
-                </div>
+                </motion.div>
               </div>
             );
           })}
@@ -154,33 +162,43 @@ function ProductionBoard() {
               <div className={`rounded-sm border ${s.color} p-3`}>
                 <div className="flex items-center gap-2 text-sm font-semibold mb-3">
                   {s.icon}<span>{s.label}</span>
-                  <span className="ms-auto text-xs bg-white/70 px-2 py-0.5 rounded-sm">{items.length}</span>
+                  <span className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-sm">{items.length}</span>
                 </div>
-                <div className="space-y-2">
+                <motion.div className="space-y-2" layout>
+                  <AnimatePresence mode="popLayout">
                   {items.map((b) => {
                     const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
                     return (
-                      <div key={b.id} className="bg-white rounded-sm border border-border p-4 text-sm space-y-2">
+                      <motion.div
+                        key={b.id}
+                        layout
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="bg-card text-foreground rounded-sm border border-border p-4 text-sm space-y-2"
+                      >
                         <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-base hover:text-gold block">{b.client_name}</Link>
                         <div className="text-xs text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
                         {due !== null && s.key !== "delivered" && (
-                          <div className={`text-xs ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700" : "text-muted-foreground"}`}>
+                          <div className={`text-xs ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
                             {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
                           </div>
                         )}
                         <div className="flex gap-2 pt-2 border-t border-border">
-                          <button onClick={() => move(b.id, -1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs">
+                          <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs">
                             <ChevronRight className="h-4 w-4" /> السابق
-                          </button>
-                          <button onClick={() => move(b.id, 1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs">
+                          </motion.button>
+                          <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, 1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs">
                             التالي <ChevronLeft className="h-4 w-4" />
-                          </button>
+                          </motion.button>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
+                  </AnimatePresence>
                   {items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">لا حجوزات في هذه المرحلة</p>}
-                </div>
+                </motion.div>
               </div>
             );
           })()}

@@ -1,5 +1,5 @@
-import { useReducedMotion } from "motion/react";
-import type { Variants } from "motion/react";
+import { useReducedMotion } from "framer-motion";
+import type { Variants } from "framer-motion";
 
 /**
  * Returns a safe variants object that respects prefers-reduced-motion.
