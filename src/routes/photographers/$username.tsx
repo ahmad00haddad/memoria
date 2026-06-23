@@ -15,6 +15,8 @@ import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functi
 import { Lightbox } from "@/components/Lightbox";
 // ✅ إضافة: تحسين الصور (WebP + responsive) عبر Cloudflare Images أو Supabase Transform
 import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
+import { motion } from "framer-motion";
+import { MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
@@ -186,29 +188,105 @@ function PhotographerPage() {
       <Header />
 
       {/* HERO */}
-      <section className="relative">
-        <div className="relative h-[70vh] min-h-[480px] bg-gradient-royal overflow-hidden">
-          {profile.cover_url && <img src={profile.cover_url} alt="" className="absolute inset-0 h-full w-full object-cover" />}
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="relative h-full container-editorial flex flex-col justify-center text-ivory">
-            <div className="text-xs uppercase tracking-[0.4em] mb-3 opacity-80">{profile.tagline || "PHOTOGRAPHY"}</div>
-            <h1 className="font-serif text-5xl sm:text-7xl mb-4 flex items-center gap-3 flex-wrap">
-              {profile.display_name}
-              {profile.is_featured && <span className="text-[10px] uppercase tracking-wider bg-gold/20 text-gold px-2 py-1 rounded-sm border border-gold/40">⭐ مميّز</span>}
-            </h1>
-            {profile.bio && <p className="max-w-xl text-base sm:text-lg opacity-90 leading-relaxed mb-8 whitespace-pre-line">{profile.bio}</p>}
-            <div className="flex gap-3 flex-wrap">
-              <button onClick={() => scrollTo("book")} className="bg-ivory text-charcoal px-8 py-3 rounded-sm font-medium hover:opacity-90">احجزي الآن</button>
-              <button onClick={() => scrollTo("packages")} className="border border-ivory/60 text-ivory px-8 py-3 rounded-sm hover:bg-white/10">الباقات</button>
-            </div>
-            {reviews.length > 0 && (
-              <div className="mt-6 text-sm flex items-center gap-2 opacity-90">
-                <Star className="h-4 w-4 fill-gold text-gold" />
-                <span className="font-semibold">{avgRating.toFixed(1)}</span>
-                <span>({reviews.length} مراجعة)</span>
+      {/* HERO — Editorial Magazine layout */}
+      <section className="relative bg-charcoal text-ivory grain-overlay overflow-hidden">
+        {/* Top meta strip: ISSUE / DATE / FEATURE — like a magazine masthead */}
+        <div className="container-editorial pt-8 pb-4 border-b border-ivory/10 flex flex-wrap items-center gap-x-8 gap-y-2 text-[10px] uppercase tracking-[0.35em] opacity-70">
+          <span>EliteCapture · العدد ٠١</span>
+          <span className="hidden sm:inline">{new Date().toLocaleDateString("ar-JO", { year: "numeric", month: "long" })}</span>
+          <span className="ms-auto inline-flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-gold inline-block animate-pulse" />
+            ملف المصوّرة
+          </span>
+        </div>
+
+        <div className="container-editorial grid gap-10 lg:grid-cols-12 items-stretch py-12 lg:py-16 relative">
+          {/* LEFT — typography column (cols 1..5) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="order-2 lg:order-1 lg:col-span-5 flex flex-col justify-between"
+          >
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.5em] text-gold mb-4">
+                {profile.tagline || "WEDDING PHOTOGRAPHY"}
               </div>
+              <h1 className="display-serif text-[clamp(3rem,8vw,7rem)] mb-6">
+                {profile.display_name}
+              </h1>
+              {profile.is_featured && (
+                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30 mb-6">
+                  <Star className="h-3 w-3 fill-gold" /> اختيار المحرّر
+                </span>
+              )}
+              {profile.bio && (
+                <p className="max-w-md text-base sm:text-lg leading-[1.8] opacity-85 whitespace-pre-line mb-8">
+                  {profile.bio}
+                </p>
+              )}
+              <div className="flex gap-3 flex-wrap">
+                <motion.button
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => scrollTo("book")}
+                  className="group relative overflow-hidden bg-ivory text-charcoal px-8 py-3.5 rounded-sm font-medium transition before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-gold/40 before:to-transparent before:transition-transform before:duration-700"
+                >
+                  <span className="relative">احجزي الآن</span>
+                </motion.button>
+                <motion.button
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => scrollTo("packages")}
+                  className="border border-ivory/40 text-ivory px-8 py-3.5 rounded-sm hover:bg-ivory/10 transition"
+                >
+                  الباقات
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Magazine-style stats row */}
+            <div className="mt-12 grid grid-cols-3 gap-4 border-t border-ivory/10 pt-6">
+              <Stat label="التقييم" value={reviews.length ? avgRating.toFixed(1) : "—"} sub={reviews.length ? `${reviews.length} مراجعة` : "جديد"} />
+              <Stat label="الموقع" value={profile.city || "—"} sub={profile.base_location || "الأردن"} />
+              <Stat label="الباقات" value={String(pricing.filter((p) => p.package !== "addon").length)} sub="باقة احترافية" />
+            </div>
+          </motion.div>
+
+          {/* RIGHT — full-bleed cover (cols 6..12) with subtle scale-in */}
+          <motion.div
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="order-1 lg:order-2 lg:col-span-7 relative min-h-[420px] lg:min-h-[640px] rounded-sm overflow-hidden bg-gradient-royal"
+          >
+            {profile.cover_url && (
+              <img
+                src={profile.cover_url}
+                alt={profile.display_name}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
             )}
-          </div>
+            {/* Subtle gradient for legibility of caption */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-charcoal/40 via-transparent to-transparent" />
+
+            {/* Floating editorial caption */}
+            <div className="absolute bottom-4 end-4 sm:bottom-6 sm:end-6 max-w-[260px]">
+              <div className="bg-ivory/95 text-charcoal backdrop-blur-sm border border-border rounded-sm p-4 shadow-elegant">
+                <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
+                  مختارة من المعرض
+                </div>
+                <div className="font-serif text-base leading-snug">
+                  «كل صورة قصة، وكل قصة تستحق الفخامة»
+                </div>
+                {profile.city && (
+                  <div className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" /> {profile.city}
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -317,6 +395,16 @@ function PhotographerPage() {
       </section>
 
       <Footer />
+    </div>
+  );
+}
+
+function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div>
+      <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-1">{label}</div>
+      <div className="font-serif text-2xl leading-none">{value}</div>
+      {sub && <div className="text-[11px] opacity-60 mt-1 truncate">{sub}</div>}
     </div>
   );
 }
