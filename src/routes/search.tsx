@@ -10,12 +10,12 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import {
-import { Drawer } from "vaul";
   searchPhotographers,
   listPublishedCities,
   type SearchResultItem,
   type SearchSort,
 } from "@/lib/search.functions";
+import { Drawer } from "vaul";
 
 export const Route = createFileRoute("/search")({
   component: SearchPage,
