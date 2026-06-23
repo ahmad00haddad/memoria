@@ -1,33 +1,41 @@
 {
-  "name": "EliteCapture — مصوّرو الأعراس في الأردن",
+  "name": "EliteCapture",
   "short_name": "EliteCapture",
-  "description": "احجزي مصوّر عرسك بسهولة: مواعيد، أسعار، وعربون فوري.",
+  "description": "منصة مصوّري الأعراس في الأردن — احجزي مصوّرتك المثالية",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "lang": "ar",
   "dir": "rtl",
-  "background_color": "#0c0c0c",
   "theme_color": "#0c0c0c",
+  "background_color": "#0c0c0c",
+  "categories": ["lifestyle", "photography", "booking", "wedding"],
   "icons": [
+    { "src": "/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "/app-icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "name": "ابحثي عن مصوّرة",
+      "short_name": "بحث",
+      "description": "تصفّحي مصوّرات الأعراس",
+      "url": "/search",
+      "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }]
     },
     {
-      "src": "/app-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "name": "لوحة المصوّر",
+      "short_name": "داشبورد",
+      "description": "إدارة حجوزاتك ومتابعة أعمالك",
+      "url": "/dashboard/",
+      "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }]
     },
     {
-      "src": "/app-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "name": "الحجوزات",
+      "short_name": "الحجوزات",
+      "description": "راجعي طلبات الحجز المعلّقة",
+      "url": "/dashboard/bookings",
+      "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
