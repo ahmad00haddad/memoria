@@ -1,1 +1,256 @@
-aW1wb3J0IHsgUXVlcnlDbGllbnQsIFF1ZXJ5Q2xpZW50UHJvdmlkZXIgfSBmcm9tICJAdGFuc3RhY2svcmVhY3QtcXVlcnkiOwppbXBvcnQgewogIE91dGxldCwKICBMaW5rLAogIGNyZWF0ZVJvb3RSb3V0ZVdpdGhDb250ZXh0LAogIHVzZVJvdXRlciwKICBIZWFkQ29udGVudCwKICBTY3JpcHRzLAogIHVzZVJvdXRlclN0YXRlLAp9IGZyb20gIkB0YW5zdGFjay9yZWFjdC1yb3V0ZXIiOwoKaW1wb3J0IGFwcENzcyBmcm9tICIuLi9zdHlsZXMuY3NzP3VybCI7CmltcG9ydCB7IFRvYXN0ZXIgfSBmcm9tICJAL2NvbXBvbmVudHMvdWkvc29ubmVyIjsKaW1wb3J0IHsgc3VwYWJhc2UgfSBmcm9tICJAL2ludGVncmF0aW9ucy9zdXBhYmFzZS9jbGllbnQiOwppbXBvcnQgeyB1c2VFZmZlY3QgfSBmcm9tICJyZWFjdCI7CmltcG9ydCB7IFRoZW1lUHJvdmlkZXIgfSBmcm9tICJAL2NvbXBvbmVudHMvdGhlbWUtcHJvdmlkZXIiOwppbXBvcnQgeyBDb25maXJtUHJvdmlkZXIgfSBmcm9tICJAL2NvbXBvbmVudHMvdWkvY29uZmlybS1kaWFsb2ciOwppbXBvcnQgeyBTbW9vdGhTY3JvbGwgfSBmcm9tICJAL2NvbXBvbmVudHMvU21vb3RoU2Nyb2xsIjsKaW1wb3J0IHsgTGF6eU1vdGlvbiwgZG9tQW5pbWF0aW9uLCBtb3Rpb24sIEFuaW1hdGVQcmVzZW5jZSB9IGZyb20gImZyYW1lci1tb3Rpb24iOwoKZnVuY3Rpb24gTm90Rm91bmRDb21wb25lbnQoKSB7CiAgcmV0dXJuICgKICAgIDxkaXYgY2xhc3NOYW1lPSJmbGV4IG1pbi1oLXNjcmVlbiBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYmctYmFja2dyb3VuZCBweC00IiBkaXI9InJ0bCI+CiAgICAgIDxkaXYgY2xhc3NOYW1lPSJtYXgtdy1tZCB0ZXh0LWNlbnRlciI+CiAgICAgICAgPGgxIGNsYXNzTmFtZT0iZm9udC1zZXJpZiB0ZXh0LTd4bCBmb250LWJvbGQgdGV4dC1mb3JlZ3JvdW5kIj7ZpNmg2aQ8L2gxPgogICAgICAgIDxoMiBjbGFzc05hbWU9Im10LTQgZm9udC1zZXJpZiB0ZXh0LTJ4bCB0ZXh0LWZvcmVncm91bmQiPtin2YTYtdmB2K3YqSDYutmK2LEg2YXZiNis2YjYr9ipPC9oMj4KICAgICAgICA8cCBjbGFzc05hbWU9Im10LTIgdGV4dC1zbSB0ZXh0LW11dGVkLWZvcmVncm91bmQiPgogICAgICAgICAg2KfZhNi12YHYrdipINin2YTYqtmKINiq2KjYrdir2YrZhiDYudmG2YfYpyDYutmK2LEg2YXZiNis2YjYr9ipINij2Ygg2KrZhSDZhtmC2YTZh9inLgogICAgICAgIDwvcD4KICAgICAgICA8ZGl2IGNsYXNzTmFtZT0ibXQtNiBmbGV4IGZsZXgtd3JhcCBqdXN0aWZ5LWNlbnRlciBnYXAtMiI+CiAgICAgICAgICA8TGluawogICAgICAgICAgICB0bz0iLyIKICAgICAgICAgICAgY2xhc3NOYW1lPSJpbmxpbmUtZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgcm91bmRlZC1zbSBiZy1jaGFyY29hbCBweC01IHB5LTIuNSB0ZXh0LXNtIGZvbnQtbWVkaXVtIHRleHQtaXZvcnkgdHJhbnNpdGlvbi1jb2xvcnMgaG92ZXI6b3BhY2l0eS05MCIKICAgICAgICAgID4KICAgICAgICAgICAg2KfZhNi52YjYr9ipINmE2YTYsdim2YrYs9mK2KkKICAgICAgICAgIDwvTGluaz4KICAgICAgICAgIDxMaW5rCiAgICAgICAgICAgIHRvPSIvc2VhcmNoIgogICAgICAgICAgICBjbGFzc05hbWU9ImlubGluZS1mbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciByb3VuZGVkLXNtIGJvcmRlciBib3JkZXItYm9yZGVyIGJnLWJhY2tncm91bmQgcHgtNSBweS0yLjUgdGV4dC1zbSBmb250LW1lZGl1bSB0ZXh0LWZvcmVncm91bmQgdHJhbnNpdGlvbi1jb2xvcnMgaG92ZXI6YmctYWNjZW50IgogICAgICAgICAgPgogICAgICAgICAgICDYp9io2K3Yq9mKINi52YYg2YXYtdmI2ZHYsdipCiAgICAgICAgICA8L0xpbms+CiAgICAgICAgPC9kaXY+CiAgICAgIDwvZGl2PgogICAgPC9kaXY+CiAgKTsKfQoKZnVuY3Rpb24gRXJyb3JDb21wb25lbnQoeyBlcnJvciwgcmVzZXQgfTogeyBlcnJvcjogRXJyb3I7IHJlc2V0OiAoKSA9PiB2b2lkIH0pIHsKICBjb25zb2xlLmVycm9yKGVycm9yKTsKICBjb25zdCByb3V0ZXIgPSB1c2VSb3V0ZXIoKTsKCiAgcmV0dXJuICgKICAgIDxkaXYgY2xhc3NOYW1lPSJmbGV4IG1pbi1oLXNjcmVlbiBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYmctYmFja2dyb3VuZCBweC00IiBkaXI9InJ0bCI+CiAgICAgIDxkaXYgY2xhc3NOYW1lPSJtYXgtdy1tZCB0ZXh0LWNlbnRlciI+CiAgICAgICAgPGgxIGNsYXNzTmFtZT0iZm9udC1zZXJpZiB0ZXh0LTJ4bCB0ZXh0LWZvcmVncm91bmQiPgogICAgICAgICAg2KrYudiw2ZHYsSDYqtit2YXZitmEINmH2LDZhyDYp9mE2LXZgdit2KkKICAgICAgICA8L2gxPgogICAgICAgIDxwIGNsYXNzTmFtZT0ibXQtMiB0ZXh0LXNtIHRleHQtbXV0ZWQtZm9yZWdyb3VuZCI+CiAgICAgICAgICDYrdiv2Ksg2K7ZhNmEINi62YrYsSDZhdiq2YjZgti5LiDZitmF2YPZhtmD2ZAg2KfZhNmF2K3Yp9mI2YTYqSDZhdis2K/Yr9in2Ysg2KPZiCDYp9mE2LnZiNiv2Kkg2YTZhNix2KbZitiz2YrYqS4KICAgICAgICA8L3A+CiAgICAgICAgPGRpdiBjbGFzc05hbWU9Im10LTYgZmxleCBmbGV4LXdyYXAganVzdGlmeS1jZW50ZXIgZ2FwLTIiPgogICAgICAgICAgPGJ1dHRvbgogICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiB7CiAgICAgICAgICAgICAgcm91dGVyLmludmFsaWRhdGUoKTsKICAgICAgICAgICAgICByZXNldCgpOwogICAgICAgICAgICB9fQogICAgICAgICAgICBjbGFzc05hbWU9ImlubGluZS1mbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciByb3VuZGVkLXNtIGJnLWNoYXJjb2FsIHB4LTUgcHktMi41IHRleHQtc20gZm9udC1tZWRpdW0gdGV4dC1pdm9yeSB0cmFuc2l0aW9uLWNvbG9ycyBob3ZlcjpvcGFjaXR5LTkwIgogICAgICAgICAgPgogICAgICAgICAgICDYpdi52KfYr9ipINin2YTZhdit2KfZiNmE2KkKICAgICAgICAgIDwvYnV0dG9uPgogICAgICAgICAgPExpbmsKICAgICAgICAgICAgdG89Ii8iCiAgICAgICAgICAgIGNsYXNzTmFtZT0iaW5saW5lLWZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHJvdW5kZWQtc20gYm9yZGVyIGJvcmRlci1ib3JkZXIgYmctYmFja2dyb3VuZCBweC01IHB5LTIuNSB0ZXh0LXNtIGZvbnQtbWVkaXVtIHRleHQtZm9yZWdyb3VuZCB0cmFuc2l0aW9uLWNvbG9ycyBob3ZlcjpiZy1hY2NlbnQiCiAgICAgICAgICA+CiAgICAgICAgICAgINin2YTYsdim2YrYs9mK2KkKICAgICAgICAgIDwvTGluaz4KICAgICAgICA8L2Rpdj4KICAgICAgPC9kaXY+CiAgICA8L2Rpdj4KICApOwp9CgpleHBvcnQgY29uc3QgUm91dGUgPSBjcmVhdGVSb290Um91dGVXaXRoQ29udGV4dDx7IHF1ZXJ5Q2xpZW50OiBRdWVyeUNsaWVudCB9PigpKHsKICBoZWFkOiAoKSA9PiAoewogICAgbWV0YTogWwogICAgICB7IGNoYXJTZXQ6ICJ1dGYtOCIgfSwKICAgICAgeyBuYW1lOiAidmlld3BvcnQiLCBjb250ZW50OiAid2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEiIH0sCiAgICAgIHsgbmFtZTogImFwcGxlLW1vYmlsZS13ZWItYXBwLWNhcGFibGUiLCBjb250ZW50OiAieWVzIiB9LAogICAgICB7IG5hbWU6ICJtb2JpbGUtd2ViLWFwcC1jYXBhYmxlIiwgY29udGVudDogInllcyIgfSwKICAgICAgeyBuYW1lOiAiYXBwbGUtbW9iaWxlLXdlYi1hcHAtc3RhdHVzLWJhci1zdHlsZSIsIGNvbnRlbnQ6ICJibGFjay10cmFuc2x1Y2VudCIgfSwKICAgICAgeyBuYW1lOiAiYXBwbGUtbW9iaWxlLXdlYi1hcHAtdGl0bGUiLCBjb250ZW50OiAiRWxpdGVDYXB0dXJlIiB9LAogICAgICB7IHRpdGxlOiAiRWxpdGVDYXB0dXJlIOKAlCDZhdmG2LXYqSDZhdi12YjZkdix2Yog2KfZhNij2LnYsdin2LMg2YHZiiDYp9mE2KPYsdiv2YYiIH0sCiAgICAgIHsgbmFtZTogImRlc2NyaXB0aW9uIiwgY29udGVudDogItin2K3YrNiyINmF2LXZiNmR2LEg2LnYsdiz2YMg2KjYs9mH2YjZhNipOiDZhdmI2KfYudmK2K/YjCDYo9iz2LnYp9ix2Iwg2YjYudix2KjZiNmGINmB2YjYsdmKINiv2YjZhiDZiNin2KrYs9in2KguIiB9LAogICAgICB7IHByb3BlcnR5OiAib2c6dGl0bGUiLCBjb250ZW50OiAiRWxpdGVDYXB0dXJlIOKAlCDZhdmG2LXYqSDZhdi12YjZkdix2Yog2KfZhNij2LnYsdin2LMg2YHZiiDYp9mE2KPYsdiv2YYiIH0sCiAgICAgIHsgcHJvcGVydHk6ICJvZzpkZXNjcmlwdGlvbiIsIGNvbnRlbnQ6ICLYp9it2KzYsiDZhdi12YjZkdixINi52LHYs9mDINio2LPZh9mI2YTYqTog2YXZiNin2LnZitiv2Iwg2KPYs9i52KfYsdiMINmI2LnYsdio2YjZhiDZgdmI2LHZiiDYr9mI2YYg2YjYp9iq2LPYp9ioLiIgfSwKICAgICAgeyBwcm9wZXJ0eTogIm9nOnR5cGUiLCBjb250ZW50OiAid2Vic2l0ZSIgfSwKICAgICAgeyBuYW1lOiAidHdpdHRlcjpjYXJkIiwgY29udGVudDogInN1bW1hcnkiIH0sCiAgICAgIHsgbmFtZTogInR3aXR0ZXI6c2l0ZSIsIGNvbnRlbnQ6ICJATG92YWJsZSIgfSwKICAgICAgeyBuYW1lOiAidHdpdHRlcjp0aXRsZSIsIGNvbnRlbnQ6ICJFbGl0ZUNhcHR1cmUg4oCUINmF2YbYtdipINmF2LXZiNmR2LHZiiDYp9mE2KPYudix2KfYsyDZgdmKINin2YTYo9ix2K/ZhiIgfSwKICAgICAgeyBuYW1lOiAidHdpdHRlcjpkZXNjcmlwdGlvbiIsIGNvbnRlbnQ6ICLYp9it2KzYsiDZhdi12YjZkdixINi52LHYs9mDINio2LPZh9mI2YTYqTog2YXZiNin2LnZitiv2Iwg2KPYs9i52KfYsdiMINmI2LnYsdio2YjZhiDZgdmI2LHZiiDYr9mI2YYg2YjYp9iq2LPYp9ioLiIgfSwKICAgICAgeyBwcm9wZXJ0eTogIm9nOmltYWdlIiwgY29udGVudDogImh0dHBzOi8vcHViLWJiMmUxMDNhMzJkYjRlMTk4NTI0YTJlOWVkOGYzNWI0LnIyLmRldi84M2RkMTYwYi05YWJhLTRiZGUtYTVhOS05OTI1N2U4MWQzYzAvaWQtcHJldmlldy0xM2E1NTI2Yi0tN2JkNWYyNTMtNGM1Yi00NDhjLThlOTAtZDBjMzkwZTcxNWQ5LmxvdmFibGUuYXBwLTE3Nzg0ODI0MDQzNDIucG5nIiB9LAogICAgICB7IG5hbWU6ICJ0d2l0dGVyOmltYWdlIiwgY29udGVudDogImh0dHBzOi8vcHViLWJiMmUxMDNhMzJkYjRlMTk4NTI0YTJlOWVkOGYzNWI0LnIyLmRldi84M2RkMTYwYi05YWJhLTRiZGUtYTVhOS05OTI1N2U4MWQzYzAvaWQtcHJldmlldy0xM2E1NTI2Yi0tN2JkNWYyNTMtNGM1Yi00NDhjLThlOTAtZDBjMzkwZTcxNWQ5LmxvdmFibGUuYXBwLTE3Nzg0ODI0MDQzNDIucG5nIiB9LAogICAgXSwKICAgIGxpbmtzOiBbCiAgICAgIHsKICAgICAgICByZWw6ICJzdHlsZXNoZWV0IiwKICAgICAgICBocmVmOiBhcHBDc3MsCiAgICAgIH0sCiAgICAgIHsgcmVsOiAibWFuaWZlc3QiLCBocmVmOiAiL21hbmlmZXN0LndlYm1hbmlmZXN0IiB9LAogICAgICB7IHJlbDogImFwcGxlLXRvdWNoLWljb24iLCBocmVmOiAiL2FwcC1pY29uLTUxMi5wbmciIH0sCiAgICBdLAogICAgc2NyaXB0czogWwogICAgICB7CiAgICAgICAgY2hpbGRyZW46ICIoZnVuY3Rpb24oKXt0cnl7dmFyIHQ9bG9jYWxTdG9yYWdlLmdldEl0ZW0oJ3RoZW1lJyk7dmFyIGQ9dD09PSdkYXJrJ3x8KCF0JiZ3aW5kb3cubWF0Y2hNZWRpYSYmd2luZG93Lm1hdGNoTWVkaWEoJyhwcmVmZXJzLWNvbG9yLXNjaGVtZTogZGFyayknKS5tYXRjaGVzKTtpZihkKWRvY3VtZW50LmRvY3VtZW50RWxlbWVudC5jbGFzc0xpc3QuYWRkKCdkYXJrJyk7fWNhdGNoKGUpe319KSgpOyIsCiAgICAgIH0sCiAgICAgIHsKICAgICAgICB0eXBlOiAiYXBwbGljYXRpb24vbGQranNvbiIsCiAgICAgICAgY2hpbGRyZW46IEpTT04uc3RyaW5naWZ5KHsKICAgICAgICAgICJAY29udGV4dCI6ICJodHRwczovL3NjaGVtYS5vcmciLAogICAgICAgICAgIkB0eXBlIjogIldlYlNpdGUiLAogICAgICAgICAgbmFtZTogIkVsaXRlQ2FwdHVyZSIsCiAgICAgICAgICB1cmw6ICJodHRwczovL2VsaXRlY2FwdHVyZS5jb20iLAogICAgICAgICAgaW5MYW5ndWFnZTogImFyIiwKICAgICAgICAgIHBvdGVudGlhbEFjdGlvbjogewogICAgICAgICAgICAiQHR5cGUiOiAiU2VhcmNoQWN0aW9uIiwKICAgICAgICAgICAgdGFyZ2V0OiAiaHR0cHM6Ly9lbGl0ZWNhcHR1cmUuY29tL3NlYXJjaD9xPXtzZWFyY2hfdGVybV9zdHJpbmd9IiwKICAgICAgICAgICAgInF1ZXJ5LWlucHV0IjogInJlcXVpcmVkIG5hbWU9c2VhcmNoX3Rlcm1fc3RyaW5nIiwKICAgICAgICAgIH0sCiAgICAgICAgfSksCiAgICAgIH0sCiAgICBdLAogIH0pLAogIHNoZWxsQ29tcG9uZW50OiBSb290U2hlbGwsCiAgY29tcG9uZW50OiBSb290Q29tcG9uZW50LAogIG5vdEZvdW5kQ29tcG9uZW50OiBOb3RGb3VuZENvbXBvbmVudCwKICBlcnJvckNvbXBvbmVudDogRXJyb3JDb21wb25lbnQsCn0pOwoKZnVuY3Rpb24gUm9vdFNoZWxsKHsgY2hpbGRyZW4gfTogeyBjaGlsZHJlbjogUmVhY3QuUmVhY3ROb2RlIH0pIHsKICByZXR1cm4gKAogICAgPGh0bWwgbGFuZz0iYXIiIGRpcj0icnRsIiBzdXBwcmVzc0h5ZHJhdGlvbldhcm5pbmc+CiAgICAgIDxoZWFkPgogICAgICAgIDxIZWFkQ29udGVudCAvPgogICAgICA8L2hlYWQ+CiAgICAgIDxib2R5IHN1cHByZXNzSHlkcmF0aW9uV2FybmluZz4KICAgICAgICB7Y2hpbGRyZW59CiAgICAgICAgPFNjcmlwdHMgLz4KICAgICAgPC9ib2R5PgogICAgPC9odG1sPgogICk7Cn0KCmZ1bmN0aW9uIFJvb3RDb21wb25lbnQoKSB7CiAgY29uc3QgeyBxdWVyeUNsaWVudCB9ID0gUm91dGUudXNlUm91dGVDb250ZXh0KCk7CiAgY29uc3Qgcm91dGVyID0gdXNlUm91dGVyKCk7CgogIHVzZUVmZmVjdCgoKSA9PiB7CiAgICBjb25zdCB7CiAgICAgIGRhdGE6IHsgc3Vic2NyaXB0aW9uIH0sCiAgICB9ID0gc3VwYWJhc2UuYXV0aC5vbkF1dGhTdGF0ZUNoYW5nZSgoZXZlbnQpID0+IHsKICAgICAgaWYgKGV2ZW50ICE9PSAiU0lHTkVEX0lOIiAmJiBldmVudCAhPT0gIlNJR05FRF9PVVQiICYmIGV2ZW50ICE9PSAiVVNFUl9VUERBVEVEIikgewogICAgICAgIHJldHVybjsKICAgICAgfQoKICAgICAgcXVldWVNaWNyb3Rhc2soKCkgPT4gewogICAgICAgIHJvdXRlci5pbnZhbGlkYXRlKCk7CgogICAgICAgIGlmIChldmVudCAhPT0gIlNJR05FRF9PVVQiKSB7CiAgICAgICAgICBxdWVyeUNsaWVudC5pbnZhbGlkYXRlUXVlcmllcygpOwogICAgICAgIH0gZWxzZSB7CiAgICAgICAgICBxdWVyeUNsaWVudC5jbGVhcigpOwogICAgICAgIH0KICAgICAgfSk7CiAgICB9KTsKCiAgICByZXR1cm4gKCkgPT4gc3Vic2NyaXB0aW9uLnVuc3Vic2NyaWJlKCk7CiAgfSwgW3F1ZXJ5Q2xpZW50LCByb3V0ZXJdKTsKCiAgLy8gUFdBIChQUjQpOiDYqtiz2KzZitmEINin2YTZgCBzZXJ2aWNlIHdvcmtlciArINin2YTYqtmC2KfYtyDYrdiv2Ksg2KfZhNiq2KvYqNmK2Kog2YTYp9iz2KrYrtiv2KfZhdmHINmB2Yog2LXZgdit2KkgL2FwcC4KICB1c2VFZmZlY3QoKCkgPT4gewogICAgaWYgKHR5cGVvZiB3aW5kb3cgPT09ICJ1bmRlZmluZWQiKSByZXR1cm47CgogICAgaWYgKCJzZXJ2aWNlV29ya2VyIiBpbiBuYXZpZ2F0b3IpIHsKICAgICAgY29uc3Qgb25Mb2FkID0gKCkgPT4gewogICAgICAgIG5hdmlnYXRvci5zZXJ2aWNlV29ya2VyLnJlZ2lzdGVyKCIvc3cuanMiKS5jYXRjaCgoKSA9PiB7fSk7CiAgICAgIH07CiAgICAgIHdpbmRvdy5hZGRFdmVudExpc3RlbmVyKCJsb2FkIiwgb25Mb2FkKTsKICAgICAgLy8g2KXZhiDZg9in2YbYqiDYp9mE2LXZgdit2Kkg2YXYrdmF2ZHZhNipINmF2LPYqNmC2KfZiwogICAgICBpZiAoZG9jdW1lbnQucmVhZHlTdGF0ZSA9PT0gImNvbXBsZXRlIikgb25Mb2FkKCk7CiAgICB9CgogICAgY29uc3Qgb25CZWZvcmVJbnN0YWxsID0gKGU6IEV2ZW50KSA9PiB7CiAgICAgIGUucHJldmVudERlZmF1bHQoKTsKICAgICAgKHdpbmRvdyBhcyBhbnkpLl9fZGVmZXJyZWRJbnN0YWxsUHJvbXB0ID0gZTsKICAgICAgd2luZG93LmRpc3BhdGNoRXZlbnQobmV3IEV2ZW50KCJwd2EtaW5zdGFsbGFibGUiKSk7CiAgICB9OwogICAgY29uc3Qgb25JbnN0YWxsZWQgPSAoKSA9PiB7CiAgICAgICh3aW5kb3cgYXMgYW55KS5fX2RlZmVycmVkSW5zdGFsbFByb21wdCA9IG51bGw7CiAgICB9OwogICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoImJlZm9yZWluc3RhbGxwcm9tcHQiLCBvbkJlZm9yZUluc3RhbGwpOwogICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoImFwcGluc3RhbGxlZCIsIG9uSW5zdGFsbGVkKTsKICAgIHJldHVybiAoKSA9PiB7CiAgICAgIHdpbmRvdy5yZW1vdmVFdmVudExpc3RlbmVyKCJiZWZvcmVpbnN0YWxscHJvbXB0Iiwgb25CZWZvcmVJbnN0YWxsKTsKICAgICAgd2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoImFwcGluc3RhbGxlZCIsIG9uSW5zdGFsbGVkKTsKICAgIH07CiAgfSwgW10pOwoKICAvLyBTbW9vdGggc2Nyb2xsIHdpdGggTGVuaXMgKFRhc2sgMykKICB1c2VFZmZlY3QoKCkgPT4gewogICAgaWYgKHR5cGVvZiB3aW5kb3cgPT09ICJ1bmRlZmluZWQiKSByZXR1cm47CiAgICBsZXQgbGVuaXM6IGFueTsKICAgIChhc3luYyAoKSA9PiB7CiAgICAgIGNvbnN0IExlbmlzID0gKGF3YWl0IGltcG9ydCgibGVuaXMiKSkuZGVmYXVsdDsKICAgICAgbGVuaXMgPSBuZXcgTGVuaXMoewogICAgICAgIGR1cmF0aW9uOiAxLjIsCiAgICAgICAgZWFzaW5nOiAodDogbnVtYmVyKSA9PiBNYXRoLm1pbigxLCAxLjAwMSAtIE1hdGgucG93KDIsIC0xMCAqIHQpKSwKICAgICAgICBvcmllbnRhdGlvbjogInZlcnRpY2FsIiwKICAgICAgICBzbW9vdGhXaGVlbDogdHJ1ZSwKICAgICAgfSk7CiAgICAgIGZ1bmN0aW9uIHJhZih0aW1lOiBudW1iZXIpIHsKICAgICAgICBsZW5pcy5yYWYodGltZSk7CiAgICAgICAgcmVxdWVzdEFuaW1hdGlvbkZyYW1lKHJhZik7CiAgICAgIH0KICAgICAgcmVxdWVzdEFuaW1hdGlvbkZyYW1lKHJhZik7CiAgICB9KSgpOwogICAgcmV0dXJuICgpID0+IGxlbmlzPy5kZXN0cm95KCk7CiAgfSwgW10pOwoKICAvLyBQYWdlIGVudHJhbmNlIGFuaW1hdGlvbiAoVGFzayA3KQogIGNvbnN0IHBhdGhuYW1lID0gdXNlUm91dGVyU3RhdGUoeyBzZWxlY3Q6IChzKSA9PiBzLmxvY2F0aW9uLnBhdGhuYW1lIH0pOwoKICByZXR1cm4gKAogICAgPFF1ZXJ5Q2xpZW50UHJvdmlkZXIgY2xpZW50PXtxdWVyeUNsaWVudH0+CiAgICAgIDxUaGVtZVByb3ZpZGVyPgogICAgICAgIDxDb25maXJtUHJvdmlkZXI+CiAgICAgICAgICA8TGF6eU1vdGlvbiBmZWF0dXJlcz17ZG9tQW5pbWF0aW9ufT4KICAgICAgICAgICAgPFNtb290aFNjcm9sbCAvPgogICAgICAgICAgICA8QW5pbWF0ZVByZXNlbmNlIG1vZGU9IndhaXQiIGluaXRpYWw9e2ZhbHNlfT4KICAgICAgICAgICAgICA8bW90aW9uLmRpdgogICAgICAgICAgICAgICAga2V5PXtwYXRobmFtZX0KICAgICAgICAgICAgICAgIGluaXRpYWw9e3sgb3BhY2l0eTogMCwgeTogNiB9fQogICAgICAgICAgICAgICAgYW5pbWF0ZT17eyBvcGFjaXR5OiAxLCB5OiAwIH19CiAgICAgICAgICAgICAgICBleGl0PXt7IG9wYWNpdHk6IDAsIHk6IC02IH19CiAgICAgICAgICAgICAgICB0cmFuc2l0aW9uPXt7IGR1cmF0aW9uOiAwLjI4LCBlYXNlOiBbMC4yMiwgMSwgMC4zNiwgMV0gfX0KICAgICAgICAgICAgICA+CiAgICAgICAgICAgICAgICA8T3V0bGV0IC8+CiAgICAgICAgICAgICAgPC9tb3Rpb24uZGl2PgogICAgICAgICAgICA8L0FuaW1hdGVQcmVzZW5jZT4KICAgICAgICAgICAgPFRvYXN0ZXIgcG9zaXRpb249InRvcC1jZW50ZXIiIHJpY2hDb2xvcnMgY2xvc2VCdXR0b24gLz4KICAgICAgICAgIDwvTGF6eU1vdGlvbj4KICAgICAgICA8L0NvbmZpcm1Qcm92aWRlcj4KICAgICAgPC9UaGVtZVByb3ZpZGVyPgogICAgPC9RdWVyeUNsaWVudFByb3ZpZGVyPgogICk7Cn0K
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  Outlet,
+  Link,
+  createRootRouteWithContext,
+  useRouter,
+  HeadContent,
+  Scripts,
+  useRouterState,
+} from "@tanstack/react-router";
+
+import appCss from "../styles.css?url";
+import { Toaster } from "@/components/ui/sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ConfirmProvider } from "@/components/ui/confirm-dialog";
+import { SmoothScroll } from "@/components/SmoothScroll";
+import { LazyMotion, domAnimation, motion, AnimatePresence } from "framer-motion";
+
+function NotFoundComponent() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
+      <div className="max-w-md text-center">
+        <h1 className="font-serif text-7xl font-bold text-foreground">٤٠٤</h1>
+        <h2 className="mt-4 font-serif text-2xl text-foreground">الصفحة غير موجودة</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          الصفحة التي تبحثين عنها غير موجودة أو تم نقلها.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-sm bg-charcoal px-5 py-2.5 text-sm font-medium text-ivory transition-colors hover:opacity-90"
+          >
+            العودة للرئيسية
+          </Link>
+          <Link
+            to="/search"
+            className="inline-flex items-center justify-center rounded-sm border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            ابحثي عن مصوّرة
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  console.error(error);
+  const router = useRouter();
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
+      <div className="max-w-md text-center">
+        <h1 className="font-serif text-2xl text-foreground">
+          تعذّر تحميل هذه الصفحة
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          حدث خلل غير متوقع. يمكنكِ المحاولة مجدداً أو العودة للرئيسية.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          <button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="inline-flex items-center justify-center rounded-sm bg-charcoal px-5 py-2.5 text-sm font-medium text-ivory transition-colors hover:opacity-90"
+          >
+            إعادة المحاولة
+          </button>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-sm border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            الرئيسية
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  head: () => ({
+    meta: [
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "EliteCapture" },
+      { title: "EliteCapture — منصة مصوّري الأعراس في الأردن" },
+      { name: "description", content: "احجز مصوّر عرسك بسهولة: مواعيد، أسعار، وعربون فوري دون واتساب." },
+      { property: "og:title", content: "EliteCapture — منصة مصوّري الأعراس في الأردن" },
+      { property: "og:description", content: "احجز مصوّر عرسك بسهولة: مواعيد، أسعار، وعربون فوري دون واتساب." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "EliteCapture — منصة مصوّري الأعراس في الأردن" },
+      { name: "twitter:description", content: "احجز مصوّر عرسك بسهولة: مواعيد، أسعار، وعربون فوري دون واتساب." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/83dd160b-9aba-4bde-a5a9-99257e81d3c0/id-preview-13a5526b--7bd5f253-4c5b-448c-8e90-d0c390e715d9.lovable.app-1778482404342.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/83dd160b-9aba-4bde-a5a9-99257e81d3c0/id-preview-13a5526b--7bd5f253-4c5b-448c-8e90-d0c390e715d9.lovable.app-1778482404342.png" },
+    ],
+    links: [
+      {
+        rel: "stylesheet",
+        href: appCss,
+      },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/app-icon-512.png" },
+    ],
+    scripts: [
+      {
+        children: "(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "EliteCapture",
+          url: "https://elitecapture.com",
+          inLanguage: "ar",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://elitecapture.com/search?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
+        }),
+      },
+    ],
+  }),
+  shellComponent: RootShell,
+  component: RootComponent,
+  notFoundComponent: NotFoundComponent,
+  errorComponent: ErrorComponent,
+});
+
+function RootShell({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <head>
+        <HeadContent />
+      </head>
+      <body suppressHydrationWarning>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+function RootComponent() {
+  const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") {
+        return;
+      }
+
+      queueMicrotask(() => {
+        router.invalidate();
+
+        if (event !== "SIGNED_OUT") {
+          queryClient.invalidateQueries();
+        } else {
+          queryClient.clear();
+        }
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [queryClient, router]);
+
+  // PWA (PR4): تسجيل الـ service worker + التقاط حدث التثبيت لاستخدامه في صفحة /app.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if ("serviceWorker" in navigator) {
+      const onLoad = () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      };
+      window.addEventListener("load", onLoad);
+      // إن كانت الصفحة محمّلة مسبقاً
+      if (document.readyState === "complete") onLoad();
+    }
+
+    const onBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      (window as any).__deferredInstallPrompt = e;
+      window.dispatchEvent(new Event("pwa-installable"));
+    };
+    const onInstalled = () => {
+      (window as any).__deferredInstallPrompt = null;
+    };
+    window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    window.addEventListener("appinstalled", onInstalled);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, []);
+
+  // Smooth scroll with Lenis (Task 3)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let lenis: any;
+    (async () => {
+      const Lenis = (await import("lenis")).default;
+      lenis = new Lenis({
+        duration: 1.2,
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: "vertical",
+        smoothWheel: true,
+      });
+      function raf(time: number) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+    })();
+    return () => lenis?.destroy();
+  }, []);
+
+  // Page entrance animation (Task 7)
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <ConfirmProvider>
+          <LazyMotion features={domAnimation}>
+            <SmoothScroll />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+            <Toaster position="top-center" richColors closeButton />
+          </LazyMotion>
+        </ConfirmProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
