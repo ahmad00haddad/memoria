@@ -41,11 +41,10 @@ Add a dedicated 192×192 icon (currently reusing 512).
   لا بـ booking_id من العميل؛ يعيد حساب مبلغ العربون من قاعدة البيانات.
 - **webhook `api/public/hooks/payment`** — تحقّق توقيع + idempotency عبر جدول
   `payment_events` + تأكيد ذرّي للعربون (`confirm_booking_deposit_paid`) + إيميل/واتساب.
-- **فوترة اشتراك تلقائية** — `renew_subscription_paid` (تمديد `current_period_end`)،
+- **فاتورة اشتراك تلقائية** — `renew_subscription_paid` (تمديد `current_period_end`)،
   وتوسيع `email-reminders` لتذكيرات قبل الانتهاء بـ 7 و3 أيام.
 - **`whatsapp.server.ts`** — مساعد WhatsApp Cloud API (env-gated، no-op آمن).
-- migration: `20260622120000_payments_integration.sql` (أعمدة ربط الدفع + `payment_events` +
-  الدوال أعلاه، RLS مُفعّل على الجدول الجديد). تحديث `types.ts`.
+- migration: `20260622120000_payments_integration.sql`
 
 **Post-merge:** شغّل الـ migration؛ اضبط `PAYMENT_PROVIDER` + `STRIPE_SECRET_KEY` +
 `STRIPE_WEBHOOK_SECRET` (وللإنتاج بالدينار: HyperPay)؛ اضبط نقطة webhook لدى المزوّد على
@@ -65,7 +64,7 @@ Add a dedicated 192×192 icon (currently reusing 512).
 - حالة `cancelled` تُحرّر الموعد تلقائياً (مستثناة أصلاً من `has_booking_conflict` — تم التحقّق).
 
 **Post-merge:** شغّل الـ migration. (الاسترداد الفعلي عبر بوّابة الدفع يُوصَّل لاحقاً عبر
-`refund_status='pending'` — هوك جاهز للربط مع gateway refund API.)
+`refund_status='pending'` — هوك جاهز لربط gateway refund API.)
 
 ---
 
@@ -83,7 +82,50 @@ Add a dedicated 192×192 icon (currently reusing 512).
 
 ---
 
-## 🔭 Phase 3 — Growth features (need external accounts/secrets)
+## ✅ PR #10 (feat/nav-dashboard-hygiene)
+- إصلاح هيدر صفحة /guide، إزالة بلوك مزامنة التقويم المكرّر من اللوحة،
+  إخفاء "حالة الجاهزية" تلقائياً + زر إغلاق دائم محفوظ في profiles.quickstart_dismissed_at،
+  توحيد زر الرجوع BackToDashboard، وملاحظة Lovable عن ألوان لوحة الإنتاج.
+
+## ✅ PR #11 (feat/pwa-install-page)
+- صفحة /app لتثبيت التطبيق (PWA) + service worker + offline.html + تسجيل SW + manifest محسّن.
+
+## ✅ PR #12 (feat/google-oauth-referral) — Google OAuth + ربط الإحالة
+- إضافة زر "تسجيل الدخول / التسجيل بواسطة Google" في login.tsx و join.tsx.
+- حفظ `referral_code` في `sessionStorage` قبل OAuth redirect لمنع ضياعه.
+- معالجة `pending_referral_code` تلقائياً في dashboard.index.tsx بعد callback.
+
+**Post-merge:** فعّل Google Provider في Supabase Auth؛ أضف Authorized Redirect URI في Google Console.
+
+## ✅ PR #13 (feat/referral-reward-engine) — محرك مكافآت الإحالة (الخيار 1)
+- دالة `grant_referral_reward()` مركزية (SECURITY DEFINER، idempotent):
+  +14 يومًا للداعية فقط عند أول اشتراك مدفوع للمدعوّة.
+- ربط المكافأة بـ `renew_subscription_paid()` (webhook) و `admin_renew_subscription()` (أدمن).
+- تسجيل كل منح في `audit_logs`.
+- migration: `20260623083000_referral_rewards.sql`
+
+**Post-merge:** شغّل migration على Supabase.
+
+## ✅ PR #14 (feat/dashboard-audit-rls) — تدقيق الأمان + إصلاح لوحة التحكم
+### 🔐 إصلاحات أمنية (RLS)
+- **notifications INSERT WITH CHECK (true)** محذوف — كان يسمح لأي مستخدم بحقن إشعارات لأي حساب.
+- **contracts SELECT USING (true)** محذوف — كان يكشف جميع العقود لأي زائر.
+  استُبدل بسياسة تقتصر على المصوّر صاحب العقد.
+
+### 🛠️ إصلاحات لوحة التحكم
+- `dashboard.reports.tsx`: try/catch + error state + empty state.
+- `dashboard.production.tsx`: try/catch + error state؛ `.eq("photographer_id", uid)` في move() لمنع privilege escalation.
+- `dashboard.referrals.tsx`: عداد `earnedDays = grantedCount * 14` صحيح بدلاً من عدد الإحالات.
+
+**Post-merge:** شغّل migration: `20260623090000_rls_security_hardening.sql`
+
+## ✅ PR #15 (feat/ux-improvements) — تحسينات UX وصفحة البحث
+- `search.tsx`: إضافة error state لـ useQuery (شبكة معطوبة).
+- `ROADMAP.md`: توثيق شامل لكل التغييرات.
+
+---
+
+## 🔍 Phase 3 — Growth features (need external accounts/secrets)
 
 ### 3.1 Online deposit payment gateway 🔴 (highest business impact)
 Replace the manual CliQ + proof-upload flow with automatic deposit collection.
@@ -132,7 +174,7 @@ Replace the manual CliQ + proof-upload flow with automatic deposit collection.
   بدل استبداله بـ loader كامل.
 
 ## 🔒 Standing security checklist
-- [ ] Audit live RLS policies; ensure no unintended `USING (true)` remains
-      (notably `contracts`, `notifications`).
+- [x] ~~Audit live RLS policies; ensure no unintended `USING (true)` remains~~
+      ~~(notably `contracts`, `notifications`).~~ **Fixed in PR #14.**
 - [ ] Rotate Supabase keys (precaution — `.env` was historically committed).
 - [ ] Verify the service-role key is server-only (never shipped to the browser).
