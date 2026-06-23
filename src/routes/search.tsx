@@ -189,11 +189,11 @@ function SearchPage() {
         </form>
 
         {/* Results */}
-        {resultsQ.resultsQ.isError ? (
+        {resultsQ.isError ? (
           <div className="col-span-full text-center py-16 text-sm text-destructive">
             تعذّر تحميل النتائج. تحقّق من اتصالك وحاول مجدداً.
           </div>
-        ) : isLoading ? (
+        ) : resultsQ.isLoading ? (
           <GridSkeleton items={6} />
         ) : results.length === 0 ? (
           <EmptyState

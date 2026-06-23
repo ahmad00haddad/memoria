@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -108,12 +109,17 @@ function LoginPage() {
             onClick={async () => {
               setErr(null);
               setLoading(true);
-              const { error } = await supabase.auth.signInWithOAuth({
-                provider: "google",
-                options: { redirectTo: `${window.location.origin}/dashboard` },
+              const result = await lovable.auth.signInWithOAuth("google", {
+                redirect_uri: window.location.origin,
               });
+              if (result.error) {
+                setLoading(false);
+                setErr("تعذّر تسجيل الدخول عبر Google. حاول مجدداً.");
+                return;
+              }
+              if (result.redirected) return;
               setLoading(false);
-              if (error) setErr("تعذّر تسجيل الدخول عبر Google. حاول مجدداً.");
+              navigate({ to: "/dashboard", replace: true });
             }}
             className="w-full border border-border py-3 rounded-sm hover:bg-secondary disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
           >

@@ -69,8 +69,8 @@ function ReferralsPage() {
           </div>
           <div className="border border-border rounded-sm p-6 bg-card">
             <Gift className="w-5 h-5 text-gold mb-2" />
-            <div className="text-3xl font-serif">{granted}</div>
-            <div className="text-sm text-muted-foreground">شهور مجانية مكتسبة</div>
+            <div className="text-3xl font-serif">{earnedDays}</div>
+            <div className="text-sm text-muted-foreground">أيام مجانية مكتسبة</div>
           </div>
         </div>
 

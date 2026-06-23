@@ -86,7 +86,7 @@ function Dashboard() {
       if (session) {
         await supabase
           .from("profiles")
-          .update({ quickstart_dismissed_at: new Date().toISOString() })
+          .update({ quickstart_dismissed_at: new Date().toISOString() } as any)
           .eq("id", session.user.id);
       }
       toast.success("تم إخفاء حالة الجاهزية");
