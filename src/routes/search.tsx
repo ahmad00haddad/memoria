@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import {
+import { Drawer } from "vaul";
   searchPhotographers,
   listPublishedCities,
   type SearchResultItem,
@@ -120,7 +121,28 @@ function SearchPage() {
           }}
           className="rounded-md border border-border bg-card p-4 md:p-5 mb-6 md:mb-8 shadow-soft"
         >
-          <div className="grid gap-3 md:grid-cols-12">
+                {/* Mobile filter drawer trigger */}
+      <div className="flex items-center gap-2 md:hidden mb-3 px-4">
+        <Drawer.Root>
+          <Drawer.Trigger asChild>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 text-sm font-medium touch-card">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+              تصفية
+            </button>
+          </Drawer.Trigger>
+          <Drawer.Portal>
+            <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
+            <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-white dark:bg-gray-950 pb-safe">
+              <div className="mx-auto w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700 mt-3 mb-4" />
+              <div className="px-4 pb-6">
+                <h2 className="text-base font-semibold mb-4">الفلاتر</h2>
+                {/* Filter content rendered here */}
+              </div>
+            </Drawer.Content>
+          </Drawer.Portal>
+        </Drawer.Root>
+      </div>
+      <div className="grid gap-3 md:grid-cols-12">
             <div className="md:col-span-4 relative">
               <Search className="absolute top-1/2 -translate-y-1/2 start-3 h-4 w-4 text-muted-foreground" />
               <input

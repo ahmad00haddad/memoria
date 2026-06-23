@@ -26,6 +26,44 @@ export const Route = createFileRoute("/track/$token")({
 
 type Booking = any;
 
+const BOOKING_STEPS = [
+  { key: "pending_deposit", label: "في انتظار العربون" },
+  { key: "confirmed",       label: "تم التأكيد" },
+  { key: "shooting",        label: "يوم التصوير" },
+  { key: "completed",       label: "اكتمل الحجز" },
+];
+
+function BookingTimeline({ status }: { status: string }) {
+  const currentIdx = BOOKING_STEPS.findIndex((s) => s.key === status);
+  return (
+    <div className="my-6">
+      <h3 className="text-sm font-medium text-muted-foreground mb-4">مراحل الحجز</h3>
+      <div className="relative">
+        <div className="absolute top-3 start-3 end-3 h-px bg-border" />
+        <div className="flex justify-between relative">
+          {BOOKING_STEPS.map((step, i) => {
+            const done = i < currentIdx;
+            const active = i === currentIdx;
+            const future = i > currentIdx;
+            return (
+              <div key={step.key} className="flex flex-col items-center gap-2">
+                <div className={`h-6 w-6 rounded-full flex items-center justify-center z-10 ${
+                  done ? "bg-[var(--gold)] text-white" : active ? "bg-[var(--gold)] text-white ring-4 ring-[var(--gold)]/20" : "bg-background border-2 border-border"
+                }`}>
+                  {done ? (<CheckCircle2 className="h-3.5 w-3.5" />) : active ? (<div className="h-2 w-2 rounded-full bg-white animate-pulse" />) : (<div className="h-2 w-2 rounded-full bg-border" />)}
+                </div>
+                <span className={`text-[10px] text-center max-w-[60px] leading-tight ${
+                  active ? "text-[var(--gold)] font-medium" : future ? "text-muted-foreground" : "text-foreground"
+                }`}>{step.label}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TrackingPage() {
   const { token } = useParams({ from: "/track/$token" });
   const confirm = useConfirm();
@@ -244,6 +282,8 @@ function TrackingPage() {
             ))}
           </ol>
         </div>
+
+        <BookingTimeline status={data.booking?.status ?? 'pending_deposit'} />
 
         {/* Booking summary */}
         <div className="rounded-sm border border-border bg-card p-5 mb-6 text-sm">
@@ -519,6 +559,18 @@ function ClientGallery({ token }: { token: string }) {
         </motion.div>
       )}
 
+      {/* Sticky mobile payment CTA */}
+      {!finalPaid && data.photos && data.photos.length > 0 && (
+        <div className="md:hidden fixed bottom-0 start-0 end-0 z-40 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-background/95 backdrop-blur-md border-t border-border">
+          <button
+            onClick={() => {}}
+            className="w-full bg-[var(--gold)] text-white font-medium py-3 rounded-sm active:scale-[0.98] transition-transform"
+          >
+            أكملي الدفع النهائي ✦
+          </button>
+        </div>
+      )}
+
       {finalPaid && data.photos.length > 0 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
@@ -536,9 +588,9 @@ function ClientGallery({ token }: { token: string }) {
       {data.photos.length === 0 ? (
         <p className="text-sm text-muted-foreground">لم تُرفع صور بعد. ستظهر هنا فور التسليم.</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {data.photos.map((p: any, idx: number) => (
-            <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightboxIdx(idx)}>
+            <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightboxIdx(idx)} style={{ touchAction: 'manipulation' }}>
               {p.url && <img src={p.url} alt={p.caption ?? ""} loading="lazy" className="w-full h-full object-cover transition group-hover:scale-105" />}
               {data.gallery.allow_downloads && p.url && (
                 <button

@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import {
-  Smartphone, Download, Share, Plus, CheckCircle2, Wifi, Zap, Bell,
-  Apple, Chrome, MonitorSmartphone, ChevronRight, Store,
+  Smartphone, Download, Share2, Plus, CheckCircle2, Wifi, Zap, Bell,
+  Apple, Chrome, MonitorSmartphone, ChevronRight, Store, Home,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app")({
@@ -13,8 +14,7 @@ export const Route = createFileRoute("/app")({
       { title: "حمّل تطبيق EliteCapture على هاتفك | EliteCapture" },
       {
         name: "description",
-        content:
-          "ثبّتي EliteCapture كتطبيق على هاتفك (iPhone أو Android) أو على سطح المكتب — يعمل دون متجر، بسرعة، ومع أيقونة على الشاشة الرئيسية.",
+        content: "ثبّتي EliteCapture كتطبيق على هاتفك (iPhone أو Android) أو على سطح المكتب — يعمل دون متجر، بسرعة، ومع أيقونة على الشاشة الرئيسية.",
       },
     ],
   }),
@@ -37,10 +37,28 @@ function isStandalone(): boolean {
   if (typeof window === "undefined") return false;
   return (
     window.matchMedia?.("(display-mode: standalone)")?.matches ||
-    // iOS Safari
     (window.navigator as any)?.standalone === true
   );
 }
+
+const platformHeadline: Record<Platform, string> = {
+  ios: "ثبّتيه على iPhone في 3 خطوات",
+  android: "ثبّتيه على Android بنقرة واحدة",
+  desktop: "ثبّته على سطح المكتب",
+  other: "ثبّت تطبيق EliteCapture",
+};
+
+const iosSteps = [
+  { icon: Share2, label: "اضغطي على زر المشاركة", desc: "زر السهم للأعلى في شريط Safari السفلي" },
+  { icon: Plus, label: "اختاري «إضافة إلى الشاشة الرئيسية»", desc: "مرّري للأسفل في قائمة المشاركة حتى تجديه" },
+  { icon: Home, label: "اضغطي «إضافة» وانتهى", desc: "ستظهر أيقونة EliteCapture على شاشتك الرئيسية" },
+];
+
+const desktopSteps = [
+  { icon: Chrome, label: "افتحي الصفحة في Chrome أو Edge", desc: "تأكّدي من استخدام أحد هذين المتصفحين" },
+  { icon: MonitorSmartphone, label: "انقري على أيقونة التثبيت في شريط العنوان", desc: "ستجدين أيقونة صغيرة على يمين شريط العنوان" },
+  { icon: CheckCircle2, label: "اضغطي «تثبيت» وانتهى", desc: "سيُفتح التطبيق في نافذة مستقلة كبرنامج كامل" },
+];
 
 function AppDownloadPage() {
   const [platform, setPlatform] = useState<Platform>("other");
@@ -49,218 +67,253 @@ function AppDownloadPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     setPlatform(detectPlatform());
     setInstalled(isStandalone());
-    setCanInstall(!!(window as any).__deferredInstallPrompt);
-
-    const onInstallable = () => setCanInstall(true);
-    const onInstalled = () => {
-      setInstalled(true);
-      setCanInstall(false);
-    };
-    window.addEventListener("pwa-installable", onInstallable);
-    window.addEventListener("appinstalled", onInstalled);
-    return () => {
-      window.removeEventListener("pwa-installable", onInstallable);
-      window.removeEventListener("appinstalled", onInstalled);
-    };
+    const checkInstallable = () => setCanInstall(!!(window as any).__deferredInstallPrompt);
+    checkInstallable();
+    window.addEventListener("pwa-installable", checkInstallable);
+    return () => window.removeEventListener("pwa-installable", checkInstallable);
   }, []);
 
-  const handleInstall = async () => {
-    const deferred = (window as any).__deferredInstallPrompt;
-    if (!deferred) return;
+  const triggerInstall = async () => {
+    if (typeof window === "undefined") return;
+    const prompt = (window as any).__deferredInstallPrompt;
+    if (!prompt) return;
     setBusy(true);
     try {
-      deferred.prompt();
-      const choice = await deferred.userChoice;
-      if (choice?.outcome === "accepted") setInstalled(true);
-      (window as any).__deferredInstallPrompt = null;
-      setCanInstall(false);
+      await prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === "accepted") setInstalled(true);
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="min-h-screen bg-background text-foreground flex flex-col" dir="rtl">
       <Header />
 
-      <section className="container-editorial py-12">
-        <Link
-          to="/"
-          className="mb-6 inline-flex items-center gap-1.5 rounded-sm border border-border bg-card px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-secondary hover:text-gold"
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12 space-y-10">
+
+        {/* ── Celebration banner ── */}
+        <AnimatePresence>
+          {installed && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex flex-col items-center justify-center min-h-[50vh] text-center gap-6 py-16"
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
+                className="text-7xl"
+              >
+                🎉
+              </motion.div>
+              <h2 className="font-serif text-3xl">التطبيق جاهز!</h2>
+              <p className="text-muted-foreground">
+                يمكنك الآن فتح EliteCapture مباشرة من شاشتك الرئيسية
+              </p>
+              <Link
+                to="/"
+                className="bg-charcoal text-ivory px-8 py-3 rounded-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                ابدئي الآن
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Hero ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-center space-y-3"
         >
-          <ChevronRight className="h-4 w-4" /> العودة للرئيسية
-        </Link>
-
-        <div className="max-w-2xl">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">تطبيق الهاتف</div>
-          <h1 className="font-serif text-4xl mb-3 flex items-center gap-3">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gold/10 mb-2">
             <Smartphone className="h-8 w-8 text-gold" />
-            حمّلي EliteCapture على هاتفك
+          </div>
+          <h1 className="font-serif text-3xl md:text-4xl">
+            {platformHeadline[platform]}
           </h1>
-          <p className="text-muted-foreground leading-relaxed">
-            EliteCapture يعمل كتطبيق كامل على هاتفك — بأيقونة على الشاشة الرئيسية، وفتحٍ سريع،
-            وعملٍ حتى مع ضعف الاتصال. لا حاجة لأي متجر؛ التثبيت يتم بنقرات بسيطة.
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+            بدون متجر · يعمل بدون إنترنت · سريع كتطبيق أصلي
           </p>
-        </div>
+        </motion.div>
 
-        {installed ? (
-          <div className="mt-8 max-w-2xl rounded-sm border border-emerald-200 bg-emerald-50 p-6 dark:border-emerald-900 dark:bg-emerald-950/40">
-            <div className="flex items-center gap-3 text-emerald-800 dark:text-emerald-300">
-              <CheckCircle2 className="h-6 w-6" />
-              <div>
-                <div className="font-medium">أنتِ تستخدمين التطبيق المثبّت بالفعل 🎉</div>
-                <div className="text-sm opacity-80">يمكنك فتح EliteCapture من أيقونته على الشاشة الرئيسية في أي وقت.</div>
-              </div>
+        {/* ── Features strip ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="grid grid-cols-3 gap-3 text-center text-xs"
+        >
+          {[
+            { icon: Wifi, label: "يعمل أوفلاين" },
+            { icon: Zap, label: "سريع جداً" },
+            { icon: Bell, label: "إشعارات فورية" },
+          ].map(({ icon: Icon, label }) => (
+            <div key={label} className="border border-border rounded-sm py-3 px-2 flex flex-col items-center gap-1.5">
+              <Icon className="h-4 w-4 text-gold" />
+              <span className="text-muted-foreground">{label}</span>
             </div>
-          </div>
-        ) : (
-          <div className="mt-8 grid gap-6 lg:grid-cols-3">
-            {/* البطاقة الأساسية حسب المنصّة */}
-            <div className="lg:col-span-2 rounded-sm border border-border bg-card p-6 shadow-soft">
-              <InstallInstructions
-                platform={platform}
-                canInstall={canInstall}
-                busy={busy}
-                onInstall={handleInstall}
-              />
-            </div>
+          ))}
+        </motion.div>
 
-            {/* المزايا */}
-            <div className="rounded-sm border border-border bg-card p-6 shadow-soft">
-              <h3 className="font-serif text-xl mb-4">لماذا التطبيق؟</h3>
-              <ul className="space-y-3 text-sm">
-                <Benefit icon={<Zap className="h-4 w-4 text-gold" />} text="فتحٌ أسرع ووصول بنقرة من الشاشة الرئيسية" />
-                <Benefit icon={<Wifi className="h-4 w-4 text-gold" />} text="يعمل حتى مع ضعف الاتصال (صفحة بلا إنترنت)" />
-                <Benefit icon={<Smartphone className="h-4 w-4 text-gold" />} text="تجربة بملء الشاشة بلا شريط المتصفّح" />
-                <Benefit icon={<Bell className="h-4 w-4 text-gold" />} text="جاهز للإشعارات مستقبلاً" />
-              </ul>
-            </div>
-          </div>
+        {/* ── iOS steps ── */}
+        {(platform === "ios" || platform === "other") && (
+          <section className="space-y-4">
+            <h2 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+              <Apple className="h-4 w-4" />
+              {platform === "ios" ? "خطوات التثبيت على iPhone" : "التثبيت على iPhone"}
+            </h2>
+            {iosSteps.map((step, index) => (
+              <motion.div
+                key={step.label}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-start gap-4 border border-border rounded-sm p-4"
+              >
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gold/10 text-gold flex items-center justify-center text-sm font-bold">
+                  {index + 1}
+                </span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <step.icon className="h-4 w-4 text-gold" />
+                    <span className="font-medium text-sm">{step.label}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{step.desc}</p>
+                </div>
+                {index < iosSteps.length - 1 && (
+                  <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 self-center" />
+                )}
+              </motion.div>
+            ))}
+          </section>
         )}
 
-        {/* قسم المتاجر الرسمية */}
-        <div className="mt-10 max-w-3xl rounded-sm border border-border bg-secondary/20 p-6">
-          <div className="flex items-start gap-3">
-            <Store className="h-6 w-6 shrink-0 text-muted-foreground" />
-            <div>
-              <h3 className="font-serif text-lg mb-1">هل سيكون على Google Play و App Store؟</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                التثبيت أعلاه لا يحتاج موافقة أي متجر. للنشر الرسمي لاحقاً: عبر
-                <strong> Google Play</strong> (تغليف TWA من PWABuilder) و<strong> App Store</strong>
-                (تغليف عبر Capacitor) — ويتطلّب كلٌّ منهما حساب مطوّر ومراجعة المتجر.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* ── Android install button ── */}
+        {platform === "android" && (
+          <section className="space-y-4">
+            <h2 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+              <Store className="h-4 w-4" />
+              تثبيت التطبيق على Android
+            </h2>
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="border border-border rounded-sm p-6 flex flex-col items-center gap-4 text-center"
+            >
+              <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center">
+                <Download className="h-6 w-6 text-gold" />
+              </div>
+              <div>
+                <p className="font-medium mb-1">جاهز للتثبيت</p>
+                <p className="text-xs text-muted-foreground">سيُضاف التطبيق إلى شاشتك الرئيسية فوراً</p>
+              </div>
+              {busy && canInstall && (
+                <div className="w-full h-0.5 bg-border rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 1.5 }}
+                    className="h-full bg-gold origin-start rounded-full"
+                  />
+                </div>
+              )}
+              {canInstall ? (
+                <button
+                  onClick={triggerInstall}
+                  disabled={busy}
+                  className="w-full bg-gold text-background font-medium py-3 rounded-sm disabled:opacity-60 transition-opacity"
+                >
+                  {busy ? "جاري التثبيت…" : "ثبّت التطبيق"}
+                </button>
+              ) : (
+                <p className="text-xs text-muted-foreground border border-dashed border-border rounded-sm px-4 py-3 w-full">
+                  افتحي الصفحة في Chrome ثم اختاري «إضافة إلى الشاشة الرئيسية» من القائمة ⋮
+                </p>
+              )}
+            </motion.div>
+          </section>
+        )}
+
+        {/* ── Desktop steps ── */}
+        {platform === "desktop" && (
+          <section className="space-y-4">
+            <h2 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
+              <MonitorSmartphone className="h-4 w-4" />
+              تثبيت التطبيق على الكمبيوتر
+            </h2>
+            {desktopSteps.map((step, index) => (
+              <motion.div
+                key={step.label}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-start gap-4 border border-border rounded-sm p-4"
+              >
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-gold/10 text-gold flex items-center justify-center text-sm font-bold">
+                  {index + 1}
+                </span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <step.icon className="h-4 w-4 text-gold" />
+                    <span className="font-medium text-sm">{step.label}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{step.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+            {canInstall && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
+                {busy && (
+                  <div className="w-full h-0.5 bg-border rounded-full overflow-hidden mb-2">
+                    <motion.div
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 1.5 }}
+                      className="h-full bg-gold origin-start rounded-full"
+                    />
+                  </div>
+                )}
+                <button
+                  onClick={triggerInstall}
+                  disabled={busy}
+                  className="w-full bg-gold text-background font-medium py-3 rounded-sm disabled:opacity-60 transition-opacity"
+                >
+                  {busy ? "جاري التثبيت…" : "ثبّت التطبيق الآن"}
+                </button>
+              </motion.div>
+            )}
+          </section>
+        )}
+
+        {/* ── Already installed notice ── */}
+        {!installed && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-center text-xs text-muted-foreground"
+          >
+            إذا كنتِ قد ثبّتتِ التطبيق بالفعل،{" "}
+            <Link to="/" className="underline underline-offset-2">
+              افتحيه من هنا
+            </Link>
+          </motion.p>
+        )}
+      </main>
 
       <Footer />
     </div>
-  );
-}
-
-function InstallInstructions({
-  platform,
-  canInstall,
-  busy,
-  onInstall,
-}: {
-  platform: Platform;
-  canInstall: boolean;
-  busy: boolean;
-  onInstall: () => void;
-}) {
-  // iOS لا يدعم زر التثبيت البرمجي — تعليمات يدوية عبر Safari.
-  if (platform === "ios") {
-    return (
-      <div>
-        <div className="mb-4 flex items-center gap-2">
-          <Apple className="h-5 w-5" />
-          <h3 className="font-serif text-xl">على iPhone / iPad</h3>
-        </div>
-        <ol className="space-y-3 text-sm">
-          <Step n={1} icon={<Share className="h-4 w-4" />}>
-            افتحي الموقع في متصفّح <strong>Safari</strong>، ثم اضغطي زر <strong>المشاركة</strong> (المربّع مع السهم لأعلى).
-          </Step>
-          <Step n={2} icon={<Plus className="h-4 w-4" />}>
-            اختاري <strong>«إضافة إلى الشاشة الرئيسية» (Add to Home Screen)</strong>.
-          </Step>
-          <Step n={3} icon={<CheckCircle2 className="h-4 w-4" />}>
-            اضغطي <strong>«إضافة»</strong> — وستظهر أيقونة EliteCapture على شاشتك.
-          </Step>
-        </ol>
-        <p className="mt-4 text-xs text-muted-foreground">
-          ملاحظة: خطوة «إضافة إلى الشاشة الرئيسية» متاحة في Safari فقط (وليست في Chrome على iPhone).
-        </p>
-      </div>
-    );
-  }
-
-  // Android / Desktop: زر تثبيت مباشر إن توفّر، وإلا تعليمات القائمة.
-  const Icon = platform === "desktop" ? MonitorSmartphone : Chrome;
-  const title = platform === "desktop" ? "على سطح المكتب" : "على Android";
-  return (
-    <div>
-      <div className="mb-4 flex items-center gap-2">
-        <Icon className="h-5 w-5" />
-        <h3 className="font-serif text-xl">{title}</h3>
-      </div>
-
-      {canInstall ? (
-        <>
-          <p className="text-sm text-muted-foreground mb-4">
-            جهازك يدعم التثبيت المباشر. اضغطي الزر التالي ثم أكّدي التثبيت.
-          </p>
-          <button
-            onClick={onInstall}
-            disabled={busy}
-            className="inline-flex items-center gap-2 rounded-sm bg-charcoal px-5 py-3 text-ivory hover:opacity-90 disabled:opacity-60"
-          >
-            <Download className="h-5 w-5" />
-            {busy ? "جارٍ التثبيت…" : "ثبّتي التطبيق الآن"}
-          </button>
-        </>
-      ) : (
-        <ol className="space-y-3 text-sm">
-          <Step n={1} icon={<Chrome className="h-4 w-4" />}>
-            افتحي الموقع في <strong>Chrome</strong>، ثم افتحي قائمة المتصفّح <strong>(⋮)</strong>.
-          </Step>
-          <Step n={2} icon={<Download className="h-4 w-4" />}>
-            اختاري <strong>«تثبيت التطبيق» / «Install app»</strong> أو <strong>«إضافة إلى الشاشة الرئيسية»</strong>.
-          </Step>
-          <Step n={3} icon={<CheckCircle2 className="h-4 w-4" />}>
-            أكّدي — وستظهر أيقونة EliteCapture على جهازك.
-          </Step>
-        </ol>
-      )}
-      <p className="mt-4 text-xs text-muted-foreground">
-        إن لم يظهر زر التثبيت، تصفّحي الموقع قليلاً ثم أعيدي فتح هذه الصفحة — يُفعّله المتصفّح بعد تحقّق شروط التطبيق.
-      </p>
-    </div>
-  );
-}
-
-function Step({ n, icon, children }: { n: number; icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <li className="flex items-start gap-3">
-      <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gold/15 text-xs font-bold text-gold">
-        {n}
-      </span>
-      <span className="flex items-center gap-2 leading-relaxed text-foreground/90">
-        <span className="text-muted-foreground">{icon}</span>
-        <span>{children}</span>
-      </span>
-    </li>
-  );
-}
-
-function Benefit({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <li className="flex items-start gap-2 text-foreground/90">
-      <span className="mt-0.5 shrink-0">{icon}</span>
-      <span>{text}</span>
-    </li>
   );
 }

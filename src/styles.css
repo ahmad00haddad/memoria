@@ -258,3 +258,17 @@
 @media (min-width: 640px)  { .masonry-grid { columns: 2; } }
 @media (min-width: 1024px) { .masonry-grid { columns: 3; } }
 .masonry-item { break-inside: avoid; margin-bottom: 1rem; }
+
+/* ═══════════════════════════════════
+   PWA Mobile Enhancements
+   ═══════════════════════════════════ */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pb-safe-4 { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+.chat-input-row { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+@supports (-webkit-touch-callout: none) {
+  .chat-input-row { padding-bottom: env(safe-area-inset-bottom); }
+}
+.touch-card { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+.gallery-tile { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
