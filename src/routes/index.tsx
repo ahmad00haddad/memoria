@@ -8,7 +8,7 @@ import { Footer } from "@/components/site/Footer";
 import heroImg from "@/assets/hero-bride.jpg";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
-import { HeroParallax } from "@/components/HeroParallax";
+import { ScrollReveal } from "@/components/ScrollReveal";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -78,11 +78,21 @@ function Landing() {
             initial="hidden"
             animate="visible"
           >
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs tracking-wide">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-card px-3 py-1 text-xs tracking-wide">
+              <motion.span
+                animate={{ opacity: [0.6, 1, 0.6] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                className="text-gold"
+              >
+                ✦
+              </motion.span>
               <Sparkles className="h-3.5 w-3.5 text-gold" />
               منصّة الحجوزات الأكثر فخامة لمصوّري الأعراس في الأردن
             </motion.div>
-            <motion.h1 variants={fadeUp} className="font-serif text-4xl sm:text-5xl lg:text-6xl leading-[1.1]">
+            <motion.h1
+              variants={fadeUp}
+              className="font-serif text-5xl sm:text-7xl lg:text-8xl leading-[1.05] tracking-tight"
+            >
               من النقرة الأولى
               <br />
               إلى <span className="text-gold italic">الذكرى الأبدية</span>.
@@ -134,16 +144,15 @@ function Landing() {
             animate="visible"
           >
             <div className="absolute -inset-4 bg-gradient-royal rounded-sm -z-10" />
-            <HeroParallax className="overflow-hidden rounded-sm" strength={60}>
+            <div className="overflow-hidden rounded-sm group">
               <img
-                data-parallax-target
                 src={heroImg}
                 alt="عروس في إطلالة سينمائية"
                 width={1080}
                 height={1600}
-                className="w-full h-[480px] sm:h-[560px] object-cover rounded-sm shadow-elegant will-change-transform"
+                className="w-full h-[480px] sm:h-[560px] object-cover rounded-sm shadow-elegant will-change-transform transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
               />
-            </HeroParallax>
+            </div>
             <motion.div
               animate={float}
               className="absolute -bottom-6 -start-6 sm:-start-10 bg-card border border-border rounded-sm p-4 shadow-soft max-w-[260px]"
