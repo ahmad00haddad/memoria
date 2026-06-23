@@ -1,1 +1,69 @@
-aW1wb3J0IHsgdXNlRWZmZWN0LCB1c2VSZWYgfSBmcm9tICJyZWFjdCI7CgppbnRlcmZhY2UgU2Nyb2xsUmV2ZWFsUHJvcHMgewogIGNoaWxkcmVuOiBSZWFjdC5SZWFjdE5vZGU7CiAgY2xhc3NOYW1lPzogc3RyaW5nOwogIGRlbGF5PzogbnVtYmVyOwogIGRpcmVjdGlvbj86ICJ1cCIgfCAibGVmdCIgfCAicmlnaHQiIHwgIm5vbmUiOwp9CgpleHBvcnQgZnVuY3Rpb24gU2Nyb2xsUmV2ZWFsKHsKICBjaGlsZHJlbiwKICBjbGFzc05hbWUgPSAiIiwKICBkZWxheSA9IDAsCiAgZGlyZWN0aW9uID0gInVwIiwKfTogU2Nyb2xsUmV2ZWFsUHJvcHMpIHsKICBjb25zdCByZWYgPSB1c2VSZWY8SFRNTERpdkVsZW1lbnQ+KG51bGwpOwoKICB1c2VFZmZlY3QoKCkgPT4gewogICAgaWYgKHR5cGVvZiB3aW5kb3cgPT09ICJ1bmRlZmluZWQiIHx8ICFyZWYuY3VycmVudCkgcmV0dXJuOwogICAgY29uc3QgZWwgPSByZWYuY3VycmVudDsKICAgIGlmICh3aW5kb3cubWF0Y2hNZWRpYT8uKCIocHJlZmVycy1yZWR1Y2VkLW1vdGlvbjogcmVkdWNlKSIpLm1hdGNoZXMpIHsKICAgICAgcmV0dXJuOwogICAgfQoKICAgIGxldCBjbGVhbnVwID0gKCkgPT4ge307CgogICAgKGFzeW5jICgpID0+IHsKICAgICAgY29uc3QgeyBnc2FwIH0gPSBhd2FpdCBpbXBvcnQoImdzYXAiKTsKICAgICAgY29uc3QgeyBTY3JvbGxUcmlnZ2VyIH0gPSBhd2FpdCBpbXBvcnQoImdzYXAvU2Nyb2xsVHJpZ2dlciIpOwogICAgICBnc2FwLnJlZ2lzdGVyUGx1Z2luKFNjcm9sbFRyaWdnZXIpOwoKICAgICAgY29uc3QgZnJvbTogZ3NhcC5Ud2VlblZhcnMgPSB7IG9wYWNpdHk6IDAgfTsKICAgICAgaWYgKGRpcmVjdGlvbiA9PT0gInVwIikgICAgeyBmcm9tLnkgPSA0ODsgfQogICAgICBpZiAoZGlyZWN0aW9uID09PSAibGVmdCIpICB7IGZyb20ueCA9IDQwOyB9CiAgICAgIGlmIChkaXJlY3Rpb24gPT09ICJyaWdodCIpIHsgZnJvbS54ID0gLTQwOyB9CgogICAgICBjb25zdCB0d2VlbiA9IGdzYXAuZnJvbVRvKAogICAgICAgIGVsLAogICAgICAgIGZyb20sCiAgICAgICAgewogICAgICAgICAgb3BhY2l0eTogMSwKICAgICAgICAgIHk6IDAsCiAgICAgICAgICB4OiAwLAogICAgICAgICAgZHVyYXRpb246IDAuODUsCiAgICAgICAgICBkZWxheSwKICAgICAgICAgIGVhc2U6ICJwb3dlcjMub3V0IiwKICAgICAgICAgIHNjcm9sbFRyaWdnZXI6IHsKICAgICAgICAgICAgdHJpZ2dlcjogZWwsCiAgICAgICAgICAgIHN0YXJ0OiAidG9wIDg4JSIsCiAgICAgICAgICAgIHRvZ2dsZUFjdGlvbnM6ICJwbGF5IG5vbmUgbm9uZSBub25lIiwKICAgICAgICAgIH0sCiAgICAgICAgfQogICAgICApOwoKICAgICAgY2xlYW51cCA9ICgpID0+IHsKICAgICAgICB0d2Vlbi5zY3JvbGxUcmlnZ2VyPy5raWxsKCk7CiAgICAgICAgdHdlZW4ua2lsbCgpOwogICAgICB9OwogICAgfSkoKTsKCiAgICByZXR1cm4gKCkgPT4gY2xlYW51cCgpOwogIH0sIFtkZWxheSwgZGlyZWN0aW9uXSk7CgogIHJldHVybiAoCiAgICA8ZGl2IHJlZj17cmVmfSBjbGFzc05hbWU9e2NsYXNzTmFtZX0+CiAgICAgIHtjaGlsZHJlbn0KICAgIDwvZGl2PgogICk7Cn0K
+import { useEffect, useRef } from "react";
+
+interface ScrollRevealProps {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+  direction?: "up" | "left" | "right" | "none";
+}
+
+export function ScrollReveal({
+  children,
+  className = "",
+  delay = 0,
+  direction = "up",
+}: ScrollRevealProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !ref.current) return;
+    const el = ref.current;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    let cleanup = () => {};
+
+    (async () => {
+      const { gsap } = await import("gsap");
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      gsap.registerPlugin(ScrollTrigger);
+
+      const from: gsap.TweenVars = { opacity: 0 };
+      if (direction === "up")    { from.y = 48; }
+      if (direction === "left")  { from.x = 40; }
+      if (direction === "right") { from.x = -40; }
+
+      const tween = gsap.fromTo(
+        el,
+        from,
+        {
+          opacity: 1,
+          y: 0,
+          x: 0,
+          duration: 0.85,
+          delay,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 88%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      cleanup = () => {
+        tween.scrollTrigger?.kill();
+        tween.kill();
+      };
+    })();
+
+    return () => cleanup();
+  }, [delay, direction]);
+
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}
