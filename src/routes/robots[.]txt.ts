@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // robots.txt — يُوجّه محركات البحث
 const BASE_URL = process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://elitecapture.com";
 
-export const Route = createFileRoute("/robots[.]txt")({
+export const Route = createFileRoute("/robots.txt")({
   server: {
     handlers: {
       GET: () => {
