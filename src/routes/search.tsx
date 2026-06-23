@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, MapPin, Star, X } from "lucide-react";
+import { Search, MapPin, Star, X, SlidersHorizontal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { GridSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
+import { staggerContainer, fadeUp, cardHover } from "@/lib/animations";
 import {
   searchPhotographers,
   listPublishedCities,
@@ -37,6 +39,7 @@ function SearchPage() {
   const [sort, setSort] = useState<SearchSort>("featured");
   // ✅ إضافة: فلتر التقييم الأدنى
   const [minRating, setMinRating] = useState<number>(0);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const navigate = useNavigate();
 
   const runSearch = useServerFn(searchPhotographers);
@@ -194,7 +197,42 @@ function SearchPage() {
                 <X className="h-3 w-3" /> مسح الفلتر
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className={`${hasFilters ? "" : "ms-auto"} text-xs inline-flex items-center gap-1 px-2 py-1 rounded-sm border border-border hover:bg-secondary transition`}
+            >
+              <SlidersHorizontal className="h-3 w-3" />
+              {showAdvanced ? "إخفاء الفلاتر المتقدّمة" : "فلاتر متقدّمة"}
+            </button>
           </div>
+
+          <AnimatePresence initial={false}>
+            {showAdvanced && (
+              <motion.div
+                key="advanced"
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center gap-2">
+                  <label className="text-xs text-muted-foreground">الحد الأدنى للتقييم:</label>
+                  {[0, 3, 4, 4.5].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setMinRating(r)}
+                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${minRating === r ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                    >
+                      {r === 0 ? "الكل" : (<><Star className="h-3 w-3 fill-gold text-gold" />{r}+</>)}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </form>
 
         {/* Results */}
@@ -216,56 +254,63 @@ function SearchPage() {
             ) : undefined}
           />
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            key={`${debouncedQ}|${city}|${minPrice}|${maxPrice}|${date}|${sort}|${minRating}`}
+          >
             {displayResults.map((p) => (
-              <Link
-                key={p.username}
-                to="/photographers/$username"
-                params={{ username: p.username }}
-                className="group rounded-sm overflow-hidden border border-border bg-card shadow-soft hover:shadow-elegant transition"
-              >
-                <div className="aspect-[4/3] bg-gradient-royal overflow-hidden relative">
-                  {p.cover_url && (
-                    <img
-                      src={p.cover_url}
-                      alt={p.display_name}
-                      loading="lazy"
-                      className="h-full w-full object-cover group-hover:scale-105 transition"
-                    />
-                  )}
-                  {p.is_featured && (
-                    <span className="absolute top-2 end-2 text-[10px] uppercase tracking-wider bg-gold text-background px-2 py-0.5 rounded-sm">
-                      مميّزة
-                    </span>
-                  )}
-                </div>
-                <div className="p-5">
-                  <div className="font-serif text-xl mb-1">{p.display_name}</div>
-                  <div className="text-xs text-muted-foreground mb-2">@{p.username}</div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-3">
-                      {p.city && (
-                        <span className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3" /> {p.city}
-                        </span>
-                      )}
-                      {p.review_count > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-gold text-gold" />
-                          {p.avg_rating} ({p.review_count})
-                        </span>
-                      )}
-                    </div>
-                    {p.min_price != null && (
-                      <span className="text-foreground font-medium">
-                        من {p.min_price} د.أ
+              <motion.div key={p.username} variants={fadeUp} whileHover={cardHover}>
+                <Link
+                  to="/photographers/$username"
+                  params={{ username: p.username }}
+                  className="group block rounded-sm overflow-hidden border border-border bg-card shadow-soft hover:shadow-elegant transition"
+                >
+                  <div className="aspect-[4/3] bg-gradient-royal overflow-hidden relative">
+                    {p.cover_url && (
+                      <img
+                        src={p.cover_url}
+                        alt={p.display_name}
+                        loading="lazy"
+                        className="h-full w-full object-cover group-hover:scale-105 transition duration-500"
+                      />
+                    )}
+                    {p.is_featured && (
+                      <span className="absolute top-2 end-2 text-[10px] uppercase tracking-wider bg-gold text-background px-2 py-0.5 rounded-sm">
+                        مميّزة
                       </span>
                     )}
                   </div>
-                </div>
-              </Link>
+                  <div className="p-5">
+                    <div className="font-serif text-xl mb-1">{p.display_name}</div>
+                    <div className="text-xs text-muted-foreground mb-2">@{p.username}</div>
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3">
+                        {p.city && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" /> {p.city}
+                          </span>
+                        )}
+                        {p.review_count > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-gold text-gold" />
+                            {p.avg_rating} ({p.review_count})
+                          </span>
+                        )}
+                      </div>
+                      {p.min_price != null && (
+                        <span className="text-foreground font-medium">
+                          من {p.min_price} د.أ
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </section>
       <Footer />
