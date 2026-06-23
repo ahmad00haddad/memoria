@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { GridSkeleton } from "@/components/ui/loading";
+import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -240,7 +241,13 @@ function SearchPage() {
             تعذّر تحميل النتائج. تحقّق من اتصالك وحاول مجدداً.
           </div>
         ) : resultsQ.isLoading ? (
-          <GridSkeleton items={6} />
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="break-inside-avoid mb-4">
+                <SkeletonCard aspectRatio={i % 3 === 0 ? "4/5" : "3/4"} />
+              </div>
+            ))}
+          </div>
         ) : displayResults.length === 0 ? (
           <EmptyState
             icon={Search}
@@ -271,57 +278,85 @@ function SearchPage() {
 function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 32 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ delay: idx * 0.06, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ delay: Math.min(idx * 0.055, 0.4), duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="break-inside-avoid mb-4"
     >
-      <Link to="/photographers/$username" params={{ username: p.username }} className="block">
+      <Link
+        to="/photographers/$username"
+        params={{ username: p.username }}
+        className="block"
+      >
         <motion.div
-          whileHover={{ scale: 1.02, y: -4 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          className="relative overflow-hidden rounded-sm aspect-[3/4] cursor-pointer group bg-gradient-royal"
+          whileHover={{ scale: 1.015, y: -3 }}
+          whileTap={{ scale: 0.985 }}
+          transition={{ type: "spring", stiffness: 380, damping: 28 }}
+          className="relative overflow-hidden rounded-sm cursor-pointer group
+                     bg-gradient-royal"
+          style={{ aspectRatio: idx % 5 === 2 ? "3/4" : idx % 5 === 4 ? "4/5" : "3/4" }}
         >
           {p.cover_url ? (
             <img
               src={p.cover_url}
-              alt={p.display_name}
+              alt={p.display_name ?? p.username}
               loading="lazy"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="absolute inset-0 w-full h-full object-cover
+                         transition-transform duration-700 will-change-transform
+                         group-hover:scale-105"
             />
           ) : (
-            <div className="absolute inset-0 grid place-items-center text-ivory/60 font-serif text-3xl">
-              {p.display_name?.[0] ?? "·"}
+            <div className="absolute inset-0 grid place-items-center
+                            text-muted-foreground/40 font-serif text-4xl">
+              {(p.display_name ?? p.username).charAt(0)}
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent" />
 
-          {p.is_featured && (
-            <span className="absolute top-3 end-3 inline-flex items-center gap-1 rounded-full bg-gold text-charcoal px-2.5 py-1 text-[10px] uppercase tracking-[0.15em] font-medium shadow-soft">
-              <Star className="h-3 w-3 fill-current" /> مميّزة
-            </span>
-          )}
+          {/* Cinematic gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t
+                          from-black/75 via-black/20 to-transparent
+                          opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
 
-          <div className="absolute bottom-0 inset-x-0 p-5">
-            <h3 className="font-serif text-xl text-ivory">{p.display_name}</h3>
+          {/* Content */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+            <h3 className="font-serif text-lg sm:text-xl text-white leading-tight truncate">
+              {p.display_name ?? p.username}
+            </h3>
             {p.city && (
-              <p className="text-gold text-sm mt-0.5 inline-flex items-center gap-1">
-                <MapPin className="h-3 w-3" /> {p.city}
+              <p className="text-white/65 text-sm mt-0.5 flex items-center gap-1">
+                <MapPin className="h-3 w-3 shrink-0" />
+                {p.city}
               </p>
             )}
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               {p.avg_rating > 0 && (
-                <span className="text-xs bg-black/30 text-ivory/90 px-2 py-0.5 rounded-full backdrop-blur-sm inline-flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-gold text-gold" /> {p.avg_rating}
+                <span className="inline-flex items-center gap-1 text-xs
+                                 bg-black/40 backdrop-blur-sm text-white/90
+                                 px-2 py-0.5 rounded-full">
+                  <Star className="h-3 w-3 fill-gold text-gold" />
+                  {p.avg_rating.toFixed(1)}
+                  {p.review_count > 0 && (
+                    <span className="text-white/50">({p.review_count})</span>
+                  )}
                 </span>
               )}
               {p.min_price != null && (
-                <span className="text-xs text-ivory/60">من {p.min_price} د.أ</span>
+                <span className="text-xs text-white/55">
+                  من {p.min_price} د.أ
+                </span>
               )}
             </div>
           </div>
+
+          {/* Featured badge */}
+          {p.is_featured && (
+            <div className="absolute top-3 right-3 text-[10px] uppercase
+                            tracking-widest bg-gold/90 text-white px-2 py-0.5
+                            rounded-full backdrop-blur-sm">
+              مميّز ✦
+            </div>
+          )}
         </motion.div>
       </Link>
     </motion.div>
