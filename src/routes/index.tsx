@@ -166,6 +166,7 @@ function Landing() {
       </section>
 
       {/* Role chooser */}
+      <ScrollReveal delay={0.05}>
       <motion.section
         className="container-editorial py-16"
         variants={staggerContainer}
@@ -203,8 +204,10 @@ function Landing() {
           )}
         </div>
       </motion.section>
+      </ScrollReveal>
 
       {/* How */}
+      <ScrollReveal delay={0.1}>
       <motion.section
         id="how"
         className="container-editorial py-16"
@@ -224,8 +227,10 @@ function Landing() {
           <Feature icon={ShieldCheck} title="عربون آمن" desc="تأكيد الحجز برفع إثبات تحويل CliQ ومصادقة المصوّر." />
         </div>
       </motion.section>
+      </ScrollReveal>
 
       {featured.length > 0 && (
+        <ScrollReveal delay={0.1}>
         <motion.section
           className="container-editorial py-16"
           variants={staggerContainer}
@@ -254,6 +259,7 @@ function Landing() {
             ))}
           </div>
         </motion.section>
+        </ScrollReveal>
       )}
 
       <Footer />
