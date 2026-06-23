@@ -1,4 +1,4 @@
-import type { Variants, Transition } from "motion/react";
+import type { Variants, Transition } from "framer-motion";
 
 const easeOut: Transition["ease"] = [0.22, 1, 0.36, 1];
 
