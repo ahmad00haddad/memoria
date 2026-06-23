@@ -27,19 +27,27 @@ function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [range, setRange] = useState<"30" | "90" | "365" | "all">("365");
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return nav({ to: "/login" });
-      const { data } = await supabase
-        .from("bookings")
-        .select("id,client_name,event_date,service,status,total_price,deposit_amount,deposit_confirmed_at,delivered_at,created_at")
-        .eq("photographer_id", session.user.id)
-        .is("deleted_at", null)
-        .order("event_date", { ascending: false });
-      setBookings((data ?? []) as Booking[]);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return nav({ to: "/login" });
+        const { data, error } = await supabase
+          .from("bookings")
+          .select("id,client_name,event_date,service,status,total_price,deposit_amount,deposit_confirmed_at,delivered_at,created_at")
+          .eq("photographer_id", session.user.id)
+          .is("deleted_at", null)
+          .order("event_date", { ascending: false });
+        if (error) throw new Error(error.message);
+        setBookings((data ?? []) as Booking[]);
+      } catch (e: any) {
+        setErr("تعذّر تحميل التقارير. تحقّق من اتصالك وحاول مجدداً.");
+        console.error("[reports] fetch error:", e?.message);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [nav]);
 
@@ -107,6 +115,16 @@ function ReportsPage() {
   };
 
   if (loading) return <PageLoader />;
+  if (err) return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <section className="container-editorial py-24 text-center">
+        <BackToDashboard />
+        <p className="text-destructive mt-8">{err}</p>
+      </section>
+      <Footer />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,6 +149,11 @@ function ReportsPage() {
           </div>
         </div>
 
+        {bookings.length === 0 && (
+          <div className="rounded-sm border border-border bg-card p-12 text-center mb-8 shadow-soft">
+            <p className="text-muted-foreground">لا توجد حجوزات في هذه الفترة الزمنية بعد.</p>
+          </div>
+        )}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Stat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="إجمالي الإيرادات" value={`${stats.totalRevenue.toFixed(0)} د.أ`} sub={`${stats.count} حجز`} />
           <Stat icon={<CheckCircle2 className="h-5 w-5 text-emerald-700" />} label="مكتمل ومحصّل" value={`${stats.completedRevenue.toFixed(0)} د.أ`} />

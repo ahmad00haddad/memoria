@@ -29,21 +29,29 @@ function ProductionBoard() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeStage, setActiveStage] = useState<string>("awaiting");
+  const [err, setErr] = useState<string | null>(null);
 
   const load = async (id: string) => {
-    const { data } = await supabase.from("bookings")
+    const { data, error } = await supabase.from("bookings")
       .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status")
       .eq("photographer_id", id).is("deleted_at", null).neq("status", "cancelled").order("event_date", { ascending: true });
+    if (error) throw new Error(error.message);
     setBookings(data ?? []);
   };
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return nav({ to: "/login" });
-      setUid(session.user.id);
-      await load(session.user.id);
-      setLoading(false);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return nav({ to: "/login" });
+        setUid(session.user.id);
+        await load(session.user.id);
+      } catch (e: any) {
+        setErr("تعذّر تحميل لوحة الإنتاج. تحقّق من اتصالك وحاول مجدداً.");
+        console.error("[production] fetch error:", e?.message);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [nav]);
 
@@ -55,12 +63,23 @@ function ProductionBoard() {
     const patch: any = { production_stage: next.key };
     if (next.key === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
     if (next.key === "delivered") { patch.editing_completed_at = new Date().toISOString(); patch.delivered_at = new Date().toISOString(); patch.status = "completed"; }
-    await supabase.from("bookings").update(patch).eq("id", id);
+    const { error } = await supabase.from("bookings").update(patch).eq("id", id).eq("photographer_id", uid);
+    if (error) { toast.error("تعذّر تحديث المرحلة."); console.error("[production] move error:", error.message); return; }
     toast.success(`نُقل إلى: ${next.label}`);
-    load(uid);
+    load(uid).catch(console.error);
   };
 
   if (loading) return <PageLoader />;
+  if (err) return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <section className="container-editorial py-24 text-center">
+        <BackToDashboard />
+        <p className="text-destructive mt-8">{err}</p>
+      </section>
+      <Footer />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
