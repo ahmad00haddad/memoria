@@ -43,6 +43,7 @@ import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookin
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
+import { Route as AdminRefundsRouteImport } from './routes/admin.refunds'
 import { Route as AdminPhotographersRouteImport } from './routes/admin.photographers'
 import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
@@ -222,6 +223,11 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
   path: '/reviews',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminRefundsRoute = AdminRefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPhotographersRoute = AdminPhotographersRouteImport.update({
   id: '/photographers',
   path: '/photographers',
@@ -276,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
@@ -360,6 +368,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
@@ -405,6 +414,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/admin/photographers'
+    | '/admin/refunds'
     | '/admin/reviews'
     | '/admin/subscriptions'
     | '/contracts/$token'
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/admin/photographers'
+    | '/admin/refunds'
     | '/admin/reviews'
     | '/admin/subscriptions'
     | '/contracts/$token'
@@ -488,6 +499,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/admin/photographers'
+    | '/admin/refunds'
     | '/admin/reviews'
     | '/admin/subscriptions'
     | '/contracts/$token'
@@ -782,6 +794,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/refunds': {
+      id: '/admin/refunds'
+      path: '/refunds'
+      fullPath: '/admin/refunds'
+      preLoaderRoute: typeof AdminRefundsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/photographers': {
       id: '/admin/photographers'
       path: '/photographers'
@@ -836,6 +855,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminPhotographersRoute: typeof AdminPhotographersRoute
+  AdminRefundsRoute: typeof AdminRefundsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -843,6 +863,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminPhotographersRoute: AdminPhotographersRoute,
+  AdminRefundsRoute: AdminRefundsRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminIndexRoute: AdminIndexRoute,

@@ -106,10 +106,6 @@ function SubscriptionPage() {
     if (!userId) return;
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop() || "jpg";
-      const path = `${userId}/${Date.now()}.${ext}`;
-      // ✅ رفع آمن مع معالجة شاملة للأخطاء
-      const { uploadFile } = await import("@/lib/upload");
       // ✅ رفع آمن مع معالجة شاملة للأخطاء
       const { uploadFile } = await import("@/lib/upload");
       const ext2 = file.name.split(".").pop() || "jpg";

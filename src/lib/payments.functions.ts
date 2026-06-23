@@ -146,7 +146,6 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
     const monthlyPrice = Number(process.env.SUBSCRIPTION_MONTHLY_PRICE || "25");
     const amount = monthlyPrice * data.months;
     const currency = (process.env.PAYMENT_CURRENCY || "JOD").toUpperCase();
-    const base = process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://elitecapture.com";
     const base = process.env.PUBLIC_APP_URL || "https://royal-lens-flow.lovable.app";
 
     const checkout = await provider.createDepositCheckout({
@@ -171,8 +170,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
         months: data.months,
         status: "pending",
       } as any)
-      .onConflict("session_id")
-      .ignore();
+      ;
 
     return {
       configured: true as const,

@@ -62,14 +62,14 @@ function BookingsList() {
         <div className="relative mb-4">
           <input
             type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
             placeholder="ابحث بالاسم أو التاريخ أو الهاتف…"
             className="w-full border border-input bg-background rounded-sm px-4 py-2.5 text-sm pr-10 focus:outline-none focus:ring-2 focus:ring-ring/30"
           />
-          {search && (
+          {q && (
             <button
-              onClick={() => setSearch("")}
+              onClick={() => setQ("")}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               ✕

@@ -74,7 +74,7 @@ export const getCalendarMonthData = createServerFn({ method: "POST" })
 
     return {
       bookings_by_date: byDate,
-      unavail_dates: Array.from(unavailDates),
+      unavail_dates: Array.from(unavailDates) as string[],
       delivery_due: deliveryDueSoon,
       total_bookings: (bookings ?? []).length,
       confirmed_count: (bookings ?? []).filter((b: any) => b.status === "confirmed").length,
