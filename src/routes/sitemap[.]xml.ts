@@ -37,9 +37,9 @@ export const Route = createFileRoute("/sitemap.xml")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         // جلب جميع المصوّرين المنشورين مع وقت آخر تحديث
-        const { data: photographers } = await supabaseAdmin
+        const { data: photographers } = await (supabaseAdmin as any)
           .rpc("get_sitemap_photographers")
-          .catch(() => ({ data: [] as any[] }));
+          .then((r: any) => r, () => ({ data: [] as any[] }));
 
         const today = new Date().toISOString().slice(0, 10);
 
