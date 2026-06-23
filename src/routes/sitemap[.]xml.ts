@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // يُستدعى من محركات البحث (Google, Bing) لاكتشاف الصفحات
 // ============================================================================
 
-const BASE_URL = process.env.PUBLIC_APP_URL || "https://royal-lens-flow.lovable.app";
+const BASE_URL = process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://elitecapture.com";
 
 // أولويات الصفحات الثابتة
 const STATIC_PAGES = [

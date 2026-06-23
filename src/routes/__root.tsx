@@ -117,11 +117,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "EliteCapture",
-          url: "https://royal-lens-flow.lovable.app",
+          url: "https://elitecapture.com",
           inLanguage: "ar",
           potentialAction: {
             "@type": "SearchAction",
-            target: "https://royal-lens-flow.lovable.app/search?q={search_term_string}",
+            target: "https://elitecapture.com/search?q={search_term_string}",
             "query-input": "required name=search_term_string",
           },
         }),

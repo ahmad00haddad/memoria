@@ -52,6 +52,15 @@ function SignPage() {
 
   return (
     <div className="min-h-screen bg-background">
+{/* Print styles — تُخفي الـ Header والـ Footer عند الطباعة */}
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          header, footer { display: none !important; }
+          .container-editorial { max-width: 100% !important; padding: 0 !important; }
+          body { background: white !important; }
+        }
+      `}</style>
       <Header />
       <section className="container-editorial py-12 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">عقد تصوير</div>
