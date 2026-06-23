@@ -56,7 +56,7 @@ export function responsiveSrcSet(url: string | null | undefined): string | undef
     .join(", ");
 }
 
- = createServerFn({ method: "POST" })
+export const getGalleryByToken = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string }) => {
     if (!isToken(d?.token)) throw new Error("invalid token");
     return d;
