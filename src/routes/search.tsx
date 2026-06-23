@@ -8,7 +8,6 @@ import { GridSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { staggerContainer, fadeUp, cardHover } from "@/lib/animations";
 import {
   searchPhotographers,
   listPublishedCities,
@@ -255,10 +254,7 @@ function SearchPage() {
           />
         ) : (
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
+            className="columns-1 sm:columns-2 lg:columns-3 gap-4"
             key={`${debouncedQ}|${city}|${minPrice}|${maxPrice}|${date}|${sort}|${minRating}`}
           >
             {displayResults.map((p, idx) => (
@@ -273,80 +269,61 @@ function SearchPage() {
 }
 
 function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number }) {
-  void idx;
-  const aspectClass = "aspect-[4/5]";
   return (
-    <motion.article
-      variants={fadeUp}
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="h-full"
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ delay: idx * 0.06, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      className="break-inside-avoid mb-4"
     >
-      <Link
-        to="/photographers/$username"
-        params={{ username: p.username }}
-        className="group relative block overflow-hidden rounded-sm border border-border bg-card shadow-soft lift-on-hover"
-      >
-        {/* Cover */}
-        <div className={`relative ${aspectClass} bg-gradient-royal overflow-hidden`}>
+      <Link to="/photographers/$username" params={{ username: p.username }} className="block">
+        <motion.div
+          whileHover={{ scale: 1.02, y: -4 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          className="relative overflow-hidden rounded-sm aspect-[3/4] cursor-pointer group bg-gradient-royal"
+        >
           {p.cover_url ? (
             <img
               src={p.cover_url}
               alt={p.display_name}
               loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
           ) : (
-            <div className="absolute inset-0 grid place-items-center text-ivory/60 font-serif text-2xl">
+            <div className="absolute inset-0 grid place-items-center text-ivory/60 font-serif text-3xl">
               {p.display_name?.[0] ?? "·"}
             </div>
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent" />
 
-          {/* Editorial gradient overlay */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-100" />
+          {p.is_featured && (
+            <span className="absolute top-3 end-3 inline-flex items-center gap-1 rounded-full bg-gold text-charcoal px-2.5 py-1 text-[10px] uppercase tracking-[0.15em] font-medium shadow-soft">
+              <Star className="h-3 w-3 fill-current" /> مميّزة
+            </span>
+          )}
 
-          {/* Top row — badge + price chip */}
-          <div className="absolute top-3 inset-x-3 flex items-start justify-between gap-2 z-10">
-            {p.is_featured ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-gold text-charcoal px-2.5 py-1 text-[10px] uppercase tracking-[0.15em] font-medium shadow-soft">
-                <Star className="h-3 w-3 fill-current" /> مميّزة
-              </span>
-            ) : <span />}
-            {p.min_price != null && (
-              <span className="rounded-full bg-background/85 backdrop-blur-sm text-foreground px-3 py-1 text-[11px] font-medium border border-border/60">
-                من {p.min_price} د.أ
-              </span>
+          <div className="absolute bottom-0 inset-x-0 p-5">
+            <h3 className="font-serif text-xl text-ivory">{p.display_name}</h3>
+            {p.city && (
+              <p className="text-gold text-sm mt-0.5 inline-flex items-center gap-1">
+                <MapPin className="h-3 w-3" /> {p.city}
+              </p>
             )}
-          </div>
-
-          {/* Bottom editorial caption inside the image */}
-          <div className="absolute inset-x-0 bottom-0 p-5 z-10 text-ivory">
-            <div className="text-[10px] uppercase tracking-[0.3em] opacity-80 mb-1">
-              {p.city ? (
-                <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {p.city}</span>
-              ) : "EliteCapture"}
-            </div>
-            <h3 className="font-serif text-2xl leading-tight transition-transform duration-500 group-hover:-translate-y-0.5">
-              {p.display_name}
-            </h3>
-            <div className="mt-2 flex items-center justify-between text-[11px]">
-              <span className="opacity-80">@{p.username}</span>
-              {p.review_count > 0 ? (
-                <span className="inline-flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-gold text-gold" />
-                  <span className="font-medium">{p.avg_rating}</span>
-                  <span className="opacity-70">({p.review_count})</span>
+            <div className="flex items-center gap-2 mt-2">
+              {p.avg_rating > 0 && (
+                <span className="text-xs bg-black/30 text-ivory/90 px-2 py-0.5 rounded-full backdrop-blur-sm inline-flex items-center gap-1">
+                  <Star className="h-3 w-3 fill-gold text-gold" /> {p.avg_rating}
                 </span>
-              ) : (
-                <span className="opacity-60">جديد</span>
+              )}
+              {p.min_price != null && (
+                <span className="text-xs text-ivory/60">من {p.min_price} د.أ</span>
               )}
             </div>
-
-            {/* Gold hairline that grows on hover */}
-            <div className="mt-4 h-px w-10 bg-gold transition-all duration-500 group-hover:w-full" />
           </div>
-        </div>
+        </motion.div>
       </Link>
-    </motion.article>
+    </motion.div>
   );
 }
