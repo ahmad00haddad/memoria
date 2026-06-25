@@ -157,9 +157,12 @@ function Landing() {
               animate={float}
               className="absolute -bottom-6 -start-6 sm:-start-10 bg-card border border-border rounded-sm p-4 shadow-soft max-w-[260px]"
             >
-              <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">سعر فوري</div>
-              <div className="font-serif text-2xl">٣٢٠ <span className="text-sm">د.أ</span></div>
-              <div className="text-xs text-muted-foreground">٤ ساعات تصوير + ٥٠ صورة معدّلة</div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">سعر فوري</div>
+                <span className="text-[9px] uppercase tracking-[0.15em] bg-gold/15 text-gold px-1.5 py-0.5 rounded-sm">مثال تقديري</span>
+              </div>
+              <div className="font-serif text-2xl text-muted-foreground/80">~٣٢٠ <span className="text-sm">د.أ</span></div>
+              <div className="text-xs text-muted-foreground">٤ ساعات تصوير + ٥٠ صورة معدّلة — الأسعار تختلف حسب المصوّر</div>
             </motion.div>
           </motion.div>
         </div>
