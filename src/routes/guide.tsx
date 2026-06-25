@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Search, Calendar, FileSignature, CreditCard, Camera, PackageCheck,
   UserPlus, Image as ImageIcon, DollarSign, Bell, MessageSquare, Star,
-  ShieldCheck, Sparkles, ArrowLeft, CheckCircle2, ChevronRight,
+  ShieldCheck, Sparkles, ArrowLeft, CheckCircle2, ChevronRight, X,
+  Smartphone, HeartHandshake, Clock, Ban, Shield, TrendingUp, Wallet,
 } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
