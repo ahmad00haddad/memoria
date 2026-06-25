@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Search, Calendar, FileSignature, CreditCard, Camera, PackageCheck,
   UserPlus, Image as ImageIcon, DollarSign, Bell, MessageSquare, Star,
-  ShieldCheck, Sparkles, ArrowLeft, CheckCircle2, ChevronRight,
+  ShieldCheck, Sparkles, ArrowLeft, CheckCircle2, ChevronRight, X,
+  Smartphone, HeartHandshake, Clock, Ban, Shield, TrendingUp, Wallet,
 } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -201,6 +202,112 @@ function GuidePage() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {photographerSteps.map((s, i) => <StepCard key={s.title} step={s} index={i} accent="secondary" />)}
           </div>
+        </div>
+      </section>
+
+      {/* Comparison section */}
+      <section className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+        <div className="mb-8 text-center">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+            <TrendingUp className="h-3.5 w-3.5" />
+            لماذا EliteCapture أفضل؟
+          </div>
+          <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
+            الفرق بيننا وبين <span className="text-primary">إنستغرام</span> و<span className="text-primary">واتساب</span>
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+            نحن لا نعرض صوراً فحسب — نؤسّس تجربة حجز احترافية كاملة تحمي العروسين والمصوّرين معاً.
+          </p>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+          {/* Header row */}
+          <div className="grid grid-cols-3 border-b bg-muted/40 text-sm font-semibold text-foreground">
+            <div className="border-l px-4 py-3 text-center sm:py-4">النقطة</div>
+            <div className="border-l px-4 py-3 text-center sm:py-4">EliteCapture</div>
+            <div className="px-4 py-3 text-center sm:py-4">إنستغرام / واتساب</div>
+          </div>
+
+          {/* Rows */}
+          {[
+            {
+              label: "حجز المواعيد",
+              icon: Calendar,
+              us: "تقويم حيّ لا يقبل التعارض — تاريخك محجوز فوراً",
+              them: "رسائل متكررة وانتظار ردّ قد يستمر أياماً",
+            },
+            {
+              label: "الأسعار والباقات",
+              icon: DollarSign,
+              us: "أسعار شفافة وباقات محددة — لا مفاجآت",
+              them: "«تواصلي خاصّاً» أو أسعار غامضة تتغيّر",
+            },
+            {
+              label: "العربون والدفع",
+              icon: Wallet,
+              us: "عربون موثّق بدفعة آمنة وإثبات إلكتروني",
+              them: "تحويل بنكي عشوائي بدون ضمان أو إيصال رسمي",
+            },
+            {
+              label: "العقود الرقمية",
+              icon: FileSignature,
+              us: "عقد موقّع إلكترونياً يحدّد كل التفاصيل",
+              them: "لا عقد — مجرد اتفاق شفهي قابل للنسيان",
+            },
+            {
+              label: "حماية الطرفين",
+              icon: Shield,
+              us: "سياسة إلغاء واسترجاع واضحة تحمي الجميع",
+              them: "لا حماية إذا تخلف أحد الطرفين في اللحظة الأخيرة",
+            },
+            {
+              label: "التقييمات",
+              icon: Star,
+              us: "تقييمات حقيقية فقط من زبائن أكملوا الحجز",
+              them: "تعليقات عامة لا يمكن التحقق من صاحبها",
+            },
+            {
+              label: "تنظيم العمل",
+              icon: Clock,
+              us: "لوحة تحكم كاملة لتتبّع الحجوزات والدفعات",
+              them: "محادثات مبعثرة تضيع بين مئات الرسائل",
+            },
+          ].map((row, i) => (
+            <div
+              key={row.label}
+              className={`grid grid-cols-3 items-stretch text-sm ${i % 2 === 0 ? "bg-card" : "bg-muted/20"} ${i < 6 ? "border-b" : ""}`}
+            >
+              <div className="flex items-center gap-2 border-l px-4 py-4 font-medium text-foreground">
+                <row.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="hidden sm:inline">{row.label}</span>
+                <span className="sm:hidden">{row.label.split(" ").slice(0, 2).join(" ")}</span>
+              </div>
+              <div className="flex items-start gap-2 border-l px-4 py-4 text-foreground/90">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                <span>{row.us}</span>
+              </div>
+              <div className="flex items-start gap-2 px-4 py-4 text-muted-foreground">
+                <X className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" />
+                <span>{row.them}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          {[
+            { icon: HeartHandshake, title: "ثقة موثّقة", body: "كل حجز مُسجّل، وكل دفعة مُوثّقة، وكل عقد مُوقّع إلكترونياً." },
+            { icon: Smartphone, title: "تجربة موحّدة", body: "لا حاجة للتنقّل بين تطبيقات — كل شيء من البحث حتى التسليم في مكان واحد." },
+            { icon: Ban, title: "لا مضايقات", body: "لا رسائل عشوائية ولا اتصالات مفاجئة — فقط حجوزات جادّة من عائلات حقيقية." },
+          ].map((card) => (
+            <div key={card.title} className="rounded-xl border bg-card p-5 shadow-sm">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <card.icon className="h-5 w-5 text-primary" />
+              </div>
+              <h4 className="text-base font-bold text-foreground">{card.title}</h4>
+              <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{card.body}</p>
+            </div>
+          ))}
         </div>
       </section>
 
