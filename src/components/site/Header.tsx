@@ -95,7 +95,7 @@ export function Header() {
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
           <NavLink to="/search" className="hidden sm:inline-flex">ابحث عن مصوّر</NavLink>
           <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
-          <NavLink to="/pricing" className="hidden md:inline-flex">الأسعار</NavLink>
+          <NavLink to="/pricing" className="hidden md:inline-flex">باقات المصوّرين</NavLink>
           <NavLink to="/for-photographers" className="hidden lg:inline-flex">للمصوّرات</NavLink>
           {!authLoading && !authed && !isPhotographer && (
             <NavLink to="/photographers/join" className="hidden md:inline-flex">انضم كمصوّر</NavLink>
@@ -129,7 +129,7 @@ export function Header() {
               <nav className="mt-6 flex flex-col gap-1 text-sm">
                 <SheetClose asChild><Link to="/search" className="px-3 py-2.5 rounded-sm hover:bg-secondary">ابحث عن مصوّر</Link></SheetClose>
                 <SheetClose asChild><Link to="/guide" className="px-3 py-2.5 rounded-sm hover:bg-secondary">كيف يعمل</Link></SheetClose>
-                <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">الأسعار</Link></SheetClose>
+                <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">باقات المصوّرين</Link></SheetClose>
                 <SheetClose asChild><Link to="/for-clients" className="px-3 py-2.5 rounded-sm hover:bg-secondary">للعملاء</Link></SheetClose>
                 <SheetClose asChild><Link to="/for-photographers" className="px-3 py-2.5 rounded-sm hover:bg-secondary">للمصوّرات</Link></SheetClose>
                 {!authLoading && !authed && !isPhotographer && <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضم كمصوّر</Link></SheetClose>}
