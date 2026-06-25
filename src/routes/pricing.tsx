@@ -30,7 +30,8 @@ function PricingPage() {
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-gold mb-3">
             <Sparkles className="h-3.5 w-3.5" /> اشتراك المصوّرات
           </div>
-          <h1 className="font-serif text-4xl sm:text-5xl mb-4">سعر واحد. كل المزايا.</h1>
+          <h1 className="font-serif text-4xl sm:text-5xl mb-4">باقات اشتراك المصوّرين</h1>
+          <p className="text-xs text-muted-foreground mb-3">هذه الصفحة للمصوّرين فقط — استخدام المنصة مجاني للعملاء.</p>
           <p className="text-muted-foreground leading-loose">
             ابدئي بـ <span className="text-gold font-semibold">14 يومًا تجربة مجانية</span> بدون أي بطاقة. بعدها 9$ شهريًا فقط.
           </p>
