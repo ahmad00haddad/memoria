@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send } from "lucide-react";
+import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -419,6 +419,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ token: string } | null>(null);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [consent, setConsent] = useState(false);
   const navigate = useNavigate();
   const submitFn = useServerFn(submitBookingRequest);
   const mainPackages = pricing.filter((p) => p.package !== "addon");
@@ -477,6 +479,9 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const submit = async () => {
     if (!f.client_name || !f.client_phone || !f.client_email || !f.event_date || !selected) {
       return toast.error("الرجاء تعبئة الاسم والهاتف والإيميل والتاريخ واختيار الباقة");
+    }
+    if (!consent) {
+      return toast.error("الرجاء الموافقة على سياسة الخصوصية والشروط");
     }
     const start = f.start_time || "12:00";
     const end = f.end_time || "18:00";
@@ -537,17 +542,46 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     );
   }
 
+  const stepValid: Record<1 | 2 | 3, boolean> = {
+    1: !!f.event_date && !!selected && !isBlocked && !hasConflict,
+    2: true,
+    3: !!f.client_name && !!f.client_phone && !!f.client_email && consent,
+  };
+  const goNext = () => {
+    if (!stepValid[step]) {
+      if (step === 1) toast.error("اختاري التاريخ والباقة قبل المتابعة");
+      return;
+    }
+    setStep((s) => (s === 3 ? 3 : ((s + 1) as 1 | 2 | 3)));
+  };
+  const goBack = () => setStep((s) => (s === 1 ? 1 : ((s - 1) as 1 | 2 | 3)));
+  const stepLabels = ["التاريخ والباقة", "الموقع والإضافات", "البيانات والتأكيد"];
+
   return (
     <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft">
       <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Book in simple steps</div>
-      <h2 className="font-serif text-3xl mb-6">احجزي بخطوات بسيطة</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="الاسم" v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
-        <Field label="الهاتف" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
-        <div className="sm:col-span-2">
-          <Field label="الإيميل" type="email" v={f.client_email} on={(v) => setF({ ...f, client_email: v })} />
+      <h2 className="font-serif text-3xl mb-4">احجزي بخطوات بسيطة</h2>
+
+      {/* Stepper */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="flex-1 flex items-center gap-2">
+              <div className={`h-7 w-7 grid place-items-center rounded-full text-xs font-semibold border ${step >= n ? "bg-charcoal text-ivory border-charcoal" : "bg-background text-muted-foreground border-border"}`}>{n}</div>
+              <div className={`h-1 flex-1 rounded-full ${step > n ? "bg-charcoal" : step === n ? "bg-gold/60" : "bg-border"}`} />
+            </div>
+          ))}
         </div>
-        <div className="sm:col-span-1">
+        <div className="flex justify-between text-[11px] text-muted-foreground">
+          {stepLabels.map((l, i) => (
+            <span key={l} className={step === i + 1 ? "text-foreground font-medium" : ""}>{l}</span>
+          ))}
+        </div>
+      </div>
+
+      {step === 1 && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">التاريخ</label>
           <Popover>
             <PopoverTrigger asChild>
@@ -592,7 +626,16 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           </select>
           {selected?.description && <div className="text-xs text-muted-foreground mt-2 whitespace-pre-line">{selected.description}</div>}
         </div>
+        {isBlocked && <p className="text-sm text-destructive sm:col-span-2">⚠️ هذا اليوم غير متاح</p>}
+        {hasConflict && <p className="text-sm text-destructive sm:col-span-2">⚠️ يتعارض مع فترة محجوزة</p>}
+      </div>
+      )}
 
+      {step === 2 && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="sm:col-span-2">
+          <Field label="الموقع / القاعة" v={f.venue_address} on={(v) => setF({ ...f, venue_address: v })} />
+        </div>
         {addonPackages.length > 0 && (
           <div className="sm:col-span-2">
             <label className="text-sm text-muted-foreground">إضافات اختيارية</label>
@@ -622,24 +665,6 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             </div>
           </div>
         )}
-
-        {selected && (
-          <div className="sm:col-span-2 rounded-sm bg-secondary/60 border border-border p-3 text-sm space-y-1.5">
-            <div className="flex justify-between"><span>{selected.label}</span><span>{basePrice.toLocaleString("ar-JO")} د.أ</span></div>
-            {selectedAddons.map((x) => (
-              <div key={x.rule.id} className="flex justify-between text-muted-foreground">
-                <span>{x.rule.label} × {x.qty}</span>
-                <span>{(Number(x.rule.price) * x.qty).toLocaleString("ar-JO")} د.أ</span>
-              </div>
-            ))}
-            <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">المجموع</span><span className="font-semibold">{total.toLocaleString("ar-JO")} د.أ</span></div>
-            <div className="flex justify-between text-gold"><span>العربون المطلوب</span><span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span></div>
-            <div className="text-xs text-muted-foreground pt-1">تم تعبئة الأوقات تلقائياً — يمكنكِ تعديلها.</div>
-          </div>
-        )}
-        <div className="sm:col-span-2">
-          <Field label="الموقع / القاعة" v={f.venue_address} on={(v) => setF({ ...f, venue_address: v })} />
-        </div>
         <div className="sm:col-span-2">
           <Field label="الرصيد المتبقي (اختياري)" v={f.remaining_note} on={(v) => setF({ ...f, remaining_note: v })} />
         </div>
@@ -663,20 +688,65 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           </div>
         </div>
       </div>
-      {isBlocked && <p className="text-sm text-destructive mt-3">⚠️ هذا اليوم غير متاح</p>}
-      {daySlots.length > 0 && !isBlocked && (
+      )}
+
+      {step === 3 && (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Field label="الاسم" v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
+        <Field label="الهاتف" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
+        <div className="sm:col-span-2">
+          <Field label="الإيميل" type="email" v={f.client_email} on={(v) => setF({ ...f, client_email: v })} />
+        </div>
+        {selected && (
+          <div className="sm:col-span-2 rounded-sm bg-secondary/60 border border-border p-3 text-sm space-y-1.5">
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">ملخّص الطلب</div>
+            <div className="flex justify-between text-muted-foreground"><span>التاريخ</span><span>{selectedDateObj ? format(selectedDateObj, "d MMMM yyyy", { locale: ar }) : "—"}</span></div>
+            <div className="flex justify-between"><span>{selected.label}</span><span>{basePrice.toLocaleString("ar-JO")} د.أ</span></div>
+            {selectedAddons.map((x) => (
+              <div key={x.rule.id} className="flex justify-between text-muted-foreground">
+                <span>{x.rule.label} × {x.qty}</span>
+                <span>{(Number(x.rule.price) * x.qty).toLocaleString("ar-JO")} د.أ</span>
+              </div>
+            ))}
+            <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">المجموع</span><span className="font-semibold">{total.toLocaleString("ar-JO")} د.أ</span></div>
+            <div className="flex justify-between text-gold"><span>العربون المطلوب</span><span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span></div>
+          </div>
+        )}
+        <label className="sm:col-span-2 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed cursor-pointer">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-gold" />
+          <span>
+            أوافق على <Link to="/privacy" className="text-gold underline">سياسة الخصوصية</Link> و
+            <Link to="/terms" className="text-gold underline"> الشروط والأحكام</Link>، وأقرّ بأن بياناتي ستُستخدم لمعالجة هذا الحجز فقط.
+          </span>
+        </label>
+      </div>
+      )}
+
+      {/* Step navigation */}
+      <div className="mt-6 flex items-center gap-2">
+        {step > 1 && (
+          <button type="button" onClick={goBack} className="px-4 py-3 rounded-sm border border-border hover:bg-secondary inline-flex items-center gap-1 text-sm">
+            <ChevronRight className="h-4 w-4" /> السابق
+          </button>
+        )}
+        {step < 3 ? (
+          <button type="button" onClick={goNext} disabled={!stepValid[step]} className="flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-50 inline-flex items-center justify-center gap-1 text-sm">
+            التالي <ChevronLeft className="h-4 w-4" />
+          </button>
+        ) : (
+          <button onClick={submit} disabled={submitting || !consent} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm">
+            <Send className="h-4 w-4" /> {submitting ? "جاري الإرسال…" : "إرسال طلب الحجز"}
+          </button>
+        )}
+      </div>
+      {daySlots.length > 0 && !isBlocked && step === 1 && (
         <div className="mt-3 rounded-sm border border-amber-200 bg-amber-50 p-3 text-sm">
           <div className="font-medium text-amber-900 mb-1">فترات محجوزة في هذا اليوم:</div>
           <ul className="text-xs text-amber-800 space-y-0.5">
             {daySlots.map((s, i) => <li key={i}>• من {s.start_time?.slice(0,5)} إلى {s.end_time?.slice(0,5)}</li>)}
           </ul>
-          <div className="text-xs text-amber-700 mt-1">اختاري وقتاً خارج هذه الفترات.</div>
         </div>
       )}
-      {hasConflict && <p className="text-sm text-destructive mt-3">⚠️ يتعارض مع فترة محجوزة</p>}
-      <button onClick={submit} disabled={submitting} className="w-full mt-5 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60">
-        <Send className="h-4 w-4" /> {submitting ? "جاري الإرسال…" : "إرسال طلب الحجز"}
-      </button>
     </div>
   );
 }

@@ -28,7 +28,11 @@ export function Footer() {
         </div>
       </div>
       <div className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} EliteCapture. صُمِّم بعناية في عمّان.
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          <span>© {new Date().getFullYear()} EliteCapture. صُمِّم بعناية في عمّان.</span>
+          <Link to="/privacy" className="hover:text-gold">سياسة الخصوصية</Link>
+          <Link to="/terms" className="hover:text-gold">الشروط والأحكام</Link>
+        </div>
       </div>
     </footer>
   );
