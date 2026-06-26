@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
@@ -53,6 +54,11 @@ import { Route as ApiPublicHooksPaymentRouteImport } from './routes/api/public/h
 import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
 import { Route as ApiPublicHooksEmailRemindersRouteImport } from './routes/api/public/hooks/email-reminders'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -288,6 +294,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -376,6 +384,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -423,6 +432,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/admin/photographers'
     | '/admin/refunds'
     | '/admin/reviews'
@@ -466,6 +476,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/admin/photographers'
     | '/admin/refunds'
     | '/admin/reviews'
@@ -510,6 +521,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/search'
     | '/sitemap.xml'
+    | '/terms'
     | '/admin/photographers'
     | '/admin/refunds'
     | '/admin/reviews'
@@ -556,6 +568,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   ContractsTokenRoute: typeof ContractsTokenRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
@@ -569,6 +582,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -953,6 +973,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   ContractsTokenRoute: ContractsTokenRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
