@@ -11,9 +11,9 @@ import { Footer } from "@/components/site/Footer";
 export const Route = createFileRoute("/guide")({
   head: () => ({
     meta: [
-      { title: "كيف يعمل الموقع — رحلة العميل والمصور | EliteCapture" },
+      { title: "كيف يعمل الموقع — رحلة العميل والمصور | Memoria" },
       { name: "description", content: "اكتشف رحلة العميل من البحث عن مصور حتى استلام الصور، ورحلة المصور من التسجيل حتى تنظيم الحجوزات والعقود الرقمية." },
-      { property: "og:title", content: "كيف يعمل EliteCapture — رحلتك خطوة بخطوة" },
+      { property: "og:title", content: "كيف يعمل Memoria — رحلتك خطوة بخطوة" },
       { property: "og:description", content: "دليل شامل لكل خطوة في المنصة: للزبون وللمصور." },
     ],
   }),
@@ -154,7 +154,7 @@ function GuidePage() {
             <Sparkles className="h-3.5 w-3.5" /> دليل شامل خطوة بخطوة
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl">
-            كيف يعمل <span className="text-primary">EliteCapture</span>؟
+            كيف يعمل <span className="text-primary">Memoria</span>؟
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
             رحلتان واضحتان: واحدة للعروسين الباحثين عن مصوّر يثقون به، وواحدة للمصوّرين الذين يريدون
@@ -210,7 +210,7 @@ function GuidePage() {
         <div className="mb-8 text-center">
           <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             <TrendingUp className="h-3.5 w-3.5" />
-            لماذا EliteCapture أفضل؟
+            لماذا Memoria أفضل؟
           </div>
           <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
             الفرق بيننا وبين <span className="text-primary">إنستغرام</span> و<span className="text-primary">واتساب</span>
@@ -224,7 +224,7 @@ function GuidePage() {
           {/* Header row */}
           <div className="grid grid-cols-3 border-b bg-muted/40 text-sm font-semibold text-foreground">
             <div className="border-l px-4 py-3 text-center sm:py-4">النقطة</div>
-            <div className="border-l px-4 py-3 text-center sm:py-4">EliteCapture</div>
+            <div className="border-l px-4 py-3 text-center sm:py-4">Memoria</div>
             <div className="px-4 py-3 text-center sm:py-4">إنستغرام / واتساب</div>
           </div>
 

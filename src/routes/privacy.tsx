@@ -5,8 +5,8 @@ import { Footer } from "@/components/site/Footer";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "سياسة الخصوصية — EliteCapture" },
-      { name: "description", content: "كيف نجمع بياناتك ونستخدمها ونحميها على منصة EliteCapture لحجوزات مصوّرات الأعراس في الأردن." },
+      { title: "سياسة الخصوصية — Memoria" },
+      { name: "description", content: "كيف نجمع بياناتك ونستخدمها ونحميها على منصة Memoria لحجوزات مصوّرات الأعراس في الأردن." },
     ],
   }),
   component: PrivacyPage,

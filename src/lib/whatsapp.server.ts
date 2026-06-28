@@ -120,7 +120,7 @@ function buildDefaultMessage(category: NotificationCategory, vars: TemplateVars)
         `يمكنك متابعة حالة حجزك في أي وقت من الرابط التالي:`,
         tracking_url ? tracking_url : null,
         ``,
-        `سيتواصل معك فريق EliteCapture قريباً لتأكيد الحجز. ✨`,
+        `سيتواصل معك فريق Memoria قريباً لتأكيد الحجز. ✨`,
       ].filter(Boolean).join("\n");
 
     case "confirmed":
@@ -188,11 +188,11 @@ function buildDefaultMessage(category: NotificationCategory, vars: TemplateVars)
         `تم إلغاء حجزك مع *${photographer_name}* بتاريخ *${event_date}*.`,
         refund_note ? `\n${refund_note}` : null,
         ``,
-        `لأي استفسار، يُرجى التواصل معنا عبر EliteCapture.`,
+        `لأي استفسار، يُرجى التواصل معنا عبر Memoria.`,
       ].filter(Boolean).join("\n");
 
     default:
-      return `مرحباً ${client_name}، تحديث من EliteCapture بخصوص حجزك مع ${photographer_name}.`;
+      return `مرحباً ${client_name}، تحديث من Memoria بخصوص حجزك مع ${photographer_name}.`;
   }
 }
 

@@ -23,8 +23,8 @@ export const Route = createFileRoute("/api/public/ical/$token")({
         ]);
 
         const lines = [
-          "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//EliteCapture//AR//",
-          `X-WR-CALNAME:EliteCapture - ${profile.display_name}`,
+          "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Memoria//AR//",
+          `X-WR-CALNAME:Memoria - ${profile.display_name}`,
         ];
         for (const b of bookings ?? []) {
           lines.push("BEGIN:VEVENT",

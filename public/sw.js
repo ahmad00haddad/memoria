@@ -1,4 +1,4 @@
-// EliteCapture Service Worker — PWA caching + offline support
+// Memoria Service Worker — PWA caching + offline support
 // Version: 2.0 (Phase 5 — Performance)
 
 const CACHE_NAME = "elitecapture-v2";
@@ -164,7 +164,7 @@ self.addEventListener("push", (event) => {
   try {
     const { title, body, icon, badge, url } = event.data.json();
     event.waitUntil(
-      self.registration.showNotification(title || "EliteCapture", {
+      self.registration.showNotification(title || "Memoria", {
         body: body || "",
         icon: icon || "/app-icon-192.png",
         badge: badge || "/app-icon-192.png",

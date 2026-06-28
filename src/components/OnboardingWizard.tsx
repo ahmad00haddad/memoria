@@ -6,7 +6,7 @@ import { Camera, DollarSign, Wallet, MessageCircle, Eye, Sparkles, ArrowLeft, X 
 const STORAGE_KEY = "onboarding_v1_dismissed";
 
 const STEPS = [
-  { icon: Sparkles, title: "أهلاً بكِ في EliteCapture 👋", desc: "هذه الجولة السريعة تأخذ دقيقتين لتعرفي من أين تبدئين. يمكنك تخطيها وفتح القائمة لاحقاً من لوحة التحكم.", to: null, cta: "ابدئي" },
+  { icon: Sparkles, title: "أهلاً بكِ في Memoria 👋", desc: "هذه الجولة السريعة تأخذ دقيقتين لتعرفي من أين تبدئين. يمكنك تخطيها وفتح القائمة لاحقاً من لوحة التحكم.", to: null, cta: "ابدئي" },
   { icon: Camera, title: "١. أكملي ملفك الشخصي", desc: "الصورة، النبذة، المدينة، المعدّات. هذا أول ما يراه العميل عند فتح صفحتك.", to: "/dashboard/profile", cta: "افتحي الملف الآن" },
   { icon: DollarSign, title: "٢. أضيفي باقات الأسعار", desc: "بدون باقات لن يرى العميل أسعاركِ ولن يستطيع طلب حجز واضح.", to: "/dashboard/pricing", cta: "إضافة باقة" },
   { icon: Wallet, title: "٣. أدخلي وسائل الدفع والتواصل", desc: "CliQ alias ورقم واتساب — تظهر للعميل بعد تأكيد الحجز فقط لحماية خصوصيتك.", to: "/dashboard/profile", cta: "إضافة CliQ والواتساب" },

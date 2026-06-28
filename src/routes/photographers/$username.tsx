@@ -38,11 +38,11 @@ export const Route = createFileRoute("/photographers/$username")({
     const p = loaderData?.seo as any;
     const name = p?.display_name || params.username;
     const city = p?.city ? ` في ${p.city}` : "";
-    const desc = p?.bio?.slice(0, 155) || `استعرض أعمال وأسعار المصوّرة ${name}${city} واحجز موعدك مباشرة عبر EliteCapture.`;
+    const desc = p?.bio?.slice(0, 155) || `استعرض أعمال وأسعار المصوّرة ${name}${city} واحجز موعدك مباشرة عبر Memoria.`;
     const image = p?.cover_url || p?.avatar_url || undefined;
     const url = `https://royal-lens-flow.lovable.app/photographers/${params.username}`;
     const meta: Array<Record<string, string>> = [
-      { title: `${name} — مصوّرة أعراس${city} | EliteCapture` },
+      { title: `${name} — مصوّرة أعراس${city} | Memoria` },
       { name: "description", content: desc },
       { property: "og:title", content: `${name} — مصوّرة أعراس${city}` },
       { property: "og:description", content: desc },
@@ -192,7 +192,7 @@ function PhotographerPage() {
       <section className="relative bg-charcoal text-ivory grain-overlay overflow-hidden">
         {/* Top meta strip: ISSUE / DATE / FEATURE — like a magazine masthead */}
         <div className="container-editorial pt-8 pb-4 border-b border-ivory/10 flex flex-wrap items-center gap-x-8 gap-y-2 text-[10px] uppercase tracking-[0.35em] opacity-70">
-          <span>EliteCapture · العدد ٠١</span>
+          <span>Memoria · العدد ٠١</span>
           <span className="hidden sm:inline">{new Date().toLocaleDateString("ar-JO", { year: "numeric", month: "long" })}</span>
           <span className="ms-auto inline-flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-gold inline-block animate-pulse" />
