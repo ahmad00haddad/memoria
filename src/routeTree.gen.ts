@@ -22,6 +22,7 @@ import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForPhotographersRouteImport } from './routes/for-photographers'
 import { Route as ForClientsRouteImport } from './routes/for-clients'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AppRouteImport } from './routes/app'
@@ -119,6 +120,11 @@ const ForPhotographersRoute = ForPhotographersRouteImport.update({
 const ForClientsRoute = ForClientsRouteImport.update({
   id: '/for-clients',
   path: '/for-clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -296,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/faq': typeof FaqRoute
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -342,6 +349,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/app': typeof AppRoute
   '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -390,6 +398,7 @@ export interface FileRoutesById {
   '/app': typeof AppRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRouteWithChildren
+  '/faq': typeof FaqRoute
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -440,6 +449,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/contact'
     | '/dashboard'
+    | '/faq'
     | '/for-clients'
     | '/for-photographers'
     | '/forgot-password'
@@ -486,6 +496,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/app'
     | '/contact'
+    | '/faq'
     | '/for-clients'
     | '/for-photographers'
     | '/forgot-password'
@@ -533,6 +544,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/contact'
     | '/dashboard'
+    | '/faq'
     | '/for-clients'
     | '/for-photographers'
     | '/forgot-password'
@@ -582,6 +594,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRoute
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRouteWithChildren
+  FaqRoute: typeof FaqRoute
   ForClientsRoute: typeof ForClientsRoute
   ForPhotographersRoute: typeof ForPhotographersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -697,6 +710,13 @@ declare module '@tanstack/react-router' {
       path: '/for-clients'
       fullPath: '/for-clients'
       preLoaderRoute: typeof ForClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -1003,6 +1023,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRoute,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRouteWithChildren,
+  FaqRoute: FaqRoute,
   ForClientsRoute: ForClientsRoute,
   ForPhotographersRoute: ForPhotographersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
