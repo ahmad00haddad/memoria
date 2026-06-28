@@ -21,7 +21,7 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
   head: () => ({
     meta: [
-      { title: "ابحث عن مصوّر عرسك | EliteCapture" },
+      { title: "ابحث عن مصوّر عرسك | Memoria" },
       {
         name: "description",
         content:

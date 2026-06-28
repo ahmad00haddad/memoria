@@ -374,7 +374,7 @@ export async function createStripeSubscriptionCheckout(args: {
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": args.currency.toLowerCase(),
     "line_items[0][price_data][unit_amount]": String(toMinorUnit(args.amount, args.currency)),
-    "line_items[0][price_data][product_data][name]": `اشتراك EliteCapture — ${args.months} ${args.months === 1 ? "شهر" : "أشهر"}`,
+    "line_items[0][price_data][product_data][name]": `اشتراك Memoria — ${args.months} ${args.months === 1 ? "شهر" : "أشهر"}`,
   }).toString();
 
   const res = await fetch(`${API}/checkout/sessions`, {

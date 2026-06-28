@@ -12,9 +12,9 @@ type SendArgs = {
 };
 
 // ✅ إصلاح: يقرأ من env بدلاً من hardcoded — يجب ضبط EMAIL_FROM في Cloudflare/Supabase
-// مثال: EMAIL_FROM="EliteCapture <noreply@elitecapture.com>"
+// مثال: EMAIL_FROM="Memoria <noreply@elitecapture.com>"
 // Fallback آمن للتطوير فقط — يذهب للـ spam في الإنتاج بدون domain موثّق
-const FROM = process.env.EMAIL_FROM || "EliteCapture <onboarding@resend.dev>";
+const FROM = process.env.EMAIL_FROM || "Memoria <onboarding@resend.dev>";
 
 export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; id?: string; error?: string; skipped?: boolean }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -91,7 +91,7 @@ function layout(title: string, inner: string, cta?: { label: string; url: string
       <tr><td align="center">
         <table role="presentation" width="100%" style="max-width:560px;background:#ffffff;border:1px solid #e6e2d8;border-radius:4px;overflow:hidden;">
           <tr><td style="padding:24px 28px;border-bottom:1px solid #efece4;">
-            <div style="font-family:Georgia,serif;font-size:22px;color:#a07a32;letter-spacing:0.5px;">EliteCapture</div>
+            <div style="font-family:Georgia,serif;font-size:22px;color:#a07a32;letter-spacing:0.5px;">Memoria</div>
             <div style="font-size:12px;color:#7a7466;margin-top:4px;">منصة مصوّرات الأعراس والمناسبات</div>
           </td></tr>
           <tr><td style="padding:28px;">
@@ -102,7 +102,7 @@ function layout(title: string, inner: string, cta?: { label: string; url: string
             </div>` : ""}
           </td></tr>
           <tr><td style="padding:16px 28px;background:#faf8f3;border-top:1px solid #efece4;font-size:11px;color:#8a8472;text-align:center;">
-            هذه رسالة آلية من EliteCapture — لا داعي للرد عليها مباشرة.
+            هذه رسالة آلية من Memoria — لا داعي للرد عليها مباشرة.
           </td></tr>
         </table>
       </td></tr>
@@ -204,7 +204,7 @@ export function tplSubscriptionExpiring(args: {
     subject: `اشتراكك ينتهي خلال ${args.days_left} أيام`,
     html: layout("تذكير بانتهاء الاشتراك", `
       <p>مرحباً ${escapeHtml(args.photographer_name)},</p>
-      <p>ينتهي اشتراكك في EliteCapture خلال <strong>${args.days_left}</strong> أيام.</p>
+      <p>ينتهي اشتراكك في Memoria خلال <strong>${args.days_left}</strong> أيام.</p>
       <p>جدّدي الاشتراك من لوحة التحكم لتجنّب توقّف ظهور ملفك في نتائج البحث.</p>`,
       { label: "تجديد الاشتراك", url: `${appBase()}/dashboard/subscription` }),
   };

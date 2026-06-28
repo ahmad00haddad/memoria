@@ -9,7 +9,7 @@ export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
   head: () => ({
     meta: [
-      { title: "إعادة تعيين كلمة المرور | EliteCapture" },
+      { title: "إعادة تعيين كلمة المرور | Memoria" },
       { name: "description", content: "اختاري كلمة مرور جديدة لحسابكِ." },
       { name: "robots", content: "noindex" },
     ],

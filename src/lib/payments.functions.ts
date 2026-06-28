@@ -153,7 +153,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
       booking_id: `sub_${userId}_${Date.now()}`, // placeholder — الـ webhook يقرأ من metadata
       amount,
       currency,
-      description: `اشتراك EliteCapture — ${data.months} ${data.months === 1 ? "شهر" : "أشهر"}`,
+      description: `اشتراك Memoria — ${data.months} ${data.months === 1 ? "شهر" : "أشهر"}`,
       success_url: `${base}/dashboard/subscription?payment=success`,
       cancel_url: `${base}/dashboard/subscription?payment=cancelled`,
     });

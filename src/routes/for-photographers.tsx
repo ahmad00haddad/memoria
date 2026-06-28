@@ -6,9 +6,9 @@ import { Calendar, DollarSign, FileSignature, MessageCircle, ListChecks, BarChar
 export const Route = createFileRoute("/for-photographers")({
   head: () => ({
     meta: [
-      { title: "للمصوّرات — انضمي إلى EliteCapture | إدارة كاملة لأعمال التصوير" },
+      { title: "للمصوّرات — انضمي إلى Memoria | إدارة كاملة لأعمال التصوير" },
       { name: "description", content: "صفحة عامة احترافية، نظام حجوزات، عقود رقمية، تذكيرات تلقائية، قوالب واتساب جاهزة، تقارير مالية، ومزامنة Google Calendar — كل ما تحتاجينه لإدارة استوديوك من مكان واحد." },
-      { property: "og:title", content: "للمصوّرات — انضمي إلى EliteCapture" },
+      { property: "og:title", content: "للمصوّرات — انضمي إلى Memoria" },
       { property: "og:description", content: "نظام إدارة كامل لأعمال مصوّرات الأعراس." },
     ],
   }),
@@ -45,7 +45,7 @@ function ForPhotographersPage() {
             إدارة كاملة لاستوديوكِ <br className="hidden sm:block" /> من مكان واحد
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            EliteCapture ليست فقط منصّة عرض — بل نظام إدارة متكامل صُمّم خصيصاً لمصوّرات الأعراس في الأردن. حجوزات، عقود، عرابين، تسليم صور، تقارير، وقوالب واتساب — كل ذلك بالعربية وبواجهة Mobile-first.
+            Memoria ليست فقط منصّة عرض — بل نظام إدارة متكامل صُمّم خصيصاً لمصوّرات الأعراس في الأردن. حجوزات، عقود، عرابين، تسليم صور، تقارير، وقوالب واتساب — كل ذلك بالعربية وبواجهة Mobile-first.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/photographers/join" className="bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">

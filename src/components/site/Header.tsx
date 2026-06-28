@@ -88,7 +88,7 @@ export function Header() {
             <Camera className="h-4 w-4 text-charcoal" />
           </div>
           <div className="leading-tight">
-            <div className="font-serif text-lg tracking-wide">EliteCapture</div>
+            <div className="font-serif text-lg tracking-wide">Memoria</div>
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Wedding · Jordan</div>
           </div>
         </Link>

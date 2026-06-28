@@ -10,7 +10,7 @@ export const Route = createFileRoute("/forgot-password")({
   component: ForgotPasswordPage,
   head: () => ({
     meta: [
-      { title: "استعادة كلمة المرور | EliteCapture" },
+      { title: "استعادة كلمة المرور | Memoria" },
       { name: "description", content: "أرسلي رابط استعادة كلمة المرور إلى بريدك الإلكتروني." },
       { name: "robots", content: "noindex" },
     ],

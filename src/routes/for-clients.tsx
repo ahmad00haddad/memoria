@@ -6,9 +6,9 @@ import { Search, Shield, Star, Calendar, MessageCircle, Camera, Lock, Eye, Check
 export const Route = createFileRoute("/for-clients")({
   head: () => ({
     meta: [
-      { title: "للعملاء — لماذا EliteCapture؟ | حجز مصوّرات الأعراس بثقة" },
+      { title: "للعملاء — لماذا Memoria؟ | حجز مصوّرات الأعراس بثقة" },
       { name: "description", content: "اعثري على مصوّرة عرسك من بين مصوّرات مُتحقَّق منهنّ، شاهدي أعمالهنّ وأسعارهنّ، واحجزي بأمان مع تتبّع كامل لطلبكِ من الموافقة حتى تسليم الصور." },
-      { property: "og:title", content: "للعملاء — لماذا EliteCapture؟" },
+      { property: "og:title", content: "للعملاء — لماذا Memoria؟" },
       { property: "og:description", content: "حجز مصوّرات الأعراس في الأردن بشفافية وأمان كامل." },
     ],
   }),
@@ -39,7 +39,7 @@ function ForClientsPage() {
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">للعميلة</div>
           <h1 className="font-serif text-4xl sm:text-5xl leading-tight mb-4">احجزي مصوّرة عرسكِ <br className="hidden sm:block" /> بثقة وأمان كامل</h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            EliteCapture منصّة متخصّصة في مصوّرات الأعراس في الأردن. اخترنا لكِ أفضل المصوّرات، تحقّقنا منهنّ، ووفّرنا أدوات حماية وتتبّع لكل خطوة من خطوات حجزكِ.
+            Memoria منصّة متخصّصة في مصوّرات الأعراس في الأردن. اخترنا لكِ أفضل المصوّرات، تحقّقنا منهنّ، ووفّرنا أدوات حماية وتتبّع لكل خطوة من خطوات حجزكِ.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/search" className="bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
@@ -52,7 +52,7 @@ function ForClientsPage() {
         <section className="container-editorial pb-16">
           <div className="text-center mb-12">
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">لماذا نحن</div>
-            <h2 className="font-serif text-3xl sm:text-4xl">١٢ سبباً لاختيار EliteCapture</h2>
+            <h2 className="font-serif text-3xl sm:text-4xl">١٢ سبباً لاختيار Memoria</h2>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => {

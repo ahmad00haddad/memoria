@@ -8,7 +8,7 @@ export function Footer() {
     <footer className="mt-24 border-t border-border/60 bg-background">
       <div className="container-editorial py-12 grid gap-8 sm:grid-cols-3 text-sm">
         <div>
-          <div className="font-serif text-xl mb-2">EliteCapture</div>
+          <div className="font-serif text-xl mb-2">Memoria</div>
           <p className="text-muted-foreground leading-relaxed">منصة فاخرة لإدارة حجوزات مصوّري الأعراس في الأردن — بدون فوضى الواتساب.</p>
         </div>
         <div>
@@ -29,7 +29,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-          <span>© {new Date().getFullYear()} EliteCapture. صُمِّم بعناية في عمّان.</span>
+          <span>© {new Date().getFullYear()} Memoria. صُمِّم بعناية في عمّان.</span>
           <Link to="/privacy" className="hover:text-gold">سياسة الخصوصية</Link>
           <Link to="/terms" className="hover:text-gold">الشروط والأحكام</Link>
         </div>

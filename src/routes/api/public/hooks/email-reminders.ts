@@ -178,20 +178,20 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
             const base = process.env.PUBLIC_APP_URL || "https://royal-lens-flow.lovable.app";
             const r = await sendEmail({
               to: email,
-              subject: "انتهى اشتراكك في EliteCapture — جدّد الآن",
+              subject: "انتهى اشتراكك في Memoria — جدّد الآن",
               html: `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"></head>
 <body style="margin:0;background:#f7f5f1;font-family:Tahoma,Arial,sans-serif;color:#1a1a1a;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f5f1;padding:32px 12px;">
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:560px;background:#fff;border:1px solid #e6e2d8;border-radius:4px;overflow:hidden;">
         <tr><td style="padding:24px 28px;border-bottom:1px solid #efece4;">
-          <div style="font-family:Georgia,serif;font-size:22px;color:#a07a32;">EliteCapture</div>
+          <div style="font-family:Georgia,serif;font-size:22px;color:#a07a32;">Memoria</div>
           <div style="font-size:12px;color:#7a7466;margin-top:4px;">منصة مصوّرات الأعراس والمناسبات</div>
         </td></tr>
         <tr><td style="padding:28px;">
           <h1 style="font-family:Georgia,serif;font-size:20px;margin:0 0 16px;">انتهى اشتراكك ⏰</h1>
           <p>مرحباً ${name},</p>
-          <p>للأسف انتهى اشتراكك في EliteCapture اليوم. تم إخفاء ملفك الشخصي مؤقتاً من نتائج البحث.</p>
+          <p>للأسف انتهى اشتراكك في Memoria اليوم. تم إخفاء ملفك الشخصي مؤقتاً من نتائج البحث.</p>
           <p>لاستعادة ظهورك وحجوزاتك، جدّد اشتراكك الآن:</p>
           <div style="margin-top:24px;text-align:center;">
             <a href="${base}/dashboard/subscription" style="display:inline-block;background:#a07a32;color:#fff;text-decoration:none;padding:14px 32px;border-radius:3px;font-size:15px;font-weight:600;">تجديد الاشتراك</a>
@@ -199,7 +199,7 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
           <p style="margin-top:20px;font-size:13px;color:#7a7466;">إن كان لديك أي استفسار، تواصل معنا عبر البريد الإلكتروني.</p>
         </td></tr>
         <tr><td style="padding:16px 28px;background:#faf8f3;border-top:1px solid #efece4;font-size:11px;color:#8a8472;text-align:center;">
-          هذه رسالة آلية من EliteCapture — لا داعي للرد عليها مباشرة.
+          هذه رسالة آلية من Memoria — لا داعي للرد عليها مباشرة.
         </td></tr>
       </table>
     </td></tr>

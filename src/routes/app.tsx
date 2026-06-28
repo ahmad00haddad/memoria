@@ -11,10 +11,10 @@ import {
 export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
-      { title: "حمّل تطبيق EliteCapture على هاتفك | EliteCapture" },
+      { title: "حمّل تطبيق Memoria على هاتفك | Memoria" },
       {
         name: "description",
-        content: "ثبّتي EliteCapture كتطبيق على هاتفك (iPhone أو Android) أو على سطح المكتب — يعمل دون متجر، بسرعة، ومع أيقونة على الشاشة الرئيسية.",
+        content: "ثبّتي Memoria كتطبيق على هاتفك (iPhone أو Android) أو على سطح المكتب — يعمل دون متجر، بسرعة، ومع أيقونة على الشاشة الرئيسية.",
       },
     ],
   }),
@@ -45,13 +45,13 @@ const platformHeadline: Record<Platform, string> = {
   ios: "ثبّتيه على iPhone في 3 خطوات",
   android: "ثبّتيه على Android بنقرة واحدة",
   desktop: "ثبّته على سطح المكتب",
-  other: "ثبّت تطبيق EliteCapture",
+  other: "ثبّت تطبيق Memoria",
 };
 
 const iosSteps = [
   { icon: Share2, label: "اضغطي على زر المشاركة", desc: "زر السهم للأعلى في شريط Safari السفلي" },
   { icon: Plus, label: "اختاري «إضافة إلى الشاشة الرئيسية»", desc: "مرّري للأسفل في قائمة المشاركة حتى تجديه" },
-  { icon: Home, label: "اضغطي «إضافة» وانتهى", desc: "ستظهر أيقونة EliteCapture على شاشتك الرئيسية" },
+  { icon: Home, label: "اضغطي «إضافة» وانتهى", desc: "ستظهر أيقونة Memoria على شاشتك الرئيسية" },
 ];
 
 const desktopSteps = [
@@ -115,7 +115,7 @@ function AppDownloadPage() {
               </motion.div>
               <h2 className="font-serif text-3xl">التطبيق جاهز!</h2>
               <p className="text-muted-foreground">
-                يمكنك الآن فتح EliteCapture مباشرة من شاشتك الرئيسية
+                يمكنك الآن فتح Memoria مباشرة من شاشتك الرئيسية
               </p>
               <Link
                 to="/"

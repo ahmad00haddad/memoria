@@ -49,7 +49,7 @@ export const sendGalleryDeliveredEmail = createServerFn({ method: "POST" })
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:560px;background:#fff;border:1px solid #e6e2d8;border-radius:4px;overflow:hidden;">
         <tr><td style="padding:24px 28px;border-bottom:1px solid #efece4;">
-          <div style="font-family:Georgia,serif;font-size:22px;color:#a07a32;">EliteCapture</div>
+          <div style="font-family:Georgia,serif;font-size:22px;color:#a07a32;">Memoria</div>
         </td></tr>
         <tr><td style="padding:28px;">
           <h1 style="font-family:Georgia,serif;font-size:22px;margin:0 0 16px;">صورك جاهزة! 🎉</h1>
@@ -60,7 +60,7 @@ export const sendGalleryDeliveredEmail = createServerFn({ method: "POST" })
           ${reviewUrl ? `<p style="margin-top:20px;padding:16px;background:#faf8f3;border-radius:4px;font-size:13px;">نتمنى أنك راضية عن التجربة! <a href="${reviewUrl}" style="color:#a07a32;font-weight:600;">اتركي تقييمك هنا</a> — رأيك يساعد العرائس الأخريات.</p>` : ''}
         </td></tr>
         <tr><td style="padding:16px 28px;background:#faf8f3;border-top:1px solid #efece4;font-size:11px;color:#8a8472;text-align:center;">
-          رسالة آلية من EliteCapture — لا داعي للرد مباشرة.
+          رسالة آلية من Memoria — لا داعي للرد مباشرة.
         </td></tr>
       </table>
     </td></tr>
