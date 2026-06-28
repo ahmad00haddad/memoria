@@ -88,8 +88,8 @@ export function Header() {
             <Camera className="h-4 w-4 text-charcoal" />
           </div>
           <div className="leading-tight">
-            <div className="font-serif text-lg tracking-wide">Memoria</div>
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Wedding · Jordan</div>
+            <div className="font-serif text-lg tracking-wide">Memoria <span className="text-muted-foreground text-sm">ميموريا</span></div>
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
           </div>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
