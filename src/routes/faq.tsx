@@ -10,9 +10,9 @@ export const Route = createFileRoute("/faq")({
       { name: "description", content: "إجابات لأكثر الأسئلة شيوعاً حول الحجز، الدفع، الإلغاء، التقييمات، والاشتراكات على منصّة ميموريا." },
       { property: "og:title", content: "الأسئلة الشائعة — Memoria" },
       { property: "og:description", content: "كل ما تحتاجين معرفته قبل الحجز أو الانضمام." },
-      { property: "og:url", content: "https://royal-lens-flow.lovable.app/faq" },
+      { property: "og:url", content: "https://memoria-jo.lovable.app/faq" },
     ],
-    links: [{ rel: "canonical", href: "https://royal-lens-flow.lovable.app/faq" }],
+    links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/faq" }],
     scripts: [{
       type: "application/ld+json",
       children: JSON.stringify({

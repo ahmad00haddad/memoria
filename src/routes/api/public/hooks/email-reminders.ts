@@ -175,7 +175,7 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
 
             // إيميل انتهاء الاشتراك
             const name = prof?.display_name || "المصوّرة";
-            const base = process.env.PUBLIC_APP_URL || "https://royal-lens-flow.lovable.app";
+            const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
             const r = await sendEmail({
               to: email,
               subject: "انتهى اشتراكك في Memoria — جدّد الآن",
