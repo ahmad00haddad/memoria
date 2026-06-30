@@ -285,12 +285,36 @@ function SearchPage() {
           <EmptyState
             icon={Search}
             title="لا توجد نتائج"
-            description="لم نعثر على مصوّرات تطابق فلترك الحالي. جرّبي توسيع النطاق السعري، إزالة المدينة، أو تغيير التاريخ."
-            action={hasFilters ? (
-              <button onClick={clearAll} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 text-sm">
-                <X className="h-4 w-4" /> مسح كل الفلاتر
-              </button>
-            ) : undefined}
+            description="لم نعثر على مصوّرات تطابق فلترك الحالي. جرّبي اقتراحاتنا التالية:"
+            action={
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {date && (
+                  <button onClick={() => setDate("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                    إزالة التاريخ
+                  </button>
+                )}
+                {city && (
+                  <button onClick={() => setCity("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                    البحث في كل المدن
+                  </button>
+                )}
+                {(minPrice || maxPrice) && (
+                  <button onClick={() => { setMinPrice(""); setMaxPrice(""); }} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                    إزالة السعر
+                  </button>
+                )}
+                {verifiedOnly && (
+                  <button onClick={() => setVerifiedOnly(false)} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                    إظهار جميع المصوّرات
+                  </button>
+                )}
+                {hasFilters && (
+                  <button onClick={clearAll} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 text-sm">
+                    <X className="h-4 w-4" /> مسح كل الفلاتر
+                  </button>
+                )}
+              </div>
+            }
           />
         ) : (
           <motion.div
