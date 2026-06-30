@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award } from "lucide-react";
+import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -482,17 +482,49 @@ function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profi
 }
 
 function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
-  const [f, setF] = useState({
+  const storageKey = `memoria.booking-draft.${profile.username}`;
+  const initial = {
     client_name: "", client_phone: "", client_email: "", event_date: "", start_time: "", end_time: "",
     package_id: "", venue_address: "", remaining_note: "", client_notes: "",
     privacy_level: "public" as "public" | "private_only",
-  });
-  // إضافات: rule_id -> qty
+  };
+  const [f, setF] = useState(initial);
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ token: string } | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [consent, setConsent] = useState(false);
+  const [restoredDraft, setRestoredDraft] = useState(false);
+
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (draft?.f) setF((prev) => ({ ...prev, ...draft.f }));
+      if (draft?.addonQty) setAddonQty(draft.addonQty);
+      if (draft?.step) setStep(draft.step);
+      if (typeof draft?.consent === "boolean") setConsent(draft.consent);
+      setRestoredDraft(true);
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist draft on change (skip when success — we clear instead)
+  useEffect(() => {
+    if (typeof window === "undefined" || success) return;
+    try {
+      window.localStorage.setItem(storageKey, JSON.stringify({ f, addonQty, step, consent }));
+    } catch {}
+  }, [f, addonQty, step, consent, success, storageKey]);
+
+  const clearDraft = () => {
+    setF(initial); setAddonQty({}); setStep(1); setConsent(false);
+    try { window.localStorage.removeItem(storageKey); } catch {}
+    toast.success("تم مسح المسودة");
+  };
   const navigate = useNavigate();
   const submitFn = useServerFn(submitBookingRequest);
   const mainPackages = pricing.filter((p) => p.package !== "addon");
@@ -585,6 +617,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         },
       });
       setSuccess({ token: res.tracking_token });
+      try { window.localStorage.removeItem(storageKey); } catch {}
     } catch (e: any) {
       toast.error(e.message || "فشل إرسال الطلب");
     } finally {
