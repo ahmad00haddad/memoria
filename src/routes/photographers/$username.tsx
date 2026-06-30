@@ -627,21 +627,43 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
 
   if (success) {
     const trackUrl = `/track/${success.token}`;
+    const fullUrl = typeof window !== "undefined" ? `${window.location.origin}${trackUrl}` : trackUrl;
+    const bookingRef = success.token.slice(0, 8).toUpperCase();
     return (
       <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
         <CheckCircle2 className="h-14 w-14 text-emerald-600 mx-auto mb-3" />
         <h2 className="font-serif text-3xl mb-2">تم إرسال طلبك!</h2>
         <p className="text-muted-foreground mb-5">تم إخطار {profile.display_name} وسيتم التواصل معكِ قريبًا.</p>
+        <div className="grid grid-cols-2 gap-3 mb-5 text-start">
+          <div className="rounded-sm border border-border bg-secondary/40 p-3">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">رقم الحجز</div>
+            <div className="font-mono text-lg font-semibold mt-1">#{bookingRef}</div>
+          </div>
+          <div className="rounded-sm border border-border bg-secondary/40 p-3">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">الرد المتوقّع</div>
+            <div className="font-serif text-lg mt-1">خلال 24 ساعة</div>
+          </div>
+        </div>
         <div className="bg-gold/5 border border-gold/30 rounded-sm p-4 mb-5 text-start">
           <div className="text-xs uppercase tracking-[0.2em] text-gold mb-1">الخطوة التالية</div>
           <p className="text-sm">حوّلي العربون بقيمة <span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span>، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز.</p>
         </div>
-        <button onClick={() => navigate({ to: trackUrl })}
-                className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 inline-flex items-center justify-center gap-2">
-          <Send className="h-4 w-4" /> اذهبي لصفحة تتبع الحجز
-        </button>
-        <p className="text-xs text-muted-foreground mt-3">احفظي هذا الرابط للوصول لاحقًا: <br/>
-          <span className="font-mono text-[11px] break-all">{typeof window !== "undefined" ? window.location.origin : ""}{trackUrl}</span>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button onClick={() => navigate({ to: trackUrl })}
+                  className="flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 inline-flex items-center justify-center gap-2">
+            <Send className="h-4 w-4" /> اذهبي لصفحة تتبع الحجز
+          </button>
+          <button
+            onClick={() => { navigator.clipboard.writeText(fullUrl); toast.success("نُسخ رابط التتبّع"); }}
+            className="sm:w-auto border border-border py-3 px-4 rounded-sm hover:bg-secondary inline-flex items-center justify-center gap-2 text-sm"
+          >
+            <ClipboardCopy className="h-4 w-4" /> نسخ الرابط
+          </button>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+          ⚠️ احفظي رابط التتبّع — هو وسيلة وصولك الوحيدة للحجز:
+          <br/>
+          <span className="font-mono text-[11px] break-all">{fullUrl}</span>
         </p>
       </div>
     );
@@ -666,6 +688,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft">
       <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Book in simple steps</div>
       <h2 className="font-serif text-3xl mb-4">احجزي بخطوات بسيطة</h2>
+      {restoredDraft && !success && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-sm border border-gold/30 bg-gold/5 px-3 py-2 text-xs">
+          <span className="text-foreground">تم استعادة مسودتك السابقة تلقائيًا.</span>
+          <button type="button" onClick={clearDraft} className="text-muted-foreground hover:text-destructive underline underline-offset-2">
+            بدء من جديد
+          </button>
+        </div>
+      )}
 
       {/* Stepper */}
       <div className="mb-6">
