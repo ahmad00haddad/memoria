@@ -295,6 +295,12 @@ function PhotographerPage() {
 
       {/* PACKAGES */}
       <section id="packages" className="container-editorial py-16">
+        {/* TRUST BADGES — placed above packages so it informs the booking decision */}
+        <TrustBadges
+          profile={profile}
+          completedCount={completedCount}
+          unavailCount={blockedDates.length}
+        />
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">الباقات</div>
           <h2 className="font-serif text-3xl sm:text-4xl">بطاقة الأسعار</h2>
@@ -361,7 +367,12 @@ function PhotographerPage() {
       {/* REVIEWS */}
       {reviews.length > 0 && (
         <section className="container-editorial pb-12">
-          <h2 className="font-serif text-2xl mb-4 text-center">آراء العملاء</h2>
+          <h2 className="font-serif text-2xl mb-2 text-center">آراء العملاء</h2>
+          <div className="flex justify-center mb-4">
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] bg-gold/10 text-gold px-3 py-1 rounded-full border border-gold/30">
+              <CheckCircle2 className="h-3 w-3" /> تقييمات من حجوزات مكتملة فقط
+            </span>
+          </div>
           <div className="grid sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
             {reviews.slice(0, 6).map((r) => (
               <div key={r.id} className="rounded-sm border border-border bg-card p-4">
