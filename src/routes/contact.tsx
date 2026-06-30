@@ -12,9 +12,9 @@ export const Route = createFileRoute("/contact")({
       { name: "description", content: "فريق ميموريا هنا للمساعدة في الحجوزات، الاشتراكات، والاستفسارات. تواصلي عبر البريد أو نموذج التواصل." },
       { property: "og:title", content: "تواصلي معنا — Memoria · ميموريا" },
       { property: "og:description", content: "بريد الدعم، ساعات الرد، ونموذج تواصل سريع." },
-      { property: "og:url", content: "https://royal-lens-flow.lovable.app/contact" },
+      { property: "og:url", content: "https://memoria-jo.lovable.app/contact" },
     ],
-    links: [{ rel: "canonical", href: "https://royal-lens-flow.lovable.app/contact" }],
+    links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/contact" }],
   }),
   component: ContactPage,
 });

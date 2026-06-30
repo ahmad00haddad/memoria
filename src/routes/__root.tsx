@@ -120,11 +120,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "Memoria",
-          url: "https://royal-lens-flow.lovable.app",
+          url: "https://memoria-jo.lovable.app",
           inLanguage: "ar",
           potentialAction: {
             "@type": "SearchAction",
-            target: "https://royal-lens-flow.lovable.app/search?q={search_term_string}",
+            target: "https://memoria-jo.lovable.app/search?q={search_term_string}",
             "query-input": "required name=search_term_string",
           },
         }),

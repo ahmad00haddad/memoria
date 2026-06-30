@@ -9,9 +9,9 @@ export const Route = createFileRoute("/refund-policy")({
       { name: "description", content: "كيف يعمل الإلغاء واسترداد العربون على منصّة ميموريا، حقوقكِ وحقوق المصوّرة، والمواعيد الزمنية المُعتمدة." },
       { property: "og:title", content: "سياسة الإلغاء والاسترداد — Memoria" },
       { property: "og:description", content: "سياسة واضحة لإلغاء الحجوزات واسترداد العربون." },
-      { property: "og:url", content: "https://royal-lens-flow.lovable.app/refund-policy" },
+      { property: "og:url", content: "https://memoria-jo.lovable.app/refund-policy" },
     ],
-    links: [{ rel: "canonical", href: "https://royal-lens-flow.lovable.app/refund-policy" }],
+    links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/refund-policy" }],
   }),
   component: RefundPolicyPage,
 });

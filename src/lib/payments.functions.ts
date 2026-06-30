@@ -146,7 +146,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
     const monthlyPrice = Number(process.env.SUBSCRIPTION_MONTHLY_PRICE || "25");
     const amount = monthlyPrice * data.months;
     const currency = (process.env.PAYMENT_CURRENCY || "JOD").toUpperCase();
-    const base = process.env.PUBLIC_APP_URL || "https://royal-lens-flow.lovable.app";
+    const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
 
     const checkout = await provider.createDepositCheckout({
       // نُعيد استخدام createDepositCheckout مع metadata مختلفة

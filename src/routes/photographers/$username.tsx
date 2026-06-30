@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft } from "lucide-react";
+import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/photographers/$username")({
     const city = p?.city ? ` في ${p.city}` : "";
     const desc = p?.bio?.slice(0, 155) || `استعرض أعمال وأسعار المصوّرة ${name}${city} واحجز موعدك مباشرة عبر Memoria.`;
     const image = p?.cover_url || p?.avatar_url || undefined;
-    const url = `https://royal-lens-flow.lovable.app/photographers/${params.username}`;
+    const url = `https://memoria-jo.lovable.app/photographers/${params.username}`;
     const meta: Array<Record<string, string>> = [
       { title: `${name} — مصوّرة أعراس${city} | Memoria` },
       { name: "description", content: desc },
@@ -89,6 +89,7 @@ function PhotographerPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [unavail, setUnavail] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<{ event_date: string; start_time: string; end_time: string }[]>([]);
+  const [completedCount, setCompletedCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
@@ -109,14 +110,16 @@ function PhotographerPage() {
       setProfile(mergedProfile);
       if (mergedProfile) {
         const pid = mergedProfile.id;
-        const [{ data: p }, { data: r }, { data: u }, { data: bk }] = await Promise.all([
+        const [{ data: p }, { data: r }, { data: u }, { data: bk }, { count: cc }] = await Promise.all([
           supabase.from("pricing_rules").select("*").eq("photographer_id", pid),
           supabase.from("reviews").select("*").eq("photographer_id", pid).eq("is_published", true).order("created_at", { ascending: false }),
           supabase.rpc("get_photographer_busy_dates", { _pid: pid }),
           supabase.from("bookings").select("event_date,start_time,end_time").eq("photographer_id", pid).is("deleted_at", null).in("status", ["confirmed", "pending_deposit"]),
+          supabase.from("bookings").select("id", { count: "exact", head: true }).eq("photographer_id", pid).eq("status", "completed").is("deleted_at", null),
         ]);
         setPricing((p ?? []) as Pricing[]);
         setReviews(r ?? []);
+        setCompletedCount(cc ?? 0);
         // ✅ إصلاح: تحليل نتيجة RPC بشكل صحيح بدون الاعتماد على اسم الدالة كـ key
         // RPC قد يُعيد string مباشرة أو object بمفاتيح متعددة
         setUnavail(((u ?? []) as any[]).map((x: any) => {
@@ -147,9 +150,9 @@ function PhotographerPage() {
     const ld: any = {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
-      "@id": `https://royal-lens-flow.lovable.app/photographers/${profile.username}`,
+      "@id": `https://memoria-jo.lovable.app/photographers/${profile.username}`,
       name: profile.display_name,
-      url: `https://royal-lens-flow.lovable.app/photographers/${profile.username}`,
+      url: `https://memoria-jo.lovable.app/photographers/${profile.username}`,
       image: profile.cover_url || profile.avatar_url || undefined,
       description: profile.bio || undefined,
       address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: "JO" } : undefined,
@@ -184,7 +187,7 @@ function PhotographerPage() {
   const pickPackage = (id: string) => { setPickedPackageId(id); setTimeout(() => scrollTo("book"), 50); };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 lg:pb-0">
       <Header />
 
       {/* HERO */}
@@ -292,6 +295,12 @@ function PhotographerPage() {
 
       {/* PACKAGES */}
       <section id="packages" className="container-editorial py-16">
+        {/* TRUST BADGES — placed above packages so it informs the booking decision */}
+        <TrustBadges
+          profile={profile}
+          completedCount={completedCount}
+          unavailCount={blockedDates.length}
+        />
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">الباقات</div>
           <h2 className="font-serif text-3xl sm:text-4xl">بطاقة الأسعار</h2>
@@ -358,7 +367,12 @@ function PhotographerPage() {
       {/* REVIEWS */}
       {reviews.length > 0 && (
         <section className="container-editorial pb-12">
-          <h2 className="font-serif text-2xl mb-4 text-center">آراء العملاء</h2>
+          <h2 className="font-serif text-2xl mb-2 text-center">آراء العملاء</h2>
+          <div className="flex justify-center mb-4">
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] bg-gold/10 text-gold px-3 py-1 rounded-full border border-gold/30">
+              <CheckCircle2 className="h-3 w-3" /> تقييمات من حجوزات مكتملة فقط
+            </span>
+          </div>
           <div className="grid sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
             {reviews.slice(0, 6).map((r) => (
               <div key={r.id} className="rounded-sm border border-border bg-card p-4">
@@ -395,6 +409,33 @@ function PhotographerPage() {
       </section>
 
       <Footer />
+
+      {/* Sticky mobile booking CTA — only shows on small screens */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-elegant">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">احجزي مع</div>
+            <div className="font-serif text-sm truncate">{profile.display_name}</div>
+          </div>
+          {profile.whatsapp && (
+            <a
+              href={`https://wa.me/${profile.whatsapp.replace(/[^0-9]/g, "")}`}
+              target="_blank"
+              rel="noreferrer"
+              className="h-10 w-10 grid place-items-center rounded-sm border border-border"
+              aria-label="واتساب"
+            >
+              <MessageCircle className="h-4 w-4 text-green-600" />
+            </a>
+          )}
+          <button
+            onClick={() => scrollTo("book")}
+            className="bg-charcoal text-ivory px-5 py-2.5 rounded-sm text-sm font-medium"
+          >
+            احجزي الآن
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -405,6 +446,37 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
       <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-1">{label}</div>
       <div className="font-serif text-2xl leading-none">{value}</div>
       {sub && <div className="text-[11px] opacity-60 mt-1 truncate">{sub}</div>}
+    </div>
+  );
+}
+
+function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profile; completedCount: number; unavailCount: number }) {
+  const joined = profile.created_at ? new Date(profile.created_at) : null;
+  const joinedLabel = joined
+    ? joined.toLocaleDateString("ar-JO", { month: "long", year: "numeric" })
+    : "—";
+  const depositLabel = profile.fixed_deposit
+    ? `${Number(profile.fixed_deposit).toLocaleString("ar-JO")} د.أ`
+    : `${profile.deposit_percent || 25}%`;
+  const items = [
+    { icon: CalendarCheck, label: "عضوة منذ", value: joinedLabel },
+    { icon: Award, label: "حجوزات مكتملة", value: completedCount > 0 ? String(completedCount) : "جديدة" },
+    { icon: Shield, label: "العربون", value: depositLabel },
+    { icon: Clock, label: "تواريخ مشغولة", value: String(unavailCount) },
+  ];
+  return (
+    <div className="mb-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+      {items.map((it) => (
+        <div key={it.label} className="rounded-sm border border-border bg-card p-4 flex items-center gap-3">
+          <div className="h-9 w-9 grid place-items-center rounded-sm bg-secondary text-gold shrink-0">
+            <it.icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{it.label}</div>
+            <div className="font-serif text-base truncate">{it.value}</div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
