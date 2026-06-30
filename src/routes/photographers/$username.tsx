@@ -409,6 +409,33 @@ function PhotographerPage() {
       </section>
 
       <Footer />
+
+      {/* Sticky mobile booking CTA — only shows on small screens */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-elegant">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">احجزي مع</div>
+            <div className="font-serif text-sm truncate">{profile.display_name}</div>
+          </div>
+          {profile.whatsapp && (
+            <a
+              href={`https://wa.me/${profile.whatsapp.replace(/[^0-9]/g, "")}`}
+              target="_blank"
+              rel="noreferrer"
+              className="h-10 w-10 grid place-items-center rounded-sm border border-border"
+              aria-label="واتساب"
+            >
+              <MessageCircle className="h-4 w-4 text-green-600" />
+            </a>
+          )}
+          <button
+            onClick={() => scrollTo("book")}
+            className="bg-charcoal text-ivory px-5 py-2.5 rounded-sm text-sm font-medium"
+          >
+            احجزي الآن
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
