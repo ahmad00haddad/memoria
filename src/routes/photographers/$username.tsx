@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft } from "lucide-react";
+import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,6 +89,7 @@ function PhotographerPage() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [unavail, setUnavail] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<{ event_date: string; start_time: string; end_time: string }[]>([]);
+  const [completedCount, setCompletedCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
@@ -109,14 +110,16 @@ function PhotographerPage() {
       setProfile(mergedProfile);
       if (mergedProfile) {
         const pid = mergedProfile.id;
-        const [{ data: p }, { data: r }, { data: u }, { data: bk }] = await Promise.all([
+        const [{ data: p }, { data: r }, { data: u }, { data: bk }, { count: cc }] = await Promise.all([
           supabase.from("pricing_rules").select("*").eq("photographer_id", pid),
           supabase.from("reviews").select("*").eq("photographer_id", pid).eq("is_published", true).order("created_at", { ascending: false }),
           supabase.rpc("get_photographer_busy_dates", { _pid: pid }),
           supabase.from("bookings").select("event_date,start_time,end_time").eq("photographer_id", pid).is("deleted_at", null).in("status", ["confirmed", "pending_deposit"]),
+          supabase.from("bookings").select("id", { count: "exact", head: true }).eq("photographer_id", pid).eq("status", "completed").is("deleted_at", null),
         ]);
         setPricing((p ?? []) as Pricing[]);
         setReviews(r ?? []);
+        setCompletedCount(cc ?? 0);
         // ✅ إصلاح: تحليل نتيجة RPC بشكل صحيح بدون الاعتماد على اسم الدالة كـ key
         // RPC قد يُعيد string مباشرة أو object بمفاتيح متعددة
         setUnavail(((u ?? []) as any[]).map((x: any) => {
