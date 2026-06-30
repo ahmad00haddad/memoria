@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, MapPin, Star, X, SlidersHorizontal } from "lucide-react";
+import { Search, MapPin, Star, X, SlidersHorizontal, BadgeCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -40,6 +40,8 @@ function SearchPage() {
   const [sort, setSort] = useState<SearchSort>("featured");
   // ✅ إضافة: فلتر التقييم الأدنى
   const [minRating, setMinRating] = useState<number>(0);
+  // ✅ فلتر "موثّقة" — يعرض فقط المصوّرات المميّزات (اجتزن مراجعة الأدمن)
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const navigate = useNavigate();
 
@@ -78,13 +80,13 @@ function SearchPage() {
   const results: SearchResultItem[] = resultsQ.data ?? [];
 
   // ✅ تطبيق فلتر التقييم client-side بعد جلب النتائج
-  const displayResults = minRating > 0
-    ? results.filter((r) => r.avg_rating >= minRating)
-    : results;
+  const displayResults = results
+    .filter((r) => (minRating > 0 ? r.avg_rating >= minRating : true))
+    .filter((r) => (verifiedOnly ? r.is_featured : true));
 
   const hasFilters = useMemo(
-    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0),
-    [city, minPrice, maxPrice, date, debouncedQ, minRating],
+    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0 || verifiedOnly),
+    [city, minPrice, maxPrice, date, debouncedQ, minRating, verifiedOnly],
   );
 
   const clearAll = () => {
@@ -95,6 +97,7 @@ function SearchPage() {
     setDate("");
     setSort("featured");
     setMinRating(0);
+    setVerifiedOnly(false);
   };
 
   return (
@@ -251,6 +254,14 @@ function SearchPage() {
                       {r === 0 ? "الكل" : (<><Star className="h-3 w-3 fill-gold text-gold" />{r}+</>)}
                     </button>
                   ))}
+                  <span className="mx-2 h-4 w-px bg-border" />
+                  <button
+                    type="button"
+                    onClick={() => setVerifiedOnly((v) => !v)}
+                    className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${verifiedOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                  >
+                    <BadgeCheck className="h-3 w-3" /> موثّقة فقط
+                  </button>
                 </div>
               </motion.div>
             )}
