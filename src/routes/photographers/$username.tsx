@@ -40,7 +40,7 @@ export const Route = createFileRoute("/photographers/$username")({
     const city = p?.city ? ` في ${p.city}` : "";
     const desc = p?.bio?.slice(0, 155) || `استعرض أعمال وأسعار المصوّرة ${name}${city} واحجز موعدك مباشرة عبر Memoria.`;
     const image = p?.cover_url || p?.avatar_url || undefined;
-    const url = `https://royal-lens-flow.lovable.app/photographers/${params.username}`;
+    const url = `https://memoria-jo.lovable.app/photographers/${params.username}`;
     const meta: Array<Record<string, string>> = [
       { title: `${name} — مصوّرة أعراس${city} | Memoria` },
       { name: "description", content: desc },
@@ -147,9 +147,9 @@ function PhotographerPage() {
     const ld: any = {
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
-      "@id": `https://royal-lens-flow.lovable.app/photographers/${profile.username}`,
+      "@id": `https://memoria-jo.lovable.app/photographers/${profile.username}`,
       name: profile.display_name,
-      url: `https://royal-lens-flow.lovable.app/photographers/${profile.username}`,
+      url: `https://memoria-jo.lovable.app/photographers/${profile.username}`,
       image: profile.cover_url || profile.avatar_url || undefined,
       description: profile.bio || undefined,
       address: profile.city ? { "@type": "PostalAddress", addressLocality: profile.city, addressCountry: "JO" } : undefined,
