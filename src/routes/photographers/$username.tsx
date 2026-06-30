@@ -423,6 +423,37 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
+function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profile; completedCount: number; unavailCount: number }) {
+  const joined = profile.created_at ? new Date(profile.created_at) : null;
+  const joinedLabel = joined
+    ? joined.toLocaleDateString("ar-JO", { month: "long", year: "numeric" })
+    : "—";
+  const depositLabel = profile.fixed_deposit
+    ? `${Number(profile.fixed_deposit).toLocaleString("ar-JO")} د.أ`
+    : `${profile.deposit_percent || 25}%`;
+  const items = [
+    { icon: CalendarCheck, label: "عضوة منذ", value: joinedLabel },
+    { icon: Award, label: "حجوزات مكتملة", value: completedCount > 0 ? String(completedCount) : "جديدة" },
+    { icon: Shield, label: "العربون", value: depositLabel },
+    { icon: Clock, label: "تواريخ مشغولة", value: String(unavailCount) },
+  ];
+  return (
+    <div className="mb-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+      {items.map((it) => (
+        <div key={it.label} className="rounded-sm border border-border bg-card p-4 flex items-center gap-3">
+          <div className="h-9 w-9 grid place-items-center rounded-sm bg-secondary text-gold shrink-0">
+            <it.icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{it.label}</div>
+            <div className="font-serif text-base truncate">{it.value}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
   const [f, setF] = useState({
     client_name: "", client_phone: "", client_email: "", event_date: "", start_time: "", end_time: "",
