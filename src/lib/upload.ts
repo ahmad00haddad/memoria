@@ -1,17 +1,25 @@
 import { toast } from "sonner";
+import React from "react";
 
 // ============================================================================
-// upload.ts — مساعد رفع الملفات الشامل
+// upload.ts — مساعد رفع الملفات الشامل (مُصلَح)
 // ----------------------------------------------------------------------------
-// يحل المشاكل الأكثر شيوعاً عند رفع الملفات:
+// يحل المشاكل الشائعة عند رفع الملفات:
 //   1. Bucket غير موجود
 //   2. صلاحيات غير كافية (RLS)
 //   3. حجم الملف كبير
 //   4. نوع الملف غير مسموح
-//   5. انتهاء صلاحية التوكن
+//   5. انتهاء صلاحية الجلسة
 //   6. تعارض المسار (ملف موجود مسبقاً)
 //   7. انقطاع الشبكة
 //   8. حصة التخزين ممتلئة
+//
+// تحسينات هذا الإصدار:
+//   * إضافة uploadPortfolioPhoto() — يستخدم bucket "portfolio" الصحيح.
+//   * إصلاح ترتيب الاستيراد (React في الأعلى).
+//   * إضافة تحقّق من أبعاد الصورة (العرض/الارتفاع).
+//   * رسائل خطأ عربية أكثر تفصيلاً مع السبب والحل.
+//   * إضافة detailedError لكل نوع خطأ (للـ logging).
 // ============================================================================
 
 import { supabase } from "@/integrations/supabase/client";
@@ -19,16 +27,13 @@ import { supabase } from "@/integrations/supabase/client";
 export type AllowedFileType = "image" | "image_or_pdf" | "any";
 
 export type UploadConfig = {
-  /** اسم الـ bucket في Supabase Storage */
   bucket: string;
-  /** المسار داخل الـ bucket */
   path: string;
-  /** أقصى حجم بالـ MB (افتراضي: 10MB) */
   maxMb?: number;
-  /** نوع الملفات المسموحة */
   allowedTypes?: AllowedFileType;
-  /** هل نُضيف upsert لتجنب تعارض المسار؟ */
   upsert?: boolean;
+  /** أقصى عرض/ارتفاع للصور (بكسل). افتراضي: 4096 */
+  maxDimension?: number;
 };
 
 export type UploadResult = {
@@ -38,15 +43,16 @@ export type UploadResult = {
 } | {
   ok: false;
   error: string;
-  /** رسالة للمستخدم (عربية، واضحة) */
   userMessage: string;
-  /** نوع الخطأ للـ logging */
   errorType: UploadErrorType;
+  /** تفاصيل تقنية إضافية للتشخيص */
+  details?: string;
 };
 
 export type UploadErrorType =
   | "file_too_large"
   | "invalid_type"
+  | "invalid_dimension"
   | "bucket_not_found"
   | "permission_denied"
   | "auth_expired"
@@ -58,7 +64,6 @@ export type UploadErrorType =
 const ALLOWED_IMAGES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const ALLOWED_IMAGES_AND_PDF = [...ALLOWED_IMAGES, "application/pdf"];
 
-/** تحقق من نوع الملف قبل الرفع */
 function validateFileType(file: File, allowedTypes: AllowedFileType): string | null {
   if (allowedTypes === "any") return null;
   const allowed = allowedTypes === "image_or_pdf" ? ALLOWED_IMAGES_AND_PDF : ALLOWED_IMAGES;
@@ -66,72 +71,108 @@ function validateFileType(file: File, allowedTypes: AllowedFileType): string | n
     const typeLabel = allowedTypes === "image_or_pdf"
       ? "صور (JPG / PNG / WebP) أو PDF"
       : "صور (JPG / PNG / WebP)";
-    return `نوع الملف غير مدعوم. يُسمح بـ: ${typeLabel}`;
+    return `نوع الملف "${file.type || "غير معروف"}" غير مدعوم. يُسمح بـ: ${typeLabel}`;
   }
   return null;
 }
 
-/** تحويل رسالة خطأ Supabase إلى رسالة مفهومة للمستخدم */
-function parseStorageError(error: any): { userMessage: string; errorType: UploadErrorType } {
+/** تحقّق من أبعاد الصورة (للصور فقط) */
+async function validateImageDimensions(file: File, maxDimension: number): Promise<string | null> {
+  if (!file.type.startsWith("image/")) return null;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      if (img.naturalWidth > maxDimension || img.naturalHeight > maxDimension) {
+        resolve(
+          `أبعاد الصورة كبيرة جداً (${img.naturalWidth}×${img.naturalHeight}). ` +
+          `الحد الأقصى: ${maxDimension}×${maxDimension} بكسل. ` +
+          `يرجى تصغير الصورة وإعادة المحاولة.`
+        );
+      } else {
+        resolve(null);
+      }
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      // إذا تعذّر قراءة الصورة، نسمح بالرفع (قد تكون PDF أو صيغة غير مدعومة للمعاينة)
+      resolve(null);
+    };
+    img.src = url;
+  });
+}
+
+function parseStorageError(error: any): { userMessage: string; errorType: UploadErrorType; details?: string } {
   const msg = String(error?.message || error?.error || error || "").toLowerCase();
   const status = Number(error?.statusCode || error?.status || 0);
 
-  // Bucket not found
   if (msg.includes("bucket not found") || msg.includes("no such bucket") || status === 404) {
     return {
-      userMessage: "مشكلة في إعداد التخزين. يرجى التواصل مع الدعم.",
+      userMessage: "مجلد التخزين غير موجود. يرجى التواصل مع الدعم — المشكلة في إعداد الخادم.",
       errorType: "bucket_not_found",
+      details: `Bucket not found (status: ${status}). Run migration 20260623130000.`,
     };
   }
 
-  // Permission denied / RLS
   if (msg.includes("new row violates row-level security") ||
       msg.includes("permission denied") ||
       msg.includes("not authorized") ||
       msg.includes("policies") ||
       status === 403) {
     return {
-      userMessage: "لا تملك صلاحية رفع الملف. تأكد من تسجيل دخولك أو حدّث الصفحة وحاول مجدداً.",
+      userMessage: "لا تملك صلاحية رفع الملف. تأكّد من تسجيل دخولك أو حدّث الصفحة وحاول مجدداً.",
       errorType: "permission_denied",
+      details: `RLS policy violation (status: ${status}). Check storage policies for the bucket.`,
     };
   }
 
-  // Auth expired / JWT
   if (msg.includes("jwt expired") || msg.includes("invalid jwt") || msg.includes("jwt") || status === 401) {
     return {
-      userMessage: "انتهت صلاحية جلستك. يرجى تسجيل الدخول مجدداً.",
+      userMessage: "انتهت صلاحية جلستك. يرجى تسجيل الدخول مجدداً ثم إعادة المحاولة.",
       errorType: "auth_expired",
+      details: `JWT expired or invalid (status: ${status}).`,
     };
   }
 
-  // File already exists
   if (msg.includes("already exists") || msg.includes("duplicate") || msg.includes("409") || status === 409) {
     return {
-      userMessage: "ملف بهذا الاسم موجود مسبقاً. جاري الاستبدال…",
+      userMessage: "ملف بنفس الاسم موجود مسبقاً. جارٍ الاستبدال…",
       errorType: "path_conflict",
+      details: `File already exists (status: ${status}).`,
     };
   }
 
-  // Storage quota
   if (msg.includes("quota") || msg.includes("limit exceeded") || msg.includes("insufficient storage")) {
     return {
       userMessage: "مساحة التخزين ممتلئة. يرجى التواصل مع الدعم.",
       errorType: "quota_exceeded",
+      details: `Storage quota exceeded.`,
     };
   }
 
-  // Network / timeout
+  if (msg.includes("payload too large") || msg.includes("413") || status === 413) {
+    return {
+      userMessage: "حجم الملف يتجاوز الحد المسموح به في الخادم.",
+      errorType: "file_too_large",
+      details: `Payload too large (413).`,
+    };
+  }
+
   if (msg.includes("network") || msg.includes("timeout") || msg.includes("fetch") ||
       msg.includes("failed to fetch") || status === 0 || status >= 500) {
     return {
-      userMessage: "انقطع الاتصال أثناء الرفع. تحقق من اتصالك بالإنترنت وحاول مجدداً.",
+      userMessage: "انقطع الاتصال أثناء الرفع. تحقّق من اتصالك بالإنترنت وحاول مجدداً.",
       errorType: "network_error",
+      details: `Network error (status: ${status}).`,
     };
   }
 
   return {
-    userMessage: "تعذّر رفع الملف. يرجى المحاولة مجدداً.",
+    userMessage: `تعذّر رفع الملف: ${msg.slice(0, 100)}. يرجى المحاولة مجدداً.`,
     errorType: "unknown",
+    details: `Unknown error: ${msg}`,
   };
 }
 
@@ -142,15 +183,15 @@ export async function uploadFile(
   file: File,
   config: UploadConfig,
 ): Promise<UploadResult> {
-  const { bucket, path, maxMb = 10, allowedTypes = "image", upsert = false } = config;
+  const { bucket, path, maxMb = 10, allowedTypes = "image", upsert = false, maxDimension = 4096 } = config;
 
-  // 1. تحقق من النوع (client-side)
+  // 1. تحقّق من النوع
   const typeError = validateFileType(file, allowedTypes);
   if (typeError) {
     return { ok: false, error: typeError, userMessage: typeError, errorType: "invalid_type" };
   }
 
-  // 2. تحقق من الحجم (client-side)
+  // 2. تحقّق من الحجم
   const maxBytes = maxMb * 1024 * 1024;
   if (file.size > maxBytes) {
     const sizeMb = (file.size / 1024 / 1024).toFixed(1);
@@ -158,7 +199,13 @@ export async function uploadFile(
     return { ok: false, error: msg, userMessage: msg, errorType: "file_too_large" };
   }
 
-  // 3. تحقق من الجلسة قبل الرفع
+  // 3. تحقّق من أبعاد الصورة
+  const dimError = await validateImageDimensions(file, maxDimension);
+  if (dimError) {
+    return { ok: false, error: dimError, userMessage: dimError, errorType: "invalid_dimension" };
+  }
+
+  // 4. تحقّق من الجلسة
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) {
     return {
@@ -169,7 +216,7 @@ export async function uploadFile(
     };
   }
 
-  // 4. رفع الملف
+  // 5. رفع الملف
   try {
     const { error: uploadErr, data } = await supabase.storage
       .from(bucket)
@@ -180,7 +227,7 @@ export async function uploadFile(
       });
 
     if (uploadErr) {
-      // إذا كان الخطأ "already exists" وupsert=false، نحاول مرة بـ upsert=true
+      // إعادة محاولة بـ upsert=true عند التعارض
       const isConflict = String(uploadErr.message).toLowerCase().includes("already exists") ||
                          (uploadErr as any).statusCode === "409";
       if (isConflict && !upsert) {
@@ -188,26 +235,25 @@ export async function uploadFile(
           .from(bucket)
           .upload(path, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
         if (retryErr) {
-          const { userMessage, errorType } = parseStorageError(retryErr);
-          return { ok: false, error: retryErr.message, userMessage, errorType };
+          const { userMessage, errorType, details } = parseStorageError(retryErr);
+          return { ok: false, error: retryErr.message, userMessage, errorType, details };
         }
         return { ok: true, path: retryData?.path || path };
       }
 
-      const { userMessage, errorType } = parseStorageError(uploadErr);
-      return { ok: false, error: uploadErr.message, userMessage, errorType };
+      const { userMessage, errorType, details } = parseStorageError(uploadErr);
+      return { ok: false, error: uploadErr.message, userMessage, errorType, details };
     }
 
     return { ok: true, path: data?.path || path };
   } catch (e: any) {
-    const { userMessage, errorType } = parseStorageError(e);
-    return { ok: false, error: String(e?.message || e), userMessage, errorType };
+    const { userMessage, errorType, details } = parseStorageError(e);
+    return { ok: false, error: String(e?.message || e), userMessage, errorType, details };
   }
 }
 
 /**
- * مُكوّن مرئي لعرض تقدّم الرفع وحالته (hook).
- * الاستخدام: const { upload, status, progress } = useFileUpload();
+ * مكوّن مرئي لعرض تقدّم الرفع وحالته (hook).
  */
 export function useFileUpload() {
   const [status, setStatus] = React.useState<"idle" | "uploading" | "success" | "error">("idle");
@@ -219,7 +265,6 @@ export function useFileUpload() {
     setProgress(10);
     setErrorMsg(null);
 
-    // محاكاة تقدم الرفع (Supabase لا يدعم progress events)
     const interval = setInterval(() => {
       setProgress((p) => Math.min(p + 15, 85));
     }, 300);
@@ -247,19 +292,16 @@ export function useFileUpload() {
       const msg = "تعذّر رفع الملف. يرجى المحاولة مجدداً.";
       setErrorMsg(msg);
       toast.error(msg);
-      return { ok: false, error: String(e), userMessage: msg, errorType: "unknown" };
+      return { ok: false, error: String(e), userMessage: msg, errorType: "unknown" as const };
     }
   };
 
   return { upload, status, progress, errorMsg };
 }
 
-// React import for the hook
-import React from "react";
-
 /**
- * مساعد لرفع صورة الملف الشخصي (avatar / cover).
- * يُعيد الـ path في Supabase Storage.
+ * رفع صورة الملف الشخصي (avatar / cover).
+ * يستخدم مساراً ثابتاً (upsert=true) لاستبدال الصورة القديمة.
  */
 export async function uploadProfilePhoto(
   file: File,
@@ -267,19 +309,47 @@ export async function uploadProfilePhoto(
   type: "avatar" | "cover",
 ): Promise<UploadResult> {
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  // استخدام نفس الاسم دائماً (upsert=true) لتجنب تكديس الملفات القديمة
   const path = `${userId}/${type}.${ext}`;
-  return uploadFile(file, {
+  const result = await uploadFile(file, {
     bucket: "avatars",
     path,
     maxMb: 5,
     allowedTypes: "image",
     upsert: true,
   });
+  if (result.ok) {
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    return { ...result, publicUrl: data.publicUrl };
+  }
+  return result;
 }
 
 /**
- * مساعد لرفع إثبات الدفع (عربون / اشتراك).
+ * رفع صورة معرض الأعمال (portfolio).
+ * يستخدم bucket "portfolio" المخصّص (10MB، عام).
+ */
+export async function uploadPortfolioPhoto(
+  file: File,
+  userId: string,
+): Promise<UploadResult> {
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `${userId}/${Date.now()}.${ext}`;
+  const result = await uploadFile(file, {
+    bucket: "portfolio",
+    path,
+    maxMb: 10,
+    allowedTypes: "image",
+    upsert: false,
+  });
+  if (result.ok) {
+    const { data } = supabase.storage.from("portfolio").getPublicUrl(path);
+    return { ...result, publicUrl: data.publicUrl };
+  }
+  return result;
+}
+
+/**
+ * رفع إثبات دفع (عربون / اشتراك).
  */
 export async function uploadPaymentProof(
   file: File,
@@ -297,7 +367,8 @@ export async function uploadPaymentProof(
 }
 
 /**
- * مساعد لرفع صور المعرض (تسليم الصور للعميل).
+ * رفع صورة معرض التسليم (gallery photo).
+ * يستخدم bucket "delivery-photos" (20MB، خاص — signed URLs).
  */
 export async function uploadGalleryPhoto(
   file: File,
