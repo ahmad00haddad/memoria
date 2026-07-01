@@ -439,6 +439,15 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
         after_data: { status: "confirmed" } as any,
       });
     } catch (e) { console.error("[booking] audit log failed", e); }
+
+    // توليد العقد تلقائياً من قالب المصوّرة عند تأكيد الحجز (إن وُجد قالب).
+    try {
+      const { supabaseAdmin: adminClient } = await import("@/integrations/supabase/client.server");
+      await adminClient.rpc("auto_generate_contract", { _booking_id: data.booking_id } as any);
+    } catch (e) {
+      // العقد اختياري — لا نُفشل التأكيد إذا لم يوجد قالب.
+      console.error("[booking] auto_generate_contract failed:", e);
+    }
     // إشعار واتساب تأكيد الحجز — fire-and-forget
     if (bk.client_phone) {
       try {

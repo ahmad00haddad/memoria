@@ -183,6 +183,22 @@ Replace the manual CliQ + proof-upload flow with automatic deposit collection.
 
 ---
 
+## ✅ Trust & Operations Enhancements (PR — feat/trust-operations-enhancements)
+مستوحاة من التقرير التنفيذي الشامل (أقسام 10.2، 10.5، 10.14، 13.2):
+
+- **نظام التحقق من المصوّرات:** `verification_status` (unverified→pending_review→verified/rejected)
+  + `admin_verify_photographer()` + `requestVerification` / `verifyPhotographerStatus` (server fns).
+- **تفضيلات الإشعارات:** `notification_preferences` JSONB + `updateNotificationPreferences` (server fn).
+- **معالجة النزاعات:** جدول `booking_disputes` (RLS) + `raiseDispute` / `resolveDispute` (server fns).
+- **توليد العقود التلقائي:** `auto_generate_contract()` — يبحث عن قالب افتراضي، يستبدل المتغيّرات،
+  يُنشئ عقداً بـ signing_token. مرتبوط بـ `confirmBookingAfterDeposit` تلقائياً.
+- **بيانات SEO:** `seo_title` / `seo_description` على profiles.
+- migration: `20260701010000_trust_operations_enhancements.sql` + تحديث `types.ts`.
+
+**Post-merge:** شغّل الـ migration. أضف شارة "موثّق ✓" في الواجهة عند `verification_status='verified'`.
+
+---
+
 ## 🎨 UI notes for Lovable (تصميم — تُكمَّل في Lovable)
 - **لوحة متابعة الإنتاج (`/dashboard/production`)**: ألوان المراحل فاتحة فقط
   (`bg-*-50`) وغير واضحة، وتنكسر في الوضع الداكن (لا توجد مقابلات `dark:`).
@@ -194,6 +210,12 @@ Replace the manual CliQ + proof-upload flow with automatic deposit collection.
 
 ## 🔒 Standing security checklist
 - [x] ~~Audit live RLS policies; ensure no unintended `USING (true)` remains~~
+      ~~(notably `contracts`, `notifications`).~~ **Fixed in PR #14 + final audit PR #22.**
+- [x] ~~Comprehensive RLS audit for all tables~~ **Done in 20260701000000 migration (PR #22).**
+- [x] ~~Photographer verification system~~ **Done in PR #23 (verification_status).**
+- [x] ~~Notification preferences~~ **Done in PR #23 (notification_preferences JSONB).**
+- [x] ~~Booking disputes~~ **Done in PR #23 (booking_disputes table + RLS).**
+- [x] ~~Auto-generate contracts~~ **Done in PR #23 (auto_generate_contract).**
       ~~(notably `contracts`, `notifications`).~~ **Fixed in PR #14 + final audit PR.**
 - [x] ~~Comprehensive RLS audit for all tables~~ **Done in 20260701000000 migration.**
 - [ ] Rotate Supabase keys (precaution — `.env` was historically committed).
