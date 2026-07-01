@@ -9,12 +9,15 @@ import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
+import { requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 
 export const Route = createFileRoute("/dashboard/profile")({ component: ProfilePage });
 
 function ProfilePage() {
   const nav = useNavigate();
   const updRefundFn = useServerFn(updateRefundPolicy);
+  const verifyFn = useServerFn(requestVerification);
+  const notifFn = useServerFn(updateNotificationPreferences);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uid, setUid] = useState("");
@@ -203,6 +206,80 @@ function ProfilePage() {
           <button onClick={save} disabled={saving} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
             {saving ? "جاري الحفظ…" : "حفظ التغييرات"}
           </button>
+
+          {/* التحقق من المصوّرة */}
+          <Card title="حالة التحقق">
+            <div className="flex items-center gap-3">
+              {p.verification_status === "verified" && (
+                <span className="inline-flex items-center gap-1 text-emerald-600 text-sm font-medium">✓ موثّقة</span>
+              )}
+              {p.verification_status === "pending_review" && (
+                <span className="inline-flex items-center gap-1 text-amber-600 text-sm font-medium">⏳ قيد المراجعة</span>
+              )}
+              {p.verification_status === "rejected" && (
+                <span className="inline-flex items-center gap-1 text-red-500 text-sm font-medium">✗ تم الرفض</span>
+              )}
+              {(!p.verification_status || p.verification_status === "unverified") && (
+                <>
+                  <span className="text-sm text-muted-foreground">غير موثّقة</span>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await verifyFn({ data: {} });
+                        toast.success("تم إرسال طلب التحقق");
+                        setP({ ...p, verification_status: "pending_review" });
+                      } catch (e: any) {
+                        toast.error(e?.message || "تعذّر إرسال الطلب");
+                      }
+                    }}
+                    className="text-xs border border-gold/40 text-gold px-3 py-1.5 rounded-sm hover:bg-gold/10"
+                  >
+                    طلب التحقق
+                  </button>
+                </>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">المصوّرات الموثّقات يحصلن على شارة ✓ تزيد ثقة العملاء.</p>
+          </Card>
+
+          {/* تفضيلات الإشعارات */}
+          <Card title="تفضيلات الإشعارات">
+            <div className="space-y-2">
+              {[
+                { key: "booking_new", label: "طلب حجز جديد" },
+                { key: "booking_confirmed", label: "تأكيد حجز" },
+                { key: "booking_cancelled", label: "إلغاء حجز" },
+                { key: "deposit_received", label: "استلام عربون" },
+                { key: "message_new", label: "رسالة جديدة" },
+                { key: "review_new", label: "تقييم جديد" },
+                { key: "subscription_expiring", label: "اشتراك ينتهي قريباً" },
+                { key: "event_reminder", label: "تذكير قبل المناسبة" },
+                { key: "marketing", label: "إشعارات تسويقية" },
+              ].map((pref) => {
+                const prefs = p.notification_preferences ?? {};
+                const enabled = prefs[pref.key] !== false;
+                return (
+                  <label key={pref.key} className="flex items-center justify-between py-1.5 cursor-pointer">
+                    <span className="text-sm">{pref.label}</span>
+                    <input
+                      type="checkbox"
+                      checked={enabled}
+                      onChange={async () => {
+                        const newPrefs = { ...prefs, [pref.key]: !enabled };
+                        setP({ ...p, notification_preferences: newPrefs });
+                        try {
+                          await notifFn({ data: { preferences: newPrefs } });
+                          toast.success("تم تحديث التفضيلات");
+                        } catch (e: any) {
+                          toast.error(e?.message || "تعذّر تحديث التفضيلات");
+                        }
+                      }}
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          </Card>
         </div>
       </section>
       <Footer />
