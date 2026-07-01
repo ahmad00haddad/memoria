@@ -1,4 +1,4 @@
-# EliteCapture — Engineering Roadmap
+# Royal Lens Flow — Engineering Roadmap
 
 This roadmap tracks the audit-driven improvements. Phases 0–2 are implemented
 as stacked pull requests; Phase 3 items require the owner's external accounts /
@@ -155,12 +155,31 @@ Replace the manual CliQ + proof-upload flow with automatic deposit collection.
 - Reviews currently publish immediately (`is_published = true`). Add an admin
   moderation queue and insert new reviews as `false` once the queue UI exists.
 
-### 3.6 Photographer analytics 🟡
-- Extend `/dashboard/reports`: conversion rate, monthly revenue, lead source,
-  booking funnel.
+### 3.6 Photographer analytics ✅ (PR — feat/priority-4-5-analytics-security)
+- **`reports.functions.ts`** — دوال خادمية مُصادَقة تحسب: معدل التحويل، الدخل الشهري،
+  متوسط قيمة الحجز، معدل الإلغاء، قمع الحجز، مصادر العملاء (referrals)، مقارنة شهرية.
+  كل الحسابات server-authoritative عبر `supabaseAdmin` (تجنّب N+1: دفعة واحدة).
+- `dashboard.reports.tsx` يستدعي `getReportStats` عبر `useServerFn`.
 
 ### 3.7 Media optimization 🟡
 - Cloudflare Images / WebP transforms for delivery galleries (faster loads, lower egress).
+
+---
+
+## ✅ Priority 5 — Final security audit (PR — feat/priority-4-5-analytics-security)
+- migration `20260701000000_final_security_audit.sql`:
+  - `messages`: تقييد القراءة للمرسل/المستقبل فقط (إزالة USING(true)).
+  - `audit_logs`: تقييد القراءة للأدمن فقط.
+  - `subscription_payments`: تقييد للمصوّرة أو الأدمن.
+  - `email_log`: تقييد للأدمن فقط (بيانات حسّاسة).
+  - `payment_events`: تأكيد RLS بلا سياسات (خادمي حصراً).
+  - `photographer_private`: تأكيد تقييد الملكية (إزالة أي USING(true)).
+  - `messages INSERT`: تقييد للمرسل المصادَق عليه أو المصوّرة صاحبة الحجز.
+- Lovable سبق أن عالج `contracts` و`notifications` في migration `20260623090000`.
+- تأكيد: كل server fn عام محميّ بـ rate-limit و/أو Turnstile (موجود من Phase 1).
+- تأكيد: `service_role` لا يصل المتصفح (مستورد فقط في `src/lib/*.functions.ts` و`src/routes/api/`).
+
+**Post-merge:** شغّل الـ migration. راجع Supabase Dashboard للتأكّد من فعّالية السياسات.
 
 ---
 
@@ -175,6 +194,7 @@ Replace the manual CliQ + proof-upload flow with automatic deposit collection.
 
 ## 🔒 Standing security checklist
 - [x] ~~Audit live RLS policies; ensure no unintended `USING (true)` remains~~
-      ~~(notably `contracts`, `notifications`).~~ **Fixed in PR #14.**
+      ~~(notably `contracts`, `notifications`).~~ **Fixed in PR #14 + final audit PR.**
+- [x] ~~Comprehensive RLS audit for all tables~~ **Done in 20260701000000 migration.**
 - [ ] Rotate Supabase keys (precaution — `.env` was historically committed).
 - [ ] Verify the service-role key is server-only (never shipped to the browser).
