@@ -216,5 +216,7 @@ Replace the manual CliQ + proof-upload flow with automatic deposit collection.
 - [x] ~~Notification preferences~~ **Done in PR #23 (notification_preferences JSONB).**
 - [x] ~~Booking disputes~~ **Done in PR #23 (booking_disputes table + RLS).**
 - [x] ~~Auto-generate contracts~~ **Done in PR #23 (auto_generate_contract).**
+      ~~(notably `contracts`, `notifications`).~~ **Fixed in PR #14 + final audit PR.**
+- [x] ~~Comprehensive RLS audit for all tables~~ **Done in 20260701000000 migration.**
 - [ ] Rotate Supabase keys (precaution — `.env` was historically committed).
 - [ ] Verify the service-role key is server-only (never shipped to the browser).
