@@ -27,7 +27,7 @@ export const checkUploadHealth = createServerFn({ method: "GET" })
 
     // 2) تحقّق من وجود الـ buckets الأساسية.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: healthData, error: healthErr } = await supabaseAdmin.rpc("check_storage_health");
+    const { data: healthData, error: healthErr } = await (supabaseAdmin as any).rpc("check_storage_health");
 
     if (healthErr) {
       return {
