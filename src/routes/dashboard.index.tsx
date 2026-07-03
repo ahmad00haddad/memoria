@@ -224,7 +224,7 @@ function Dashboard() {
         supabase.from("whatsapp_templates").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       ]);
       // Redirect to guided onboarding if photographer hasn't completed it yet
-      if (data && !(data as any).onboarding_completed_at && !(data as any).is_published) {
+      if (data && !(data as any).onboarding_completed_at) {
         navigate({ to: "/onboarding" });
         return;
       }
