@@ -42,7 +42,7 @@ export const requestVerification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("profiles")
       .update({ verification_status: "pending_review", updated_at: new Date().toISOString() })
       .eq("id", userId);
@@ -79,7 +79,7 @@ export const raiseDispute = createServerFn({ method: "POST" })
       : bk.client_user_id === userId;
     if (!isOwner) throw new Error("forbidden");
 
-    const { error } = await supabaseAdmin.from("booking_disputes").insert({
+    const { error } = await (supabaseAdmin as any).from("booking_disputes").insert({
       booking_id: data.booking_id,
       raised_by: userId,
       raised_by_role: data.raised_by_role,
@@ -119,7 +119,7 @@ export const resolveDispute = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("forbidden");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
+    const { error } = await (supabaseAdmin as any)
       .from("booking_disputes")
       .update({
         status: data.status,
@@ -154,7 +154,7 @@ export const updateNotificationPreferences = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from("profiles")
       .update({
         notification_preferences: data.preferences,
