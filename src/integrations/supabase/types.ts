@@ -690,7 +690,10 @@ export type Database = {
           is_featured: boolean
           is_published: boolean
           min_session_minutes: number
+          onboarding_completed_at: string | null
+          onboarding_step: number
           portfolio_urls: string[]
+          quickstart_dismissed_at: string | null
           referral_code: string | null
           referred_by: string | null
           tagline: string | null
@@ -719,7 +722,10 @@ export type Database = {
           is_featured?: boolean
           is_published?: boolean
           min_session_minutes?: number
+          onboarding_completed_at?: string | null
+          onboarding_step?: number
           portfolio_urls?: string[]
+          quickstart_dismissed_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
           tagline?: string | null
@@ -748,7 +754,10 @@ export type Database = {
           is_featured?: boolean
           is_published?: boolean
           min_session_minutes?: number
+          onboarding_completed_at?: string | null
+          onboarding_step?: number
           portfolio_urls?: string[]
+          quickstart_dismissed_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
           tagline?: string | null
