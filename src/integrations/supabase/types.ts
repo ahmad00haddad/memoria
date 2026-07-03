@@ -550,56 +550,6 @@ export type Database = {
           },
         ]
       }
-      booking_disputes: {
-        Row: {
-          booking_id: string
-          created_at: string
-          id: string
-          raised_by: string
-          raised_by_role: string
-          reason: string
-          resolution: string | null
-          resolved_at: string | null
-          resolved_by: string | null
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          booking_id: string
-          created_at?: string
-          id?: string
-          raised_by: string
-          raised_by_role: string
-          reason: string
-          resolution?: string | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          booking_id?: string
-          created_at?: string
-          id?: string
-          raised_by?: string
-          raised_by_role?: string
-          reason?: string
-          resolution?: string | null
-          resolved_at?: string | null
-          resolved_by?: string | null
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "booking_disputes_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "bookings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       photographer_private: {
         Row: {
           bank_info: string | null
@@ -747,12 +697,6 @@ export type Database = {
           travel_fee_per_km: number
           updated_at: string
           username: string
-          notification_preferences: Json
-          seo_description: string | null
-          seo_title: string | null
-          verification_status: string
-          verified_at: string | null
-          verified_by: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -782,12 +726,6 @@ export type Database = {
           travel_fee_per_km?: number
           updated_at?: string
           username: string
-          notification_preferences?: Json
-          seo_description?: string | null
-          seo_title?: string | null
-          verification_status?: string
-          verified_at?: string | null
-          verified_by?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -817,12 +755,6 @@ export type Database = {
           travel_fee_per_km?: number
           updated_at?: string
           username?: string
-          notification_preferences?: Json
-          seo_description?: string | null
-          seo_title?: string | null
-          verification_status?: string
-          verified_at?: string | null
-          verified_by?: string | null
         }
         Relationships: []
       }
@@ -1091,14 +1023,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_verify_photographer: {
-        Args: { _photographer_id: string; _status: string }
-        Returns: undefined
-      }
-      auto_generate_contract: {
-        Args: { _booking_id: string }
-        Returns: string
-      }
       admin_renew_subscription: {
         Args: { _months: number; _photographer_id: string }
         Returns: undefined
