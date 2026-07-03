@@ -223,6 +223,11 @@ function Dashboard() {
         supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
         supabase.from("whatsapp_templates").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       ]);
+      // Redirect to guided onboarding if photographer hasn't completed it yet
+      if (data && !(data as any).onboarding_completed_at && !(data as any).is_published) {
+        navigate({ to: "/onboarding" });
+        return;
+      }
       setProfile({ ...(data ?? {}), ical_token: priv?.ical_token ?? null });
       setSub(s);
       setPricingCount(pricingRulesCount ?? 0);
