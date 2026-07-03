@@ -443,7 +443,7 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     // توليد العقد تلقائياً من قالب المصوّرة عند تأكيد الحجز (إن وُجد قالب).
     try {
       const { supabaseAdmin: adminClient } = await import("@/integrations/supabase/client.server");
-      await adminClient.rpc("auto_generate_contract", { _booking_id: data.booking_id } as any);
+      await (adminClient as any).rpc("auto_generate_contract", { _booking_id: data.booking_id });
     } catch (e) {
       // العقد اختياري — لا نُفشل التأكيد إذا لم يوجد قالب.
       console.error("[booking] auto_generate_contract failed:", e);

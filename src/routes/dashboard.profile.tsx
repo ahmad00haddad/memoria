@@ -225,7 +225,7 @@ function ProfilePage() {
                   <button
                     onClick={async () => {
                       try {
-                        await verifyFn({ data: {} });
+                        await verifyFn();
                         toast.success("تم إرسال طلب التحقق");
                         setP({ ...p, verification_status: "pending_review" });
                       } catch (e: any) {
