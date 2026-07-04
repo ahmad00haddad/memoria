@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/public/ical/$token")({
         ];
         for (const b of bookings ?? []) {
           lines.push("BEGIN:VEVENT",
-            `UID:booking-${b.id}@elitecapture`,
+            `UID:booking-${b.id}@memoria-jo`,
             `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
             `DTSTART:${fmt(b.event_date, b.start_time)}`,
             `DTEND:${fmt(b.event_date, b.end_time)}`,
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/public/ical/$token")({
         }
         for (const u of unavail ?? []) {
           lines.push("BEGIN:VEVENT",
-            `UID:unavail-${u.date}@elitecapture`,
+            `UID:unavail-${u.date}@memoria-jo`,
             `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").split(".")[0]}Z`,
             `DTSTART;VALUE=DATE:${u.date.replace(/-/g, "")}`,
             `SUMMARY:غير متاح${u.reason ? ` - ${u.reason}` : ""}`,
