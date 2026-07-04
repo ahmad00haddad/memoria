@@ -117,7 +117,7 @@ function escapeAttr(s: string) { return escapeHtml(s).replace(/`/g, "&#96;"); }
 
 function appBase(): string {
   // Used to build absolute URLs in emails. Falls back to published domain.
-  return process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+  return process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
 }
 
 // ---------- Templates ----------
