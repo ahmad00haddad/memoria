@@ -57,7 +57,7 @@ export const updateProductionStage = createServerFn({ method: "POST" })
     if (bk.client_phone) {
       try {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-        const base = process.env.PUBLIC_APP_URL || "https://elitecapture.com";
+        const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
         const trackingUrl = bk.client_tracking_token
           ? `${base}/track/${bk.client_tracking_token}`
           : undefined;
@@ -120,7 +120,7 @@ export const updateProductionStage = createServerFn({ method: "POST" })
       if (bk.client_phone) {
         try {
           const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-          const base = process.env.PUBLIC_APP_URL || "https://elitecapture.com";
+          const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
           const trackingUrl = bk.client_tracking_token
             ? `${base}/track/${bk.client_tracking_token}`
             : undefined;
@@ -144,7 +144,7 @@ export const updateProductionStage = createServerFn({ method: "POST" })
       if (bk.client_phone) {
         try {
           const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-          const base = process.env.PUBLIC_APP_URL || "https://elitecapture.com";
+          const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
           const reviewUrl = bk.client_tracking_token
             ? `${base}/review/${bk.client_tracking_token}`
             : undefined;

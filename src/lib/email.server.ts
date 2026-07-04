@@ -12,7 +12,7 @@ type SendArgs = {
 };
 
 // ✅ إصلاح: يقرأ من env بدلاً من hardcoded — يجب ضبط EMAIL_FROM في Cloudflare/Supabase
-// مثال: EMAIL_FROM="Memoria <noreply@elitecapture.com>"
+// مثال: EMAIL_FROM="Memoria <noreply@memoria-jo.lovable.app>"
 // Fallback آمن للتطوير فقط — يذهب للـ spam في الإنتاج بدون domain موثّق
 const FROM = process.env.EMAIL_FROM || "Memoria <onboarding@resend.dev>";
 
@@ -117,7 +117,7 @@ function escapeAttr(s: string) { return escapeHtml(s).replace(/`/g, "&#96;"); }
 
 function appBase(): string {
   // Used to build absolute URLs in emails. Falls back to published domain.
-  return process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://elitecapture.com";
+  return process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
 }
 
 // ---------- Templates ----------

@@ -56,7 +56,34 @@ export const Route = createFileRoute("/photographers/$username")({
       meta.push({ property: "og:image", content: image });
       meta.push({ name: "twitter:image", content: image });
     }
-    return { meta, links: [{ rel: "canonical", href: url }] };
+    // JSON-LD: LocalBusiness / ProfessionalService — يساعد Google في عرض بطاقة غنية
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      name,
+      description: desc,
+      image: image || undefined,
+      url,
+      areaServed: p?.city || "الأردن",
+      address: p?.city
+        ? { "@type": "PostalAddress", addressLocality: p.city, addressCountry: "JO" }
+        : undefined,
+      priceRange: "$$",
+      makesOffer: {
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name: "تصوير أعراس ومناسبات" },
+      },
+    };
+    return {
+      meta,
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify(jsonLd),
+        },
+      ],
+    };
   },
 });
 

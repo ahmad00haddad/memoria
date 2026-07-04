@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // يُستدعى من محركات البحث (Google, Bing) لاكتشاف الصفحات
 // ============================================================================
 
-const BASE_URL = process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://elitecapture.com";
+const BASE_URL = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
 
 // أولويات الصفحات الثابتة
 const STATIC_PAGES = [
@@ -16,6 +16,12 @@ const STATIC_PAGES = [
   { path: "/pricing",          priority: "0.7", changefreq: "monthly" },
   { path: "/guide",            priority: "0.7", changefreq: "monthly" },
   { path: "/app",              priority: "0.6", changefreq: "monthly" },
+  { path: "/about",            priority: "0.6", changefreq: "monthly" },
+  { path: "/contact",          priority: "0.6", changefreq: "monthly" },
+  { path: "/faq",              priority: "0.6", changefreq: "monthly" },
+  { path: "/refund-policy",    priority: "0.5", changefreq: "yearly"  },
+  { path: "/privacy",          priority: "0.4", changefreq: "yearly"  },
+  { path: "/terms",            priority: "0.4", changefreq: "yearly"  },
 ];
 
 function escapeXml(s: string) {

@@ -38,7 +38,7 @@ export const sendGalleryDeliveredEmail = createServerFn({ method: "POST" })
       .eq("id", bk.photographer_id)
       .maybeSingle();
 
-    const base = process.env.PUBLIC_APP_URL || "https://elitecapture.com";
+    const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
     const trackUrl = bk.client_tracking_token ? `${base}/track/${bk.client_tracking_token}` : null;
     const reviewUrl = bk.client_tracking_token ? `${base}/review/${bk.client_tracking_token}` : null;
 
