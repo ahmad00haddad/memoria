@@ -46,7 +46,7 @@ const photographerQ = [
   { q: "كيف تُدار التقييمات؟", a: "كل تقييم جديد يدخل قائمة المراجعة قبل النشر لمنع المحتوى المسيء أو غير الحقيقي." },
 ];
 
-export default function FaqPage() {
+function FaqPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />

@@ -7,6 +7,16 @@ import { useServerFn } from "@tanstack/react-start";
 import { recordReferralAfterSignup } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/photographers/join")({
+  head: () => ({
+    meta: [
+      { title: "انضمي كمصوّرة — Memoria · ميموريا" },
+      { name: "description", content: "انضمي إلى Memoria وابدئي استقبال حجوزات مباشرة من العميلات، بأدوات إدارة كاملة وبدون عمولة." },
+      { property: "og:title", content: "انضمي كمصوّرة — Memoria" },
+      { property: "og:description", content: "منصّة عربية لمصوّرات المناسبات — سجّلي مجاناً وابدئي." },
+      { property: "og:url", content: "https://memoria-jo.lovable.app/photographers/join" },
+    ],
+    links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/photographers/join" }],
+  }),
   component: JoinPage,
 });
 
