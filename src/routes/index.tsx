@@ -11,6 +11,20 @@ import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } fro
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Memoria · ميموريا — منصّة تصوير المناسبات في الأردن" },
+      { name: "description", content: "احجزي مصوّرة أعراس ومناسبات موثّقة في الأردن. باقات واضحة، عربون CliQ مباشر، وتقييمات من حجوزات مكتملة فقط." },
+      { property: "og:title", content: "Memoria · ميموريا — تصوير المناسبات" },
+      { property: "og:description", content: "منصّة لحجز مصوّرات المناسبات بثقة — أسعار شفافة، عربون مباشر، وتقييمات موثّقة." },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://memoria-jo.lovable.app/" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Memoria · ميموريا" },
+      { name: "twitter:description", content: "احجزي مصوّرة مناسباتك بثقة." },
+    ],
+    links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/" }],
+  }),
   component: Landing,
 });
 

@@ -7,6 +7,13 @@ import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [
+      { title: "تسجيل الدخول — Memoria · ميموريا" },
+      { name: "description", content: "سجّلي الدخول إلى حساب Memoria لإدارة حجوزاتك، ملفك الشخصي، وباقاتك." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: LoginPage,
 });
 

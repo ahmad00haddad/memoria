@@ -215,7 +215,6 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
           }
         }
 
-        console.log("[email-reminders] completed:", results);
         return Response.json({ ok: true, ...results, ran_for: ymd });
       },
     },

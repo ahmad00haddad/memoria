@@ -24,7 +24,7 @@ export const isPaymentsEnabled = createServerFn({ method: "GET" }).handler(async
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;
 
 function appBase(): string {
-  return process.env.PUBLIC_APP_URL || process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+  return process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
 }
 
 export const createDepositCheckout = createServerFn({ method: "POST" })
