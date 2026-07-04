@@ -158,13 +158,6 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       link: `/dashboard/bookings/${row.id}`,
     });
 
-    console.log("[booking] new request", {
-      photographer: profile.username,
-      whatsapp: priv?.whatsapp,
-      booking_id: row.id,
-      client: data.client_name,
-    });
-
     // إشعار واتساب فوري للعروس (محرك الإشعارات الذكي) — fire-and-forget
     if (priv?.whatsapp || data.client_phone) {
       try {
