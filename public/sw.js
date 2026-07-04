@@ -1,7 +1,7 @@
 // Memoria Service Worker — PWA caching + offline support
 // Version: 2.0 (Phase 5 — Performance)
 
-const CACHE_NAME = "elitecapture-v2";
+const CACHE_NAME = "memoria-v2";
 const OFFLINE_PAGE = "/offline.html";
 
 // الملفات الأساسية التي تُحفظ دائماً في الـ cache (App Shell)
