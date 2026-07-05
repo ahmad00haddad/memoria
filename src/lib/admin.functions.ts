@@ -524,3 +524,305 @@ export const adminResolveDispute = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ───────────────────────────────────────────────
+// COMPREHENSIVE ADMIN FUNCTIONS — PLATFORM STATS
+// ───────────────────────────────────────────────
+
+export const getAdminPlatformStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [
+      { count: totalPhotographers },
+      { count: publishedPhotographers },
+      { count: verifiedPhotographers },
+      { count: totalBookings },
+      { count: confirmedBookings },
+      { count: completedBookings },
+      { count: cancelledBookings },
+      { count: pendingPayments },
+      { count: activeSubscriptions },
+      { count: totalReviews },
+      { count: pendingReviews },
+      { count: openDisputes },
+      { count: totalNotifications },
+      { count: totalMessages },
+      { count: totalContracts },
+    ] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("is_published", true),
+      supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("verification_status", "verified"),
+      supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).is("deleted_at", null),
+      supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "confirmed").is("deleted_at", null),
+      supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "completed").is("deleted_at", null),
+      supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "cancelled").is("deleted_at", null),
+      supabaseAdmin.from("subscription_payments").select("*", { count: "exact", head: true }).eq("status", "pending"),
+      supabaseAdmin.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "active"),
+      supabaseAdmin.from("reviews").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("reviews").select("*", { count: "exact", head: true }).eq("is_published", false),
+      supabaseAdmin.from("booking_disputes").select("*", { count: "exact", head: true }).eq("status", "open"),
+      supabaseAdmin.from("notifications").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("messages").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("contracts").select("*", { count: "exact", head: true }),
+    ]);
+
+    // Revenue stats from completed bookings
+    const { data: revenueData } = await supabaseAdmin
+      .from("bookings")
+      .select("total_price, deposit_amount")
+      .eq("status", "completed")
+      .is("deleted_at", null);
+
+    const totalRevenue = (revenueData ?? []).reduce((sum: number, b: any) => sum + (b.total_price ?? 0), 0);
+    const totalDeposits = (revenueData ?? []).reduce((sum: number, b: any) => sum + (b.deposit_amount ?? 0), 0);
+
+    // Recent activity — last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const { count: recentBookings } = await supabaseAdmin
+      .from("bookings")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", sevenDaysAgo.toISOString())
+      .is("deleted_at", null);
+
+    const { count: recentSignups } = await supabaseAdmin
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", sevenDaysAgo.toISOString());
+
+    return {
+      photographers: {
+        total: totalPhotographers ?? 0,
+        published: publishedPhotographers ?? 0,
+        verified: verifiedPhotographers ?? 0,
+      },
+      bookings: {
+        total: totalBookings ?? 0,
+        confirmed: confirmedBookings ?? 0,
+        completed: completedBookings ?? 0,
+        cancelled: cancelledBookings ?? 0,
+      },
+      payments: {
+        pendingCount: pendingPayments ?? 0,
+        activeSubscriptions: activeSubscriptions ?? 0,
+        totalRevenue,
+        totalDeposits,
+      },
+      reviews: {
+        total: totalReviews ?? 0,
+        pending: pendingReviews ?? 0,
+      },
+      disputes: {
+        open: openDisputes ?? 0,
+      },
+      platform: {
+        totalNotifications: totalNotifications ?? 0,
+        totalMessages: totalMessages ?? 0,
+        totalContracts: totalContracts ?? 0,
+      },
+      activity: {
+        recentBookings: recentBookings ?? 0,
+        recentSignups: recentSignups ?? 0,
+      },
+    };
+  });
+
+// ─── EMAIL LOG ───────────────────────────────────
+
+export const listEmailLogAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("email_log")
+      .select("*")
+      .order("sent_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+// ─── AUDIT LOG ───────────────────────────────────
+
+export const listAuditLogAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("audit_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+// ─── CONTRACTS ────────────────────────────────────
+
+export const listContractsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("contracts")
+      .select("id, booking_id, photographer_id, client_name, signed_at, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+
+    const photographerIds = Array.from(new Set((data ?? []).map((c: any) => c.photographer_id)));
+    const { data: profs } = photographerIds.length
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name").in("id", photographerIds)
+      : { data: [] as any[] };
+    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+
+    return (data ?? []).map((c: any) => ({
+      ...c,
+      photographer: profMap.get(c.photographer_id) ?? null,
+    }));
+  });
+
+// ─── REFERRALS ────────────────────────────────────
+
+export const listReferralsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("referrals")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+
+    const ids = Array.from(new Set([
+      ...(data ?? []).map((r: any) => r.referrer_id),
+      ...(data ?? []).map((r: any) => r.referred_id),
+    ].filter(Boolean)));
+    const { data: profs } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name").in("id", ids)
+      : { data: [] as any[] };
+    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+
+    return (data ?? []).map((r: any) => ({
+      ...r,
+      referrer: profMap.get(r.referrer_id) ?? null,
+      referred: profMap.get(r.referred_id) ?? null,
+    }));
+  });
+
+// ─── NOTIFICATIONS LIST ────────────────────────────
+
+export const listNotificationsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("notifications")
+      .select("id, user_id, type, title, body, is_read, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw new Error(error.message);
+
+    const ids = Array.from(new Set((data ?? []).map((n: any) => n.user_id).filter(Boolean)));
+    const { data: profs } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name").in("id", ids)
+      : { data: [] as any[] };
+    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+
+    return (data ?? []).map((n: any) => ({
+      ...n,
+      profile: profMap.get(n.user_id) ?? null,
+    }));
+  });
+
+export const adminDeleteNotification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { notification_id: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("notifications").delete().eq("id", data.notification_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ─── USER ROLES ────────────────────────────────────
+
+export const listUserRolesAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.from("user_roles").select("*").order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const ids = Array.from(new Set((data ?? []).map((r: any) => r.user_id)));
+    const { data: profs } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name, email").in("id", ids)
+      : { data: [] as any[] };
+    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+
+    return (data ?? []).map((r: any) => ({ ...r, profile: profMap.get(r.user_id) ?? null }));
+  });
+
+export const adminGrantRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { user_id: string; role: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("user_roles").upsert(
+      { user_id: data.user_id, role: data.role },
+      { onConflict: "user_id,role" }
+    );
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "role.grant",
+      actor_id: userId,
+      entity_type: "user_role",
+      entity_id: data.user_id,
+      after_data: { role: data.role },
+    });
+    return { ok: true };
+  });
+
+export const adminRevokeRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { user_id: string; role: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.user_id)
+      .eq("role", data.role);
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "role.revoke",
+      actor_id: userId,
+      entity_type: "user_role",
+      entity_id: data.user_id,
+      after_data: { role: data.role },
+    });
+    return { ok: true };
+  });

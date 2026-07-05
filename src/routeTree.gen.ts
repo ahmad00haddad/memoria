@@ -49,11 +49,17 @@ import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calend
 import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookings'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
 import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
+import { Route as AdminRolesRouteImport } from './routes/admin.roles'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminRefundsRouteImport } from './routes/admin.refunds'
+import { Route as AdminReferralsRouteImport } from './routes/admin.referrals'
 import { Route as AdminPhotographersRouteImport } from './routes/admin.photographers'
+import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
+import { Route as AdminEmailLogRouteImport } from './routes/admin.email-log'
 import { Route as AdminDisputesRouteImport } from './routes/admin.disputes'
+import { Route as AdminContractsRouteImport } from './routes/admin.contracts'
 import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
+import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
 import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
@@ -262,6 +268,11 @@ const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
   path: '/subscriptions',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminRolesRoute = AdminRolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
@@ -272,9 +283,24 @@ const AdminRefundsRoute = AdminRefundsRouteImport.update({
   path: '/refunds',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminReferralsRoute = AdminReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPhotographersRoute = AdminPhotographersRouteImport.update({
   id: '/photographers',
   path: '/photographers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEmailLogRoute = AdminEmailLogRouteImport.update({
+  id: '/email-log',
+  path: '/email-log',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDisputesRoute = AdminDisputesRouteImport.update({
@@ -282,9 +308,19 @@ const AdminDisputesRoute = AdminDisputesRouteImport.update({
   path: '/disputes',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminContractsRoute = AdminContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBookingsRoute = AdminBookingsRouteImport.update({
   id: '/bookings',
   path: '/bookings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
+  id: '/audit-log',
+  path: '/audit-log',
   getParentRoute: () => AdminRoute,
 } as any)
 const DashboardBookingsIndexRoute = DashboardBookingsIndexRouteImport.update({
@@ -342,11 +378,17 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/contracts': typeof AdminContractsRoute
   '/admin/disputes': typeof AdminDisputesRoute
+  '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/referrals': typeof AdminReferralsRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/roles': typeof AdminRolesRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
@@ -393,11 +435,17 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/contracts': typeof AdminContractsRoute
   '/admin/disputes': typeof AdminDisputesRoute
+  '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/referrals': typeof AdminReferralsRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/roles': typeof AdminRolesRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
@@ -446,11 +494,17 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/audit-log': typeof AdminAuditLogRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/contracts': typeof AdminContractsRoute
   '/admin/disputes': typeof AdminDisputesRoute
+  '/admin/email-log': typeof AdminEmailLogRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/photographers': typeof AdminPhotographersRoute
+  '/admin/referrals': typeof AdminReferralsRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/roles': typeof AdminRolesRoute
   '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
@@ -501,11 +555,17 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/audit-log'
     | '/admin/bookings'
+    | '/admin/contracts'
     | '/admin/disputes'
+    | '/admin/email-log'
+    | '/admin/notifications'
     | '/admin/photographers'
+    | '/admin/referrals'
     | '/admin/refunds'
     | '/admin/reviews'
+    | '/admin/roles'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/bookings'
@@ -552,11 +612,17 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/audit-log'
     | '/admin/bookings'
+    | '/admin/contracts'
     | '/admin/disputes'
+    | '/admin/email-log'
+    | '/admin/notifications'
     | '/admin/photographers'
+    | '/admin/referrals'
     | '/admin/refunds'
     | '/admin/reviews'
+    | '/admin/roles'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/calendar'
@@ -604,11 +670,17 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/audit-log'
     | '/admin/bookings'
+    | '/admin/contracts'
     | '/admin/disputes'
+    | '/admin/email-log'
+    | '/admin/notifications'
     | '/admin/photographers'
+    | '/admin/referrals'
     | '/admin/refunds'
     | '/admin/reviews'
+    | '/admin/roles'
     | '/admin/subscriptions'
     | '/contracts/$token'
     | '/dashboard/bookings'
@@ -951,6 +1023,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSubscriptionsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/roles': {
+      id: '/admin/roles'
+      path: '/roles'
+      fullPath: '/admin/roles'
+      preLoaderRoute: typeof AdminRolesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/reviews': {
       id: '/admin/reviews'
       path: '/reviews'
@@ -965,11 +1044,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRefundsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/referrals': {
+      id: '/admin/referrals'
+      path: '/referrals'
+      fullPath: '/admin/referrals'
+      preLoaderRoute: typeof AdminReferralsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/photographers': {
       id: '/admin/photographers'
       path: '/photographers'
       fullPath: '/admin/photographers'
       preLoaderRoute: typeof AdminPhotographersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/notifications': {
+      id: '/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/email-log': {
+      id: '/admin/email-log'
+      path: '/email-log'
+      fullPath: '/admin/email-log'
+      preLoaderRoute: typeof AdminEmailLogRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/disputes': {
@@ -979,11 +1079,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDisputesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/contracts': {
+      id: '/admin/contracts'
+      path: '/contracts'
+      fullPath: '/admin/contracts'
+      preLoaderRoute: typeof AdminContractsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/bookings': {
       id: '/admin/bookings'
       path: '/bookings'
       fullPath: '/admin/bookings'
       preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/audit-log': {
+      id: '/admin/audit-log'
+      path: '/audit-log'
+      fullPath: '/admin/audit-log'
+      preLoaderRoute: typeof AdminAuditLogRouteImport
       parentRoute: typeof AdminRoute
     }
     '/dashboard/bookings/': {
@@ -1032,21 +1146,33 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAuditLogRoute: typeof AdminAuditLogRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminContractsRoute: typeof AdminContractsRoute
   AdminDisputesRoute: typeof AdminDisputesRoute
+  AdminEmailLogRoute: typeof AdminEmailLogRoute
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminPhotographersRoute: typeof AdminPhotographersRoute
+  AdminReferralsRoute: typeof AdminReferralsRoute
   AdminRefundsRoute: typeof AdminRefundsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminRolesRoute: typeof AdminRolesRoute
   AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditLogRoute: AdminAuditLogRoute,
   AdminBookingsRoute: AdminBookingsRoute,
+  AdminContractsRoute: AdminContractsRoute,
   AdminDisputesRoute: AdminDisputesRoute,
+  AdminEmailLogRoute: AdminEmailLogRoute,
+  AdminNotificationsRoute: AdminNotificationsRoute,
   AdminPhotographersRoute: AdminPhotographersRoute,
+  AdminReferralsRoute: AdminReferralsRoute,
   AdminRefundsRoute: AdminRefundsRoute,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminRolesRoute: AdminRolesRoute,
   AdminSubscriptionsRoute: AdminSubscriptionsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
