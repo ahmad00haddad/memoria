@@ -27,6 +27,7 @@ type Row = {
   avatar_url: string | null;
   created_at: string;
   deleted_at?: string | null;
+  verification_status?: string;
   bookings_count: number;
   reviews_count: number;
   subscription: {
