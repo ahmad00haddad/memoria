@@ -39,10 +39,12 @@ function formatDate(dateStr: string): string {
   });
 }
 
+let cachedBookingsList: any[] | null = null;
+
 function BookingsList() {
   const nav = useNavigate();
-  const [list, setList] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [list, setList] = useState<any[]>(cachedBookingsList ?? []);
+  const [loading, setLoading] = useState(!cachedBookingsList);
   const [filter, setFilter] = useState<string>("all");
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<"date_desc" | "date_asc" | "price_desc">("date_desc");
@@ -60,6 +62,7 @@ function BookingsList() {
           .is("deleted_at", null)
           .order("event_date", { ascending: false });
         if (error) throw error;
+        cachedBookingsList = data ?? [];
         setList(data ?? []);
       } catch (error: any) {
         setLoadError(error?.message || "تعذّر تحميل الحجوزات");

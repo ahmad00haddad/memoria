@@ -166,14 +166,23 @@ function Card({ title, desc, cta, to, external, disabled, icon }: { title: strin
   return <Link to={to} className={sharedClassName}>{content}</Link>;
 }
 
+let cachedDashboard: {
+  profile: any;
+  sub: any;
+  pricingCount: number;
+  hasCliq: boolean;
+  templatesCount: number;
+  stats: any;
+} | null = null;
+
 function Dashboard() {
-  const [profile, setProfile] = useState<any>(null);
-  const [sub, setSub] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [pricingCount, setPricingCount] = useState(0);
-  const [hasCliq, setHasCliq] = useState(false);
-  const [templatesCount, setTemplatesCount] = useState(0);
-  const [stats, setStats] = useState({ confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, upcoming30: 0, pendingDepositsAmount: 0, deliveriesDueSoon: 0 });
+  const [profile, setProfile] = useState<any>(cachedDashboard?.profile ?? null);
+  const [sub, setSub] = useState<any>(cachedDashboard?.sub ?? null);
+  const [loading, setLoading] = useState(!cachedDashboard);
+  const [pricingCount, setPricingCount] = useState(cachedDashboard?.pricingCount ?? 0);
+  const [hasCliq, setHasCliq] = useState(cachedDashboard?.hasCliq ?? false);
+  const [templatesCount, setTemplatesCount] = useState(cachedDashboard?.templatesCount ?? 0);
+  const [stats, setStats] = useState(cachedDashboard?.stats ?? { confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, upcoming30: 0, pendingDepositsAmount: 0, deliveriesDueSoon: 0 });
   const [qsDismissed, setQsDismissed] = useState(false);
   const navigate = useNavigate();
 
@@ -228,11 +237,6 @@ function Dashboard() {
         navigate({ to: "/onboarding" });
         return;
       }
-      setProfile({ ...(data ?? {}), ical_token: priv?.ical_token ?? null });
-      setSub(s);
-      setPricingCount(pricingRulesCount ?? 0);
-      setHasCliq(!!(priv?.cliq_alias || priv?.whatsapp || priv?.phone));
-      setTemplatesCount(tplCount ?? 0);
       const all = bks ?? [];
       const confirmed = all.filter((b: any) => b.status === "confirmed").length;
       const pending = all.filter((b: any) => b.status === "pending_deposit" || b.status === "quote").length;
@@ -245,7 +249,25 @@ function Dashboard() {
       const pendingDepositsAmount = all.filter((b: any) => b.status === "pending_deposit").reduce((sum: number, b: any) => sum + Number(b.deposit_amount ?? 0), 0);
       const deliveriesDueSoon = all.filter((b: any) => b.delivery_due_at && b.production_stage !== "delivered" && new Date(b.delivery_due_at).getTime() <= now + 7 * 86400000).length;
       const avg = (rvs && rvs.length) ? rvs.reduce((sum, r) => sum + r.rating, 0) / rvs.length : 0;
-      setStats({ confirmed, pending, completed, revenue, avgRating: avg, reviews: rvs?.length ?? 0, monthRevenue, upcoming30, pendingDepositsAmount, deliveriesDueSoon });
+      
+      const computedStats = { confirmed, pending, completed, revenue, avgRating: avg, reviews: rvs?.length ?? 0, monthRevenue, upcoming30, pendingDepositsAmount, deliveriesDueSoon };
+      const loadedProfile = { ...(data ?? {}), ical_token: priv?.ical_token ?? null };
+
+      cachedDashboard = {
+        profile: loadedProfile,
+        sub: s,
+        pricingCount: pricingRulesCount ?? 0,
+        hasCliq: !!(priv?.cliq_alias || priv?.whatsapp || priv?.phone),
+        templatesCount: tplCount ?? 0,
+        stats: computedStats
+      };
+
+      setProfile(loadedProfile);
+      setSub(s);
+      setPricingCount(pricingRulesCount ?? 0);
+      setHasCliq(!!(priv?.cliq_alias || priv?.whatsapp || priv?.phone));
+      setTemplatesCount(tplCount ?? 0);
+      setStats(computedStats);
       setLoading(false);
     })();
   }, [navigate]);

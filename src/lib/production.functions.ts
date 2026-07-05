@@ -17,7 +17,7 @@ export const updateProductionStage = createServerFn({ method: "POST" })
     if (!d || typeof d.booking_id !== "string" || !UUID_RE.test(d.booking_id)) {
       throw new Error("invalid booking_id");
     }
-    const VALID = ["awaiting", "shooting", "editing", "delivered"];
+    const VALID = ["awaiting", "shooting", "selecting", "editing", "ready", "delivered"];
     if (!VALID.includes(d.stage)) throw new Error(`stage يجب أن يكون من: ${VALID.join(", ")}`);
     return d;
   })

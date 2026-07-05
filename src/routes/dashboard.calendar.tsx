@@ -12,23 +12,32 @@ import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/dashboard/calendar")({ component: CalendarPage });
 
+let cachedCalendarData: {
+  unavail: any[];
+  bookings: any[];
+  icalUrl: string;
+  lastSync: string | null;
+  autoSync: boolean;
+  exportToken: string | null;
+} | null = null;
+
 function CalendarPage() {
   const nav = useNavigate();
   const [uid, setUid] = useState("");
-  const [unavail, setUnavail] = useState<{ id: string; date: string; reason: string | null }[]>([]);
-  const [bookings, setBookings] = useState<{ event_date: string; start_time: string; end_time: string; status: string; client_name: string }[]>([]);
+  const [unavail, setUnavail] = useState<{ id: string; date: string; reason: string | null }[]>(cachedCalendarData?.unavail ?? []);
+  const [bookings, setBookings] = useState<{ event_date: string; start_time: string; end_time: string; status: string; client_name: string }[]>(cachedCalendarData?.bookings ?? []);
   const [date, setDate] = useState("");
   const [reason, setReason] = useState("");
   const [weekday, setWeekday] = useState<string>("5"); // 5 = الجمعة
   const [weeks, setWeeks] = useState<number>(26); // ~6 أشهر
   const [recurringReason, setRecurringReason] = useState("عطلة أسبوعية");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedCalendarData);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [icalUrl, setIcalUrl] = useState("");
-  const [lastSync, setLastSync] = useState<string | null>(null);
+  const [icalUrl, setIcalUrl] = useState(cachedCalendarData?.icalUrl ?? "");
+  const [lastSync, setLastSync] = useState<string | null>(cachedCalendarData?.lastSync ?? null);
   const [syncing, setSyncing] = useState(false);
-  const [autoSync, setAutoSync] = useState(false);
-  const [exportToken, setExportToken] = useState<string | null>(null);
+  const [autoSync, setAutoSync] = useState(cachedCalendarData?.autoSync ?? false);
+  const [exportToken, setExportToken] = useState<string | null>(cachedCalendarData?.exportToken ?? null);
   const [copied, setCopied] = useState(false);
   const runSync = useServerFn(syncExternalIcal);
 
@@ -38,12 +47,28 @@ function CalendarPage() {
       supabase.from("bookings").select("event_date,start_time,end_time,status,client_name").eq("photographer_id", id).is("deleted_at", null).order("event_date"),
       supabase.from("photographer_private").select("external_ical_url,external_ical_synced_at,external_ical_auto_sync,ical_token").eq("user_id", id).maybeSingle(),
     ]);
-    setUnavail((u ?? []) as any);
-    setBookings((b ?? []) as any);
-    setIcalUrl(p?.external_ical_url ?? "");
-    setLastSync(p?.external_ical_synced_at ?? null);
-    setAutoSync(!!(p as any)?.external_ical_auto_sync);
-    setExportToken((p as any)?.ical_token ?? null);
+    const unavailList = (u ?? []) as any;
+    const bookingsList = (b ?? []) as any;
+    const ical = p?.external_ical_url ?? "";
+    const sync = p?.external_ical_synced_at ?? null;
+    const auto = !!(p as any)?.external_ical_auto_sync;
+    const token = (p as any)?.ical_token ?? null;
+
+    cachedCalendarData = {
+      unavail: unavailList,
+      bookings: bookingsList,
+      icalUrl: ical,
+      lastSync: sync,
+      autoSync: auto,
+      exportToken: token,
+    };
+
+    setUnavail(unavailList);
+    setBookings(bookingsList);
+    setIcalUrl(ical);
+    setLastSync(sync);
+    setAutoSync(auto);
+    setExportToken(token);
   };
 
   useEffect(() => {

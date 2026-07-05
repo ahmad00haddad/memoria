@@ -21,11 +21,13 @@ const STAGES: { key: string; label: string; icon: any; color: string }[] = [
   { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-4 w-4" />, color: "bg-secondary border-border text-foreground" },
 ];
 
+let cachedBookings: any[] | null = null;
+
 function ProductionBoard() {
   const nav = useNavigate();
   const [uid, setUid] = useState("");
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [bookings, setBookings] = useState<any[]>(cachedBookings ?? []);
+  const [loading, setLoading] = useState(!cachedBookings);
   const [activeStage, setActiveStage] = useState<string>("awaiting");
   const [err, setErr] = useState<string | null>(null);
 
@@ -34,6 +36,7 @@ function ProductionBoard() {
       .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status")
       .eq("photographer_id", id).is("deleted_at", null).neq("status", "cancelled").order("event_date", { ascending: true });
     if (error) throw new Error(error.message);
+    cachedBookings = data ?? [];
     setBookings(data ?? []);
   };
 

@@ -133,6 +133,13 @@ export const Route = createFileRoute("/api/public/hooks/payment")({
 
           // إشعارات (مرّة واحدة فقط — لا تُرسل إن كان مؤكّداً مسبقاً).
           if (!info.already_confirmed) {
+            // توليد العقد تلقائياً من قالب المصورة عند تأكيد الحجز (إن وُجد قالب)
+            try {
+              await supabaseAdmin.rpc("auto_generate_contract", { _booking_id: info.booking_id });
+            } catch (e) {
+              console.error("[payment] auto_generate_contract failed:", e);
+            }
+
             // إشعار داخل التطبيق للعميل المرتبط بحساب.
             if (info.client_user_id) {
               await supabaseAdmin.from("notifications").insert({
