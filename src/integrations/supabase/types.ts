@@ -756,6 +756,7 @@ export type Database = {
           travel_fee_per_km: number
           updated_at: string
           username: string
+          verification_status: string
         }
         Insert: {
           avatar_url?: string | null
@@ -788,6 +789,7 @@ export type Database = {
           travel_fee_per_km?: number
           updated_at?: string
           username: string
+          verification_status?: string
         }
         Update: {
           avatar_url?: string | null
@@ -820,6 +822,7 @@ export type Database = {
           travel_fee_per_km?: number
           updated_at?: string
           username?: string
+          verification_status?: string
         }
         Relationships: []
       }
