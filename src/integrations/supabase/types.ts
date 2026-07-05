@@ -50,6 +50,56 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_disputes: {
+        Row: {
+          booking_id: string
+          created_at: string
+          id: string
+          raised_by: string
+          raised_by_role: string
+          reason: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          id?: string
+          raised_by: string
+          raised_by_role: string
+          reason: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          id?: string
+          raised_by?: string
+          raised_by_role?: string
+          reason?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_disputes_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           addons: Json | null
@@ -403,6 +453,7 @@ export type Database = {
           recipient: string
           related_booking_id: string | null
           related_user_id: string | null
+          sent_at: string | null
           status: string
           subject: string | null
           template: string
@@ -415,6 +466,7 @@ export type Database = {
           recipient: string
           related_booking_id?: string | null
           related_user_id?: string | null
+          sent_at?: string | null
           status?: string
           subject?: string | null
           template: string
@@ -427,6 +479,7 @@ export type Database = {
           recipient?: string
           related_booking_id?: string | null
           related_user_id?: string | null
+          sent_at?: string | null
           status?: string
           subject?: string | null
           template?: string
@@ -490,6 +543,7 @@ export type Database = {
           is_read: boolean
           link: string | null
           title: string
+          type: string
           user_id: string
         }
         Insert: {
@@ -499,6 +553,7 @@ export type Database = {
           is_read?: boolean
           link?: string | null
           title: string
+          type?: string
           user_id: string
         }
         Update: {
@@ -508,6 +563,7 @@ export type Database = {
           is_read?: boolean
           link?: string | null
           title?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
