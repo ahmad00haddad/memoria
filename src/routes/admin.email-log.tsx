@@ -12,11 +12,11 @@ export const Route = createFileRoute("/admin/email-log")({
 
 type Row = {
   id: string;
-  to_email: string;
-  subject: string;
+  recipient: string;
+  subject: string | null;
   status: string;
   error: string | null;
-  sent_at: string;
+  sent_at: string | null;
 };
 
 function AdminEmailLog() {
@@ -40,7 +40,7 @@ function AdminEmailLog() {
 
   const filtered = rows.filter((r) => {
     const q = search.toLowerCase();
-    return !q || r.to_email?.toLowerCase().includes(q) || r.subject?.toLowerCase().includes(q);
+    return !q || r.recipient?.toLowerCase().includes(q) || r.subject?.toLowerCase().includes(q);
   });
 
   if (loading) return <PageLoader />;
@@ -99,7 +99,7 @@ function AdminEmailLog() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs">{r.to_email}</td>
+                    <td className="px-4 py-3 font-mono text-xs">{r.recipient}</td>
                     <td className="px-4 py-3">{r.subject}</td>
                     <td className="px-4 py-3 text-xs text-destructive">{r.error ?? "—"}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
