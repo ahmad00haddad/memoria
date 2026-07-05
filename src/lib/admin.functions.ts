@@ -16,7 +16,7 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
 
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
-      .select("id, username, display_name, is_published, avatar_url, created_at, deleted_at")
+      .select("id, username, display_name, is_published, avatar_url, created_at, deleted_at, verification_status")
       .order("created_at", { ascending: false });
 
     const ids = (profiles ?? []).map((p: any) => p.id);
@@ -77,7 +77,8 @@ export const adminApproveReview = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
-    const { error } = await supabase.rpc("approve_review", { _review_id: data.review_id });
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("approve_review", { _review_id: data.review_id });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -93,7 +94,8 @@ export const adminRejectReview = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
-    const { error } = await supabase.rpc("reject_review", { _review_id: data.review_id });
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("reject_review", { _review_id: data.review_id });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -104,7 +106,8 @@ export const adminTogglePublish = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
-    const { error } = await supabase.rpc("admin_set_published", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("admin_set_published", {
       _photographer_id: data.photographer_id,
       _published: data.published,
     });
@@ -119,7 +122,8 @@ export const adminRenewSubscription = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     if (!data.months || data.months < 1 || data.months > 36) throw new Error("months must be 1-36");
-    const { error } = await supabase.rpc("admin_renew_subscription", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("admin_renew_subscription", {
       _photographer_id: data.photographer_id,
       _months: data.months,
     });
@@ -133,13 +137,13 @@ export const adminDeletePhotographer = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
-    const { error } = await supabase.rpc("delete_photographer_cascade", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("delete_photographer_cascade", {
       _photographer_id: data.photographer_id,
     });
     if (error) throw new Error(error.message);
     // Also remove the auth user via admin client
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await (supabaseAdmin as any).auth.admin.deleteUser(data.photographer_id);
     } catch (e) {
       // ignore — profile data already wiped
@@ -153,7 +157,8 @@ export const adminSoftDeletePhotographer = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
-    const { error } = await supabase.rpc("soft_delete_photographer", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("soft_delete_photographer", {
       _photographer_id: data.photographer_id,
     });
     if (error) throw new Error(error.message);
@@ -166,7 +171,8 @@ export const adminRestorePhotographer = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
-    const { error } = await supabase.rpc("restore_photographer", {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("restore_photographer", {
       _photographer_id: data.photographer_id,
     });
     if (error) throw new Error(error.message);
@@ -251,6 +257,116 @@ export const adminRejectSubscriptionPayment = createServerFn({ method: "POST" })
       .from("subscription_payments")
       .update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: userId, notes: data.reason })
       .eq("id", data.payment_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminVerifyPhotographer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { photographer_id: string; status: "verified" | "rejected" | "unverified" | "pending_review" }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("admin_verify_photographer", {
+      _photographer_id: data.photographer_id,
+      _status: data.status,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const listBookingsAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("bookings")
+      .select("id, client_name, client_email, client_phone, event_date, start_time, end_time, total_price, deposit_amount, status, photographer_id")
+      .is("deleted_at", null)
+      .order("event_date", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const ids = Array.from(new Set((data ?? []).map((b: any) => b.photographer_id)));
+    const { data: profs } = ids.length
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name").in("id", ids)
+      : { data: [] as any[] };
+    const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+
+    return (data ?? []).map((b: any) => ({
+      ...b,
+      photographer: map.get(b.photographer_id) ?? null,
+    }));
+  });
+
+export const adminCancelBooking = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string; reason: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.rpc("cancel_booking", {
+      _booking_id: data.booking_id,
+      _reason: data.reason,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const listDisputesAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("booking_disputes")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const bookingIds = Array.from(new Set((data ?? []).map((d: any) => d.booking_id)));
+    const { data: bookings } = bookingIds.length
+      ? await supabaseAdmin.from("bookings").select("id, client_name, photographer_id").in("id", bookingIds)
+      : { data: [] as any[] };
+    const bookMap = new Map((bookings ?? []).map((b: any) => [b.id, b]));
+
+    const photographerIds = Array.from(new Set((bookings ?? []).map((b: any) => b.photographer_id)));
+    const { data: profs } = photographerIds.length
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name").in("id", photographerIds)
+      : { data: [] as any[] };
+    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+
+    return (data ?? []).map((d: any) => {
+      const b = bookMap.get(d.booking_id) ?? null;
+      return {
+        ...d,
+        booking: b,
+        photographer: b ? profMap.get(b.photographer_id) : null,
+      };
+    });
+  });
+
+export const adminResolveDispute = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { dispute_id: string; status: "resolved" | "dismissed"; resolution: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("booking_disputes")
+      .update({
+        status: data.status,
+        resolution: data.resolution,
+        resolved_by: userId,
+        resolved_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.dispute_id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

@@ -52,6 +52,8 @@ import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscript
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminRefundsRouteImport } from './routes/admin.refunds'
 import { Route as AdminPhotographersRouteImport } from './routes/admin.photographers'
+import { Route as AdminDisputesRouteImport } from './routes/admin.disputes'
+import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
 import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
 import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
@@ -275,6 +277,16 @@ const AdminPhotographersRoute = AdminPhotographersRouteImport.update({
   path: '/photographers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDisputesRoute = AdminDisputesRouteImport.update({
+  id: '/disputes',
+  path: '/disputes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBookingsRoute = AdminBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const DashboardBookingsIndexRoute = DashboardBookingsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -330,6 +342,8 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/disputes': typeof AdminDisputesRoute
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -379,6 +393,8 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/disputes': typeof AdminDisputesRoute
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -430,6 +446,8 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/disputes': typeof AdminDisputesRoute
   '/admin/photographers': typeof AdminPhotographersRoute
   '/admin/refunds': typeof AdminRefundsRoute
   '/admin/reviews': typeof AdminReviewsRoute
@@ -483,6 +501,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/bookings'
+    | '/admin/disputes'
     | '/admin/photographers'
     | '/admin/refunds'
     | '/admin/reviews'
@@ -532,6 +552,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/bookings'
+    | '/admin/disputes'
     | '/admin/photographers'
     | '/admin/refunds'
     | '/admin/reviews'
@@ -582,6 +604,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin/bookings'
+    | '/admin/disputes'
     | '/admin/photographers'
     | '/admin/refunds'
     | '/admin/reviews'
@@ -948,6 +972,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPhotographersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/disputes': {
+      id: '/admin/disputes'
+      path: '/disputes'
+      fullPath: '/admin/disputes'
+      preLoaderRoute: typeof AdminDisputesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bookings': {
+      id: '/admin/bookings'
+      path: '/bookings'
+      fullPath: '/admin/bookings'
+      preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/dashboard/bookings/': {
       id: '/dashboard/bookings/'
       path: '/'
@@ -994,6 +1032,8 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminDisputesRoute: typeof AdminDisputesRoute
   AdminPhotographersRoute: typeof AdminPhotographersRoute
   AdminRefundsRoute: typeof AdminRefundsRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
@@ -1002,6 +1042,8 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBookingsRoute: AdminBookingsRoute,
+  AdminDisputesRoute: AdminDisputesRoute,
   AdminPhotographersRoute: AdminPhotographersRoute,
   AdminRefundsRoute: AdminRefundsRoute,
   AdminReviewsRoute: AdminReviewsRoute,

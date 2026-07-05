@@ -8,8 +8,9 @@ import {
   adminDeletePhotographer,
   adminSoftDeletePhotographer,
   adminRestorePhotographer,
+  adminVerifyPhotographer,
 } from "@/lib/admin.functions";
-import { Eye, EyeOff, RefreshCw, Trash2, ExternalLink, CheckCircle2, Clock, AlertTriangle, Archive, ArchiveRestore } from "lucide-react";
+import { Eye, EyeOff, RefreshCw, Trash2, ExternalLink, CheckCircle2, Clock, AlertTriangle, Archive, ArchiveRestore, X } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { PageLoader } from "@/components/ui/loading";
@@ -42,11 +43,22 @@ function AdminPhotographers() {
   const del = useServerFn(adminDeletePhotographer);
   const softDel = useServerFn(adminSoftDeletePhotographer);
   const restore = useServerFn(adminRestorePhotographer);
+  const verify = useServerFn(adminVerifyPhotographer);
   const confirm = useConfirm();
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [renewFor, setRenewFor] = useState<Row | null>(null);
+
+  const onVerify = async (r: Row, status: "verified" | "rejected" | "unverified") => {
+    try {
+      await verify({ data: { photographer_id: r.id, status } });
+      toast.success(status === "verified" ? "تم توثيق المصوّرة ✓" : "تم إلغاء توثيق المصوّرة");
+      load();
+    } catch (e: any) {
+      toast.error(e.message || "تعذّر تعديل حالة التوثيق");
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -136,6 +148,7 @@ function AdminPhotographers() {
               <th className="text-start p-3">الاشتراك</th>
               <th className="text-start p-3">حجوزات</th>
               <th className="text-start p-3">تقييمات</th>
+              <th className="text-start p-3">التوثيق</th>
               <th className="text-start p-3">حالة الصفحة</th>
               <th className="text-start p-3">إجراءات</th>
             </tr>
@@ -159,6 +172,7 @@ function AdminPhotographers() {
                 <td className="p-3"><SubBadge sub={r.subscription} /></td>
                 <td className="p-3">{r.bookings_count}</td>
                 <td className="p-3">{r.reviews_count}</td>
+                <td className="p-3"><VerificationBadge status={r.verification_status} /></td>
                 <td className="p-3">
                   {r.is_published ? (
                     <span className="text-xs inline-flex items-center gap-1 text-emerald-700"><Eye className="h-3.5 w-3.5" /> ظاهرة</span>
@@ -174,6 +188,17 @@ function AdminPhotographers() {
                        className="text-xs px-2.5 py-1.5 rounded-sm border border-border hover:bg-secondary inline-flex items-center gap-1">
                       <ExternalLink className="h-3 w-3" /> عرض
                     </a>
+                    {r.verification_status !== "verified" ? (
+                      <button onClick={() => onVerify(r, "verified")}
+                              className="text-xs px-2.5 py-1.5 rounded-sm border border-emerald-500 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> توثيق
+                      </button>
+                    ) : (
+                      <button onClick={() => onVerify(r, "rejected")}
+                              className="text-xs px-2.5 py-1.5 rounded-sm border border-destructive text-destructive hover:bg-destructive/5 inline-flex items-center gap-1">
+                        <X className="h-3 w-3" /> إلغاء توثيق
+                      </button>
+                    )}
                     <button onClick={() => onToggle(r)}
                             className="text-xs px-2.5 py-1.5 rounded-sm border border-border hover:bg-secondary inline-flex items-center gap-1">
                       {r.is_published ? <><EyeOff className="h-3 w-3" /> إخفاء</> : <><Eye className="h-3 w-3" /> إظهار</>}
@@ -202,7 +227,7 @@ function AdminPhotographers() {
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">لا توجد مصورات</td></tr>
+              <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">لا توجد مصورات</td></tr>
             )}
           </tbody>
         </table>
@@ -262,4 +287,18 @@ function SubBadge({ sub }: { sub: Row["subscription"] }) {
       {end && <div className="text-[10px] text-muted-foreground">حتى {new Date(end).toLocaleDateString("ar-JO")}</div>}
     </div>
   );
+}
+
+function VerificationBadge({ status }: { status: string | null | undefined }) {
+  switch (status) {
+    case "verified":
+      return <span className="text-[11px] inline-flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-sm dark:bg-emerald-950/40 border border-emerald-200"><CheckCircle2 className="h-3 w-3" /> موثقة</span>;
+    case "pending_review":
+      return <span className="text-[11px] inline-flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-0.5 rounded-sm dark:bg-amber-950/40 border border-amber-200"><Clock className="h-3 w-3" /> مراجعة</span>;
+    case "rejected":
+      return <span className="text-[11px] inline-flex items-center gap-1 text-destructive bg-destructive/5 px-2 py-0.5 rounded-sm border border-destructive/20"><AlertTriangle className="h-3 w-3" /> مرفوضة</span>;
+    case "unverified":
+    default:
+      return <span className="text-[11px] inline-flex items-center gap-1 text-muted-foreground bg-secondary px-2 py-0.5 rounded-sm border border-border">غير موثقة</span>;
+  }
 }
