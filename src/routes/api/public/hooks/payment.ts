@@ -135,7 +135,7 @@ export const Route = createFileRoute("/api/public/hooks/payment")({
           if (!info.already_confirmed) {
             // توليد العقد تلقائياً من قالب المصورة عند تأكيد الحجز (إن وُجد قالب)
             try {
-              await supabaseAdmin.rpc("auto_generate_contract", { _booking_id: info.booking_id });
+              await (supabaseAdmin.rpc as any)("auto_generate_contract", { _booking_id: info.booking_id });
             } catch (e) {
               console.error("[payment] auto_generate_contract failed:", e);
             }
