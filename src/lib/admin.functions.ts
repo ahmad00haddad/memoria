@@ -28,7 +28,7 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
         .from("profiles")
         .select("id, username, display_name, is_published, avatar_url, created_at")
         .order("created_at", { ascending: false });
-      profiles = fallbackRes.data;
+      profiles = fallbackRes.data as any;
       profError = fallbackRes.error;
     }
 
@@ -876,7 +876,7 @@ export const adminGrantRole = createServerFn({ method: "POST" })
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("user_roles").upsert(
-      { user_id: data.user_id, role: data.role },
+      { user_id: data.user_id, role: data.role as any },
       { onConflict: "user_id,role" }
     );
     if (error) throw new Error(error.message);
@@ -901,7 +901,7 @@ export const adminRevokeRole = createServerFn({ method: "POST" })
       .from("user_roles")
       .delete()
       .eq("user_id", data.user_id)
-      .eq("role", data.role);
+      .eq("role", data.role as any);
     if (error) throw new Error(error.message);
     await supabaseAdmin.from("audit_logs").insert({
       action: "role.revoke",
