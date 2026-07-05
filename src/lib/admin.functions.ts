@@ -313,19 +313,49 @@ export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" }
     if (pErr || !payment) throw new Error("الدفعة غير موجودة");
     if (payment.status !== "pending") throw new Error("تمت معالجة هذه الدفعة سابقًا");
 
+    // Mark payment as approved
     const { error: e1 } = await supabaseAdmin
       .from("subscription_payments")
       .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: userId, period_months: data.months })
       .eq("id", data.payment_id);
     if (e1) throw new Error(e1.message);
 
-    const { error: e2 } = await supabaseAdmin.rpc("admin_renew_subscription", {
-      _photographer_id: payment.photographer_id,
-      _months: data.months,
-    });
+    // Renew subscription directly without RPC (avoids auth.uid() issue)
+    const { data: sub } = await supabaseAdmin
+      .from("subscriptions")
+      .select("current_period_end")
+      .eq("photographer_id", payment.photographer_id)
+      .maybeSingle();
+
+    const currentEnd = sub?.current_period_end ? new Date(sub.current_period_end) : null;
+    const now = new Date();
+    const start = currentEnd && currentEnd > now ? currentEnd : now;
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + data.months);
+
+    const { error: e2 } = await supabaseAdmin
+      .from("subscriptions")
+      .upsert({
+        photographer_id: payment.photographer_id,
+        status: "active",
+        current_period_start: now.toISOString(),
+        current_period_end: end.toISOString(),
+        trial_ends_at: now.toISOString(),
+        updated_at: now.toISOString(),
+      }, { onConflict: "photographer_id" });
     if (e2) throw new Error(e2.message);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "subscription.approve",
+      actor_id: userId,
+      entity_type: "subscription_payment",
+      entity_id: data.payment_id,
+      after_data: { months: data.months, photographer_id: payment.photographer_id, period_end: end.toISOString() },
+    });
+
     return { ok: true };
   });
+
 
 export const adminRejectSubscriptionPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

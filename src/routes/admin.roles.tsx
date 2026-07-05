@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { listUserRolesAdmin, adminGrantRole, adminRevokeRole } from "@/lib/admin.functions";
-import { ShieldAlert, ShieldCheck, Trash2, Plus } from "lucide-react";
+import { ShieldAlert, ShieldCheck, Trash2, Plus, RefreshCw } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/roles")({
@@ -22,6 +23,7 @@ function AdminRoles() {
   const listFn = useServerFn(listUserRolesAdmin);
   const grantFn = useServerFn(adminGrantRole);
   const revokeFn = useServerFn(adminRevokeRole);
+  const confirm = useConfirm();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [newUserId, setNewUserId] = useState("");
@@ -29,6 +31,7 @@ function AdminRoles() {
   const [granting, setGranting] = useState(false);
 
   const load = async () => {
+    setLoading(true);
     try {
       const data = await listFn();
       setRows((data as Row[]) ?? []);
@@ -42,28 +45,39 @@ function AdminRoles() {
 
   const grant = async () => {
     if (!newUserId.trim()) { toast.error("أدخل معرّف المستخدم"); return; }
+    // Basic UUID format check
+    if (!/^[0-9a-f-]{36}$/i.test(newUserId.trim())) {
+      toast.error("معرّف المستخدم يجب أن يكون UUID صحيح (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)");
+      return;
+    }
     setGranting(true);
     try {
       await grantFn({ data: { user_id: newUserId.trim(), role: newRole } });
-      toast.success(`تم منح دور ${newRole}`);
+      toast.success(`تم منح دور "${newRole}" بنجاح ✓`);
       setNewUserId("");
       load();
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "فشل منح الدور");
     }
     setGranting(false);
   };
 
   const revoke = async (row: Row) => {
-    if (!window.confirm(`هل أنت متأكد من سحب دور "${row.role}" من ${row.profile?.display_name ?? row.user_id}؟`)) return;
+    if (!(await confirm({
+      title: "سحب الدور",
+      description: `هل أنت متأكد من سحب دور "${row.role}" من ${row.profile?.display_name ?? row.user_id}؟`,
+      confirmText: "سحب الدور",
+      destructive: true,
+    }))) return;
     try {
       await revokeFn({ data: { user_id: row.user_id, role: row.role } });
-      toast.success("تم سحب الدور");
+      toast.success("تم سحب الدور بنجاح");
       load();
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "فشل سحب الدور");
     }
   };
+
 
   if (loading) return <PageLoader />;
 
