@@ -14,17 +14,52 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: profiles } = await supabaseAdmin
+    const profilesRes = await supabaseAdmin
       .from("profiles")
       .select("id, username, display_name, is_published, avatar_url, created_at, deleted_at, verification_status")
       .order("created_at", { ascending: false });
 
+    let profiles = profilesRes.data;
+    let profError = profilesRes.error;
+
+    if (profError && (profError.code === "42703" || profError.message?.includes("does not exist"))) {
+      console.warn("[listPhotographersAdmin] Table mismatch or missing columns in profiles, retrying with basic subset...");
+      const fallbackRes = await supabaseAdmin
+        .from("profiles")
+        .select("id, username, display_name, is_published, avatar_url, created_at")
+        .order("created_at", { ascending: false });
+      profiles = fallbackRes.data;
+      profError = fallbackRes.error;
+    }
+
+    if (profError) {
+      console.error("[listPhotographersAdmin] Profiles query error:", profError);
+      throw new Error(`فشل جلب المصورات: ${profError.message}`);
+    }
+
     const ids = (profiles ?? []).map((p: any) => p.id);
-    const [{ data: subs }, { data: bookings }, { data: reviews }] = await Promise.all([
-      ids.length ? supabaseAdmin.from("subscriptions").select("photographer_id, status, current_period_end, trial_ends_at").in("photographer_id", ids) : Promise.resolve({ data: [] as any[] }),
-      ids.length ? supabaseAdmin.from("bookings").select("photographer_id").in("photographer_id", ids) : Promise.resolve({ data: [] as any[] }),
-      ids.length ? supabaseAdmin.from("reviews").select("photographer_id, rating").in("photographer_id", ids) : Promise.resolve({ data: [] as any[] }),
+    const [subsRes, bookingsRes, reviewsRes] = await Promise.all([
+      ids.length ? supabaseAdmin.from("subscriptions").select("photographer_id, status, current_period_end, trial_ends_at").in("photographer_id", ids) : Promise.resolve({ data: [], error: null }),
+      ids.length ? supabaseAdmin.from("bookings").select("photographer_id").in("photographer_id", ids) : Promise.resolve({ data: [], error: null }),
+      ids.length ? supabaseAdmin.from("reviews").select("photographer_id, rating").in("photographer_id", ids) : Promise.resolve({ data: [], error: null }),
     ]);
+
+    if (subsRes.error) {
+      console.error("[listPhotographersAdmin] Subscriptions query error:", subsRes.error);
+      throw new Error(`فشل جلب الاشتراكات: ${subsRes.error.message}`);
+    }
+    if (bookingsRes.error) {
+      console.error("[listPhotographersAdmin] Bookings query error:", bookingsRes.error);
+      throw new Error(`فشل جلب الحجوزات: ${bookingsRes.error.message}`);
+    }
+    if (reviewsRes.error) {
+      console.error("[listPhotographersAdmin] Reviews query error:", reviewsRes.error);
+      throw new Error(`فشل جلب التقييمات: ${reviewsRes.error.message}`);
+    }
+
+    const subs = subsRes.data;
+    const bookings = bookingsRes.data;
+    const reviews = reviewsRes.data;
 
     const subMap = new Map((subs ?? []).map((s: any) => [s.photographer_id, s]));
     const bookCount = new Map<string, number>();
@@ -566,63 +601,84 @@ export const getAdminPlatformStats = createServerFn({ method: "GET" })
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    async function safeCount(query: any) {
+      try {
+        const { count, error } = await query;
+        if (error) {
+          console.warn("[safeCount] Query returned error:", error.message);
+          return 0;
+        }
+        return count ?? 0;
+      } catch (e: any) {
+        console.warn("[safeCount] Exception in count query:", e.message);
+        return 0;
+      }
+    }
+
     const [
-      { count: totalPhotographers },
-      { count: publishedPhotographers },
-      { count: verifiedPhotographers },
-      { count: totalBookings },
-      { count: confirmedBookings },
-      { count: completedBookings },
-      { count: cancelledBookings },
-      { count: pendingPayments },
-      { count: activeSubscriptions },
-      { count: totalReviews },
-      { count: pendingReviews },
-      { count: openDisputes },
-      { count: totalNotifications },
-      { count: totalMessages },
-      { count: totalContracts },
+      totalPhotographers,
+      publishedPhotographers,
+      verifiedPhotographers,
+      totalBookings,
+      confirmedBookings,
+      completedBookings,
+      cancelledBookings,
+      pendingPayments,
+      activeSubscriptions,
+      totalReviews,
+      pendingReviews,
+      openDisputes,
+      totalNotifications,
+      totalMessages,
+      totalContracts,
     ] = await Promise.all([
-      supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("is_published", true),
-      supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("verification_status", "verified"),
-      supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).is("deleted_at", null),
-      supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "confirmed").is("deleted_at", null),
-      supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "completed").is("deleted_at", null),
-      supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "cancelled").is("deleted_at", null),
-      supabaseAdmin.from("subscription_payments").select("*", { count: "exact", head: true }).eq("status", "pending"),
-      supabaseAdmin.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "active"),
-      supabaseAdmin.from("reviews").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("reviews").select("*", { count: "exact", head: true }).eq("is_published", false),
-      supabaseAdmin.from("booking_disputes").select("*", { count: "exact", head: true }).eq("status", "open"),
-      supabaseAdmin.from("notifications").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("messages").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("contracts").select("*", { count: "exact", head: true }),
+      safeCount(supabaseAdmin.from("profiles").select("*", { count: "exact", head: true })),
+      safeCount(supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("is_published", true)),
+      safeCount(supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("verification_status", "verified")),
+      safeCount(supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).is("deleted_at", null)),
+      safeCount(supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "confirmed").is("deleted_at", null)),
+      safeCount(supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "completed").is("deleted_at", null)),
+      safeCount(supabaseAdmin.from("bookings").select("*", { count: "exact", head: true }).eq("status", "cancelled").is("deleted_at", null)),
+      safeCount(supabaseAdmin.from("subscription_payments").select("*", { count: "exact", head: true }).eq("status", "pending")),
+      safeCount(supabaseAdmin.from("subscriptions").select("*", { count: "exact", head: true }).eq("status", "active")),
+      safeCount(supabaseAdmin.from("reviews").select("*", { count: "exact", head: true })),
+      safeCount(supabaseAdmin.from("reviews").select("*", { count: "exact", head: true }).eq("is_published", false)),
+      safeCount(supabaseAdmin.from("booking_disputes").select("*", { count: "exact", head: true }).eq("status", "open")),
+      safeCount(supabaseAdmin.from("notifications").select("*", { count: "exact", head: true })),
+      safeCount(supabaseAdmin.from("messages").select("*", { count: "exact", head: true })),
+      safeCount(supabaseAdmin.from("contracts").select("*", { count: "exact", head: true })),
     ]);
 
     // Revenue stats from completed bookings
-    const { data: revenueData } = await supabaseAdmin
-      .from("bookings")
-      .select("total_price, deposit_amount")
-      .eq("status", "completed")
-      .is("deleted_at", null);
+    let revenueData: any[] = [];
+    try {
+      const { data: revData, error: revError } = await supabaseAdmin
+        .from("bookings")
+        .select("total_price, deposit_amount")
+        .eq("status", "completed")
+        .is("deleted_at", null);
+      if (!revError && revData) {
+        revenueData = revData;
+      }
+    } catch (e) {
+      console.warn("Failed to fetch revenue stats:", e);
+    }
 
-    const totalRevenue = (revenueData ?? []).reduce((sum: number, b: any) => sum + (b.total_price ?? 0), 0);
-    const totalDeposits = (revenueData ?? []).reduce((sum: number, b: any) => sum + (b.deposit_amount ?? 0), 0);
+    const totalRevenue = revenueData.reduce((sum: number, b: any) => sum + (b.total_price ?? 0), 0);
+    const totalDeposits = revenueData.reduce((sum: number, b: any) => sum + (b.deposit_amount ?? 0), 0);
 
     // Recent activity — last 7 days
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const { count: recentBookings } = await supabaseAdmin
+    const recentBookings = await safeCount(supabaseAdmin
       .from("bookings")
       .select("*", { count: "exact", head: true })
-      .gte("created_at", sevenDaysAgo.toISOString())
-      .is("deleted_at", null);
-
-    const { count: recentSignups } = await supabaseAdmin
+      .is("deleted_at", null)
+      .gte("created_at", sevenDaysAgo.toISOString()));
+    const recentSignups = await safeCount(supabaseAdmin
       .from("profiles")
       .select("*", { count: "exact", head: true })
-      .gte("created_at", sevenDaysAgo.toISOString());
+      .gte("created_at", sevenDaysAgo.toISOString()));
 
     return {
       photographers: {
