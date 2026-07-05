@@ -78,8 +78,17 @@ export const adminApproveReview = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("approve_review", { _review_id: data.review_id });
-    if (error) throw new Error(error.message);
+    const { data: review, error: rErr } = await supabaseAdmin.from("reviews").select("id").eq("id", data.review_id).single();
+    if (rErr || !review) throw new Error("review not found");
+    const { error: updErr } = await supabaseAdmin.from("reviews").update({ is_published: true }).eq("id", data.review_id);
+    if (updErr) throw new Error(updErr.message);
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "review.approve",
+      actor_id: userId,
+      entity_type: "review",
+      entity_id: data.review_id,
+      after_data: { is_published: true }
+    });
     return { ok: true };
   });
 
@@ -95,8 +104,17 @@ export const adminRejectReview = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("reject_review", { _review_id: data.review_id });
-    if (error) throw new Error(error.message);
+    const { data: review, error: rErr } = await supabaseAdmin.from("reviews").select("id").eq("id", data.review_id).single();
+    if (rErr || !review) throw new Error("review not found");
+    const { error: updErr } = await supabaseAdmin.from("reviews").update({ is_published: false }).eq("id", data.review_id);
+    if (updErr) throw new Error(updErr.message);
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "review.reject",
+      actor_id: userId,
+      entity_type: "review",
+      entity_id: data.review_id,
+      after_data: { is_published: false }
+    });
     return { ok: true };
   });
 
@@ -107,11 +125,15 @@ export const adminTogglePublish = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("admin_set_published", {
-      _photographer_id: data.photographer_id,
-      _published: data.published,
+    const { error: updErr } = await supabaseAdmin.from("profiles").update({ is_published: data.published, updated_at: new Date().toISOString() }).eq("id", data.photographer_id);
+    if (updErr) throw new Error(updErr.message);
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "profile.set_published",
+      actor_id: userId,
+      entity_type: "profile",
+      entity_id: data.photographer_id,
+      after_data: { is_published: data.published }
     });
-    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
@@ -123,11 +145,38 @@ export const adminRenewSubscription = createServerFn({ method: "POST" })
     await ensureAdmin(supabase, userId);
     if (!data.months || data.months < 1 || data.months > 36) throw new Error("months must be 1-36");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("admin_renew_subscription", {
-      _photographer_id: data.photographer_id,
-      _months: data.months,
+    
+    const { data: sub } = await supabaseAdmin
+      .from("subscriptions")
+      .select("current_period_end")
+      .eq("photographer_id", data.photographer_id)
+      .maybeSingle();
+
+    const currentEnd = sub?.current_period_end ? new Date(sub.current_period_end) : null;
+    const now = new Date();
+    const start = currentEnd && currentEnd > now ? currentEnd : now;
+    const end = new Date(start);
+    end.setMonth(end.getMonth() + data.months);
+
+    const { error: subErr } = await supabaseAdmin
+      .from("subscriptions")
+      .upsert({
+        photographer_id: data.photographer_id,
+        status: "active",
+        current_period_start: now.toISOString(),
+        current_period_end: end.toISOString(),
+        trial_ends_at: now.toISOString(),
+        updated_at: now.toISOString(),
+      }, { onConflict: "photographer_id" });
+    if (subErr) throw new Error(subErr.message);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "subscription.renew",
+      actor_id: userId,
+      entity_type: "subscription",
+      entity_id: data.photographer_id,
+      after_data: { months: data.months, current_period_end: end.toISOString() }
     });
-    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
@@ -138,10 +187,30 @@ export const adminDeletePhotographer = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("delete_photographer_cascade", {
-      _photographer_id: data.photographer_id,
+    
+    await supabaseAdmin.from("messages").delete().in("booking_id", (await supabaseAdmin.from("bookings").select("id").eq("photographer_id", data.photographer_id)).data?.map((b: any) => b.id) ?? []);
+    await supabaseAdmin.from("reviews").delete().eq("photographer_id", data.photographer_id);
+    await supabaseAdmin.from("contracts").delete().eq("photographer_id", data.photographer_id);
+    await supabaseAdmin.from("contract_templates").delete().eq("photographer_id", data.photographer_id);
+    await supabaseAdmin.from("pricing_rules").delete().eq("photographer_id", data.photographer_id);
+    await supabaseAdmin.from("photographer_unavailability").delete().eq("photographer_id", data.photographer_id);
+    await supabaseAdmin.from("bookings").delete().eq("photographer_id", data.photographer_id);
+    await supabaseAdmin.from("subscription_payments").delete().eq("photographer_id", data.photographer_id);
+    await supabaseAdmin.from("subscriptions").delete().eq("photographer_id", data.photographer_id);
+    await supabaseAdmin.from("referrals").delete().or(`referrer_id.eq.${data.photographer_id},referred_id.eq.${data.photographer_id}`);
+    await supabaseAdmin.from("notifications").delete().eq("user_id", data.photographer_id);
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", data.photographer_id);
+    const { error: delErr } = await supabaseAdmin.from("profiles").delete().eq("id", data.photographer_id);
+    if (delErr) throw new Error(delErr.message);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "profile.delete",
+      actor_id: userId,
+      entity_type: "profile",
+      entity_id: data.photographer_id,
+      after_data: { deleted: true }
     });
-    if (error) throw new Error(error.message);
+
     // Also remove the auth user via admin client
     try {
       await (supabaseAdmin as any).auth.admin.deleteUser(data.photographer_id);
@@ -158,10 +227,18 @@ export const adminSoftDeletePhotographer = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("soft_delete_photographer", {
-      _photographer_id: data.photographer_id,
-    });
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ deleted_at: new Date().toISOString(), is_published: false, updated_at: new Date().toISOString() })
+      .eq("id", data.photographer_id);
     if (error) throw new Error(error.message);
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "soft_delete",
+      actor_id: userId,
+      entity_type: "photographer",
+      entity_id: data.photographer_id,
+      after_data: { archived_at: new Date().toISOString() }
+    });
     return { ok: true };
   });
 
@@ -172,10 +249,18 @@ export const adminRestorePhotographer = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("restore_photographer", {
-      _photographer_id: data.photographer_id,
-    });
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update({ deleted_at: null, updated_at: new Date().toISOString() })
+      .eq("id", data.photographer_id);
     if (error) throw new Error(error.message);
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "restore",
+      actor_id: userId,
+      entity_type: "photographer",
+      entity_id: data.photographer_id,
+      after_data: { restored_at: new Date().toISOString() }
+    });
     return { ok: true };
   });
 
@@ -268,11 +353,32 @@ export const adminVerifyPhotographer = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("admin_verify_photographer", {
-      _photographer_id: data.photographer_id,
-      _status: data.status,
-    });
+    
+    if (!["verified", "rejected", "pending_review", "unverified"].includes(data.status)) {
+      throw new Error("invalid status");
+    }
+    const now = new Date().toISOString();
+    const updateData: any = {
+      verification_status: data.status,
+      verified_by: userId,
+      updated_at: now
+    };
+    if (data.status === "verified") {
+      updateData.verified_at = now;
+    }
+    const { error } = await supabaseAdmin
+      .from("profiles")
+      .update(updateData)
+      .eq("id", data.photographer_id);
     if (error) throw new Error(error.message);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "profile.verification",
+      actor_id: userId,
+      entity_type: "profile",
+      entity_id: data.photographer_id,
+      after_data: { verification_status: data.status }
+    });
     return { ok: true };
   });
 
@@ -308,11 +414,59 @@ export const adminCancelBooking = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("cancel_booking", {
-      _booking_id: data.booking_id,
-      _reason: data.reason,
+    
+    const { data: booking, error: bErr } = await supabaseAdmin
+      .from("bookings")
+      .select("*")
+      .eq("id", data.booking_id)
+      .is("deleted_at", null)
+      .single();
+    if (bErr || !booking) throw new Error("booking not found");
+    if (booking.status === "completed") throw new Error("CANNOT_CANCEL_COMPLETED");
+    if (booking.status === "cancelled") throw new Error("ALREADY_CANCELLED");
+
+    // Calculate refund if deposit is confirmed
+    let refund = 0;
+    let refundStatus = "none";
+    if (booking.deposit_confirmed_at && (booking.deposit_amount ?? 0) > 0) {
+      const { data: photographer } = await supabaseAdmin
+        .from("profiles")
+        .select("deposit_refund_policy, deposit_refund_percent")
+        .eq("id", booking.photographer_id)
+        .single();
+      const policy = photographer?.deposit_refund_policy ?? "full";
+      const percent = photographer?.deposit_refund_percent ?? 0;
+      if (policy === "full") {
+        refund = booking.deposit_amount;
+      } else if (policy === "partial") {
+        refund = Math.round(booking.deposit_amount * (percent / 100) * 100) / 100;
+      } else {
+        refund = 0;
+      }
+      refundStatus = refund > 0 ? "pending" : "none";
+    }
+
+    const { error: updErr } = await supabaseAdmin
+      .from("bookings")
+      .update({
+        status: "cancelled",
+        cancelled_at: new Date().toISOString(),
+        cancellation_reason: data.reason.slice(0, 2000),
+        cancelled_by: userId,
+        refund_amount: refund,
+        refund_status: refundStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.booking_id);
+    if (updErr) throw new Error(updErr.message);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      action: "booking.cancel",
+      actor_id: userId,
+      entity_type: "booking",
+      entity_id: data.booking_id,
+      after_data: { status: "cancelled", reason: data.reason, refund_amount: refund }
     });
-    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
