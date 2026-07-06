@@ -198,15 +198,15 @@ function Landing() {
         <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
           <RoleCard
             title="العروس وأهل الزفاف"
-            desc="ابحث عن مصوّرك المفضّل، شاهد المواعيد المتاحة، واحجز فورًا."
-            cta="ابحث عن مصوّر"
+            desc="ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فورًا."
+            cta="ابحثي عن مصوّرة"
             href="/search"
           />
           {!authLoading && !isPhotographer ? (
             <RoleCard
-              title="مصوّر محترف"
-              desc="أنشئ ملفك، حدّد أسعارك واربط تقويمك — ودع النظام يدير حجوزاتك."
-              cta="انضم إلى المنصة"
+              title="مصوّرة محترفة"
+              desc="أنشئي ملفكِ، حدّدي أسعاركِ واربطي تقويمكِ — ودعي النظام يدير حجوزاتكِ."
+              cta="انضمي إلى المنصة"
               href="/photographers/join"
               highlight
             />

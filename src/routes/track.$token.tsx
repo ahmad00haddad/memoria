@@ -278,7 +278,14 @@ function TrackingPage() {
       <section className="container-editorial py-10 max-w-4xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">تتبع الحجز</div>
         <h1 className="font-serif text-3xl mb-1">مرحبًا {b.client_name}</h1>
-        <p className="text-muted-foreground text-sm mb-8">حجز مع {ph.display_name} (@{ph.username})</p>
+        <p className="text-muted-foreground text-sm mb-4">حجز مع {ph.display_name} (@{ph.username})</p>
+
+        <div className="rounded-sm border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30 p-3 mb-6 flex gap-3 text-amber-900 dark:text-amber-200">
+          <Clock className="h-5 w-5 shrink-0 mt-0.5" />
+          <div className="text-sm leading-relaxed">
+            <strong>تنبيه الخصوصية:</strong> هذا الرابط مخصص لكِ فقط لإدارة حجزكِ ومرفقاتكِ. يرجى عدم مشاركته مع الآخرين حفاظاً على خصوصية بياناتك ومعرض صورك لاحقاً.
+          </div>
+        </div>
 
         {/* Timeline */}
         <div className="rounded-sm border border-border bg-card p-5 mb-6">

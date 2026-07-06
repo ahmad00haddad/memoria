@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/site/Header";
@@ -6,7 +6,7 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Eye } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
 import { uploadProfilePhoto, uploadPortfolioPhoto } from "@/lib/upload";
@@ -115,7 +115,20 @@ function ProfilePage() {
       <Header />
       <section className="container-editorial py-12 max-w-3xl">
         <BackToDashboard />
-        <h1 className="font-serif text-4xl mt-2 mb-8">تعديل الملف الشخصي</h1>
+        <div className="flex items-center justify-between mt-2 mb-8 flex-wrap gap-4">
+          <h1 className="font-serif text-4xl">تعديل الملف الشخصي</h1>
+          {p?.username && (
+            <Link
+              to="/photographers/$username"
+              params={{ username: p.username }}
+              target="_blank"
+              className="inline-flex items-center gap-2 bg-secondary text-foreground hover:bg-gold hover:text-white px-4 py-2 rounded-sm text-sm transition"
+            >
+              <Eye className="h-4 w-4" />
+              معاينة ملفي العام
+            </Link>
+          )}
+        </div>
 
         {!p?.is_published && (
           <div className="rounded-sm border border-gold/30 bg-gold/10 p-4 mb-8 text-sm leading-relaxed">

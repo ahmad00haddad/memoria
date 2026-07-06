@@ -74,10 +74,10 @@ function SubscriptionBanner({ sub }: { sub: any }) {
     : periodEnds ? Math.max(0, Math.ceil((periodEnds.getTime() - Date.now()) / 86400000)) : 0;
 
   const config: Record<string, { icon: any; bg: string; text: string; cta: string }> = {
-    trial: { icon: <Sparkles className="h-5 w-5 text-gold" />, bg: "bg-gold/10 border-gold/40", text: `تجربة مجانية — متبقّي ${daysLeft} يوماً`, cta: "اشتركي الآن" },
-    active: { icon: <CheckCircle2 className="h-5 w-5 text-emerald-600" />, bg: "bg-emerald-50 border-emerald-200", text: `اشتراك نشط — يتجدّد بعد ${daysLeft} يوماً`, cta: "إدارة الاشتراك" },
-    pending_review: { icon: <Clock className="h-5 w-5 text-amber-600" />, bg: "bg-amber-50 border-amber-200", text: "دفعتك قيد المراجعة — سيُفعَّل اشتراكك خلال 24 ساعة", cta: "عرض التفاصيل" },
-    expired: { icon: <AlertTriangle className="h-5 w-5 text-destructive" />, bg: "bg-destructive/10 border-destructive/40", text: "انتهى اشتراكك — جدّدي للاستمرار", cta: "جدّدي الاشتراك" },
+    trial: { icon: <Sparkles className="h-5 w-5 text-gold" />, bg: "bg-gold/10 border-gold/40 dark:bg-gold/5", text: `تجربة مجانية — متبقّي ${daysLeft} يوماً`, cta: "اشتركي الآن" },
+    active: { icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />, bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900", text: `اشتراك نشط — يتجدّد بعد ${daysLeft} يوماً`, cta: "إدارة الاشتراك" },
+    pending_review: { icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900", text: "دفعتك قيد المراجعة — سيُفعَّل اشتراكك خلال 24 ساعة", cta: "عرض التفاصيل" },
+    expired: { icon: <AlertTriangle className="h-5 w-5 text-destructive dark:text-red-400" />, bg: "bg-destructive/10 border-destructive/40 dark:bg-red-950/40 dark:border-red-900", text: "انتهى اشتراكك — جدّدي للاستمرار", cta: "جدّدي الاشتراك" },
     canceled: { icon: <AlertTriangle className="h-5 w-5 text-muted-foreground" />, bg: "bg-secondary border-border", text: "اشتراكك ملغى", cta: "إعادة التفعيل" },
   };
   const c = config[sub.status] ?? config.trial;

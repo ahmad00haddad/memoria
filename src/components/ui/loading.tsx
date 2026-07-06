@@ -40,14 +40,10 @@ export function ListSkeleton({ rows = 4 }: { rows?: number }) {
 
 export function GridSkeleton({ items = 6 }: { items?: number }) {
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
       {Array.from({ length: items }).map((_, i) => (
-        <div key={i} className="rounded-sm border border-border bg-card overflow-hidden">
-          <Skeleton className="aspect-[4/3] w-full" />
-          <div className="p-4 space-y-2">
-            <Skeleton className="h-4 w-2/3" />
-            <Skeleton className="h-3 w-1/2" />
-          </div>
+        <div key={i} className="break-inside-avoid mb-4 rounded-sm border border-border bg-card overflow-hidden" style={{ aspectRatio: i % 5 === 2 ? "3/4" : i % 5 === 4 ? "4/5" : "3/4" }}>
+          <Skeleton className="w-full h-full" />
         </div>
       ))}
     </div>

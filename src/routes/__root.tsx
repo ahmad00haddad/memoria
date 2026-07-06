@@ -14,6 +14,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LazyMotion, domAnimation, motion, AnimatePresence } from "framer-motion";
@@ -219,27 +221,29 @@ function RootComponent() {
     };
   }, []);
 
-  // Smooth scroll with Lenis (Task 3)
+  // Smooth scroll with Lenis
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     
-    let lenis: any;
-    (async () => {
-      const Lenis = (await import("lenis")).default;
-      lenis = new Lenis({
-        duration: 1.2,
-        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        orientation: "vertical",
-        smoothWheel: true,
-      });
-      function raf(time: number) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
-    })();
-    return () => lenis?.destroy();
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: "vertical",
+      smoothWheel: true,
+    });
+    
+    let animationFrameId: number;
+    function raf(time: number) {
+      lenis.raf(time);
+      animationFrameId = requestAnimationFrame(raf);
+    }
+    animationFrameId = requestAnimationFrame(raf);
+    
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      lenis.destroy();
+    };
   }, []);
 
   // Page entrance animation (Task 7)
@@ -251,8 +255,12 @@ function RootComponent() {
         <ConfirmProvider>
           <LazyMotion features={domAnimation}>
             <SmoothScroll />
+            <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-sm focus:shadow-sm">
+              تخطي إلى المحتوى الرئيسي
+            </a>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
+                id="main-content"
                 key={pathname}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}

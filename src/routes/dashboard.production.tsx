@@ -59,6 +59,9 @@ function ProductionBoard() {
     if (!b) return;
     const idx = STAGES.findIndex((s) => s.key === (b.production_stage || "awaiting"));
     const next = STAGES[Math.max(0, Math.min(STAGES.length - 1, idx + dir))];
+    if (next.key === "delivered" && idx !== STAGES.length - 1) {
+      if (!window.confirm("هل أنت متأكدة من إتمام تسليم هذا الحجز؟ لا يمكن التراجع عن هذه الخطوة وسيتم إغلاق الحجز.")) return;
+    }
     const patch: any = { production_stage: next.key };
     if (next.key === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
     if (next.key === "delivered") { patch.editing_completed_at = new Date().toISOString(); patch.delivered_at = new Date().toISOString(); patch.status = "completed"; }
