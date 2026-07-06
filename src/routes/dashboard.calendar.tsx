@@ -9,6 +9,11 @@ import { toast } from "sonner";
 import { X, RefreshCw, Copy, Check, Download, Upload, RefreshCcw } from "lucide-react";
 import { syncExternalIcal } from "@/lib/ical-sync.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { ar } from "date-fns/locale";
+import { format } from "date-fns";
 
 export const Route = createFileRoute("/dashboard/calendar")({ component: CalendarPage });
 
@@ -172,7 +177,23 @@ function CalendarPage() {
             استخدمي هذا القسم لإغلاق الأيام غير المتاحة عليكِ، مثل السفر أو الحجوزات الخارجية. الأيام المحجوبة ستمنع العميل من اختيارها أثناء الطلب.
           </p>
           <div className="flex flex-wrap gap-3 items-end">
-            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background" />
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className={`flex items-center gap-2 border border-border rounded-sm px-3 py-2 bg-background w-[240px] text-right ${!date && "text-muted-foreground"}`}>
+                  <CalendarIcon className="h-4 w-4 opacity-50" />
+                  {date ? format(new Date(date), "PPP", { locale: ar }) : <span>اختر يوماً...</span>}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date ? new Date(date) : undefined}
+                  onSelect={(d) => setDate(d ? format(d, "yyyy-MM-dd") : "")}
+                  locale={ar}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
             <input placeholder="السبب (اختياري)" value={reason} onChange={(e) => setReason(e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[200px]" />
             <button onClick={block} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90">حجب</button>
           </div>

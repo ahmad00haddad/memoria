@@ -76,7 +76,7 @@ function PricingPage() {
             </div>
             <p className="text-sm text-muted-foreground mb-6">كل ما تحتاجينه لإدارة احترافية كاملة. ادفعي عبر CliQ أو بطاقة دولية.</p>
             <Link
-              to="/dashboard/subscription"
+              to={authLoading || isPhotographer ? "/dashboard/subscription" : "/login"}
               className="block text-center w-full bg-charcoal text-ivory py-3 rounded-sm shadow-soft hover:opacity-90 transition-opacity"
             >
               اشتركي الآن

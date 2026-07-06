@@ -143,6 +143,16 @@ function TrackingPage() {
       <Footer />
     </div>
   );
+  if (b && b.deleted_at) return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container-editorial py-24 text-center">
+        <h1 className="font-serif text-3xl mb-2 text-destructive">تم حذف هذا الحجز</h1>
+        <p className="text-muted-foreground">لا يمكن الوصول إلى تفاصيل هذا الحجز لأنه تم حذفه من قبل المصوّرة.</p>
+      </div>
+      <Footer />
+    </div>
+  );
   if (!b) return (
     <div className="min-h-screen bg-background">
       <Header />

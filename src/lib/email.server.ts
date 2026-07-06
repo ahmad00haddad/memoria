@@ -12,16 +12,14 @@ type SendArgs = {
 };
 
 // ✅ إصلاح: يقرأ من env بدلاً من hardcoded — يجب ضبط EMAIL_FROM في Cloudflare/Supabase
-// مثال: EMAIL_FROM="Memoria <noreply@memoria-jo.lovable.app>"
-// Fallback آمن للتطوير فقط — يذهب للـ spam في الإنتاج بدون domain موثّق
-const FROM = process.env.EMAIL_FROM || "Memoria <onboarding@resend.dev>";
+const FROM = process.env.EMAIL_FROM;
 
 export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; id?: string; error?: string; skipped?: boolean }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const apiKey = process.env.RESEND_API_KEY;
 
-  // No API key → log as skipped, never throw (booking flow must keep working).
-  if (!apiKey) {
+  // No API key or no FROM address → log as skipped, never throw (booking flow must keep working).
+  if (!apiKey || !FROM) {
     await supabaseAdmin.from("email_log").insert({
       template: args.template, recipient: args.to, subject: args.subject,
       related_booking_id: args.related_booking_id ?? null,
