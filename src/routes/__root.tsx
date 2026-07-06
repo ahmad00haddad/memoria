@@ -112,6 +112,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        src: `https://www.googletagmanager.com/gtag/js?id=${process.env.VITE_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX'}`,
+        async: true,
+      },
+      {
+        children: `
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${process.env.VITE_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX'}');
+        `,
+      },
+      {
         children: "(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
       },
       {
@@ -209,6 +221,8 @@ function RootComponent() {
   // Smooth scroll with Lenis (Task 3)
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    
     let lenis: any;
     (async () => {
       const Lenis = (await import("lenis")).default;

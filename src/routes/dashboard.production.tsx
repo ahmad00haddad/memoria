@@ -13,11 +13,11 @@ export const Route = createFileRoute("/dashboard/production")({ component: Produ
 
 // ألوان المراحل: تباين أوضح + دعم dark mode كامل (نص وخلفية وحدود)
 const STAGES: { key: string; label: string; icon: any; color: string }[] = [
-  { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-4 w-4" />, color: "bg-slate-100 border-slate-300 text-slate-900 dark:bg-slate-900/40 dark:border-slate-700 dark:text-slate-100" },
-  { key: "shooting", label: "يوم التصوير", icon: <Camera className="h-4 w-4" />, color: "bg-amber-100 border-amber-300 text-amber-900 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-100" },
-  { key: "selecting", label: "اختيار الصور", icon: <ImageIcon className="h-4 w-4" />, color: "bg-blue-100 border-blue-300 text-blue-900 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-100" },
-  { key: "editing", label: "قيد التحرير", icon: <Edit3 className="h-4 w-4" />, color: "bg-violet-100 border-violet-300 text-violet-900 dark:bg-violet-950/40 dark:border-violet-800 dark:text-violet-100" },
-  { key: "ready", label: "جاهز للتسليم", icon: <Send className="h-4 w-4" />, color: "bg-emerald-100 border-emerald-300 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-100" },
+  { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-4 w-4" />, color: "bg-slate-100 border-slate-400 text-slate-900 dark:bg-slate-900/80 dark:border-slate-600 dark:text-slate-50" },
+  { key: "shooting", label: "يوم التصوير", icon: <Camera className="h-4 w-4" />, color: "bg-amber-100 border-amber-400 text-amber-950 dark:bg-amber-950/80 dark:border-amber-700 dark:text-amber-50" },
+  { key: "selecting", label: "اختيار الصور", icon: <ImageIcon className="h-4 w-4" />, color: "bg-blue-100 border-blue-400 text-blue-950 dark:bg-blue-950/80 dark:border-blue-700 dark:text-blue-50" },
+  { key: "editing", label: "قيد التحرير", icon: <Edit3 className="h-4 w-4" />, color: "bg-violet-100 border-violet-400 text-violet-950 dark:bg-violet-950/80 dark:border-violet-700 dark:text-violet-50" },
+  { key: "ready", label: "جاهز للتسليم", icon: <Send className="h-4 w-4" />, color: "bg-emerald-100 border-emerald-400 text-emerald-950 dark:bg-emerald-950/80 dark:border-emerald-700 dark:text-emerald-50" },
   { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-4 w-4" />, color: "bg-secondary border-border text-foreground" },
 ];
 

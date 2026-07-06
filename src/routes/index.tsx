@@ -197,7 +197,7 @@ function Landing() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
           <RoleCard
-            title="عميل / عريس"
+            title="العروس وأهل الزفاف"
             desc="ابحث عن مصوّرك المفضّل، شاهد المواعيد المتاحة، واحجز فورًا."
             cta="ابحث عن مصوّر"
             href="/search"
