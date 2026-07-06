@@ -15,7 +15,7 @@ export const Route = createFileRoute("/dashboard/subscription")({
 });
 
 // Admin's CliQ alias to receive subscription payments
-const ADMIN_CLIQ_ALIAS = "ELITECAPTURE";
+const ADMIN_CLIQ_ALIAS = "MEMORIA";
 const ADMIN_CLIQ_NAME = "Memoria Platform";
 const PRICE_USD = 9;
 const PRICE_JOD = 7; // ~7 JOD = 9 USD

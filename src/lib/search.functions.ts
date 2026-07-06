@@ -21,6 +21,7 @@ export type SearchResultItem = {
   avatar_url: string | null;
   cover_url: string | null;
   is_featured: boolean;
+  verification_status: string | null;
   min_price: number | null;
   avg_rating: number;
   review_count: number;
@@ -48,7 +49,7 @@ export const searchPhotographers = createServerFn({ method: "POST" })
 
     let q = supabaseAdmin
       .from("profiles")
-      .select("id, username, display_name, city, bio, tagline, avatar_url, cover_url, is_featured")
+      .select("id, username, display_name, city, bio, tagline, avatar_url, cover_url, is_featured, verification_status")
       .eq("is_published", true)
       .limit(200);
 
@@ -137,6 +138,7 @@ export const searchPhotographers = createServerFn({ method: "POST" })
           avatar_url: r.avatar_url,
           cover_url: r.cover_url,
           is_featured: !!r.is_featured,
+          verification_status: r.verification_status ?? null,
           min_price: priceMap.get(r.id) ?? null,
           avg_rating: rv.count > 0 ? Number((rv.sum / rv.count).toFixed(1)) : 0,
           review_count: rv.count,

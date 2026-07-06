@@ -30,9 +30,8 @@ function validateInput(d: SubmitInput): SubmitInput {
   const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
   if (toMin(d.end_time) <= toMin(d.start_time)) throw new Error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
   // التاريخ يجب أن يكون اليوم أو في المستقبل
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const ev = new Date(d.event_date + "T00:00:00");
-  if (ev.getTime() < today.getTime()) throw new Error("لا يمكن اختيار تاريخ في الماضي");
+  const todayStr = new Date().toISOString().split("T")[0];
+  if (d.event_date < todayStr) throw new Error("لا يمكن اختيار تاريخ في الماضي");
   if (!Array.isArray(d.items) || d.items.length === 0 || d.items.length > 30) throw new Error("invalid items");
   for (const it of d.items) {
     if (!isUuid(it.rule_id)) throw new Error("invalid item rule_id");
@@ -162,7 +161,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     if (priv?.whatsapp || data.client_phone) {
       try {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-        const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+        const base = process.env.PUBLIC_APP_URL || "https://memoria.jo";
         const trackingUrl = row.client_tracking_token
           ? `${base}/track/${row.client_tracking_token}`
           : undefined;
@@ -445,7 +444,7 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     if (bk.client_phone) {
       try {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-        const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+        const base = process.env.PUBLIC_APP_URL || "https://memoria.jo";
         const trackingUrl = bk.client_tracking_token
           ? `${base}/track/${bk.client_tracking_token}`
           : undefined;

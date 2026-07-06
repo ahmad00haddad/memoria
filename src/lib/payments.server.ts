@@ -76,7 +76,7 @@ export function toMinorUnit(amount: number, currency: string): number {
 export function isPaymentConfigured(): boolean {
   const provider = (process.env.PAYMENT_PROVIDER || "stripe").toLowerCase();
   if (provider === "stripe") return Boolean(process.env.STRIPE_SECRET_KEY);
-  // if (provider === "hyperpay") return Boolean(process.env.HYPERPAY_ACCESS_TOKEN && process.env.HYPERPAY_ENTITY_ID);
+  if (provider === "hyperpay") return Boolean(process.env.HYPERPAY_ACCESS_TOKEN && process.env.HYPERPAY_ENTITY_ID);
   return false;
 }
 

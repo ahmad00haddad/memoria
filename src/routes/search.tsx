@@ -82,7 +82,7 @@ function SearchPage() {
   // ✅ تطبيق فلتر التقييم client-side بعد جلب النتائج
   const displayResults = results
     .filter((r) => (minRating > 0 ? r.avg_rating >= minRating : true))
-    .filter((r) => (verifiedOnly ? r.is_featured : true));
+    .filter((r) => (verifiedOnly ? r.verification_status === "verified" : true));
 
   const hasFilters = useMemo(
     () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0 || verifiedOnly),
@@ -137,9 +137,47 @@ function SearchPage() {
             <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
             <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-white dark:bg-gray-950 pb-safe">
               <div className="mx-auto w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700 mt-3 mb-4" />
-              <div className="px-4 pb-6">
-                <h2 className="text-base font-semibold mb-4">الفلاتر</h2>
-                {/* Filter content rendered here */}
+              <div className="px-4 pb-6 space-y-4">
+                <h2 className="text-base font-semibold mb-2">الفلاتر</h2>
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                >
+                  <option value="">كل المدن</option>
+                  {(citiesQ.data ?? []).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    placeholder="السعر من"
+                    className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                  />
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    placeholder="إلى"
+                    className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                  />
+                </div>
+                <input
+                  type="date"
+                  value={date}
+                  min={new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                />
               </div>
             </Drawer.Content>
           </Drawer.Portal>
@@ -163,7 +201,7 @@ function SearchPage() {
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
             >
               <option value="">كل المدن</option>
               {(citiesQ.data ?? []).map((c) => (
@@ -180,7 +218,7 @@ function SearchPage() {
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
               placeholder="السعر من"
-              className="md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
             />
             <input
               type="number"
@@ -189,7 +227,7 @@ function SearchPage() {
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
               placeholder="إلى"
-              className="md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
             />
 
             <input
@@ -197,7 +235,7 @@ function SearchPage() {
               value={date}
               min={new Date().toISOString().slice(0, 10)}
               onChange={(e) => setDate(e.target.value)}
-              className="md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
             />
           </div>
 

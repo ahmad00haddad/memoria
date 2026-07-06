@@ -43,7 +43,7 @@ function PricingPage() {
           <h1 className="font-serif text-4xl sm:text-5xl mb-4">باقات اشتراك المصوّرين</h1>
           <p className="text-xs text-muted-foreground mb-3">هذه الصفحة للمصوّرين فقط — استخدام المنصة مجاني للعملاء.</p>
           <p className="text-muted-foreground leading-loose">
-            ابدئي بـ <span className="text-gold font-semibold">14 يومًا تجربة مجانية</span> بدون أي بطاقة. بعدها 9$ شهريًا فقط.
+            ابدئي بـ <span className="text-gold font-semibold">14 يومًا تجربة مجانية</span> بدون أي بطاقة. بعدها 7 د.أ شهريًا فقط.
           </p>
         </div>
 
@@ -53,7 +53,7 @@ function PricingPage() {
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">للبداية</div>
             <h3 className="font-serif text-2xl mb-1">تجربة مجانية</h3>
             <div className="text-4xl font-serif my-4">
-              0$ <span className="text-sm text-muted-foreground">/ 14 يوم</span>
+              0 <span className="text-xl font-sans">د.أ</span> <span className="text-sm text-muted-foreground">/ 14 يوم</span>
             </div>
             <p className="text-sm text-muted-foreground mb-6">جرّبي كل شيء قبل الالتزام. تبدأ تلقائيًا عند التسجيل.</p>
             <Link
@@ -72,7 +72,7 @@ function PricingPage() {
             <div className="text-xs uppercase tracking-[0.25em] text-gold mb-2">احترافي</div>
             <h3 className="font-serif text-2xl mb-1">Elite Pro</h3>
             <div className="text-4xl font-serif my-4">
-              9$ <span className="text-sm text-muted-foreground">/ شهريًا</span>
+              7 <span className="text-xl font-sans">د.أ</span> <span className="text-sm text-muted-foreground">/ شهريًا</span>
             </div>
             <p className="text-sm text-muted-foreground mb-6">كل ما تحتاجينه لإدارة احترافية كاملة. ادفعي عبر CliQ أو بطاقة دولية.</p>
             <Link

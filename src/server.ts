@@ -79,6 +79,14 @@ export default {
       headers.set("X-Frame-Options", "SAMEORIGIN");
       headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
       headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)");
+      headers.set("Content-Security-Policy", 
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co; " +
+        "img-src 'self' data: blob: https://*.supabase.co https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "font-src 'self' data:;"
+      );
       if ((env as any)?.NODE_ENV === "production" || process.env.NODE_ENV === "production") {
         headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
       }
