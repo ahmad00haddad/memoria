@@ -394,7 +394,8 @@ function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number })
           whileTap={{ scale: 0.985 }}
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
           className="relative overflow-hidden rounded-sm cursor-pointer group
-                     bg-gradient-royal aspect-[3/4]"
+                     bg-gradient-royal"
+          style={{ aspectRatio: "3/4" }}
         >
           {p.cover_url ? (
             <img

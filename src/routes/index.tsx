@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Calendar, MessageSquareOff, Receipt, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { m as motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
