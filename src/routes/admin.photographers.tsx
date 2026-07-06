@@ -143,6 +143,7 @@ function AdminPhotographers() {
 
       <div className="overflow-x-auto rounded-sm border border-border bg-card">
         <table className="w-full text-sm">
+          <caption className="sr-only">جدول المصورات</caption>
           <thead className="bg-secondary text-xs uppercase tracking-wider">
             <tr>
               <th className="text-start p-3">المصورة</th>

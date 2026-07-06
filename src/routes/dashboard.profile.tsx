@@ -42,14 +42,26 @@ function ProfilePage() {
 
   const onAvatar = async (f: File) => {
     const res = await uploadProfilePhoto(f, uid, "avatar");
-    if (res.ok) { setP({ ...p, avatar_url: res.publicUrl || res.path }); toast.success("تم رفع الصورة"); }
-    else toast.error(res.userMessage);
+    if (res.ok) {
+      const url = res.publicUrl || res.path;
+      setP({ ...p, avatar_url: url });
+      await supabase.from("profiles").update({ avatar_url: url }).eq("id", uid);
+      toast.success("تم رفع الصورة وحفظها");
+    } else {
+      toast.error(res.userMessage);
+    }
   };
 
   const onCover = async (f: File) => {
     const res = await uploadProfilePhoto(f, uid, "cover");
-    if (res.ok) { setP({ ...p, cover_url: res.publicUrl || res.path }); toast.success("تم رفع الغلاف"); }
-    else toast.error(res.userMessage);
+    if (res.ok) {
+      const url = res.publicUrl || res.path;
+      setP({ ...p, cover_url: url });
+      await supabase.from("profiles").update({ cover_url: url }).eq("id", uid);
+      toast.success("تم رفع الغلاف وحفظه");
+    } else {
+      toast.error(res.userMessage);
+    }
   };
 
   const onPortfolio = async (files: FileList) => {
@@ -61,16 +73,20 @@ function ProfilePage() {
         else toast.error(res.userMessage);
       }
       if (urls.length > 0) {
-        setP({ ...p, portfolio_urls: [...(p.portfolio_urls ?? []), ...urls] });
-        toast.success(`أُضيفت ${urls.length} صور`);
+        const newUrls = [...(p.portfolio_urls ?? []), ...urls];
+        setP({ ...p, portfolio_urls: newUrls });
+        await supabase.from("profiles").update({ portfolio_urls: newUrls }).eq("id", uid);
+        toast.success(`أُضيفت ${urls.length} صور وتم الحفظ`);
       }
     } catch (e: any) { toast.error(e.message); }
   };
 
-  const removePortfolio = (i: number) => {
+  const removePortfolio = async (i: number) => {
     const arr = [...(p.portfolio_urls ?? [])];
     arr.splice(i, 1);
     setP({ ...p, portfolio_urls: arr });
+    await supabase.from("profiles").update({ portfolio_urls: arr }).eq("id", uid);
+    toast.success("تم إزالة الصورة وحفظ التعديلات");
   };
 
   const save = async () => {

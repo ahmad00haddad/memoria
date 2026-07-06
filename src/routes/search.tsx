@@ -183,7 +183,7 @@ function SearchPage() {
           </Drawer.Portal>
         </Drawer.Root>
       </div>
-      <div className="grid gap-3 md:grid-cols-12">
+      <fieldset className="grid gap-3 md:grid-cols-12" aria-label="فلاتر البحث الأساسية">
             <div className="md:col-span-4 relative">
               <Search className="absolute top-1/2 -translate-y-1/2 start-3 h-4 w-4 text-muted-foreground" />
               <input
@@ -195,6 +195,7 @@ function SearchPage() {
                 autoComplete="off"
                 spellCheck={false}
                 className="w-full rounded-sm border border-input bg-background ps-9 pe-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                aria-label="كلمات مفتاحية للبحث"
               />
             </div>
 
@@ -202,6 +203,7 @@ function SearchPage() {
               value={city}
               onChange={(e) => setCity(e.target.value)}
               className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              aria-label="المدينة"
             >
               <option value="">كل المدن</option>
               {(citiesQ.data ?? []).map((c) => (
@@ -219,6 +221,7 @@ function SearchPage() {
               onChange={(e) => setMinPrice(e.target.value)}
               placeholder="السعر من"
               className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              aria-label="الحد الأدنى للسعر"
             />
             <input
               type="number"
@@ -228,6 +231,7 @@ function SearchPage() {
               onChange={(e) => setMaxPrice(e.target.value)}
               placeholder="إلى"
               className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              aria-label="الحد الأعلى للسعر"
             />
 
             <input
@@ -236,8 +240,9 @@ function SearchPage() {
               min={new Date().toISOString().slice(0, 10)}
               onChange={(e) => setDate(e.target.value)}
               className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              aria-label="تاريخ المناسبة"
             />
-          </div>
+          </fieldset>
 
           <div className="flex flex-wrap items-center gap-3 mt-3">
             <label className="text-xs text-muted-foreground">ترتيب:</label>
@@ -389,8 +394,7 @@ function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number })
           whileTap={{ scale: 0.985 }}
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
           className="relative overflow-hidden rounded-sm cursor-pointer group
-                     bg-gradient-royal"
-          style={{ aspectRatio: idx % 5 === 2 ? "3/4" : idx % 5 === 4 ? "4/5" : "3/4" }}
+                     bg-gradient-royal aspect-[3/4]"
         >
           {p.cover_url ? (
             <img

@@ -74,6 +74,7 @@ function AdminEmailLog() {
       ) : (
         <div className="overflow-x-auto rounded-sm border border-border bg-card">
           <table className="w-full text-sm">
+            <caption className="sr-only">جدول سجلات البريد الإلكتروني</caption>
             <thead className="bg-muted/40 text-muted-foreground text-xs uppercase tracking-widest">
               <tr>
                 <th className="text-right px-4 py-3">الحالة</th>

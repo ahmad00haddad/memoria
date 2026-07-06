@@ -126,6 +126,7 @@ function AdminBookingsPage() {
 
       <div className="overflow-x-auto rounded-sm border border-border bg-card">
         <table className="w-full text-sm">
+          <caption className="sr-only">جدول الحجوزات</caption>
           <thead className="bg-secondary text-xs uppercase tracking-wider">
             <tr>
               <th className="text-start p-3">العميل</th>
