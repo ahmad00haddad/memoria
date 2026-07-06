@@ -415,8 +415,11 @@ function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number })
 
           {/* Content */}
           <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
-            <h3 className="font-serif text-lg sm:text-xl text-white leading-tight truncate">
+            <h3 className="font-serif text-lg sm:text-xl text-white leading-tight truncate flex items-center gap-2">
               {p.display_name ?? p.username}
+              {p.verification_status === 'verified' && (
+                <BadgeCheck className="w-5 h-5 text-sky-400 shrink-0" title="موثّقة" />
+              )}
             </h3>
             {p.city && (
               <p className="text-white/65 text-sm mt-0.5 flex items-center gap-1">

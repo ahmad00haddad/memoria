@@ -93,7 +93,9 @@ function SubscriptionPage() {
       toast.success("تم استلام دفعتك! سيتم تفعيل الاشتراك خلال لحظات…");
       u.searchParams.delete("payment");
       window.history.replaceState({}, "", u.toString());
-      setTimeout(() => load(), 3000);
+      // تحديث فوري لواجهة المستخدم (Optimistic Update)
+      setSub((prev) => prev ? { ...prev, status: "active", current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() } : null);
+      load();
     } else if (status === "cancelled") {
       toast.message("أُلغي الدفع. يمكنك المحاولة مجدداً أو استخدام CliQ.");
       u.searchParams.delete("payment");
@@ -132,8 +134,9 @@ function SubscriptionPage() {
         cliq_reference: reference || null,
       });
       if (insErr) throw insErr;
-      // Mark subscription as pending review
+      // Mark subscription as pending review (Optimistic Update)
       await supabase.from("subscriptions").update({ status: "pending_review" }).eq("photographer_id", userId);
+      setSub((prev) => prev ? { ...prev, status: "pending_review" } : null);
       toast.success("تم رفع الإثبات. سيتم تفعيل اشتراكك خلال 24 ساعة.");
       setReference("");
       if (fileRef.current) fileRef.current.value = "";

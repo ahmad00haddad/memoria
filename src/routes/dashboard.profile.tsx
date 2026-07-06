@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
+import { uploadProfilePhoto, uploadPortfolioPhoto } from "@/lib/upload";
 import { requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 
 export const Route = createFileRoute("/dashboard/profile")({ component: ProfilePage });
@@ -39,30 +40,30 @@ function ProfilePage() {
     })();
   }, [nav]);
 
-  const upload = async (file: File, folder: string) => {
-    const ext = file.name.split(".").pop();
-    const path = `${uid}/${folder}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-    if (error) throw error;
-    return supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
-  };
-
   const onAvatar = async (f: File) => {
-    try { const url = await upload(f, "avatar"); setP({ ...p, avatar_url: url }); toast.success("تم رفع الصورة"); }
-    catch (e: any) { toast.error(e.message); }
+    const res = await uploadProfilePhoto(f, uid, "avatar");
+    if (res.ok) { setP({ ...p, avatar_url: res.publicUrl || res.path }); toast.success("تم رفع الصورة"); }
+    else toast.error(res.userMessage);
   };
 
   const onCover = async (f: File) => {
-    try { const url = await upload(f, "cover"); setP({ ...p, cover_url: url }); toast.success("تم رفع الغلاف"); }
-    catch (e: any) { toast.error(e.message); }
+    const res = await uploadProfilePhoto(f, uid, "cover");
+    if (res.ok) { setP({ ...p, cover_url: res.publicUrl || res.path }); toast.success("تم رفع الغلاف"); }
+    else toast.error(res.userMessage);
   };
 
   const onPortfolio = async (files: FileList) => {
     try {
       const urls: string[] = [];
-      for (const f of Array.from(files)) urls.push(await upload(f, "portfolio"));
-      setP({ ...p, portfolio_urls: [...(p.portfolio_urls ?? []), ...urls] });
-      toast.success(`أُضيفت ${urls.length} صور`);
+      for (const f of Array.from(files)) {
+        const res = await uploadPortfolioPhoto(f, uid);
+        if (res.ok) urls.push(res.publicUrl || res.path);
+        else toast.error(res.userMessage);
+      }
+      if (urls.length > 0) {
+        setP({ ...p, portfolio_urls: [...(p.portfolio_urls ?? []), ...urls] });
+        toast.success(`أُضيفت ${urls.length} صور`);
+      }
     } catch (e: any) { toast.error(e.message); }
   };
 

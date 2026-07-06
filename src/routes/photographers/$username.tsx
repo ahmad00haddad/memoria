@@ -12,6 +12,7 @@ import { ar } from "date-fns/locale";
 import { format } from "date-fns";
 import { useServerFn } from "@tanstack/react-start";
 import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functions";
+import { getPhotographerProfileData } from "@/lib/profile.functions";
 import { Lightbox } from "@/components/Lightbox";
 // ✅ إضافة: تحسين الصور (WebP + responsive) عبر Cloudflare Images أو Supabase Transform
 import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
@@ -122,6 +123,7 @@ function PhotographerPage() {
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const fetchDeposit = useServerFn(getPublicDepositInfo);
+  const fetchProfileData = useServerFn(getPhotographerProfileData);
 
   useEffect(() => {
     (async () => {
@@ -137,16 +139,10 @@ function PhotographerPage() {
       setProfile(mergedProfile);
       if (mergedProfile) {
         const pid = mergedProfile.id;
-        const [{ data: p }, { data: r }, { data: u }, { data: bk }, { count: cc }] = await Promise.all([
-          supabase.from("pricing_rules").select("*").eq("photographer_id", pid),
-          supabase.from("reviews").select("*").eq("photographer_id", pid).eq("is_published", true).order("created_at", { ascending: false }),
-          supabase.rpc("get_photographer_busy_dates", { _pid: pid }),
-          supabase.from("bookings").select("event_date,start_time,end_time").eq("photographer_id", pid).is("deleted_at", null).in("status", ["confirmed", "pending_deposit"]),
-          supabase.from("bookings").select("id", { count: "exact", head: true }).eq("photographer_id", pid).eq("status", "completed").is("deleted_at", null),
-        ]);
-        setPricing((p ?? []) as Pricing[]);
-        setReviews(r ?? []);
-        setCompletedCount(cc ?? 0);
+        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc } = await fetchProfileData({ data: { pid } });
+        setPricing(p as Pricing[]);
+        setReviews(r);
+        setCompletedCount(cc);
         // ✅ إصلاح: تحليل نتيجة RPC بشكل صحيح بدون الاعتماد على اسم الدالة كـ key
         // RPC قد يُعيد string مباشرة أو object بمفاتيح متعددة
         setUnavail(((u ?? []) as any[]).map((x: any) => {

@@ -27,7 +27,7 @@ const FEATURES = [
   { icon: Bell, title: "تذكيرات تلقائية", desc: "تنبيهات للموعد، للعربون، ولاستلام الصور — حتى لا تنسي شيئاً." },
   { icon: Receipt, title: "إثبات عربون آمن", desc: "ارفعي إثبات تحويل العربون مباشرة من رابط التتبع. المصوّرة ترى الإشعار فوراً وتؤكّد." },
   { icon: Camera, title: "معرض تسليم خاص", desc: "صور عرسكِ تصلكِ في معرض إلكتروني خاص ومحمي — تستطيعين تحميلها أو مشاركتها." },
-  { icon: Heart, title: "دعم بشري بالعربية", desc: "فريقنا متاح للرد على استفساراتكِ بالعربية إذا واجهتِ أي مشكلة في الحجز أو الدفع." },
+  { icon: Heart, title: "دعم بشري بالعربية", desc: "فريقنا متاح للرد على استفساراتكِ بالعربية إذا واجهتِ أي مشكلة في الحجز أو الدفع.", link: "mailto:support@memoria.jo", linkText: "تواصلي مع الدعم" },
 ];
 
 function ForClientsPage() {
@@ -64,6 +64,11 @@ function ForClientsPage() {
                   </div>
                   <h3 className="font-serif text-xl mb-2">{f.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                  {(f as any).link && (
+                    <a href={(f as any).link} className="inline-block mt-3 text-sm text-gold hover:underline">
+                      {(f as any).linkText} &larr;
+                    </a>
+                  )}
                 </div>
               );
             })}
