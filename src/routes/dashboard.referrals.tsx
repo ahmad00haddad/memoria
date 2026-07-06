@@ -74,6 +74,40 @@ function ReferralsPage() {
           </div>
         </div>
 
+        {refs.length > 0 && (
+          <div className="mb-8 border border-border rounded-sm overflow-hidden bg-card">
+            <table className="w-full text-sm">
+              <caption className="sr-only">جدول الإحالات المسجلة</caption>
+              <thead className="bg-secondary text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="text-start p-3">تاريخ التسجيل</th>
+                  <th className="text-start p-3">الحالة</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {refs.map((r) => (
+                  <tr key={r.id} className="hover:bg-muted/50 transition-colors">
+                    <td className="p-3">
+                      {new Date(r.created_at).toLocaleDateString("ar-EG")}
+                    </td>
+                    <td className="p-3">
+                      {r.reward_granted ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full text-xs">
+                          تم منح المكافأة
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-amber-600 bg-amber-100/50 px-2 py-0.5 rounded-full text-xs">
+                          انتظار اشتراك مدفوع
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         <div className="text-xs text-muted-foreground border-t border-border pt-4">
           <strong>كيف يعمل؟</strong> أرسلي الرابط لزميلة. حين تُكمل تسجيلها وتُفعّل اشتراكها الأول، يُضاف 14 يومًا مجانيًا تلقائيًا لاشتراكَيكما عند مراجعة الإدارة.
         </div>
