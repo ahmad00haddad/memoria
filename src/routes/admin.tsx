@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useNavigate, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
@@ -11,12 +11,6 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
-  beforeLoad: async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw redirect({ to: "/login" });
-    }
-  },
   component: AdminLayout,
 });
 
@@ -28,12 +22,12 @@ function AdminLayout() {
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) { navigate({ to: "/login" }); return; }
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
       setIsAdmin((roles ?? []).some((r: any) => r.role === "admin"));
       setLoading(false);
     })();
-  }, []);
+  }, [navigate]);
 
   if (loading) return <PageLoader />;
 
