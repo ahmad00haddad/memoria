@@ -112,18 +112,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", href: "/app-icon-192.png" },
     ],
     scripts: [
-      {
-        src: `https://www.googletagmanager.com/gtag/js?id=${process.env.VITE_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX'}`,
-        async: true,
-      },
-      {
-        children: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${process.env.VITE_GA_MEASUREMENT_ID || 'G-XXXXXXXXXX'}');
-        `,
-      },
+      // GA: يُحمَّل فقط عند وجود VITE_GA_MEASUREMENT_ID صالح (يبدأ بـ G-) لتفادي نداءات placeholder
+      ...(process.env.VITE_GA_MEASUREMENT_ID && process.env.VITE_GA_MEASUREMENT_ID.startsWith('G-')
+        ? [
+            {
+              src: `https://www.googletagmanager.com/gtag/js?id=${process.env.VITE_GA_MEASUREMENT_ID}`,
+              async: true,
+            },
+            {
+              children: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.VITE_GA_MEASUREMENT_ID}');
+              `,
+            },
+          ]
+        : []),
       {
         children: "(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
       },
