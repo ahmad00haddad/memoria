@@ -37,7 +37,7 @@ function RecoverPage() {
     setLoading(true);
     
     try {
-      await recoverFn({ emailOrPhone: val });
+      await recoverFn({ data: { emailOrPhone: val } });
       // نظهر نجاحاً في كل الحالات لأسباب أمنية
       setSuccess(true);
     } catch (error: any) {

@@ -10,15 +10,19 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const val = data.emailOrPhone;
-    
-    // ابحث عن الحجوزات النشطة التي تطابق البريد أو الهاتف
-    const { data: bookings, error } = await supabaseAdmin
+    const isEmail = val.includes("@");
+
+    // ابحث عن الحجوزات النشطة — استعلامات معاملات آمنة بدلاً من .or() لتفادي الحقن
+    const query = supabaseAdmin
       .from("bookings")
       .select("id, client_name, client_email, client_phone, event_date, client_tracking_token, profiles(id, display_name)")
-      .or(`client_email.eq."${val}",client_phone.eq."${val}"`)
       .is("deleted_at", null)
-      .in("status", ["pending", "confirmed"])
+      .in("status", ["pending_deposit", "confirmed"])
       .order("created_at", { ascending: false });
+
+    const { data: bookings, error } = isEmail
+      ? await query.eq("client_email", val)
+      : await query.eq("client_phone", val);
 
     if (error) {
       console.error("[recover] error searching bookings:", error);
@@ -58,6 +62,7 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
           to: clientEmail,
           subject: "روابط تتبع حجوزاتك — Memoria",
           html: emailHtml,
+          template: "recover_tracking_links",
         });
         sentEmail = true;
       } catch (e) {
