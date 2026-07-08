@@ -62,6 +62,7 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
           to: clientEmail,
           subject: "روابط تتبع حجوزاتك — Memoria",
           html: emailHtml,
+          template: "recover_tracking_links",
         });
         sentEmail = true;
       } catch (e) {
