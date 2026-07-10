@@ -113,10 +113,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       // GA: يُحمَّل فقط عند وجود VITE_GA_MEASUREMENT_ID صالح (يبدأ بـ G-) لتفادي نداءات placeholder
-      ...(process.env.VITE_GA_MEASUREMENT_ID && process.env.VITE_GA_MEASUREMENT_ID.startsWith('G-')
+      ...(import.meta.env.VITE_GA_MEASUREMENT_ID && (import.meta.env.VITE_GA_MEASUREMENT_ID as string).startsWith('G-')
         ? [
             {
-              src: `https://www.googletagmanager.com/gtag/js?id=${process.env.VITE_GA_MEASUREMENT_ID}`,
+              src: `https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GA_MEASUREMENT_ID}`,
               async: true,
             },
             {
@@ -124,7 +124,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${process.env.VITE_GA_MEASUREMENT_ID}');
+                gtag('config', '${import.meta.env.VITE_GA_MEASUREMENT_ID}');
               `,
             },
           ]
