@@ -118,6 +118,7 @@ function PhotographerPage() {
   const [unavail, setUnavail] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<{ event_date: string; start_time: string; end_time: string }[]>([]);
   const [completedCount, setCompletedCount] = useState<number>(0);
+  const [formError, setFormError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
@@ -699,12 +700,19 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   };
   const goNext = () => {
     if (!stepValid[step]) {
-      if (step === 1) toast.error("اختاري التاريخ والباقة قبل المتابعة");
+      const msg = step === 1 ? "يجب اختيار التاريخ والباقة قبل المتابعة للخطوة التالية." :
+                  step === 3 ? "يرجى تعبئة جميع الحقول الإلزامية والموافقة على الشروط." : "يرجى إكمال الحقول المطلوبة.";
+      setFormError(msg);
+      toast.error(msg);
       return;
     }
+    setFormError(null);
     setStep((s) => (s === 3 ? 3 : ((s + 1) as 1 | 2 | 3)));
   };
-  const goBack = () => setStep((s) => (s === 1 ? 1 : ((s - 1) as 1 | 2 | 3)));
+  const goBack = () => {
+    setFormError(null);
+    setStep((s) => (s === 1 ? 1 : ((s - 1) as 1 | 2 | 3)));
+  };
   const stepLabels = ["التاريخ والباقة", "الموقع والإضافات", "البيانات والتأكيد"];
 
   return (
@@ -717,6 +725,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           <button type="button" onClick={clearDraft} className="text-muted-foreground hover:text-destructive underline underline-offset-2">
             بدء من جديد
           </button>
+        </div>
+      )}
+
+      {formError && (
+        <div role="alert" aria-live="assertive" className="mb-4 rounded-sm border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+          <span className="mt-0.5 text-base leading-none">⚠️</span>
+          <span>{formError}</span>
         </div>
       )}
 

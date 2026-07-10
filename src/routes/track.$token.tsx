@@ -456,8 +456,8 @@ function TrackingPage() {
       {/* ✅ Dialog إلغاء الطلب — بديل window.prompt يعمل في PWA وكل المتصفحات */}
       {showCancelDialog && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-background border border-border rounded-xl shadow-2xl max-w-md w-full p-6">
-            <h2 className="font-serif text-xl mb-2">إلغاء طلب الحجز</h2>
+          <div role="dialog" aria-modal="true" aria-labelledby="cancel-dialog-title" className="bg-background border border-border rounded-xl shadow-2xl max-w-md w-full p-6">
+            <h2 id="cancel-dialog-title" className="font-serif text-xl mb-2">إلغاء طلب الحجز</h2>
             <p className="text-sm text-muted-foreground mb-4">
               سيتم إلغاء طلبك نهائياً. لا يمكن الإلغاء بعد تأكيد المصوّرة للحجز.
             </p>
@@ -474,6 +474,7 @@ function TrackingPage() {
               سبب الإلغاء <span className="text-muted-foreground">(اختياري)</span>
             </label>
             <textarea
+              autoFocus
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               placeholder="اكتبي سبب الإلغاء هنا…"
