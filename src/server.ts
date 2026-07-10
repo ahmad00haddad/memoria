@@ -85,11 +85,13 @@ export default {
         "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com; " +
         "img-src 'self' data: blob: https://*.supabase.co https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev; " +
         "style-src 'self' 'unsafe-inline'; " +
-        "font-src 'self' data:;"
+        "font-src 'self' data:; " +
+        "frame-ancestors 'none'; " +
+        "base-uri 'self'; " +
+        "form-action 'self';"
       );
-      if ((env as any)?.NODE_ENV === "production" || process.env.NODE_ENV === "production") {
-        headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
-      }
+      // HSTS unconditional — Cloudflare Workers terminate TLS; safe for all published traffic
+      headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
 
       return new Response(normalized.body, {
         status: normalized.status,
