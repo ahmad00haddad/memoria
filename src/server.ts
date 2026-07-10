@@ -83,7 +83,7 @@ export default {
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; " +
         "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com; " +
-        "img-src 'self' data: blob: https://*.supabase.co https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev; " +
+        "img-src 'self' data: blob: https:; " +
         "style-src 'self' 'unsafe-inline'; " +
         "font-src 'self' data:; " +
         "frame-ancestors 'none'; " +
