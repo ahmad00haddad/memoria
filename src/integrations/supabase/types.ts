@@ -1194,6 +1194,31 @@ export type Database = {
         Args: { _photographer_id: string }
         Returns: undefined
       }
+      search_photographers: {
+        Args: {
+          _available_date?: string
+          _city?: string
+          _limit?: number
+          _max_price?: number
+          _min_price?: number
+          _query?: string
+          _sort?: string
+        }
+        Returns: {
+          avatar_url: string
+          avg_rating: number
+          bio: string
+          city: string
+          cover_url: string
+          display_name: string
+          is_featured: boolean
+          min_price: number
+          review_count: number
+          tagline: string
+          username: string
+          verification_status: string
+        }[]
+      }
       seed_default_shot_list: {
         Args: { _booking_id: string; _service: string }
         Returns: undefined
