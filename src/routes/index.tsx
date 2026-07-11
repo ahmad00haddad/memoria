@@ -248,6 +248,46 @@ function Landing() {
       </motion.section>
       </ScrollReveal>
 
+      {/* Testimonials */}
+      <ScrollReveal delay={0.1}>
+      <motion.section
+        className="bg-charcoal text-ivory py-16 lg:py-24"
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportOnce}
+      >
+        <div className="container-editorial">
+          <div className="text-center mb-12">
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">تجارب حقيقية</div>
+            <h2 className="font-serif text-3xl sm:text-4xl text-ivory">آراء العرائس</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
+              <div className="flex gap-1 mb-4">
+                {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
+              </div>
+              <p className="text-sm leading-relaxed text-ivory/90 mb-6">"تجربة رائعة من البداية للنهاية. أسعار واضحة وبدون مفاجآت، والمصورة كانت لطيفة جداً وصورها خيالية. أنقذتني من ضياع الأوقات والبحث العشوائي."</p>
+              <div className="font-serif text-ivory">— سارة الأحمد</div>
+            </motion.div>
+            <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
+              <div className="flex gap-1 mb-4">
+                {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
+              </div>
+              <p className="text-sm leading-relaxed text-ivory/90 mb-6">"أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير."</p>
+              <div className="font-serif text-ivory">— دانة وليد</div>
+            </motion.div>
+            <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
+              <div className="flex gap-1 mb-4">
+                {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
+              </div>
+              <p className="text-sm leading-relaxed text-ivory/90 mb-6">"ميزة التوفر الفوري خلتني أقدر أرتب أموري خلال ساعات، بدل ما أنتظر أيام عشان أسمع رد المصورات. الصور وصلتني أسرع من المتوقع، شكراً ميموريا!"</p>
+              <div className="font-serif text-ivory">— لين المجالي</div>
+            </motion.div>
+          </div>
+        </div>
+      </motion.section>
+      </ScrollReveal>
       {featured.length > 0 && (
         <ScrollReveal delay={0.1}>
         <motion.section
