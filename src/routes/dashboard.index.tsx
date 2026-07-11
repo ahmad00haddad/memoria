@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
@@ -30,6 +31,7 @@ import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { NotificationPermission } from "@/components/NotificationPermission";
 import { staggerContainer, fadeUp } from "@/lib/animations";
 import { useCountUp } from "@/hooks/use-count-up";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 
 export const Route = createFileRoute("/dashboard/")({
   component: Dashboard,
@@ -146,6 +148,35 @@ function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCou
   );
 }
 
+function DashboardSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <section className="container-editorial py-12">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <Skeleton className="h-4 w-24 mb-2" />
+            <Skeleton className="h-10 w-48 mb-2" />
+            <Skeleton className="h-5 w-32" />
+          </div>
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-sm" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} className="min-h-[190px] w-full rounded-sm" />
+          ))}
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
+}
+
 function Card({ title, desc, cta, to, external, disabled, icon }: { title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; }) {
   const sharedClassName = `group flex min-h-[190px] flex-col justify-between rounded-sm border border-border bg-card p-6 shadow-soft transition ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-0.5 hover:border-gold/40 hover:bg-secondary/20 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
   const content = (
@@ -186,90 +217,67 @@ function Dashboard() {
   const [qsDismissed, setQsDismissed] = useState(false);
   const navigate = useNavigate();
 
-  // Pull-to-refresh
-  const [pullY, setPullY] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
-  const touchStartY = useRef(0);
+  const loadData = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { navigate({ to: "/login" }); return; }
+    try {
+      const pendingRef = sessionStorage.getItem("pending_referral_code");
+      if (pendingRef) {
+        const { recordReferralAfterSignup } = await import("@/lib/booking.functions");
+        await recordReferralAfterSignup({ data: { referral_code: pendingRef } });
+        sessionStorage.removeItem("pending_referral_code");
+        toast.success("تم تطبيق رمز الإحالة بنجاح!");
+      }
+    } catch (e) { sessionStorage.removeItem("pending_referral_code"); }
+    const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }, { count: tplCount }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
+      supabase.from("photographer_private").select("ical_token,cliq_alias,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
+      supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
+      supabase.from("bookings").select("status,total_price,deposit_amount,event_date,delivery_due_at,production_stage").eq("photographer_id", session.user.id).is("deleted_at", null),
+      supabase.from("reviews").select("rating").eq("photographer_id", session.user.id),
+      supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
+      supabase.from("whatsapp_templates").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
+    ]);
+    if (data && !(data as any).onboarding_completed_at) {
+      navigate({ to: "/onboarding" });
+      return;
+    }
+    const all = bks ?? [];
+    const confirmed = all.filter((b: any) => b.status === "confirmed").length;
+    const pending = all.filter((b: any) => b.status === "pending_deposit" || b.status === "quote").length;
+    const completed = all.filter((b: any) => b.status === "completed").length;
+    const revenue = all.filter((b: any) => b.status === "confirmed" || b.status === "completed").reduce((sum: number, b: any) => sum + Number(b.total_price ?? 0), 0);
+    const now = Date.now();
+    const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0);
+    const monthRevenue = all.filter((b: any) => (b.status === "confirmed" || b.status === "completed") && b.event_date && new Date(b.event_date).getTime() >= startOfMonth.getTime()).reduce((sum: number, b: any) => sum + Number(b.total_price ?? 0), 0);
+    const upcoming30 = all.filter((b: any) => b.status === "confirmed" && b.event_date && new Date(b.event_date).getTime() >= now && new Date(b.event_date).getTime() <= now + 30 * 86400000).length;
+    const pendingDepositsAmount = all.filter((b: any) => b.status === "pending_deposit").reduce((sum: number, b: any) => sum + Number(b.deposit_amount ?? 0), 0);
+    const deliveriesDueSoon = all.filter((b: any) => b.delivery_due_at && b.production_stage !== "delivered" && new Date(b.delivery_due_at).getTime() <= now + 7 * 86400000).length;
+    const avg = (rvs && rvs.length) ? rvs.reduce((sum, r) => sum + r.rating, 0) / rvs.length : 0;
+    
+    const computedStats = { confirmed, pending, completed, revenue, avgRating: avg, reviews: rvs?.length ?? 0, monthRevenue, upcoming30, pendingDepositsAmount, deliveriesDueSoon };
+    const loadedProfile = { ...(data ?? {}), ical_token: priv?.ical_token ?? null };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (typeof window !== "undefined" && window.scrollY === 0)
-      touchStartY.current = e.touches[0].clientY;
-  };
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (typeof window !== "undefined" && window.scrollY === 0) {
-      const delta = e.touches[0].clientY - touchStartY.current;
-      if (delta > 0) setPullY(Math.min(delta * 0.4, 80));
-    }
-  };
-  const handleTouchEnd = async () => {
-    if (pullY > 60) {
-      setRefreshing(true);
-      await new Promise((r) => setTimeout(r, 800));
-      setRefreshing(false);
-    }
-    setPullY(0);
+    cachedDashboard = {
+      profile: loadedProfile,
+      sub: s,
+      pricingCount: pricingRulesCount ?? 0,
+      hasCliq: !!(priv?.cliq_alias || priv?.whatsapp || priv?.phone),
+      templatesCount: tplCount ?? 0,
+      stats: computedStats
+    };
+
+    setProfile(loadedProfile);
+    setSub(s);
+    setPricingCount(pricingRulesCount ?? 0);
+    setHasCliq(!!(priv?.cliq_alias || priv?.whatsapp || priv?.phone));
+    setTemplatesCount(tplCount ?? 0);
+    setStats(computedStats);
+    setLoading(false);
   };
 
   useEffect(() => {
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate({ to: "/login" }); return; }
-      try {
-        const pendingRef = sessionStorage.getItem("pending_referral_code");
-        if (pendingRef) {
-          const { recordReferralAfterSignup } = await import("@/lib/booking.functions");
-          await recordReferralAfterSignup({ data: { referral_code: pendingRef } });
-          sessionStorage.removeItem("pending_referral_code");
-          toast.success("تم تطبيق رمز الإحالة بنجاح!");
-        }
-      } catch (e) { sessionStorage.removeItem("pending_referral_code"); }
-      const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }, { count: tplCount }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
-        supabase.from("photographer_private").select("ical_token,cliq_alias,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
-        supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
-        supabase.from("bookings").select("status,total_price,deposit_amount,event_date,delivery_due_at,production_stage").eq("photographer_id", session.user.id).is("deleted_at", null),
-        supabase.from("reviews").select("rating").eq("photographer_id", session.user.id),
-        supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
-        supabase.from("whatsapp_templates").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
-      ]);
-      // Redirect to guided onboarding if photographer hasn't completed it yet
-      if (data && !(data as any).onboarding_completed_at) {
-        navigate({ to: "/onboarding" });
-        return;
-      }
-      const all = bks ?? [];
-      const confirmed = all.filter((b: any) => b.status === "confirmed").length;
-      const pending = all.filter((b: any) => b.status === "pending_deposit" || b.status === "quote").length;
-      const completed = all.filter((b: any) => b.status === "completed").length;
-      const revenue = all.filter((b: any) => b.status === "confirmed" || b.status === "completed").reduce((sum: number, b: any) => sum + Number(b.total_price ?? 0), 0);
-      const now = Date.now();
-      const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0);
-      const monthRevenue = all.filter((b: any) => (b.status === "confirmed" || b.status === "completed") && b.event_date && new Date(b.event_date).getTime() >= startOfMonth.getTime()).reduce((sum: number, b: any) => sum + Number(b.total_price ?? 0), 0);
-      const upcoming30 = all.filter((b: any) => b.status === "confirmed" && b.event_date && new Date(b.event_date).getTime() >= now && new Date(b.event_date).getTime() <= now + 30 * 86400000).length;
-      const pendingDepositsAmount = all.filter((b: any) => b.status === "pending_deposit").reduce((sum: number, b: any) => sum + Number(b.deposit_amount ?? 0), 0);
-      const deliveriesDueSoon = all.filter((b: any) => b.delivery_due_at && b.production_stage !== "delivered" && new Date(b.delivery_due_at).getTime() <= now + 7 * 86400000).length;
-      const avg = (rvs && rvs.length) ? rvs.reduce((sum, r) => sum + r.rating, 0) / rvs.length : 0;
-      
-      const computedStats = { confirmed, pending, completed, revenue, avgRating: avg, reviews: rvs?.length ?? 0, monthRevenue, upcoming30, pendingDepositsAmount, deliveriesDueSoon };
-      const loadedProfile = { ...(data ?? {}), ical_token: priv?.ical_token ?? null };
-
-      cachedDashboard = {
-        profile: loadedProfile,
-        sub: s,
-        pricingCount: pricingRulesCount ?? 0,
-        hasCliq: !!(priv?.cliq_alias || priv?.whatsapp || priv?.phone),
-        templatesCount: tplCount ?? 0,
-        stats: computedStats
-      };
-
-      setProfile(loadedProfile);
-      setSub(s);
-      setPricingCount(pricingRulesCount ?? 0);
-      setHasCliq(!!(priv?.cliq_alias || priv?.whatsapp || priv?.phone));
-      setTemplatesCount(tplCount ?? 0);
-      setStats(computedStats);
-      setLoading(false);
-    })();
+    loadData();
   }, [navigate]);
 
   const dismissQuickStart = async () => {
@@ -283,33 +291,17 @@ function Dashboard() {
     } catch { toast.error("تعذّر الحفظ، حاولي مجدداً"); }
   };
 
-  if (loading) return <PageLoader />;
+  if (loading) return <DashboardSkeleton />;
   const onboardingNeeded = !profile?.display_name || !profile?.username || !profile?.avatar_url || pricingCount === 0;
 
   return (
-    <div
-      className="min-h-screen bg-background"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
-      {/* Pull-to-refresh indicator */}
-      <motion.div style={{ height: pullY }} className="flex items-center justify-center overflow-hidden">
-        {(pullY > 10 || refreshing) && (
-          <motion.div
-            animate={{ rotate: refreshing ? 360 : pullY * 3 }}
-            transition={refreshing ? { repeat: Infinity, duration: 0.8, ease: "linear" } : {}}
-          >
-            <RefreshCw className="h-5 w-5 text-[var(--gold)]" />
-          </motion.div>
-        )}
-      </motion.div>
+    <PullToRefresh onRefresh={async () => { await loadData(); }}>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <OnboardingWizard shouldShow={onboardingNeeded} />
+        <NotificationPermission />
 
-      <Header />
-      <OnboardingWizard shouldShow={onboardingNeeded} />
-      <NotificationPermission />
-
-      <section className="container-editorial py-12">
+        <section className="container-editorial py-12">
         <div className="flex items-end justify-between mb-8">
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">لوحة المصوّر</div>

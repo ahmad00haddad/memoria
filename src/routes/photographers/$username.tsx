@@ -16,6 +16,7 @@ import { getPhotographerProfileData } from "@/lib/profile.functions";
 import { Lightbox } from "@/components/Lightbox";
 // ✅ إضافة: تحسين الصور (WebP + responsive) عبر Cloudflare Images أو Supabase Transform
 import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
+import { hapticVibrate } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
 
@@ -620,6 +621,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
     if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
     setSubmitting(true);
+    hapticVibrate("light");
     try {
       const notes = [f.client_notes, f.remaining_note ? `الرصيد المتبقي: ${f.remaining_note}` : ""].filter(Boolean).join("\n");
       const items = [
@@ -642,8 +644,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         },
       });
       setSuccess({ token: res.tracking_token });
+      hapticVibrate("success");
       try { window.localStorage.removeItem(storageKey); } catch {}
     } catch (e: any) {
+      hapticVibrate("error");
       toast.error(e.message || "فشل إرسال الطلب");
     } finally {
       setSubmitting(false);

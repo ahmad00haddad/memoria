@@ -20,6 +20,7 @@ import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LazyMotion, domAnimation, motion, AnimatePresence } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
+import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 
 function NotFoundComponent() {
   return (
@@ -275,6 +276,7 @@ function RootComponent() {
               </motion.div>
             </AnimatePresence>
             <MobileTabBar />
+            <PwaInstallPrompt />
             <Toaster position="top-center" richColors closeButton />
           </LazyMotion>
         </ConfirmProvider>

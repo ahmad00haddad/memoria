@@ -8,7 +8,8 @@ import { GridSkeleton } from "@/components/ui/loading";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import {
   searchPhotographers,
   listPublishedCities,
@@ -47,6 +48,7 @@ function SearchPage() {
 
   const runSearch = useServerFn(searchPhotographers);
   const runCities = useServerFn(listPublishedCities);
+  const queryClient = useQueryClient();
 
   const citiesQ = useQuery({
     queryKey: ["search-cities"],
@@ -101,13 +103,16 @@ function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <section className="container-editorial py-10 md:py-12">
-        <div className="text-center mb-6 md:mb-8">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">دليل المصوّرين</div>
-          <h1 className="font-serif text-3xl md:text-4xl">اعثري على مصوّرة عرسك</h1>
-          <p className="text-sm text-muted-foreground mt-2">
+    <PullToRefresh onRefresh={async () => {
+      await queryClient.invalidateQueries({ queryKey: ["search"] });
+    }}>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <section className="container-editorial py-10 md:py-12">
+          <div className="text-center mb-6 md:mb-8">
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">دليل المصوّرين</div>
+            <h1 className="font-serif text-3xl md:text-4xl">اعثري على مصوّرة عرسك</h1>
+            <p className="text-sm text-muted-foreground mt-2">
             {results.length > 0
               ? `${displayResults.length} مصوّرة متاحة${hasFilters ? " ضمن فلترك" : ""}`
               : "أدخلي مدينتك أو ميزانيتك أو تاريخ حفلك لنُريك المصوّرات المتاحات."}
@@ -371,7 +376,8 @@ function SearchPage() {
         )}
       </section>
       <Footer />
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }
 
