@@ -28,7 +28,9 @@ function validateInput(d: SubmitInput): SubmitInput {
   if (!isDate(d.event_date)) throw new Error("invalid event_date");
   if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error("invalid time");
   const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
-  if (toMin(d.end_time) <= toMin(d.start_time)) throw new Error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
+  const duration = toMin(d.end_time) - toMin(d.start_time);
+  if (duration <= 0) throw new Error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
+  if (duration < 30) throw new Error("الحد الأدنى لمدة الحجز هو 30 دقيقة");
   // التاريخ يجب أن يكون اليوم أو في المستقبل
   const todayStr = new Date().toISOString().split("T")[0];
   if (d.event_date < todayStr) throw new Error("لا يمكن اختيار تاريخ في الماضي");

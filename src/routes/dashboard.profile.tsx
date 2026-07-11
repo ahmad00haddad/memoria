@@ -91,16 +91,19 @@ function ProfilePage() {
 
   const save = async () => {
     setSaving(true);
+    const finalDepositPercent = Math.max(0, Math.min(100, Number(p.deposit_percent || 25)));
+    const finalFixedDeposit = p.fixed_deposit ? Math.max(0, Number(p.fixed_deposit)) : null;
+
     const { error } = await supabase.from("profiles").update({
       display_name: p.display_name, username: p.username, bio: p.bio, city: p.city,
       base_location: p.base_location, instagram: p.instagram,
-      equipment: p.equipment, deposit_percent: Number(p.deposit_percent || 25),
-      travel_fee_per_km: Number(p.travel_fee_per_km || 0.5), free_km: Number(p.free_km || 20),
+      equipment: p.equipment, deposit_percent: finalDepositPercent,
+      travel_fee_per_km: Math.max(0, Number(p.travel_fee_per_km || 0.5)), free_km: Math.max(0, Number(p.free_km || 20)),
       avatar_url: p.avatar_url, cover_url: p.cover_url, portfolio_urls: p.portfolio_urls ?? [],
       is_published: !!p.is_published,
       tagline: p.tagline ?? null,
       booking_notes: p.booking_notes ?? null,
-      fixed_deposit: p.fixed_deposit ? Number(p.fixed_deposit) : null,
+      fixed_deposit: finalFixedDeposit,
     }).eq("id", uid);
     const { error: pErr } = await supabase.from("photographer_private").upsert({
       user_id: uid,
@@ -195,12 +198,14 @@ function ProfilePage() {
           </Card>
 
           <Card title="إعدادات الحجز">
-            <div className="grid sm:grid-cols-3 gap-4">
-              <Field label="نسبة العربون %" type="number" v={p.deposit_percent} on={(v) => setP({ ...p, deposit_percent: v })} />
-              <Field label="عربون ثابت (د.أ) — اختياري" type="number" v={p.fixed_deposit} on={(v) => setP({ ...p, fixed_deposit: v })} />
-              <Field label="رسوم/كم (د.أ)" type="number" v={p.travel_fee_per_km} on={(v) => setP({ ...p, travel_fee_per_km: v })} />
+            <div className="grid sm:grid-cols-2 gap-4 mt-4">
+              <div><label className="text-sm text-muted-foreground block mb-1">نسبة العربون (%)</label><input type="number" min="0" max="100" value={p.deposit_percent || ""} onChange={(e) => setP({ ...p, deposit_percent: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
+              <div><label className="text-sm text-muted-foreground block mb-1">عربون ثابت (يُلغي النسبة - د.أ)</label><input type="number" min="0" value={p.fixed_deposit || ""} onChange={(e) => setP({ ...p, fixed_deposit: e.target.value })} placeholder="اختياري" className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
             </div>
-            <Field label="كم مجاني" type="number" v={p.free_km} on={(v) => setP({ ...p, free_km: v })} />
+            <div className="grid sm:grid-cols-2 gap-4 mt-4">
+              <div><label className="text-sm text-muted-foreground block mb-1">تكلفة الكيلومتر الإضافي (د.أ)</label><input type="number" min="0" step="0.1" value={p.travel_fee_per_km || ""} onChange={(e) => setP({ ...p, travel_fee_per_km: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
+              <div><label className="text-sm text-muted-foreground block mb-1">الكيلومترات المجانية (ضمن الباقة)</label><input type="number" min="0" value={p.free_km || ""} onChange={(e) => setP({ ...p, free_km: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
+            </div>
             <Area label="ملاحظات مهمة تظهر للعميل (مثال: تسليم الصور خلال أسبوع، الفيديو خلال شهر…)" v={p.booking_notes} on={(v) => setP({ ...p, booking_notes: v })} />
             <label className="flex items-center gap-2 text-sm mt-3">
               <input type="checkbox" checked={!!p.is_published} onChange={(e) => setP({ ...p, is_published: e.target.checked })} />
@@ -229,7 +234,7 @@ function ProfilePage() {
               ))}
             </div>
             {(p.deposit_refund_policy === "partial") && (
-              <Field label="نسبة الاسترداد % (0-100)" type="number" v={p.deposit_refund_percent} on={(v) => setP({ ...p, deposit_refund_percent: v })} />
+              <label className="block mt-2"><span className="text-sm text-muted-foreground">نسبة الاسترداد % (0-100)</span><input type="number" min="0" max="100" value={p.deposit_refund_percent || ""} onChange={(e) => setP({ ...p, deposit_refund_percent: e.target.value })} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>
             )}
           </Card>
 
@@ -237,7 +242,6 @@ function ProfilePage() {
             {saving ? "جاري الحفظ…" : "حفظ التغييرات"}
           </button>
 
-          {/* التحقق من المصوّرة */}
           <Card title="حالة التحقق">
             <div className="flex items-center gap-3">
               {p.verification_status === "verified" && (
@@ -272,7 +276,6 @@ function ProfilePage() {
             <p className="text-xs text-muted-foreground mt-2">المصوّرات الموثّقات يحصلن على شارة ✓ تزيد ثقة العملاء.</p>
           </Card>
 
-          {/* تفضيلات الإشعارات */}
           <Card title="تفضيلات الإشعارات">
             <div className="space-y-2">
               {[

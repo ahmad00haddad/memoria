@@ -49,7 +49,12 @@ function PricingMgr() {
   const save = async () => {
     for (const r of rules) {
       if (!r.label) continue;
-      const payload = { ...r, photographer_id: uid, price: Number(r.price), per_photo_price: r.per_photo_price ? Number(r.per_photo_price) : 0 };
+      const payload = { 
+        ...r, 
+        photographer_id: uid, 
+        price: Math.max(0, Number(r.price)), 
+        per_photo_price: r.per_photo_price ? Math.max(0, Number(r.per_photo_price)) : 0 
+      };
       if (r.id) await supabase.from("pricing_rules").update(payload).eq("id", r.id);
       else await supabase.from("pricing_rules").insert(payload);
     }
@@ -120,8 +125,8 @@ function PricingMgr() {
                 <option value="addon">إضافة</option>
               </select>
               <input placeholder="مثال: 4 ساعات" value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm" />
-              <input type="number" placeholder="السعر" value={r.price} onChange={(e) => upd(i, "price", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm" />
-              <input type="number" placeholder="سعر الصورة الإضافية" value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm" />
+              <input type="number" min="0" placeholder="السعر" value={r.price} onChange={(e) => upd(i, "price", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm" />
+              <input type="number" min="0" placeholder="سعر الصورة الإضافية" value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm" />
               <button onClick={() => del(i)} className="text-destructive p-2 hover:bg-destructive/10 rounded-sm"><Trash2 className="h-4 w-4" /></button>
               <input placeholder="وصف اختياري" value={r.description ?? ""} onChange={(e) => upd(i, "description", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm sm:col-span-6" />
             </div>
