@@ -519,6 +519,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [consent, setConsent] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Restore draft from localStorage on mount
   useEffect(() => {
