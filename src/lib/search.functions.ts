@@ -55,7 +55,7 @@ function validate(d: SearchInput): SearchInput {
 export const searchPhotographers = createServerFn({ method: "POST" })
   .inputValidator((d: SearchInput) => validate(d ?? {}))
   .handler(async ({ data }) => {
-    const supabase = getPublicClient();
+    const supabase = getPublicClient() as any;
     const { data: rows, error } = await supabase.rpc("search_photographers", {
       _query: data.q || null,
       _city: data.city || null,
