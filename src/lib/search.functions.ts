@@ -1,4 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+
+function getPublicClient() {
+  return createClient<Database>(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_PUBLISHABLE_KEY!,
+    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+  );
+}
 
 export type SearchSort = "featured" | "rating" | "price_asc" | "price_desc";
 
@@ -45,9 +55,8 @@ function validate(d: SearchInput): SearchInput {
 export const searchPhotographers = createServerFn({ method: "POST" })
   .inputValidator((d: SearchInput) => validate(d ?? {}))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: rows, error } = await supabaseAdmin.rpc("search_photographers", {
+    const supabase = getPublicClient();
+    const { data: rows, error } = await supabase.rpc("search_photographers", {
       _query: data.q || null,
       _city: data.city || null,
       _min_price: data.min_price != null ? Number(data.min_price) : null,
@@ -77,8 +86,8 @@ export const searchPhotographers = createServerFn({ method: "POST" })
 
 export const listPublishedCities = createServerFn({ method: "GET" })
   .handler(async () => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const supabase = getPublicClient();
+    const { data, error } = await supabase
       .from("profiles")
       .select("city")
       .eq("is_published", true)
