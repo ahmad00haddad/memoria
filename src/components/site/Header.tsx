@@ -118,7 +118,7 @@ export function Header() {
           )}
           <Sheet open={openMenu} onOpenChange={setOpenMenu}>
             <SheetTrigger asChild>
-              <button className="md:hidden grid h-9 w-9 place-items-center rounded-sm border border-border/60 hover:bg-secondary" aria-label="القائمة">
+              <button className="hidden sm:grid md:hidden h-9 w-9 place-items-center rounded-sm border border-border/60 hover:bg-secondary" aria-label="القائمة">
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>

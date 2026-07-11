@@ -105,8 +105,27 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "ss01", "cv01";
+    
+    /* App-like behaviors */
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    user-select: none;
+    touch-action: pan-y;
   }
+  
+  /* Allow text selection in inputs and textareas */
+  input, textarea, [contenteditable="true"] {
+    user-select: auto;
+  }
+
   h1, h2, h3, .font-serif { font-family: var(--font-serif); letter-spacing: -0.02em; }
+
+  /* Hide Lovable Badge */
+  #lovable-badge, div[id^="lovable-"], .lovable-badge {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 
   /* RTL refinements */
   [dir="rtl"] { font-family: "Cairo Variable", system-ui, sans-serif; }

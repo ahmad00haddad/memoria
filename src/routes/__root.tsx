@@ -19,6 +19,7 @@ import "lenis/dist/lenis.css";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LazyMotion, domAnimation, motion, AnimatePresence } from "framer-motion";
+import { MobileTabBar } from "@/components/site/MobileTabBar";
 
 function NotFoundComponent() {
   return (
@@ -273,6 +274,7 @@ function RootComponent() {
                 <Outlet />
               </motion.div>
             </AnimatePresence>
+            <MobileTabBar />
             <Toaster position="top-center" richColors closeButton />
           </LazyMotion>
         </ConfirmProvider>
