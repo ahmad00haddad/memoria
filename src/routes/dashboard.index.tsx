@@ -391,5 +391,6 @@ function Dashboard() {
       </section>
       <Footer />
     </div>
+    </PullToRefresh>
   );
 }
