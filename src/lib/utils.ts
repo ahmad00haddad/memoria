@@ -4,7 +4,6 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-}
 
 export function hapticVibrate(type: "light" | "medium" | "heavy" | "success" | "error" = "light") {
   if (typeof window === "undefined" || !navigator.vibrate) return;
