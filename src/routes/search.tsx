@@ -106,18 +106,26 @@ function SearchPage() {
     <PullToRefresh onRefresh={async () => {
       await queryClient.invalidateQueries({ queryKey: ["search"] });
     }}>
-      <div className="min-h-screen bg-background">
-        <Header />
-        <section className="container-editorial py-10 md:py-12">
-          <div className="text-center mb-6 md:mb-8">
+      <div className="min-h-screen bg-background sm:pb-0 pb-20">
+        <div className="hidden sm:block">
+          <Header />
+        </div>
+        
+        <section className="container-editorial py-6 sm:py-10 md:py-12">
+          {/* Mobile Large Title */}
+          <div className="sm:hidden mb-6 px-2">
+            <h1 className="font-serif text-3xl font-bold">البحث</h1>
+          </div>
+
+          <div className="hidden sm:block text-center mb-6 md:mb-8">
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">دليل المصوّرين</div>
             <h1 className="font-serif text-3xl md:text-4xl">اعثري على مصوّرة عرسك</h1>
             <p className="text-sm text-muted-foreground mt-2">
             {results.length > 0
               ? `${displayResults.length} مصوّرة متاحة${hasFilters ? " ضمن فلترك" : ""}`
               : "أدخلي مدينتك أو ميزانيتك أو تاريخ حفلك لنُريك المصوّرات المتاحات."}
-          </p>
-        </div>
+            </p>
+          </div>
 
         {/* Filters */}
         <form
@@ -127,129 +135,165 @@ function SearchPage() {
             if (direct && !/\s/.test(direct))
               navigate({ to: "/photographers/$username", params: { username: direct.toLowerCase() } });
           }}
-          className="rounded-md border border-border bg-card p-4 md:p-5 mb-6 md:mb-8 shadow-soft"
+          className="sm:rounded-md sm:border sm:border-border bg-card p-3 sm:p-4 md:p-5 mb-4 sm:mb-6 md:mb-8 sm:shadow-soft sticky top-0 z-30 sm:relative sm:top-auto sm:z-auto border-b border-border sm:border-b-0 -mx-4 sm:mx-0 px-4 sm:px-4"
         >
-                {/* Mobile filter drawer trigger */}
-      <div className="flex items-center gap-2 md:hidden mb-3 px-4">
-        <Drawer.Root>
-          <Drawer.Trigger asChild>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 text-sm font-medium touch-card">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-              تصفية
-            </button>
-          </Drawer.Trigger>
-          <Drawer.Portal>
-            <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
-            <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-white dark:bg-gray-950 pb-safe">
-              <div className="mx-auto w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700 mt-3 mb-4" />
-              <div className="px-4 pb-6 space-y-4">
-                <h2 className="text-base font-semibold mb-2">الفلاتر</h2>
-                <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                >
-                  <option value="">كل المدن</option>
-                  {(citiesQ.data ?? []).map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    placeholder="السعر من"
-                    className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                  />
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    placeholder="إلى"
-                    className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                  />
-                </div>
+      <fieldset className="grid gap-3 md:grid-cols-12" aria-label="فلاتر البحث الأساسية">
+            <div className="md:col-span-4 relative flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute top-1/2 -translate-y-1/2 start-3 h-4 w-4 text-muted-foreground" />
                 <input
-                  type="date"
-                  value={date}
-                  min={new Date().toISOString().slice(0, 10)}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="اسم المصوّرة، @المستخدم…"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="w-full sm:rounded-sm rounded-full sm:border border-transparent sm:border-input bg-secondary/50 sm:bg-background ps-9 pe-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                  aria-label="كلمات مفتاحية للبحث"
                 />
               </div>
-            </Drawer.Content>
-          </Drawer.Portal>
-        </Drawer.Root>
-      </div>
-      <fieldset className="grid gap-3 md:grid-cols-12" aria-label="فلاتر البحث الأساسية">
-            <div className="md:col-span-4 relative">
-              <Search className="absolute top-1/2 -translate-y-1/2 start-3 h-4 w-4 text-muted-foreground" />
+              
+              {/* Mobile filter drawer trigger inside search row */}
+              <div className="sm:hidden">
+                <Drawer.Root>
+                  <Drawer.Trigger asChild>
+                    <button type="button" className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 text-foreground touch-card">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+                    </button>
+                  </Drawer.Trigger>
+                  <Drawer.Portal>
+                    <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
+                    <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-background border-t border-border pb-safe">
+                      <div className="mx-auto w-12 h-1.5 rounded-full bg-border mt-3 mb-4" />
+                      <div className="px-4 pb-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                        <h2 className="text-base font-semibold mb-2">الفلاتر المتقدمة</h2>
+                        <div className="space-y-2">
+                          <label className="text-xs text-muted-foreground">التاريخ</label>
+                          <input
+                            type="date"
+                            value={date}
+                            min={new Date().toISOString().slice(0, 10)}
+                            onChange={(e) => setDate(e.target.value)}
+                            className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs text-muted-foreground">السعر</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              min={0}
+                              value={minPrice}
+                              onChange={(e) => setMinPrice(e.target.value)}
+                              placeholder="من"
+                              className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm"
+                            />
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              min={0}
+                              value={maxPrice}
+                              onChange={(e) => setMaxPrice(e.target.value)}
+                              placeholder="إلى"
+                              className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs text-muted-foreground">الترتيب</label>
+                          <select value={sort} onChange={(e) => setSort(e.target.value as any)} className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm">
+                            <option value="featured">الأبرز</option>
+                            <option value="price_asc">الأقل سعراً</option>
+                            <option value="price_desc">الأعلى سعراً</option>
+                            <option value="newest">الأحدث</option>
+                          </select>
+                        </div>
+                      </div>
+                    </Drawer.Content>
+                  </Drawer.Portal>
+                </Drawer.Root>
+              </div>
+            </div>
+
+            <div className="hidden sm:block md:col-span-2">
+              <select
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                aria-label="المدينة"
+              >
+                <option value="">كل المدن</option>
+                {(citiesQ.data ?? []).map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="hidden sm:block md:col-span-2">
               <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="اسم المصوّرة، @المستخدم، أو وصف…"
-                autoCapitalize="none"
-                autoCorrect="off"
-                autoComplete="off"
-                spellCheck={false}
-                className="w-full rounded-sm border border-input bg-background ps-9 pe-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                aria-label="كلمات مفتاحية للبحث"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                placeholder="السعر من"
+                className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                aria-label="الحد الأدنى للسعر"
+              />
+            </div>
+            <div className="hidden sm:block md:col-span-2">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                placeholder="إلى"
+                className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                aria-label="الحد الأعلى للسعر"
               />
             </div>
 
-            <select
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-              aria-label="المدينة"
-            >
-              <option value="">كل المدن</option>
-              {(citiesQ.data ?? []).map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              placeholder="السعر من"
-              className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-              aria-label="الحد الأدنى للسعر"
-            />
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              placeholder="إلى"
-              className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-              aria-label="الحد الأعلى للسعر"
-            />
-
-            <input
-              type="date"
-              value={date}
-              min={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => setDate(e.target.value)}
-              className="hidden md:block md:col-span-2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-              aria-label="تاريخ المناسبة"
-            />
+            <div className="hidden sm:block md:col-span-2">
+              <input
+                type="date"
+                value={date}
+                min={new Date().toISOString().slice(0, 10)}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                aria-label="تاريخ المناسبة"
+              />
+            </div>
           </fieldset>
 
-          <div className="flex flex-wrap items-center gap-3 mt-3">
+          {/* Mobile Segmented City Filter (Scrollable Pills) */}
+          <div className="sm:hidden mt-4 -mx-4 px-4 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-2 w-max">
+              <button
+                type="button"
+                onClick={() => setCity("")}
+                className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors touch-card ${!city ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground"}`}
+              >
+                الكل
+              </button>
+              {(citiesQ.data ?? []).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCity(c)}
+                  className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors touch-card ${city === c ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground"}`}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="hidden sm:flex flex-wrap items-center gap-3 mt-3">
             <label className="text-xs text-muted-foreground">ترتيب:</label>
             <select
               value={sort}
@@ -366,7 +410,7 @@ function SearchPage() {
           />
         ) : (
           <motion.div
-            className="columns-1 sm:columns-2 lg:columns-3 gap-4"
+            className="columns-1 sm:columns-2 lg:columns-3 gap-4 -mx-4 sm:mx-0"
             key={`${debouncedQ}|${city}|${minPrice}|${maxPrice}|${date}|${sort}|${minRating}`}
           >
             {displayResults.map((p, idx) => (
@@ -399,8 +443,7 @@ function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number })
           whileHover={{ scale: 1.015, y: -3 }}
           whileTap={{ scale: 0.985 }}
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
-          className="relative overflow-hidden rounded-sm cursor-pointer group
-                     bg-gradient-royal"
+          className="relative overflow-hidden sm:rounded-sm cursor-pointer group bg-gradient-royal border-b sm:border-0 border-border/5"
           style={{ aspectRatio: "3/4" }}
         >
           {p.cover_url ? (

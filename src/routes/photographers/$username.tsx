@@ -213,11 +213,24 @@ function PhotographerPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
-      <Header />
+      {/* إخفاء الهيدر التقليدي في الموبايل واستبداله بزر رجوع بسيط */}
+      <div className="hidden sm:block">
+        <Header />
+      </div>
+
+      {/* شريط التنقل العلوي للموبايل (App-like Top Bar) */}
+      <div className="sm:hidden fixed top-0 inset-x-0 z-40 bg-charcoal/80 backdrop-blur-md border-b border-ivory/10 h-14 flex items-center px-4 pt-[env(safe-area-inset-top)]">
+        <button
+          onClick={() => window.history.back()}
+          className="h-8 w-8 bg-ivory/10 rounded-full flex items-center justify-center text-ivory hover:bg-ivory/20"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
 
       {/* HERO */}
       {/* HERO — Editorial Magazine layout */}
-      <section className="relative bg-charcoal text-ivory grain-overlay overflow-hidden">
+      <section className="relative bg-charcoal text-ivory grain-overlay overflow-hidden pt-14 sm:pt-0">
         {/* Top meta strip: ISSUE / DATE / FEATURE — like a magazine masthead */}
         <div className="container-editorial pt-8 pb-4 border-b border-ivory/10 flex flex-wrap items-center gap-x-8 gap-y-2 text-[10px] uppercase tracking-[0.35em] opacity-70">
           <span>Memoria · العدد ٠١</span>
@@ -436,7 +449,7 @@ function PhotographerPage() {
       <Footer />
 
       {/* Sticky mobile booking CTA — only shows on small screens */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-elegant">
+      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">احجزي مع</div>

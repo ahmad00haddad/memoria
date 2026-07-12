@@ -296,13 +296,21 @@ function Dashboard() {
 
   return (
     <PullToRefresh onRefresh={async () => { await loadData(); }}>
-      <div className="min-h-screen bg-background">
-        <Header />
+      <div className="min-h-screen bg-background sm:pb-0 pb-20">
+        <div className="hidden sm:block">
+          <Header />
+        </div>
         <OnboardingWizard shouldShow={onboardingNeeded} />
         <NotificationPermission />
 
-        <section className="container-editorial py-12">
-        <div className="flex items-end justify-between mb-8">
+        <section className="container-editorial py-6 sm:py-12">
+        {/* Mobile Large Title */}
+        <div className="sm:hidden mb-6 px-2 flex items-center justify-between">
+          <h1 className="font-serif text-3xl font-bold">لوحتي</h1>
+          <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary">خروج</button>
+        </div>
+
+        <div className="hidden sm:flex items-end justify-between mb-8">
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">لوحة المصوّر</div>
             <h1 className="font-serif text-4xl">أهلاً، {profile?.display_name ?? "مصوّر"}</h1>
