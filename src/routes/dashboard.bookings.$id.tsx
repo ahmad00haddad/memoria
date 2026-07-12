@@ -607,7 +607,7 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
               {photos.map((p) => (
                 <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden">
                   {p.url && <img src={p.url} alt={p.caption ?? ""} className="w-full h-full object-cover" />}
-                  <button onClick={() => remove(p.id)} className="absolute top-1 left-1 bg-black/60 text-white p-1 rounded-sm opacity-0 group-hover:opacity-100 transition">
+                  <button onClick={() => remove(p.id)} className="absolute top-1 left-1 bg-black/60 text-white p-1 rounded-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>

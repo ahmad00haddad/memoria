@@ -306,3 +306,95 @@ export const processDepositRefund = createServerFn({ method: "POST" })
       provider_refund_id: providerRefundId,
     };
   });
+
+// ============================================================================
+// reconcilePaymentStatus — مصالحة مالية يدوية (Fix #5)
+// ----------------------------------------------------------------------------
+// يُستخدم عندما تعلق حالة الدفع بسبب انقطاع الـ Webhook.
+// يستعلم مباشرة من بوابة الدفع (Stripe) عن حالة الجلسة ويحدّث قاعدة البيانات.
+// لا يحتاج أي auth — يعمل بواسطة رمز التتبع العشوائي (token-gated).
+// ============================================================================
+export const reconcilePaymentStatus = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string }) => {
+    const TOKEN_RE_LOCAL = /^[A-Za-z0-9_-]{16,64}$/;
+    if (!d || typeof d.token !== "string" || !TOKEN_RE_LOCAL.test(d.token)) {
+      throw new Error("invalid token");
+    }
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // 1) جلب الحجز من رمز التتبع
+    const { data: bk, error } = await supabaseAdmin
+      .from("bookings")
+      .select("id, status, deposit_confirmed_at, deposit_payment_provider, deposit_checkout_session_id")
+      .eq("client_tracking_token", data.token)
+      .is("deleted_at", null)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!bk) throw new Error("الحجز غير موجود");
+
+    // إذا كان الحجز مؤكّداً مسبقاً — لا حاجة لشيء
+    if (bk.deposit_confirmed_at || bk.status === "confirmed") {
+      return { status: "already_confirmed", updated: false };
+    }
+
+    // لا توجد جلسة دفع لمطابقتها
+    if (!bk.deposit_checkout_session_id) {
+      return { status: "no_session", updated: false };
+    }
+
+    // 2) التحقق عبر Stripe مباشرةً
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey || bk.deposit_payment_provider !== "stripe") {
+      return { status: "provider_not_supported", updated: false };
+    }
+
+    const sessRes = await fetch(
+      `https://api.stripe.com/v1/checkout/sessions/${bk.deposit_checkout_session_id}`,
+      { headers: { Authorization: `Bearer ${stripeKey}` } }
+    );
+
+    if (!sessRes.ok) {
+      throw new Error(`Stripe API error: ${sessRes.status}`);
+    }
+
+    const sess: any = await sessRes.json();
+
+    // 3) إذا كانت حالة الدفع "مكتملة" → حدّث قاعدة البيانات
+    if (sess.payment_status === "paid" || sess.status === "complete") {
+      const now = new Date().toISOString();
+      await supabaseAdmin
+        .from("bookings")
+        .update({
+          status: "confirmed",
+          deposit_confirmed_at: now,
+          deposit_confirmation_method: "reconcile_api",
+          updated_at: now,
+        } as any)
+        .eq("id", bk.id);
+
+      // سجّل في audit_logs
+      await supabaseAdmin.from("audit_logs").insert({
+        action: "booking.deposit.reconciled",
+        actor_id: null,
+        entity_type: "booking",
+        entity_id: bk.id,
+        after_data: {
+          session_id: bk.deposit_checkout_session_id,
+          stripe_status: sess.payment_status,
+          method: "reconcile_api",
+        } as any,
+      });
+
+      return { status: "reconciled", updated: true };
+    }
+
+    // 4) الدفع لم يكتمل بعد حسب Stripe
+    return {
+      status: sess.payment_status ?? "unknown",
+      updated: false,
+    };
+  });

@@ -11,7 +11,7 @@ import {
   clientAddNote,
 } from "@/lib/booking.functions";
 import { clientCancelBooking } from "@/lib/cancellation.functions";
-import { createDepositCheckout, isPaymentsEnabled } from "@/lib/payments.functions";
+import { createDepositCheckout, isPaymentsEnabled, reconcilePaymentStatus } from "@/lib/payments.functions";
 import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, CreditCard, XCircle } from "lucide-react";
@@ -74,11 +74,13 @@ function TrackingPage() {
   const cancelFn = useServerFn(clientCancelBooking);
   const checkoutFn = useServerFn(createDepositCheckout);
   const isPayEnabledFn = useServerFn(isPaymentsEnabled);
+  const reconcileFn = useServerFn(reconcilePaymentStatus);
 
   const [b, setB] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [payLoading, setPayLoading] = useState(false);
+  const [reconcileLoading, setReconcileLoading] = useState(false);
   const [payEnabled, setPayEnabled] = useState(false);
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
@@ -242,6 +244,28 @@ function TrackingPage() {
     }
   };
 
+  // Fix #5: مصالحة مالية يدوية عند انقطاع الـ Webhook
+  const onReconcile = async () => {
+    setReconcileLoading(true);
+    try {
+      const res: any = await reconcileFn({ data: { token } });
+      if (res?.updated) {
+        toast.success("تم تأكيد الدفع وتحديث حالة الحجز بنجاح! تحديث الصفحة…");
+        setTimeout(() => load(), 1500);
+      } else if (res?.status === "already_confirmed") {
+        toast.success("الحجز مؤكّد مسبقاً.");
+      } else if (res?.status === "no_session") {
+        toast.message("لم يتم إنشاء جلسة دفع إلكتروني لهذا الحجز.");
+      } else {
+        toast.message(`حالة الدفع حسب البوابة: ${res?.status ?? "unknown"}. إن كنتِ قد دفعتِ فعلاً، تواصلي مع المصوّرة.`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر التحقق من حالة الدفع");
+    } finally {
+      setReconcileLoading(false);
+    }
+  };
+
   // ✅ إصلاح: فتح Dialog بدلاً من window.prompt (يعمل في PWA + كل المتصفحات)
   const onClientCancel = () => {
     setShowCancelDialog(true);
@@ -287,7 +311,13 @@ function TrackingPage() {
           </div>
         </div>
 
-        {/* Timeline */}
+        {/* ══════════════════════════════════════════
+            مؤشر تقدم الحجز البصري (Fix #2)
+            يُظهر المرحلة الحالية بوضوح تام للعميل
+        ══════════════════════════════════════════ */}
+        <BookingTimeline status={b.status} />
+
+        {/* Timeline — تفاصيل المراحل */}
         <div className="rounded-sm border border-border bg-card p-5 mb-6">
           <h2 className="font-serif text-lg mb-4">حالة الحجز</h2>
           <ol className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -345,9 +375,24 @@ function TrackingPage() {
             {payEnabled && b.status !== "cancelled" && (
               <div className="bg-card border border-emerald-200 rounded-sm p-3 mb-4">
                 <div className="text-xs uppercase tracking-[0.2em] text-emerald-700 mb-2">طريقة سريعة — دفع إلكتروني</div>
-                <button onClick={onPayOnline} disabled={payLoading}
-                        className="w-full bg-emerald-600 text-white py-2.5 rounded-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60">
-                  <CreditCard className="h-4 w-4" /> {payLoading ? "جاري التحويل…" : "ادفعي العربون أونلاين الآن"}
+                {/* Fix #1: الزر معطل بالكامل أثناء التحميل لمنع النقر المتكرر والدفع المزدوج */}
+                <button
+                  onClick={onPayOnline}
+                  disabled={payLoading}
+                  aria-disabled={payLoading}
+                  className="w-full bg-emerald-600 text-white py-2.5 rounded-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed transition-opacity"
+                >
+                  {payLoading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                      </svg>
+                      جاري التحويل لبوابة الدفع…
+                    </>
+                  ) : (
+                    <><CreditCard className="h-4 w-4" /> ادفعي العربون أونلاين الآن</>
+                  )}
                 </button>
                 <div className="text-[11px] text-muted-foreground mt-2 text-center">— أو استخدمي CliQ يدوياً أدناه —</div>
               </div>
@@ -409,6 +454,35 @@ function TrackingPage() {
         {b.deposit_sent_at && !b.deposit_confirmed_at && (
           <div className="rounded-sm border border-amber-200 bg-amber-50 p-4 mb-6 text-sm text-amber-900">
             تم استلام إشعار العربون. بانتظار تأكيد المصورة.
+          </div>
+        )}
+
+        {/* Fix #5: زر المصالحة — يظهر فقط إذا كان هناك جلسة دفع إلكتروني معلّقة */}
+        {b.deposit_checkout_session_id && !b.deposit_confirmed_at && b.status !== "confirmed" && b.status !== "cancelled" && (
+          <div className="rounded-sm border border-blue-200 bg-blue-50 dark:border-blue-900/40 dark:bg-blue-950/20 p-4 mb-6 text-sm">
+            <div className="font-medium text-blue-800 dark:text-blue-300 mb-1 flex items-center gap-2">
+              <CreditCard className="h-4 w-4" /> دفعتِ إلكترونياً ولم يُؤكَّد الحجز؟
+            </div>
+            <p className="text-blue-700 dark:text-blue-400 mb-3">
+              أحياناً يتأخر وصول تأكيد الدفع. اضغطي الزر أدناه للتحقق التلقائي من بوابة الدفع وتحديث حالة حجزك.
+            </p>
+            <button
+              onClick={onReconcile}
+              disabled={reconcileLoading}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-blue-600 text-white text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+            >
+              {reconcileLoading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                  </svg>
+                  جاري التحقق…
+                </>
+              ) : (
+                "تحقق من حالة الدفع الآن"
+              )}
+            </button>
           </div>
         )}
 
@@ -607,7 +681,16 @@ function ClientGallery({ token }: { token: string }) {
         <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {data.photos.map((p: any, idx: number) => (
             <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightboxIdx(idx)} style={{ touchAction: 'manipulation' }}>
-              {p.url && <img src={p.url} alt={p.caption ?? ""} loading="lazy" className="w-full h-full object-cover transition group-hover:scale-105" />}
+              {/* Fix #3: استخدام thumbnail_url المضغوط في الشبكة — أداء أسرع بكثير */}
+              {(p.thumbnail_url || p.url) && (
+                <img
+                  src={p.thumbnail_url ?? p.url}
+                  alt={p.caption ?? ""}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover transition group-hover:scale-105"
+                />
+              )}
               {data.gallery.allow_downloads && p.url && (
                 <button
                   type="button"
@@ -629,7 +712,7 @@ function ClientGallery({ token }: { token: string }) {
                       toast.error("تعذّر التحميل، حاولي مرة أخرى");
                     }
                   }}
-                  className="absolute bottom-1 left-1 bg-black/60 text-white p-1.5 rounded-sm opacity-0 group-hover:opacity-100 transition"
+                  className="absolute bottom-1 left-1 bg-black/60 text-white p-1.5 rounded-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
                   aria-label="تحميل"
                 >
                   <Download className="h-3.5 w-3.5" />

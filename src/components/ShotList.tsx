@@ -155,7 +155,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
               </span>
               <button
                 onClick={() => remove(item.id)}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition"
+                className="sm:opacity-0 sm:group-hover:opacity-100 opacity-100 text-muted-foreground hover:text-destructive transition"
                 aria-label="حذف"
               >
                 <Trash2 className="h-4 w-4" />

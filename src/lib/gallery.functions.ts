@@ -110,7 +110,8 @@ export const getGalleryByToken = createServerFn({ method: "POST" })
 
     const withUrls = await Promise.all((photos ?? []).map(async (p) => {
       const resolvedPath = resolveStoragePath(p.storage_path);
-      // جرّب المسار المحوّل أولاً؛ إن فشل، ارجع للمسار الأصلي
+
+      // ── Fix #3: توليد signed URL للصورة الكاملة ──
       let signedUrl: string | null = null;
       const { data: s1 } = await supabaseAdmin.storage
         .from("delivery-photos")
@@ -118,11 +119,41 @@ export const getGalleryByToken = createServerFn({ method: "POST" })
       signedUrl = s1?.signedUrl ?? null;
 
       if (!signedUrl && resolvedPath !== p.storage_path) {
-        // المسار الأصلي غير موجود بعد (مصور لم يُفعّل الرفع الثنائي بعد)
         const { data: s2 } = await supabaseAdmin.storage
           .from("delivery-photos")
           .createSignedUrl(p.storage_path, signedUrlDuration);
         signedUrl = s2?.signedUrl ?? null;
+      }
+
+      // ── Fix #3: thumbnail_url مضغوط للعرض في شبكة الصور (Grid) ──
+      // يحسّن الأداء بشكل كبير: الصور الكاملة (2-10 MB) تصبح 50-100 KB
+      let thumbnailUrl: string | null = null;
+      const thumbPath = resolvedPath !== p.storage_path && !signedUrl ? p.storage_path : resolvedPath;
+      const { data: t1 } = await supabaseAdmin.storage
+        .from("delivery-photos")
+        .createSignedUrl(thumbPath, signedUrlDuration, {
+          transform: {
+            width: 600,
+            height: 600,
+            resize: "contain" as any,
+            quality: 70,
+          },
+        });
+      thumbnailUrl = t1?.signedUrl ?? null;
+
+      // ── Fix #4: تقليل جودة صور المعاينة قبل الدفع (Security Layer) ──
+      // حتى لو حصل العميل على الرابط الموقّع مباشرة،
+      // سيحصل على نسخة بجودة منخفضة وليس الصورة الأصلية
+      if (!finalPaid && signedUrl) {
+        const { data: lowQ } = await supabaseAdmin.storage
+          .from("delivery-photos")
+          .createSignedUrl(resolvedPath !== p.storage_path && signedUrl ? p.storage_path : resolvedPath, signedUrlDuration, {
+            transform: {
+              width: 1200,
+              quality: 55,
+            },
+          });
+        if (lowQ?.signedUrl) signedUrl = lowQ.signedUrl;
       }
 
       return {
@@ -130,7 +161,7 @@ export const getGalleryByToken = createServerFn({ method: "POST" })
         caption: p.caption,
         position: p.position,
         url: signedUrl,
-        // للواجهة: هل هذه الصورة بجودة كاملة؟
+        thumbnail_url: thumbnailUrl ?? signedUrl, // fallback لل_url الكامل إن فشل التحويل
         is_original: finalPaid,
       };
     }));
