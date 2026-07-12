@@ -174,7 +174,6 @@ function DashboardSkeleton() {
       </section>
       <Footer />
     </div>
-    </PullToRefresh>
   );
 }
 
