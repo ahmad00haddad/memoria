@@ -26,15 +26,20 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
 
     if (error) {
       console.error("[recover] error searching bookings:", error);
-      throw new Error("حدث خطأ أثناء البحث عن حجوزاتك");
+      throw new Error("حدث خطأ أثناء معالجة طلبك");
     }
+
+    const successResponse = { 
+      ok: true, 
+      message: "إذا كانت بياناتك مسجلة لدينا وحجوزاتك نشطة، ستصلك رسالة بروابط التتبع قريباً." 
+    };
 
     if (!bookings || bookings.length === 0) {
-      // إرجاع نجاح وهمي لتجنب تسريب المعلومات (Security Best Practice)
-      return { ok: true, found: false };
+      // إرجاع نجاح وهمي لتجنب تسريب المعلومات (Email Enumeration Prevention)
+      return successResponse;
     }
 
-    const base = process.env.PUBLIC_APP_URL || "https://memoria.jo";
+    const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
     let sentEmail = false;
 
     // تجميع الروابط
@@ -58,15 +63,16 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
     if (clientEmail && val.includes("@")) {
       try {
         const { sendEmail } = await import("@/lib/email.server");
-        await sendEmail({
+        // لا ننتظر إرسال البريد (fire-and-forget جزئي لتثبيت وقت الاستجابة)
+        sendEmail({
           to: clientEmail,
           subject: "روابط تتبع حجوزاتك — Memoria",
           html: emailHtml,
           template: "recover_tracking_links",
-        });
+        }).catch(e => console.error("[recover] failed to send email", e));
         sentEmail = true;
       } catch (e) {
-        console.error("[recover] failed to send email", e);
+        console.error("[recover] failed to load email module", e);
       }
     }
 
@@ -74,24 +80,22 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
     if (!sentEmail && bookings[0].client_phone && !val.includes("@")) {
       try {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-        // يمكننا استخدام رسالة ترحيبية معدلة أو رسالة مخصصة
-        // للتبسيط، نرسل إشعاراً برابط التتبع لأول حجز
         const trackingUrl = `${base}/track/${bookings[0].client_tracking_token}`;
-        await sendWhatsAppNotification(
+        sendWhatsAppNotification(
           bookings[0].profiles?.id || "",
           bookings[0].client_phone,
-          "welcome", // نستخدم الـ template الأقرب
+          "recover_links",
           {
             client_name: bookings[0].client_name,
             photographer_name: "Memoria Support",
-            event_date: bookings[0].event_date,
+            event_date: String(bookings[0].event_date),
             tracking_url: trackingUrl,
           }
-        );
+        ).catch(e => console.error("[recover] failed to send whatsapp", e));
       } catch (e) {
-        console.error("[recover] failed to send whatsapp", e);
+        console.error("[recover] failed to load whatsapp module", e);
       }
     }
 
-    return { ok: true, found: true };
+    return successResponse;
   });

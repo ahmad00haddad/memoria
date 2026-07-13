@@ -7,7 +7,8 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const Route = createFileRoute("/dashboard/production")({ component: ProductionBoard });
 
@@ -91,122 +92,132 @@ function ProductionBoard() {
         <h1 className="font-serif text-4xl mt-2 mb-2">لوحة متابعة الإنتاج</h1>
         <p className="text-sm text-muted-foreground mb-6 max-w-2xl">تابعي كل حجز من يوم التصوير حتى التسليم. حرّكي الحجز بين المراحل بأزرار التالي/السابق.</p>
 
-        {/* Mobile stage selector */}
-        <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto">
-          <div className="flex gap-2 min-w-max pb-2">
-            {STAGES.map((s) => {
-              const count = bookings.filter((b) => (b.production_stage || "awaiting") === s.key).length;
-              const isActive = activeStage === s.key;
-              return (
-                <button
-                  key={s.key}
-                  onClick={() => setActiveStage(s.key)}
-                  className={`shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-sm border text-xs whitespace-nowrap transition ${isActive ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
-                >
-                  {s.icon}
-                  <span>{s.label}</span>
-                  <span className={`px-1.5 py-0.5 rounded-sm text-[10px] ${isActive ? "bg-ivory/20" : "bg-secondary"}`}>{count}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
-          {STAGES.map((s) => {
-            const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
-            return (
-              <div key={s.key} className={`rounded-sm border ${s.color} p-3 min-h-[200px]`}>
-                <div className="flex items-center gap-2 text-sm font-semibold mb-3">
-                  {s.icon}<span>{s.label}</span>
-                  <span className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-sm">{items.length}</span>
-                </div>
-                <motion.div className="space-y-2" layout>
-                  <AnimatePresence mode="popLayout">
-                  {items.map((b) => {
-                    const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
-                    return (
-                      <motion.div
-                        key={b.id}
-                        layout
-                        initial={{ opacity: 0, scale: 0.95, y: 8 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                        className="bg-card text-foreground rounded-sm border border-border p-3 text-xs space-y-1.5"
-                      >
-                        <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-sm hover:text-gold block">{b.client_name}</Link>
-                        <div className="text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
-                        {due !== null && s.key !== "delivered" && (
-                          <div className={due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
-                            {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
-                          </div>
-                        )}
-                        <div className="flex gap-1 pt-1">
-                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, -1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="السابق"><ChevronRight className="h-3 w-3" /></motion.button>
-                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, 1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="التالي"><ChevronLeft className="h-3 w-3" /></motion.button>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                  </AnimatePresence>
-                  {items.length === 0 && <p className="text-[11px] text-muted-foreground text-center py-4">—</p>}
-                </motion.div>
+        {bookings.length === 0 ? (
+          <EmptyState
+            icon={Inbox}
+            title="لا توجد حجوزات في لوحة الإنتاج"
+            description="عند تأكيد حجوزات جديدة، ستظهر هنا لمتابعة مراحل تجهيزها."
+          />
+        ) : (
+          <>
+            {/* Mobile stage selector */}
+            <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto">
+              <div className="flex gap-2 min-w-max pb-2">
+                {STAGES.map((s) => {
+                  const count = bookings.filter((b) => (b.production_stage || "awaiting") === s.key).length;
+                  const isActive = activeStage === s.key;
+                  return (
+                    <button
+                      key={s.key}
+                      onClick={() => setActiveStage(s.key)}
+                      className={`shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-sm border text-xs whitespace-nowrap transition ${isActive ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                    >
+                      {s.icon}
+                      <span>{s.label}</span>
+                      <span className={`px-1.5 py-0.5 rounded-sm text-[10px] ${isActive ? "bg-ivory/20" : "bg-secondary"}`}>{count}</span>
+                    </button>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
+            </div>
 
-        {/* Mobile single-column view */}
-        <div className="lg:hidden">
-          {(() => {
-            const s = STAGES.find((x) => x.key === activeStage) ?? STAGES[0];
-            const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
-            return (
-              <div className={`rounded-sm border ${s.color} p-3`}>
-                <div className="flex items-center gap-2 text-sm font-semibold mb-3">
-                  {s.icon}<span>{s.label}</span>
-                  <span className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-sm">{items.length}</span>
-                </div>
-                <motion.div className="space-y-2" layout>
-                  <AnimatePresence mode="popLayout">
-                  {items.map((b) => {
-                    const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
-                    return (
-                      <motion.div
-                        key={b.id}
-                        layout
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                        className="bg-card text-foreground rounded-sm border border-border p-4 text-sm space-y-2"
-                      >
-                        <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-base hover:text-gold block">{b.client_name}</Link>
-                        <div className="text-xs text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
-                        {due !== null && s.key !== "delivered" && (
-                          <div className={`text-xs ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
-                            {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
-                          </div>
-                        )}
-                        <div className="flex gap-2 pt-2 border-t border-border">
-                          <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs">
-                            <ChevronRight className="h-4 w-4" /> السابق
-                          </motion.button>
-                          <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, 1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs">
-                            التالي <ChevronLeft className="h-4 w-4" />
-                          </motion.button>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                  </AnimatePresence>
-                  {items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">لا حجوزات في هذه المرحلة</p>}
-                </motion.div>
-              </div>
-            );
-          })()}
-        </div>
+            <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
+              {STAGES.map((s) => {
+                const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
+                return (
+                  <div key={s.key} className={`rounded-sm border ${s.color} p-3 min-h-[200px]`}>
+                    <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                      {s.icon}<span>{s.label}</span>
+                      <span className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-sm">{items.length}</span>
+                    </div>
+                    <motion.div className="space-y-2" layout>
+                      <AnimatePresence mode="popLayout">
+                      {items.map((b) => {
+                        const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
+                        return (
+                          <motion.div
+                            key={b.id}
+                            layout
+                            initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                            className="bg-card text-foreground rounded-sm border border-border p-3 text-xs space-y-1.5"
+                          >
+                            <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-sm hover:text-gold block">{b.client_name}</Link>
+                            <div className="text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
+                            {due !== null && s.key !== "delivered" && (
+                              <div className={due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
+                                {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
+                              </div>
+                            )}
+                            <div className="flex gap-1 pt-1">
+                              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, -1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="السابق"><ChevronRight className="h-3 w-3" /></motion.button>
+                              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, 1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="التالي"><ChevronLeft className="h-3 w-3" /></motion.button>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                      </AnimatePresence>
+                      {items.length === 0 && <p className="text-[11px] text-muted-foreground text-center py-4">—</p>}
+                    </motion.div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Mobile single-column view */}
+            <div className="lg:hidden">
+              {(() => {
+                const s = STAGES.find((x) => x.key === activeStage) ?? STAGES[0];
+                const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
+                return (
+                  <div className={`rounded-sm border ${s.color} p-3`}>
+                    <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                      {s.icon}<span>{s.label}</span>
+                      <span className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-sm">{items.length}</span>
+                    </div>
+                    <motion.div className="space-y-2" layout>
+                      <AnimatePresence mode="popLayout">
+                      {items.map((b) => {
+                        const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
+                        return (
+                          <motion.div
+                            key={b.id}
+                            layout
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                            className="bg-card text-foreground rounded-sm border border-border p-4 text-sm space-y-2"
+                          >
+                            <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-base hover:text-gold block">{b.client_name}</Link>
+                            <div className="text-xs text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
+                            {due !== null && s.key !== "delivered" && (
+                              <div className={`text-xs ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
+                                {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
+                              </div>
+                            )}
+                            <div className="flex gap-2 pt-2 border-t border-border">
+                              <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs">
+                                <ChevronRight className="h-4 w-4" /> السابق
+                              </motion.button>
+                              <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, 1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs">
+                                التالي <ChevronLeft className="h-4 w-4" />
+                              </motion.button>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                      </AnimatePresence>
+                      {items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">لا حجوزات في هذه المرحلة</p>}
+                    </motion.div>
+                  </div>
+                );
+              })()}
+            </div>
+          </>
+        )}
       </section>
       <Footer />
     </div>

@@ -77,8 +77,8 @@ function SubscriptionBanner({ sub }: { sub: any }) {
 
   const config: Record<string, { icon: any; bg: string; text: string; cta: string }> = {
     trial: { icon: <Sparkles className="h-5 w-5 text-gold" />, bg: "bg-gold/10 border-gold/40 dark:bg-gold/5", text: `تجربة مجانية — متبقّي ${daysLeft} يوماً`, cta: "اشتركي الآن" },
-    active: { icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />, bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900", text: `اشتراك نشط — يتجدّد بعد ${daysLeft} يوماً`, cta: "إدارة الاشتراك" },
-    pending_review: { icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900", text: "دفعتك قيد المراجعة — سيُفعَّل اشتراكك خلال 24 ساعة", cta: "عرض التفاصيل" },
+    active: { icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />, bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-400", text: `اشتراك نشط - ينتهي بعد ${daysLeft} يومًا`, cta: "إدارة الاشتراك" },
+    pending_review: { icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-400", text: "بانتظار مراجعة الإدارة - الموافقة تستغرق عادةً 24 ساعة", cta: "حالة الاشتراك" },
     expired: { icon: <AlertTriangle className="h-5 w-5 text-destructive dark:text-red-400" />, bg: "bg-destructive/10 border-destructive/40 dark:bg-red-950/40 dark:border-red-900", text: "انتهى اشتراكك — جدّدي للاستمرار", cta: "جدّدي الاشتراك" },
     canceled: { icon: <AlertTriangle className="h-5 w-5 text-muted-foreground" />, bg: "bg-secondary border-border", text: "اشتراكك ملغى", cta: "إعادة التفعيل" },
   };
@@ -119,7 +119,7 @@ function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCou
         </button>
       </div>
       {allDone && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950/40">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-400">
           <div className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
             <PartyPopper className="h-5 w-5" />
             أكملتِ كل الخطوات — حسابك جاهز تماماً! 🎉
@@ -301,7 +301,6 @@ function Dashboard() {
           <Header />
         </div>
         <OnboardingWizard shouldShow={onboardingNeeded} />
-        <NotificationPermission />
 
         <section className="container-editorial py-6 sm:py-12">
         {/* Mobile Large Title */}

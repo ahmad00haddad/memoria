@@ -357,9 +357,9 @@ function Row({ k, v, bold }: any) {
 
 function PrivacyBadge({ level }: { level?: string }) {
   const map: Record<string, { icon: any; t: string; c: string }> = {
-    public: { icon: <Eye className="h-3.5 w-3.5" />, t: "صور قابلة للنشر", c: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-    no_publish: { icon: <EyeOff className="h-3.5 w-3.5" />, t: "بدون نشر علني", c: "bg-amber-50 text-amber-800 border-amber-200" },
-    private_only: { icon: <Lock className="h-3.5 w-3.5" />, t: "خصوصية تامة — فريق نسائي", c: "bg-rose-50 text-rose-700 border-rose-200" },
+    public: { icon: <Eye className="h-3.5 w-3.5" />, t: "نشر ترويجي كامل", c: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" },
+    no_publish: { icon: <EyeOff className="h-3.5 w-3.5" />, t: "حفظ بدون نشر", c: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" },
+    private_only: { icon: <Lock className="h-3.5 w-3.5" />, t: "خصوصية تامة - لقطات نسائية", c: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20" },
   };
   const x = map[level ?? "public"] ?? map.public;
   return <div className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-sm border ${x.c}`}>{x.icon} {x.t}</div>;
@@ -410,7 +410,7 @@ function ProductionPanel({ b, onSetStage, onSaveLink }: { b: any; onSetStage: (s
 function DeliveryCountdown({ b }: { b: any }) {
   if (b.delivered_at) {
     return (
-      <div className="mb-4 rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 flex items-center gap-2">
+      <div className="mb-4 rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 flex items-center gap-2">
         <CheckCircle2 className="h-4 w-4" /> سُلِّمت الصور في {new Date(b.delivered_at).toLocaleDateString("ar-JO")}
       </div>
     );
@@ -420,7 +420,7 @@ function DeliveryCountdown({ b }: { b: any }) {
   const days = Math.ceil((due.getTime() - Date.now()) / 86400000);
   const overdue = days < 0;
   return (
-    <div className={`mb-4 rounded-sm border p-3 text-sm flex items-center gap-2 ${overdue ? "border-destructive/40 bg-destructive/10 text-destructive" : days <= 7 ? "border-amber-200 bg-amber-50 text-amber-800" : "border-border bg-secondary/40"}`}>
+    <div className={`mb-4 rounded-sm border p-3 text-sm flex items-center gap-2 ${overdue ? "border-destructive/40 bg-destructive/10 text-destructive" : days <= 7 ? "border-amber-200 bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" : "border-border bg-secondary/40"}`}>
       <Clock className="h-4 w-4" />
       {overdue
         ? <span>متأخّر <strong>{Math.abs(days)}</strong> يومًا عن موعد التسليم ({due.toLocaleDateString("ar-JO")})</span>

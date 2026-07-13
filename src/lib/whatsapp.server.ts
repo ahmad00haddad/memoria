@@ -253,5 +253,23 @@ export async function sendWhatsAppNotification(
     messageBody = buildDefaultMessage(category, vars);
   }
 
-  return sendWhatsAppText(to, messageBody);
+  // محاولة الإرسال الفعلي
+  const res = await sendWhatsAppText(to, messageBody);
+
+  // تسجيل الإشعار في قاعدة البيانات (Notification Queue / Log)
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("whatsapp_log").insert({
+      photographer_id: photographerId,
+      recipient_phone: to,
+      template_name: category,
+      payload: vars,
+      status: res.ok ? "sent" : "failed",
+      error_message: res.error || null,
+    });
+  } catch (e) {
+    console.error("[whatsapp_log] failed to write log", e);
+  }
+
+  return res;
 }

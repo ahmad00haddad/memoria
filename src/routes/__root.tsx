@@ -99,10 +99,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Memoria (ميموريا) — ذاكرة يومكِ، محفوظة بأمان" },
       { property: "og:description", content: "ميموريا: منصة أردنية متخصّصة في حجز مصوّرات الأعراس. مواعيد واضحة، عقود رقمية، وعربون موثّق — بعيداً عن فوضى الواتساب." },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      { property: "og:image", content: "https://memoria-jo.lovable.app/og-default.png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@memoria_jo" },
       { name: "twitter:title", content: "Memoria (ميموريا) — ذاكرة يومكِ، محفوظة بأمان" },
       { name: "twitter:description", content: "ميموريا: منصة أردنية متخصّصة في حجز مصوّرات الأعراس." },
+      { name: "twitter:image", content: "https://memoria-jo.lovable.app/og-default.png" },
     ],
     links: [
       {
@@ -226,9 +230,12 @@ function RootComponent() {
     };
   }, []);
 
-  // Smooth scroll with Lenis
+  // M7: Smooth scroll with Lenis — مُعطّل في مسارات Dashboard/Admin (جداول + Kanban لا تحتاج smooth scroll)
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // تعطيل Lenis في لوحة التحكم والمسارات الإدارية
+    if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/notifications')) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     
     const lenis = new Lenis({
@@ -249,10 +256,9 @@ function RootComponent() {
       cancelAnimationFrame(animationFrameId);
       lenis.destroy();
     };
-  }, []);
+  }, [pathname]);
 
   // Page entrance animation (Task 7)
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <QueryClientProvider client={queryClient}>

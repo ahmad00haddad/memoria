@@ -108,8 +108,14 @@ export const getGalleryByToken = createServerFn({ method: "POST" })
       ? 60 * 60 * 24 * 30  // 30 يوماً للنسخة الأصلية بعد الدفع
       : 60 * 60 * 24 * 7;  // 7 أيام للمعاينة المحمية
 
-    const withUrls = await Promise.all((photos ?? []).map(async (p) => {
-      const resolvedPath = resolveStoragePath(p.storage_path);
+    const withUrls = [];
+    const photoList = photos ?? [];
+    const batchSize = 5;
+
+    for (let i = 0; i < photoList.length; i += batchSize) {
+      const batch = photoList.slice(i, i + batchSize);
+      const batchResults = await Promise.all(batch.map(async (p) => {
+        const resolvedPath = resolveStoragePath(p.storage_path);
 
       // ── Fix #3: توليد signed URL للصورة الكاملة ──
       let signedUrl: string | null = null;
@@ -161,10 +167,12 @@ export const getGalleryByToken = createServerFn({ method: "POST" })
         caption: p.caption,
         position: p.position,
         url: signedUrl,
-        thumbnail_url: thumbnailUrl ?? signedUrl, // fallback لل_url الكامل إن فشل التحويل
-        is_original: finalPaid,
+        thumbnail_url: thumbnailUrl || signedUrl || p.storage_path,
+        is_original: !!finalPaid,
       };
-    }));
+      }));
+      withUrls.push(...batchResults);
+    }
 
     let coverUrl: string | null = null;
     if (g.cover_path) {

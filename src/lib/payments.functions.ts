@@ -148,9 +148,9 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
     const currency = (process.env.PAYMENT_CURRENCY || "JOD").toUpperCase();
     const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
 
-    const checkout = await provider.createDepositCheckout({
-      // نُعيد استخدام createDepositCheckout مع metadata مختلفة
-      booking_id: `sub_${userId}_${Date.now()}`, // placeholder — الـ webhook يقرأ من metadata
+    const checkout = await provider.createSubscriptionCheckout({
+      photographer_id: userId,
+      months: data.months,
       amount,
       currency,
       description: `اشتراك Memoria — ${data.months} ${data.months === 1 ? "شهر" : "أشهر"}`,
@@ -213,7 +213,14 @@ export const processDepositRefund = createServerFn({ method: "POST" })
     if (bk.refund_status === "refunded") throw new Error("تم معالجة الاسترداد مسبقاً");
     if (bk.refund_status !== "pending") throw new Error("هذا الحجز لا يحتاج استرداداً");
 
-    const refundAmount = data.amount ?? Number(bk.refund_amount ?? 0);
+    const maxRefund = Number(bk.refund_amount ?? 0);
+    const refundAmount = data.amount ?? maxRefund;
+    
+    // التحقق من مبلغ الاسترداد: منع استرداد أكثر من المسموح (#6)
+    if (refundAmount > maxRefund) {
+      throw new Error("لا يمكن استرداد مبلغ أكبر من القيمة المسموحة");
+    }
+
     let providerRefundId: string | null = null;
 
     // محاولة الاسترداد عبر بوّابة الدفع إن كانت مهيّأة
@@ -284,16 +291,12 @@ export const processDepositRefund = createServerFn({ method: "POST" })
 
     // إيميل للعميل (fire-and-forget)
     try {
-      const { sendEmail } = await import("@/lib/email.server");
+      const { sendEmail, tplDepositRefunded } = await import("@/lib/email.server");
       if (bk.client_email) {
-        const { data: prof } = await supabaseAdmin
-          .from("profiles").select("display_name").eq("id", bk.photographer_id).maybeSingle();
         await sendEmail({
           to: bk.client_email,
           subject: "تم استرداد العربون ✓",
-          html: `<p>مرحباً ${bk.client_name || ""},</p>
-<p>تم معالجة استرداد العربون بمبلغ <strong>${refundAmount}</strong> للحجز بتاريخ ${bk.event_date}.</p>
-<p>سيصلك المبلغ خلال 5-10 أيام عمل حسب طريقة الدفع المستخدمة.</p>`,
+          html: tplDepositRefunded(bk.client_name || "", refundAmount, bk.event_date || ""),
           template: "deposit_refunded",
           related_booking_id: data.booking_id,
         });
@@ -324,6 +327,25 @@ export const reconcilePaymentStatus = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Rate Limit: Max 3 attempts per 10 minutes per token
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const { count } = await supabaseAdmin
+      .from("rate_limits")
+      .select("*", { count: "exact", head: true })
+      .eq("token", data.token)
+      .eq("action", "reconcile")
+      .gte("created_at", tenMinutesAgo);
+      
+    if (count !== null && count >= 3) {
+      return { status: "rate_limited", updated: false };
+    }
+    
+    // Log attempt
+    await supabaseAdmin.from("rate_limits").insert({
+      token: data.token,
+      action: "reconcile"
+    });
 
     // 1) جلب الحجز من رمز التتبع
     const { data: bk, error } = await supabaseAdmin
@@ -366,7 +388,7 @@ export const reconcilePaymentStatus = createServerFn({ method: "POST" })
     // 3) إذا كانت حالة الدفع "مكتملة" → حدّث قاعدة البيانات
     if (sess.payment_status === "paid" || sess.status === "complete") {
       const now = new Date().toISOString();
-      await supabaseAdmin
+      const { data: updateData } = await supabaseAdmin
         .from("bookings")
         .update({
           status: "confirmed",
@@ -374,7 +396,14 @@ export const reconcilePaymentStatus = createServerFn({ method: "POST" })
           deposit_confirmation_method: "reconcile_api",
           updated_at: now,
         } as any)
-        .eq("id", bk.id);
+        .eq("id", bk.id)
+        .is("deposit_confirmed_at", null)
+        .select("id")
+        .maybeSingle();
+
+      if (!updateData) {
+        return { status: "already_confirmed", updated: false };
+      }
 
       // سجّل في audit_logs
       await supabaseAdmin.from("audit_logs").insert({

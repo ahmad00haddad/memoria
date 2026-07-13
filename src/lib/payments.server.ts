@@ -28,6 +28,17 @@ export type DepositCheckoutInput = {
   client_email?: string | null;
 };
 
+export type SubscriptionCheckoutInput = {
+  photographer_id: string;
+  months: number;
+  amount: number;
+  currency: string;
+  description: string;
+  success_url: string;
+  cancel_url: string;
+  photographer_email?: string | null;
+};
+
 export type DepositCheckoutResult = {
   /** رابط صفحة الدفع لإعادة توجيه العميل إليه. */
   url: string;
@@ -51,6 +62,8 @@ export interface PaymentProvider {
   readonly name: string;
   /** إنشاء جلسة دفع وإرجاع رابط إعادة التوجيه. */
   createDepositCheckout(input: DepositCheckoutInput): Promise<DepositCheckoutResult>;
+  /** إنشاء جلسة دفع للاشتراكات. */
+  createSubscriptionCheckout(input: SubscriptionCheckoutInput): Promise<DepositCheckoutResult>;
   /** التحقّق من توقيع الـ webhook وفك ترميز الحمولة. يرمي خطأً عند فشل التحقّق. */
   verifyWebhook(rawBody: string, signatureHeader: string | null): Promise<VerifiedWebhook>;
   /** الاستعلام عن حالة الدفع بمعرّف الجلسة/النيّة. */
@@ -136,6 +149,40 @@ function createStripeProvider(secretKey: string): PaymentProvider {
         "payment_intent_data[metadata][booking_id]": input.booking_id,
         "payment_intent_data[metadata][kind]": "deposit",
         customer_email: input.client_email ?? undefined,
+        "line_items[0][quantity]": 1,
+        "line_items[0][price_data][currency]": input.currency.toLowerCase(),
+        "line_items[0][price_data][unit_amount]": toMinorUnit(input.amount, input.currency),
+        "line_items[0][price_data][product_data][name]": input.description,
+      });
+
+      const res = await fetch(`${API}/checkout/sessions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body,
+      });
+      const json: any = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(json?.error?.message || `Stripe checkout failed (HTTP ${res.status})`);
+      }
+      return { url: json.url as string, session_id: json.id as string, provider: "stripe" };
+    },
+
+    async createSubscriptionCheckout(input) {
+      const body = form({
+        mode: "payment",
+        success_url: input.success_url,
+        cancel_url: input.cancel_url,
+        client_reference_id: `sub_${input.photographer_id}_${Date.now()}`,
+        "metadata[kind]": "subscription",
+        "metadata[photographer_id]": input.photographer_id,
+        "metadata[months]": input.months,
+        "payment_intent_data[metadata][kind]": "subscription",
+        "payment_intent_data[metadata][photographer_id]": input.photographer_id,
+        "payment_intent_data[metadata][months]": input.months,
+        customer_email: input.photographer_email ?? undefined,
         "line_items[0][quantity]": 1,
         "line_items[0][price_data][currency]": input.currency.toLowerCase(),
         "line_items[0][price_data][unit_amount]": toMinorUnit(input.amount, input.currency),

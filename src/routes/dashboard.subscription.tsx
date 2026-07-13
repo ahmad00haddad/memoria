@@ -294,8 +294,8 @@ function StatusCard({ sub, isActive, trialDaysLeft, periodEnds }: {
 
   const config = {
     trial: { color: "text-gold", bg: "bg-gold/10 border-gold/30", icon: <Clock className="h-5 w-5 text-gold" />, label: "تجربة مجانية" },
-    active: { color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200", icon: <CheckCircle2 className="h-5 w-5 text-emerald-600" />, label: "نشط" },
-    pending_review: { color: "text-amber-600", bg: "bg-amber-50 border-amber-200", icon: <Clock className="h-5 w-5 text-amber-600" />, label: "قيد المراجعة" },
+    active: { color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900/50", icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />, label: "نشط" },
+    pending_review: { color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50", icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, label: "قيد المراجعة" },
     expired: { color: "text-destructive", bg: "bg-destructive/10 border-destructive/30", icon: <AlertTriangle className="h-5 w-5 text-destructive" />, label: "منتهي" },
     canceled: { color: "text-muted-foreground", bg: "bg-secondary border-border", icon: <AlertTriangle className="h-5 w-5" />, label: "ملغى" },
   }[sub.status];

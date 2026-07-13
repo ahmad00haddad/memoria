@@ -1,10 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 /**
- * Client-only GSAP ScrollTrigger parallax wrapper.
- * The first child (the image / media) translates upward as the section scrolls,
- * giving the hero a cinematic depth effect. SSR-safe: every GSAP call lives
- * inside useEffect, behind a window guard, and behind prefers-reduced-motion.
+ * Client-only parallax wrapper — powered by framer-motion
+ * (replaces GSAP/ScrollTrigger — ~40KB bundle savings)
  */
 export function HeroParallax({
   children,
@@ -16,49 +15,17 @@ export function HeroParallax({
   strength?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const root = ref.current;
-    if (!root) return;
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) return;
-
-    let cleanup = () => {};
-    let cancelled = false;
-
-    (async () => {
-      const [{ gsap }, { ScrollTrigger }] = await Promise.all([
-        import("gsap"),
-        import("gsap/ScrollTrigger"),
-      ]);
-      if (cancelled) return;
-      gsap.registerPlugin(ScrollTrigger);
-      const target = root.querySelector<HTMLElement>("[data-parallax-target]") ?? root.firstElementChild;
-      if (!target) return;
-
-      const tween = gsap.to(target, {
-        yPercent: strength / 6,
-        ease: "none",
-        scrollTrigger: {
-          trigger: root,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-      cleanup = () => {
-        tween.scrollTrigger?.kill();
-        tween.kill();
-      };
-    })();
-
-    return () => cleanup();
-  }, [strength]);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", `${strength / 6}%`]);
 
   return (
     <div ref={ref} className={className}>
-      {children}
+      <motion.div style={{ y }} className="will-change-transform">
+        {children}
+      </motion.div>
     </div>
   );
-}
+}

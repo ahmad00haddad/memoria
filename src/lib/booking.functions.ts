@@ -298,7 +298,7 @@ export const clientAddNote = createServerFn({ method: "POST" })
 
 export const submitReviewByToken = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string; rating: number; comment?: string | null; client_name?: string | null }) => {
-    if (!d || typeof d.token !== "string" || d.token.length < 16) throw new Error("invalid token");
+    if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
     if (!Number.isInteger(d.rating) || d.rating < 1 || d.rating > 5) throw new Error("invalid rating");
     if (d.comment && d.comment.length > 2000) throw new Error("comment too long");
     if (d.client_name && d.client_name.length > 120) throw new Error("name too long");
@@ -347,20 +347,9 @@ export const getPublicDepositInfo = createServerFn({ method: "POST" })
     return { username: d.username.trim().toLowerCase() };
   })
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: prof } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
-      .eq("username", data.username)
-      .eq("is_published", true)
-      .maybeSingle();
-    if (!prof) return { cliq_alias: null, bank_info: null };
-    const { data: priv } = await supabaseAdmin
-      .from("photographer_private")
-      .select("cliq_alias, bank_info")
-      .eq("user_id", prof.id)
-      .maybeSingle();
-    return { cliq_alias: priv?.cliq_alias ?? null, bank_info: priv?.bank_info ?? null };
+    // #3 حماية بيانات الدفع البنكية
+    // لمنع سحب حسابات الدفع لأشخاص لم يحجزوا أبداً، لا يتم كشفها عبر البروفايل العام.
+    return { cliq_alias: null, bank_info: null };
   });
 
 // Records a referral after a new photographer signs up.
@@ -409,13 +398,24 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: bk, error } = await supabase
       .from("bookings")
-      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id, client_phone, client_tracking_token, client_name, event_date, total_price")
+      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id, client_phone, client_tracking_token, client_name, event_date, total_price, deposit_checkout_session_id")
       .eq("id", data.booking_id)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!bk) throw new Error("الحجز غير موجود");
     if (bk.photographer_id !== userId) throw new Error("forbidden");
-    if (!bk.deposit_sent_at && !bk.deposit_proof_url) {
+
+    // محاولة المصالحة التلقائية إذا كانت هناك جلسة دفع
+    if (bk.deposit_checkout_session_id && !bk.deposit_confirmed_at) {
+      try {
+        const { reconcilePaymentStatus } = await import("@/lib/payments.functions");
+        await reconcilePaymentStatus({ data: { token: bk.client_tracking_token } });
+      } catch (e) {
+        console.error("[booking] auto-reconciliation failed during manual confirm", e);
+      }
+    }
+
+    if (!bk.deposit_sent_at && !bk.deposit_proof_url && !bk.deposit_checkout_session_id) {
       throw new Error("لا يمكن تأكيد الحجز قبل وصول إثبات العربون من العميل");
     }
     const patch: any = { status: "confirmed", updated_at: new Date().toISOString() };
@@ -441,6 +441,17 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     } catch (e) {
       // العقد اختياري — لا نُفشل التأكيد إذا لم يوجد قالب.
       console.error("[booking] auto_generate_contract failed:", e);
+      // إنشاء إشعار للمصورة بفشل توليد العقد (M4)
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin.from("notifications").insert({
+          user_id: userId,
+          type: "system",
+          title: "فشل توليد العقد التلقائي",
+          message: "حدث خطأ أثناء محاولة توليد العقد تلقائياً لهذا الحجز. يرجى إنشاء العقد يدوياً.",
+          action_url: `/dashboard/bookings/${data.booking_id}`
+        });
+      } catch (err) { console.error("[booking] failed to create contract failure notification", err); }
     }
     // إشعار واتساب تأكيد الحجز — fire-and-forget
     if (bk.client_phone) {

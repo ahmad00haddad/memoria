@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 
 interface ScrollRevealProps {
   children: React.ReactNode;
@@ -7,63 +7,31 @@ interface ScrollRevealProps {
   direction?: "up" | "left" | "right" | "none";
 }
 
+const directionVariants = {
+  up:    { hidden: { opacity: 0, y: 48 },  visible: { opacity: 1, y: 0 } },
+  left:  { hidden: { opacity: 0, x: 40 },  visible: { opacity: 1, x: 0 } },
+  right: { hidden: { opacity: 0, x: -40 }, visible: { opacity: 1, x: 0 } },
+  none:  { hidden: { opacity: 0 },          visible: { opacity: 1 } },
+};
+
 export function ScrollReveal({
   children,
   className = "",
   delay = 0,
   direction = "up",
 }: ScrollRevealProps) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined" || !ref.current) return;
-    const el = ref.current;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
-
-    let cleanup = () => {};
-
-    (async () => {
-      const { gsap } = await import("gsap");
-      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-      gsap.registerPlugin(ScrollTrigger);
-
-      const from: gsap.TweenVars = { opacity: 0 };
-      if (direction === "up")    { from.y = 48; }
-      if (direction === "left")  { from.x = 40; }
-      if (direction === "right") { from.x = -40; }
-
-      const tween = gsap.fromTo(
-        el,
-        from,
-        {
-          opacity: 1,
-          y: 0,
-          x: 0,
-          duration: 0.85,
-          delay,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top 88%",
-            toggleActions: "play none none none",
-          },
-        }
-      );
-
-      cleanup = () => {
-        tween.scrollTrigger?.kill();
-        tween.kill();
-      };
-    })();
-
-    return () => cleanup();
-  }, [delay, direction]);
+  const variants = directionVariants[direction];
 
   return (
-    <div ref={ref} className={className}>
+    <motion.div
+      className={className}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-80px" }}
+      variants={variants}
+      transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
       {children}
-    </div>
+    </motion.div>
   );
 }

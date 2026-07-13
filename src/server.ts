@@ -73,15 +73,33 @@ export default {
       const response = await handler.fetch(request, env, ctx);
       const normalized = await normalizeCatastrophicSsrResponse(response);
 
+      const contentType = normalized.headers.get("content-type") ?? "";
+      let responseBody: BodyInit | null = normalized.body;
+      let nonceStr = "";
+      
+      if (contentType.includes("text/html")) {
+        nonceStr = crypto.randomUUID().replace(/-/g, "");
+        const html = await normalized.clone().text();
+        const injectedHtml = html
+          .replace(/<script(?![\w-])/gi, `<script nonce="${nonceStr}"`)
+          .replace(/<style(?![\w-])/gi, `<style nonce="${nonceStr}"`);
+        responseBody = injectedHtml;
+      }
+
       // ✅ إضافة ترويسات الأمان لكل استجابة
       const headers = new Headers(normalized.headers);
       headers.set("X-Content-Type-Options", "nosniff");
       headers.set("X-Frame-Options", "SAMEORIGIN");
       headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
       headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)");
+      
+      const scriptSrc = nonceStr 
+        ? `'self' 'nonce-${nonceStr}' 'strict-dynamic' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com` 
+        : `'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com`;
+        
       headers.set("Content-Security-Policy", 
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; " +
+        `script-src ${scriptSrc}; ` +
         "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com; " +
         "img-src 'self' data: blob: https:; " +
         "style-src 'self' 'unsafe-inline'; " +
@@ -93,7 +111,7 @@ export default {
       // HSTS unconditional — Cloudflare Workers terminate TLS; safe for all published traffic
       headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
 
-      return new Response(normalized.body, {
+      return new Response(responseBody, {
         status: normalized.status,
         statusText: normalized.statusText,
         headers,

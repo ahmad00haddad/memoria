@@ -60,6 +60,7 @@ export const Route = createFileRoute("/api/public/hooks/payment")({
           event_type: evt.type,
           related_booking_id: relatedBookingId,
           related_user_id: relatedUserId,
+          reference_type: kind,
         });
         if (claimErr) {
           // 23505 = انتهاك مفتاح أساسي → حدث مكرّر، تجاهله بأمان.
@@ -77,11 +78,15 @@ export const Route = createFileRoute("/api/public/hooks/payment")({
           evt.type === "invoice.paid" ||
           evt.type === "invoice.payment_succeeded";
 
-        // إن كانت جلسة Checkout غير مدفوعة فعلاً، لا تؤكّد.
-        const sessionPaid =
-          evt.type !== "checkout.session.completed" ||
-          obj.payment_status === "paid" ||
-          obj.payment_status === "no_payment_required";
+        // إن كانت جلسة الدفع غير ناجحة فعلاً، لا تؤكّد.
+        let sessionPaid = false;
+        if (evt.type === "checkout.session.completed") {
+          sessionPaid = obj.payment_status === "paid" || obj.payment_status === "no_payment_required";
+        } else if (evt.type === "payment_intent.succeeded") {
+          sessionPaid = obj.status === "succeeded";
+        } else if (evt.type.startsWith("invoice.")) {
+          sessionPaid = obj.status === "paid" || obj.paid === true;
+        }
 
         if (!isPaidEvent || !sessionPaid) {
           return Response.json({ ok: true, ignored: evt.type });

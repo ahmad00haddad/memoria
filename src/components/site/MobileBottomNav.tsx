@@ -1,6 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { LayoutDashboard, Calendar, ListChecks, User, Bell } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -22,21 +22,22 @@ const items: NavItem[] = [
 export function MobileBottomNav() {
   const { pathname } = useLocation();
   const { userId } = useAuthState();
-  const [unread, setUnread] = useState(0);
 
-  useEffect(() => {
-    let active = true;
-    if (!userId) { setUnread(0); return; }
-    (async () => {
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["notifications", "unread", userId],
+    queryFn: async () => {
+      if (!userId) return 0;
       const { count } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
         .eq("is_read", false);
-      if (active) setUnread(count ?? 0);
-    })();
-    return () => { active = false; };
-  }, [userId, pathname]);
+      return count ?? 0;
+    },
+    enabled: !!userId,
+    refetchInterval: 30000, // جلب الإشعارات كل 30 ثانية بدلاً من كل تغيير مسار
+    staleTime: 10000,
+  });
 
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[env(safe-area-inset-bottom)]">
