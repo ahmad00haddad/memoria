@@ -10,7 +10,7 @@ import {
   Mail, RefreshCw,
 } from "lucide-react";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 

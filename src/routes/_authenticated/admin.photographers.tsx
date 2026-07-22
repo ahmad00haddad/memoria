@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { PageLoader } from "@/components/ui/loading";
 
-export const Route = createFileRoute("/admin/photographers")({
+export const Route = createFileRoute("/_authenticated/admin/photographers")({
   component: AdminPhotographers,
 });
 

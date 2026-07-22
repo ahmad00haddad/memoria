@@ -6,7 +6,7 @@ import { FileText, CheckCircle2, Clock } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/contracts")({
+export const Route = createFileRoute("/_authenticated/admin/contracts")({
   component: AdminContracts,
 });
 

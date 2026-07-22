@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Calendar, Ban, Eye, RefreshCw, CheckCircle2, Clock, AlertTriangle, X } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 
-export const Route = createFileRoute("/admin/bookings")({
+export const Route = createFileRoute("/_authenticated/admin/bookings")({
   component: AdminBookingsPage,
 });
 

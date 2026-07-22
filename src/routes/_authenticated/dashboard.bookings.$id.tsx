@@ -23,7 +23,7 @@ import {
   saveBookingSelectionLink,
 } from "@/lib/production.functions";
 
-export const Route = createFileRoute("/dashboard/bookings/$id")({ component: BookingDetail });
+export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({ component: BookingDetail });
 
 function BookingDetail() {
   const { id } = Route.useParams();

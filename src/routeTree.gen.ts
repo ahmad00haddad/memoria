@@ -26,47 +26,48 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ForPhotographersRouteImport } from './routes/for-photographers'
 import { Route as ForClientsRouteImport } from './routes/for-clients'
 import { Route as FaqRouteImport } from './routes/faq'
-import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AppRouteImport } from './routes/app'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TrackTokenRouteImport } from './routes/track.$token'
 import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
-import { Route as DashboardWhatsappTemplatesRouteImport } from './routes/dashboard.whatsapp-templates'
-import { Route as DashboardSubscriptionRouteImport } from './routes/dashboard.subscription'
-import { Route as DashboardReportsRouteImport } from './routes/dashboard.reports'
-import { Route as DashboardReferralsRouteImport } from './routes/dashboard.referrals'
-import { Route as DashboardProfileRouteImport } from './routes/dashboard.profile'
-import { Route as DashboardProductionRouteImport } from './routes/dashboard.production'
-import { Route as DashboardPricingRouteImport } from './routes/dashboard.pricing'
-import { Route as DashboardContractsRouteImport } from './routes/dashboard.contracts'
-import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
-import { Route as DashboardBookingsRouteImport } from './routes/dashboard.bookings'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
-import { Route as AdminSubscriptionsRouteImport } from './routes/admin.subscriptions'
-import { Route as AdminRolesRouteImport } from './routes/admin.roles'
-import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
-import { Route as AdminRefundsRouteImport } from './routes/admin.refunds'
-import { Route as AdminReferralsRouteImport } from './routes/admin.referrals'
-import { Route as AdminPhotographersRouteImport } from './routes/admin.photographers'
-import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
-import { Route as AdminEmailLogRouteImport } from './routes/admin.email-log'
-import { Route as AdminDisputesRouteImport } from './routes/admin.disputes'
-import { Route as AdminContractsRouteImport } from './routes/admin.contracts'
-import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
-import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
-import { Route as DashboardBookingsIndexRouteImport } from './routes/dashboard.bookings.index'
-import { Route as DashboardBookingsIdRouteImport } from './routes/dashboard.bookings.$id'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedDashboardWhatsappTemplatesRouteImport } from './routes/_authenticated/dashboard.whatsapp-templates'
+import { Route as AuthenticatedDashboardSubscriptionRouteImport } from './routes/_authenticated/dashboard.subscription'
+import { Route as AuthenticatedDashboardReportsRouteImport } from './routes/_authenticated/dashboard.reports'
+import { Route as AuthenticatedDashboardReferralsRouteImport } from './routes/_authenticated/dashboard.referrals'
+import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard.profile'
+import { Route as AuthenticatedDashboardProductionRouteImport } from './routes/_authenticated/dashboard.production'
+import { Route as AuthenticatedDashboardPricingRouteImport } from './routes/_authenticated/dashboard.pricing'
+import { Route as AuthenticatedDashboardContractsRouteImport } from './routes/_authenticated/dashboard.contracts'
+import { Route as AuthenticatedDashboardCalendarRouteImport } from './routes/_authenticated/dashboard.calendar'
+import { Route as AuthenticatedDashboardBookingsRouteImport } from './routes/_authenticated/dashboard.bookings'
+import { Route as AuthenticatedAdminSubscriptionsRouteImport } from './routes/_authenticated/admin.subscriptions'
+import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin.roles'
+import { Route as AuthenticatedAdminReviewsRouteImport } from './routes/_authenticated/admin.reviews'
+import { Route as AuthenticatedAdminRefundsRouteImport } from './routes/_authenticated/admin.refunds'
+import { Route as AuthenticatedAdminReferralsRouteImport } from './routes/_authenticated/admin.referrals'
+import { Route as AuthenticatedAdminPhotographersRouteImport } from './routes/_authenticated/admin.photographers'
+import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin.notifications'
+import { Route as AuthenticatedAdminEmailLogRouteImport } from './routes/_authenticated/admin.email-log'
+import { Route as AuthenticatedAdminDisputesRouteImport } from './routes/_authenticated/admin.disputes'
+import { Route as AuthenticatedAdminContractsRouteImport } from './routes/_authenticated/admin.contracts'
+import { Route as AuthenticatedAdminBookingsRouteImport } from './routes/_authenticated/admin.bookings'
+import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin.audit-log'
+import { Route as AuthenticatedDashboardBookingsIndexRouteImport } from './routes/_authenticated/dashboard.bookings.index'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
 import { Route as ApiPublicHooksPaymentRouteImport } from './routes/api/public/hooks/payment'
 import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
 import { Route as ApiPublicHooksEmailRemindersRouteImport } from './routes/api/public/hooks/email-reminders'
+import { Route as AuthenticatedDashboardBookingsIdRouteImport } from './routes/_authenticated/dashboard.bookings.$id'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -153,11 +154,6 @@ const FaqRoute = FaqRouteImport.update({
   path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
@@ -168,30 +164,19 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRoute,
 } as any)
 const TrackTokenRoute = TrackTokenRouteImport.update({
   id: '/track/$token',
@@ -213,132 +198,169 @@ const PhotographersUsernameRoute = PhotographersUsernameRouteImport.update({
   path: '/photographers/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardWhatsappTemplatesRoute =
-  DashboardWhatsappTemplatesRouteImport.update({
-    id: '/whatsapp-templates',
-    path: '/whatsapp-templates',
-    getParentRoute: () => DashboardRoute,
-  } as any)
-const DashboardSubscriptionRoute = DashboardSubscriptionRouteImport.update({
-  id: '/subscription',
-  path: '/subscription',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardReportsRoute = DashboardReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardReferralsRoute = DashboardReferralsRouteImport.update({
-  id: '/referrals',
-  path: '/referrals',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardProfileRoute = DashboardProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardProductionRoute = DashboardProductionRouteImport.update({
-  id: '/production',
-  path: '/production',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardPricingRoute = DashboardPricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardContractsRoute = DashboardContractsRouteImport.update({
-  id: '/contracts',
-  path: '/contracts',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardBookingsRoute = DashboardBookingsRouteImport.update({
-  id: '/bookings',
-  path: '/bookings',
-  getParentRoute: () => DashboardRoute,
-} as any)
 const ContractsTokenRoute = ContractsTokenRouteImport.update({
   id: '/contracts/$token',
   path: '/contracts/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminSubscriptionsRoute = AdminSubscriptionsRouteImport.update({
-  id: '/subscriptions',
-  path: '/subscriptions',
-  getParentRoute: () => AdminRoute,
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AdminRolesRoute = AdminRolesRouteImport.update({
-  id: '/roles',
-  path: '/roles',
-  getParentRoute: () => AdminRoute,
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AdminReviewsRoute = AdminReviewsRouteImport.update({
-  id: '/reviews',
-  path: '/reviews',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminRefundsRoute = AdminRefundsRouteImport.update({
-  id: '/refunds',
-  path: '/refunds',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminReferralsRoute = AdminReferralsRouteImport.update({
-  id: '/referrals',
-  path: '/referrals',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminPhotographersRoute = AdminPhotographersRouteImport.update({
-  id: '/photographers',
-  path: '/photographers',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminEmailLogRoute = AdminEmailLogRouteImport.update({
-  id: '/email-log',
-  path: '/email-log',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminDisputesRoute = AdminDisputesRouteImport.update({
-  id: '/disputes',
-  path: '/disputes',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminContractsRoute = AdminContractsRouteImport.update({
-  id: '/contracts',
-  path: '/contracts',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminBookingsRoute = AdminBookingsRouteImport.update({
-  id: '/bookings',
-  path: '/bookings',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
-  id: '/audit-log',
-  path: '/audit-log',
-  getParentRoute: () => AdminRoute,
-} as any)
-const DashboardBookingsIndexRoute = DashboardBookingsIndexRouteImport.update({
+const AuthenticatedDashboardIndexRoute =
+  AuthenticatedDashboardIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => DashboardBookingsRoute,
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
-const DashboardBookingsIdRoute = DashboardBookingsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => DashboardBookingsRoute,
+const AuthenticatedDashboardWhatsappTemplatesRoute =
+  AuthenticatedDashboardWhatsappTemplatesRouteImport.update({
+    id: '/whatsapp-templates',
+    path: '/whatsapp-templates',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardSubscriptionRoute =
+  AuthenticatedDashboardSubscriptionRouteImport.update({
+    id: '/subscription',
+    path: '/subscription',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardReportsRoute =
+  AuthenticatedDashboardReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardReferralsRoute =
+  AuthenticatedDashboardReferralsRouteImport.update({
+    id: '/referrals',
+    path: '/referrals',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardProfileRoute =
+  AuthenticatedDashboardProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardProductionRoute =
+  AuthenticatedDashboardProductionRouteImport.update({
+    id: '/production',
+    path: '/production',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardPricingRoute =
+  AuthenticatedDashboardPricingRouteImport.update({
+    id: '/pricing',
+    path: '/pricing',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardContractsRoute =
+  AuthenticatedDashboardContractsRouteImport.update({
+    id: '/contracts',
+    path: '/contracts',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardCalendarRoute =
+  AuthenticatedDashboardCalendarRouteImport.update({
+    id: '/calendar',
+    path: '/calendar',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardBookingsRoute =
+  AuthenticatedDashboardBookingsRouteImport.update({
+    id: '/bookings',
+    path: '/bookings',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedAdminSubscriptionsRoute =
+  AuthenticatedAdminSubscriptionsRouteImport.update({
+    id: '/subscriptions',
+    path: '/subscriptions',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRolesRoute = AuthenticatedAdminRolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminReviewsRoute =
+  AuthenticatedAdminReviewsRouteImport.update({
+    id: '/reviews',
+    path: '/reviews',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRefundsRoute =
+  AuthenticatedAdminRefundsRouteImport.update({
+    id: '/refunds',
+    path: '/refunds',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminReferralsRoute =
+  AuthenticatedAdminReferralsRouteImport.update({
+    id: '/referrals',
+    path: '/referrals',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPhotographersRoute =
+  AuthenticatedAdminPhotographersRouteImport.update({
+    id: '/photographers',
+    path: '/photographers',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminNotificationsRoute =
+  AuthenticatedAdminNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminEmailLogRoute =
+  AuthenticatedAdminEmailLogRouteImport.update({
+    id: '/email-log',
+    path: '/email-log',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminDisputesRoute =
+  AuthenticatedAdminDisputesRouteImport.update({
+    id: '/disputes',
+    path: '/disputes',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminContractsRoute =
+  AuthenticatedAdminContractsRouteImport.update({
+    id: '/contracts',
+    path: '/contracts',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminBookingsRoute =
+  AuthenticatedAdminBookingsRouteImport.update({
+    id: '/bookings',
+    path: '/bookings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminAuditLogRoute =
+  AuthenticatedAdminAuditLogRouteImport.update({
+    id: '/audit-log',
+    path: '/audit-log',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedDashboardBookingsIndexRoute =
+  AuthenticatedDashboardBookingsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedDashboardBookingsRoute,
+  } as any)
 const ApiPublicIcalTokenRoute = ApiPublicIcalTokenRouteImport.update({
   id: '/api/public/ical/$token',
   path: '/api/public/ical/$token',
@@ -360,14 +382,18 @@ const ApiPublicHooksEmailRemindersRoute =
     path: '/api/public/hooks/email-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedDashboardBookingsIdRoute =
+  AuthenticatedDashboardBookingsIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedDashboardBookingsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRoute
   '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRouteWithChildren
   '/faq': typeof FaqRoute
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
@@ -385,41 +411,43 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/admin/audit-log': typeof AdminAuditLogRoute
-  '/admin/bookings': typeof AdminBookingsRoute
-  '/admin/contracts': typeof AdminContractsRoute
-  '/admin/disputes': typeof AdminDisputesRoute
-  '/admin/email-log': typeof AdminEmailLogRoute
-  '/admin/notifications': typeof AdminNotificationsRoute
-  '/admin/photographers': typeof AdminPhotographersRoute
-  '/admin/referrals': typeof AdminReferralsRoute
-  '/admin/refunds': typeof AdminRefundsRoute
-  '/admin/reviews': typeof AdminReviewsRoute
-  '/admin/roles': typeof AdminRolesRoute
-  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/contracts/$token': typeof ContractsTokenRoute
-  '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
-  '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/contracts': typeof DashboardContractsRoute
-  '/dashboard/pricing': typeof DashboardPricingRoute
-  '/dashboard/production': typeof DashboardProductionRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/referrals': typeof DashboardReferralsRoute
-  '/dashboard/reports': typeof DashboardReportsRoute
-  '/dashboard/subscription': typeof DashboardSubscriptionRoute
-  '/dashboard/whatsapp-templates': typeof DashboardWhatsappTemplatesRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
   '/track/$token': typeof TrackTokenRoute
-  '/admin/': typeof AdminIndexRoute
-  '/dashboard/': typeof DashboardIndexRoute
-  '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
-  '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
+  '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
+  '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/admin/contracts': typeof AuthenticatedAdminContractsRoute
+  '/admin/disputes': typeof AuthenticatedAdminDisputesRoute
+  '/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
+  '/admin/referrals': typeof AuthenticatedAdminReferralsRoute
+  '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
+  '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
+  '/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
+  '/dashboard/bookings': typeof AuthenticatedDashboardBookingsRouteWithChildren
+  '/dashboard/calendar': typeof AuthenticatedDashboardCalendarRoute
+  '/dashboard/contracts': typeof AuthenticatedDashboardContractsRoute
+  '/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
+  '/dashboard/production': typeof AuthenticatedDashboardProductionRoute
+  '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
+  '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
+  '/dashboard/whatsapp-templates': typeof AuthenticatedDashboardWhatsappTemplatesRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
+  '/dashboard/bookings/': typeof AuthenticatedDashboardBookingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -443,49 +471,48 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/admin/audit-log': typeof AdminAuditLogRoute
-  '/admin/bookings': typeof AdminBookingsRoute
-  '/admin/contracts': typeof AdminContractsRoute
-  '/admin/disputes': typeof AdminDisputesRoute
-  '/admin/email-log': typeof AdminEmailLogRoute
-  '/admin/notifications': typeof AdminNotificationsRoute
-  '/admin/photographers': typeof AdminPhotographersRoute
-  '/admin/referrals': typeof AdminReferralsRoute
-  '/admin/refunds': typeof AdminRefundsRoute
-  '/admin/reviews': typeof AdminReviewsRoute
-  '/admin/roles': typeof AdminRolesRoute
-  '/admin/subscriptions': typeof AdminSubscriptionsRoute
   '/contracts/$token': typeof ContractsTokenRoute
-  '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/contracts': typeof DashboardContractsRoute
-  '/dashboard/pricing': typeof DashboardPricingRoute
-  '/dashboard/production': typeof DashboardProductionRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/referrals': typeof DashboardReferralsRoute
-  '/dashboard/reports': typeof DashboardReportsRoute
-  '/dashboard/subscription': typeof DashboardSubscriptionRoute
-  '/dashboard/whatsapp-templates': typeof DashboardWhatsappTemplatesRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
   '/track/$token': typeof TrackTokenRoute
-  '/admin': typeof AdminIndexRoute
-  '/dashboard': typeof DashboardIndexRoute
-  '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
-  '/dashboard/bookings': typeof DashboardBookingsIndexRoute
+  '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
+  '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/admin/contracts': typeof AuthenticatedAdminContractsRoute
+  '/admin/disputes': typeof AuthenticatedAdminDisputesRoute
+  '/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
+  '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
+  '/admin/referrals': typeof AuthenticatedAdminReferralsRoute
+  '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
+  '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
+  '/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
+  '/dashboard/calendar': typeof AuthenticatedDashboardCalendarRoute
+  '/dashboard/contracts': typeof AuthenticatedDashboardContractsRoute
+  '/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
+  '/dashboard/production': typeof AuthenticatedDashboardProductionRoute
+  '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
+  '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
+  '/dashboard/whatsapp-templates': typeof AuthenticatedDashboardWhatsappTemplatesRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
+  '/dashboard/bookings': typeof AuthenticatedDashboardBookingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRoute
   '/contact': typeof ContactRoute
-  '/dashboard': typeof DashboardRouteWithChildren
   '/faq': typeof FaqRoute
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
@@ -503,51 +530,51 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/admin/audit-log': typeof AdminAuditLogRoute
-  '/admin/bookings': typeof AdminBookingsRoute
-  '/admin/contracts': typeof AdminContractsRoute
-  '/admin/disputes': typeof AdminDisputesRoute
-  '/admin/email-log': typeof AdminEmailLogRoute
-  '/admin/notifications': typeof AdminNotificationsRoute
-  '/admin/photographers': typeof AdminPhotographersRoute
-  '/admin/referrals': typeof AdminReferralsRoute
-  '/admin/refunds': typeof AdminRefundsRoute
-  '/admin/reviews': typeof AdminReviewsRoute
-  '/admin/roles': typeof AdminRolesRoute
-  '/admin/subscriptions': typeof AdminSubscriptionsRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/contracts/$token': typeof ContractsTokenRoute
-  '/dashboard/bookings': typeof DashboardBookingsRouteWithChildren
-  '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/contracts': typeof DashboardContractsRoute
-  '/dashboard/pricing': typeof DashboardPricingRoute
-  '/dashboard/production': typeof DashboardProductionRoute
-  '/dashboard/profile': typeof DashboardProfileRoute
-  '/dashboard/referrals': typeof DashboardReferralsRoute
-  '/dashboard/reports': typeof DashboardReportsRoute
-  '/dashboard/subscription': typeof DashboardSubscriptionRoute
-  '/dashboard/whatsapp-templates': typeof DashboardWhatsappTemplatesRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
   '/track/$token': typeof TrackTokenRoute
-  '/admin/': typeof AdminIndexRoute
-  '/dashboard/': typeof DashboardIndexRoute
-  '/dashboard/bookings/$id': typeof DashboardBookingsIdRoute
-  '/dashboard/bookings/': typeof DashboardBookingsIndexRoute
+  '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
+  '/_authenticated/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/_authenticated/admin/contracts': typeof AuthenticatedAdminContractsRoute
+  '/_authenticated/admin/disputes': typeof AuthenticatedAdminDisputesRoute
+  '/_authenticated/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
+  '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
+  '/_authenticated/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
+  '/_authenticated/admin/referrals': typeof AuthenticatedAdminReferralsRoute
+  '/_authenticated/admin/refunds': typeof AuthenticatedAdminRefundsRoute
+  '/_authenticated/admin/reviews': typeof AuthenticatedAdminReviewsRoute
+  '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
+  '/_authenticated/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
+  '/_authenticated/dashboard/bookings': typeof AuthenticatedDashboardBookingsRouteWithChildren
+  '/_authenticated/dashboard/calendar': typeof AuthenticatedDashboardCalendarRoute
+  '/_authenticated/dashboard/contracts': typeof AuthenticatedDashboardContractsRoute
+  '/_authenticated/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
+  '/_authenticated/dashboard/production': typeof AuthenticatedDashboardProductionRoute
+  '/_authenticated/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/_authenticated/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
+  '/_authenticated/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/_authenticated/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
+  '/_authenticated/dashboard/whatsapp-templates': typeof AuthenticatedDashboardWhatsappTemplatesRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
+  '/_authenticated/dashboard/bookings/': typeof AuthenticatedDashboardBookingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
-    | '/admin'
     | '/app'
     | '/contact'
-    | '/dashboard'
     | '/faq'
     | '/for-clients'
     | '/for-photographers'
@@ -565,6 +592,13 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/admin'
+    | '/dashboard'
+    | '/contracts/$token'
+    | '/photographers/$username'
+    | '/photographers/join'
+    | '/review/$token'
+    | '/track/$token'
     | '/admin/audit-log'
     | '/admin/bookings'
     | '/admin/contracts'
@@ -577,7 +611,6 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/admin/roles'
     | '/admin/subscriptions'
-    | '/contracts/$token'
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/contracts'
@@ -588,18 +621,14 @@ export interface FileRouteTypes {
     | '/dashboard/reports'
     | '/dashboard/subscription'
     | '/dashboard/whatsapp-templates'
-    | '/photographers/$username'
-    | '/photographers/join'
-    | '/review/$token'
-    | '/track/$token'
     | '/admin/'
     | '/dashboard/'
     | '/dashboard/bookings/$id'
-    | '/dashboard/bookings/'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/ical/$token'
+    | '/dashboard/bookings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -623,6 +652,11 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/contracts/$token'
+    | '/photographers/$username'
+    | '/photographers/join'
+    | '/review/$token'
+    | '/track/$token'
     | '/admin/audit-log'
     | '/admin/bookings'
     | '/admin/contracts'
@@ -635,7 +669,6 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/admin/roles'
     | '/admin/subscriptions'
-    | '/contracts/$token'
     | '/dashboard/calendar'
     | '/dashboard/contracts'
     | '/dashboard/pricing'
@@ -645,26 +678,21 @@ export interface FileRouteTypes {
     | '/dashboard/reports'
     | '/dashboard/subscription'
     | '/dashboard/whatsapp-templates'
-    | '/photographers/$username'
-    | '/photographers/join'
-    | '/review/$token'
-    | '/track/$token'
     | '/admin'
     | '/dashboard'
     | '/dashboard/bookings/$id'
-    | '/dashboard/bookings'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/ical/$token'
+    | '/dashboard/bookings'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
-    | '/admin'
     | '/app'
     | '/contact'
-    | '/dashboard'
     | '/faq'
     | '/for-clients'
     | '/for-photographers'
@@ -682,50 +710,51 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
-    | '/admin/audit-log'
-    | '/admin/bookings'
-    | '/admin/contracts'
-    | '/admin/disputes'
-    | '/admin/email-log'
-    | '/admin/notifications'
-    | '/admin/photographers'
-    | '/admin/referrals'
-    | '/admin/refunds'
-    | '/admin/reviews'
-    | '/admin/roles'
-    | '/admin/subscriptions'
+    | '/_authenticated/admin'
+    | '/_authenticated/dashboard'
     | '/contracts/$token'
-    | '/dashboard/bookings'
-    | '/dashboard/calendar'
-    | '/dashboard/contracts'
-    | '/dashboard/pricing'
-    | '/dashboard/production'
-    | '/dashboard/profile'
-    | '/dashboard/referrals'
-    | '/dashboard/reports'
-    | '/dashboard/subscription'
-    | '/dashboard/whatsapp-templates'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
     | '/track/$token'
-    | '/admin/'
-    | '/dashboard/'
-    | '/dashboard/bookings/$id'
-    | '/dashboard/bookings/'
+    | '/_authenticated/admin/audit-log'
+    | '/_authenticated/admin/bookings'
+    | '/_authenticated/admin/contracts'
+    | '/_authenticated/admin/disputes'
+    | '/_authenticated/admin/email-log'
+    | '/_authenticated/admin/notifications'
+    | '/_authenticated/admin/photographers'
+    | '/_authenticated/admin/referrals'
+    | '/_authenticated/admin/refunds'
+    | '/_authenticated/admin/reviews'
+    | '/_authenticated/admin/roles'
+    | '/_authenticated/admin/subscriptions'
+    | '/_authenticated/dashboard/bookings'
+    | '/_authenticated/dashboard/calendar'
+    | '/_authenticated/dashboard/contracts'
+    | '/_authenticated/dashboard/pricing'
+    | '/_authenticated/dashboard/production'
+    | '/_authenticated/dashboard/profile'
+    | '/_authenticated/dashboard/referrals'
+    | '/_authenticated/dashboard/reports'
+    | '/_authenticated/dashboard/subscription'
+    | '/_authenticated/dashboard/whatsapp-templates'
+    | '/_authenticated/admin/'
+    | '/_authenticated/dashboard/'
+    | '/_authenticated/dashboard/bookings/$id'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/ical/$token'
+    | '/_authenticated/dashboard/bookings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
-  AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRoute
   ContactRoute: typeof ContactRoute
-  DashboardRoute: typeof DashboardRouteWithChildren
   FaqRoute: typeof FaqRoute
   ForClientsRoute: typeof ForClientsRoute
   ForPhotographersRoute: typeof ForPhotographersRoute
@@ -875,13 +904,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/contact': {
       id: '/contact'
       path: '/contact'
@@ -896,18 +918,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -916,20 +938,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
     }
     '/track/$token': {
       id: '/track/$token'
@@ -959,76 +967,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PhotographersUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/whatsapp-templates': {
-      id: '/dashboard/whatsapp-templates'
-      path: '/whatsapp-templates'
-      fullPath: '/dashboard/whatsapp-templates'
-      preLoaderRoute: typeof DashboardWhatsappTemplatesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/subscription': {
-      id: '/dashboard/subscription'
-      path: '/subscription'
-      fullPath: '/dashboard/subscription'
-      preLoaderRoute: typeof DashboardSubscriptionRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/reports': {
-      id: '/dashboard/reports'
-      path: '/reports'
-      fullPath: '/dashboard/reports'
-      preLoaderRoute: typeof DashboardReportsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/referrals': {
-      id: '/dashboard/referrals'
-      path: '/referrals'
-      fullPath: '/dashboard/referrals'
-      preLoaderRoute: typeof DashboardReferralsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/profile': {
-      id: '/dashboard/profile'
-      path: '/profile'
-      fullPath: '/dashboard/profile'
-      preLoaderRoute: typeof DashboardProfileRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/production': {
-      id: '/dashboard/production'
-      path: '/production'
-      fullPath: '/dashboard/production'
-      preLoaderRoute: typeof DashboardProductionRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/pricing': {
-      id: '/dashboard/pricing'
-      path: '/pricing'
-      fullPath: '/dashboard/pricing'
-      preLoaderRoute: typeof DashboardPricingRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/contracts': {
-      id: '/dashboard/contracts'
-      path: '/contracts'
-      fullPath: '/dashboard/contracts'
-      preLoaderRoute: typeof DashboardContractsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/calendar': {
-      id: '/dashboard/calendar'
-      path: '/calendar'
-      fullPath: '/dashboard/calendar'
-      preLoaderRoute: typeof DashboardCalendarRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/bookings': {
-      id: '/dashboard/bookings'
-      path: '/bookings'
-      fullPath: '/dashboard/bookings'
-      preLoaderRoute: typeof DashboardBookingsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
     '/contracts/$token': {
       id: '/contracts/$token'
       path: '/contracts/$token'
@@ -1036,103 +974,194 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/subscriptions': {
-      id: '/admin/subscriptions'
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/dashboard/whatsapp-templates': {
+      id: '/_authenticated/dashboard/whatsapp-templates'
+      path: '/whatsapp-templates'
+      fullPath: '/dashboard/whatsapp-templates'
+      preLoaderRoute: typeof AuthenticatedDashboardWhatsappTemplatesRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/subscription': {
+      id: '/_authenticated/dashboard/subscription'
+      path: '/subscription'
+      fullPath: '/dashboard/subscription'
+      preLoaderRoute: typeof AuthenticatedDashboardSubscriptionRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/reports': {
+      id: '/_authenticated/dashboard/reports'
+      path: '/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof AuthenticatedDashboardReportsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/referrals': {
+      id: '/_authenticated/dashboard/referrals'
+      path: '/referrals'
+      fullPath: '/dashboard/referrals'
+      preLoaderRoute: typeof AuthenticatedDashboardReferralsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/profile': {
+      id: '/_authenticated/dashboard/profile'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof AuthenticatedDashboardProfileRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/production': {
+      id: '/_authenticated/dashboard/production'
+      path: '/production'
+      fullPath: '/dashboard/production'
+      preLoaderRoute: typeof AuthenticatedDashboardProductionRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/pricing': {
+      id: '/_authenticated/dashboard/pricing'
+      path: '/pricing'
+      fullPath: '/dashboard/pricing'
+      preLoaderRoute: typeof AuthenticatedDashboardPricingRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/contracts': {
+      id: '/_authenticated/dashboard/contracts'
+      path: '/contracts'
+      fullPath: '/dashboard/contracts'
+      preLoaderRoute: typeof AuthenticatedDashboardContractsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/calendar': {
+      id: '/_authenticated/dashboard/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof AuthenticatedDashboardCalendarRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/bookings': {
+      id: '/_authenticated/dashboard/bookings'
+      path: '/bookings'
+      fullPath: '/dashboard/bookings'
+      preLoaderRoute: typeof AuthenticatedDashboardBookingsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/admin/subscriptions': {
+      id: '/_authenticated/admin/subscriptions'
       path: '/subscriptions'
       fullPath: '/admin/subscriptions'
-      preLoaderRoute: typeof AdminSubscriptionsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/roles': {
-      id: '/admin/roles'
+    '/_authenticated/admin/roles': {
+      id: '/_authenticated/admin/roles'
       path: '/roles'
       fullPath: '/admin/roles'
-      preLoaderRoute: typeof AdminRolesRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminRolesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/reviews': {
-      id: '/admin/reviews'
+    '/_authenticated/admin/reviews': {
+      id: '/_authenticated/admin/reviews'
       path: '/reviews'
       fullPath: '/admin/reviews'
-      preLoaderRoute: typeof AdminReviewsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminReviewsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/refunds': {
-      id: '/admin/refunds'
+    '/_authenticated/admin/refunds': {
+      id: '/_authenticated/admin/refunds'
       path: '/refunds'
       fullPath: '/admin/refunds'
-      preLoaderRoute: typeof AdminRefundsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminRefundsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/referrals': {
-      id: '/admin/referrals'
+    '/_authenticated/admin/referrals': {
+      id: '/_authenticated/admin/referrals'
       path: '/referrals'
       fullPath: '/admin/referrals'
-      preLoaderRoute: typeof AdminReferralsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminReferralsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/photographers': {
-      id: '/admin/photographers'
+    '/_authenticated/admin/photographers': {
+      id: '/_authenticated/admin/photographers'
       path: '/photographers'
       fullPath: '/admin/photographers'
-      preLoaderRoute: typeof AdminPhotographersRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminPhotographersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/notifications': {
-      id: '/admin/notifications'
+    '/_authenticated/admin/notifications': {
+      id: '/_authenticated/admin/notifications'
       path: '/notifications'
       fullPath: '/admin/notifications'
-      preLoaderRoute: typeof AdminNotificationsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/email-log': {
-      id: '/admin/email-log'
+    '/_authenticated/admin/email-log': {
+      id: '/_authenticated/admin/email-log'
       path: '/email-log'
       fullPath: '/admin/email-log'
-      preLoaderRoute: typeof AdminEmailLogRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminEmailLogRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/disputes': {
-      id: '/admin/disputes'
+    '/_authenticated/admin/disputes': {
+      id: '/_authenticated/admin/disputes'
       path: '/disputes'
       fullPath: '/admin/disputes'
-      preLoaderRoute: typeof AdminDisputesRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminDisputesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/contracts': {
-      id: '/admin/contracts'
+    '/_authenticated/admin/contracts': {
+      id: '/_authenticated/admin/contracts'
       path: '/contracts'
       fullPath: '/admin/contracts'
-      preLoaderRoute: typeof AdminContractsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminContractsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/bookings': {
-      id: '/admin/bookings'
+    '/_authenticated/admin/bookings': {
+      id: '/_authenticated/admin/bookings'
       path: '/bookings'
       fullPath: '/admin/bookings'
-      preLoaderRoute: typeof AdminBookingsRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminBookingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/admin/audit-log': {
-      id: '/admin/audit-log'
+    '/_authenticated/admin/audit-log': {
+      id: '/_authenticated/admin/audit-log'
       path: '/audit-log'
       fullPath: '/admin/audit-log'
-      preLoaderRoute: typeof AdminAuditLogRouteImport
-      parentRoute: typeof AdminRoute
+      preLoaderRoute: typeof AuthenticatedAdminAuditLogRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/dashboard/bookings/': {
-      id: '/dashboard/bookings/'
+    '/_authenticated/dashboard/bookings/': {
+      id: '/_authenticated/dashboard/bookings/'
       path: '/'
       fullPath: '/dashboard/bookings/'
-      preLoaderRoute: typeof DashboardBookingsIndexRouteImport
-      parentRoute: typeof DashboardBookingsRoute
-    }
-    '/dashboard/bookings/$id': {
-      id: '/dashboard/bookings/$id'
-      path: '/$id'
-      fullPath: '/dashboard/bookings/$id'
-      preLoaderRoute: typeof DashboardBookingsIdRouteImport
-      parentRoute: typeof DashboardBookingsRoute
+      preLoaderRoute: typeof AuthenticatedDashboardBookingsIndexRouteImport
+      parentRoute: typeof AuthenticatedDashboardBookingsRoute
     }
     '/api/public/ical/$token': {
       id: '/api/public/ical/$token'
@@ -1162,95 +1191,127 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksEmailRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard/bookings/$id': {
+      id: '/_authenticated/dashboard/bookings/$id'
+      path: '/$id'
+      fullPath: '/dashboard/bookings/$id'
+      preLoaderRoute: typeof AuthenticatedDashboardBookingsIdRouteImport
+      parentRoute: typeof AuthenticatedDashboardBookingsRoute
+    }
   }
 }
 
-interface AdminRouteChildren {
-  AdminAuditLogRoute: typeof AdminAuditLogRoute
-  AdminBookingsRoute: typeof AdminBookingsRoute
-  AdminContractsRoute: typeof AdminContractsRoute
-  AdminDisputesRoute: typeof AdminDisputesRoute
-  AdminEmailLogRoute: typeof AdminEmailLogRoute
-  AdminNotificationsRoute: typeof AdminNotificationsRoute
-  AdminPhotographersRoute: typeof AdminPhotographersRoute
-  AdminReferralsRoute: typeof AdminReferralsRoute
-  AdminRefundsRoute: typeof AdminRefundsRoute
-  AdminReviewsRoute: typeof AdminReviewsRoute
-  AdminRolesRoute: typeof AdminRolesRoute
-  AdminSubscriptionsRoute: typeof AdminSubscriptionsRoute
-  AdminIndexRoute: typeof AdminIndexRoute
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAuditLogRoute: typeof AuthenticatedAdminAuditLogRoute
+  AuthenticatedAdminBookingsRoute: typeof AuthenticatedAdminBookingsRoute
+  AuthenticatedAdminContractsRoute: typeof AuthenticatedAdminContractsRoute
+  AuthenticatedAdminDisputesRoute: typeof AuthenticatedAdminDisputesRoute
+  AuthenticatedAdminEmailLogRoute: typeof AuthenticatedAdminEmailLogRoute
+  AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
+  AuthenticatedAdminPhotographersRoute: typeof AuthenticatedAdminPhotographersRoute
+  AuthenticatedAdminReferralsRoute: typeof AuthenticatedAdminReferralsRoute
+  AuthenticatedAdminRefundsRoute: typeof AuthenticatedAdminRefundsRoute
+  AuthenticatedAdminReviewsRoute: typeof AuthenticatedAdminReviewsRoute
+  AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
+  AuthenticatedAdminSubscriptionsRoute: typeof AuthenticatedAdminSubscriptionsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
-const AdminRouteChildren: AdminRouteChildren = {
-  AdminAuditLogRoute: AdminAuditLogRoute,
-  AdminBookingsRoute: AdminBookingsRoute,
-  AdminContractsRoute: AdminContractsRoute,
-  AdminDisputesRoute: AdminDisputesRoute,
-  AdminEmailLogRoute: AdminEmailLogRoute,
-  AdminNotificationsRoute: AdminNotificationsRoute,
-  AdminPhotographersRoute: AdminPhotographersRoute,
-  AdminReferralsRoute: AdminReferralsRoute,
-  AdminRefundsRoute: AdminRefundsRoute,
-  AdminReviewsRoute: AdminReviewsRoute,
-  AdminRolesRoute: AdminRolesRoute,
-  AdminSubscriptionsRoute: AdminSubscriptionsRoute,
-  AdminIndexRoute: AdminIndexRoute,
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAuditLogRoute: AuthenticatedAdminAuditLogRoute,
+  AuthenticatedAdminBookingsRoute: AuthenticatedAdminBookingsRoute,
+  AuthenticatedAdminContractsRoute: AuthenticatedAdminContractsRoute,
+  AuthenticatedAdminDisputesRoute: AuthenticatedAdminDisputesRoute,
+  AuthenticatedAdminEmailLogRoute: AuthenticatedAdminEmailLogRoute,
+  AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
+  AuthenticatedAdminPhotographersRoute: AuthenticatedAdminPhotographersRoute,
+  AuthenticatedAdminReferralsRoute: AuthenticatedAdminReferralsRoute,
+  AuthenticatedAdminRefundsRoute: AuthenticatedAdminRefundsRoute,
+  AuthenticatedAdminReviewsRoute: AuthenticatedAdminReviewsRoute,
+  AuthenticatedAdminRolesRoute: AuthenticatedAdminRolesRoute,
+  AuthenticatedAdminSubscriptionsRoute: AuthenticatedAdminSubscriptionsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
-const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
-interface DashboardBookingsRouteChildren {
-  DashboardBookingsIdRoute: typeof DashboardBookingsIdRoute
-  DashboardBookingsIndexRoute: typeof DashboardBookingsIndexRoute
+interface AuthenticatedDashboardBookingsRouteChildren {
+  AuthenticatedDashboardBookingsIdRoute: typeof AuthenticatedDashboardBookingsIdRoute
+  AuthenticatedDashboardBookingsIndexRoute: typeof AuthenticatedDashboardBookingsIndexRoute
 }
 
-const DashboardBookingsRouteChildren: DashboardBookingsRouteChildren = {
-  DashboardBookingsIdRoute: DashboardBookingsIdRoute,
-  DashboardBookingsIndexRoute: DashboardBookingsIndexRoute,
+const AuthenticatedDashboardBookingsRouteChildren: AuthenticatedDashboardBookingsRouteChildren =
+  {
+    AuthenticatedDashboardBookingsIdRoute:
+      AuthenticatedDashboardBookingsIdRoute,
+    AuthenticatedDashboardBookingsIndexRoute:
+      AuthenticatedDashboardBookingsIndexRoute,
+  }
+
+const AuthenticatedDashboardBookingsRouteWithChildren =
+  AuthenticatedDashboardBookingsRoute._addFileChildren(
+    AuthenticatedDashboardBookingsRouteChildren,
+  )
+
+interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardBookingsRoute: typeof AuthenticatedDashboardBookingsRouteWithChildren
+  AuthenticatedDashboardCalendarRoute: typeof AuthenticatedDashboardCalendarRoute
+  AuthenticatedDashboardContractsRoute: typeof AuthenticatedDashboardContractsRoute
+  AuthenticatedDashboardPricingRoute: typeof AuthenticatedDashboardPricingRoute
+  AuthenticatedDashboardProductionRoute: typeof AuthenticatedDashboardProductionRoute
+  AuthenticatedDashboardProfileRoute: typeof AuthenticatedDashboardProfileRoute
+  AuthenticatedDashboardReferralsRoute: typeof AuthenticatedDashboardReferralsRoute
+  AuthenticatedDashboardReportsRoute: typeof AuthenticatedDashboardReportsRoute
+  AuthenticatedDashboardSubscriptionRoute: typeof AuthenticatedDashboardSubscriptionRoute
+  AuthenticatedDashboardWhatsappTemplatesRoute: typeof AuthenticatedDashboardWhatsappTemplatesRoute
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
 }
 
-const DashboardBookingsRouteWithChildren =
-  DashboardBookingsRoute._addFileChildren(DashboardBookingsRouteChildren)
+const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
+  {
+    AuthenticatedDashboardBookingsRoute:
+      AuthenticatedDashboardBookingsRouteWithChildren,
+    AuthenticatedDashboardCalendarRoute: AuthenticatedDashboardCalendarRoute,
+    AuthenticatedDashboardContractsRoute: AuthenticatedDashboardContractsRoute,
+    AuthenticatedDashboardPricingRoute: AuthenticatedDashboardPricingRoute,
+    AuthenticatedDashboardProductionRoute:
+      AuthenticatedDashboardProductionRoute,
+    AuthenticatedDashboardProfileRoute: AuthenticatedDashboardProfileRoute,
+    AuthenticatedDashboardReferralsRoute: AuthenticatedDashboardReferralsRoute,
+    AuthenticatedDashboardReportsRoute: AuthenticatedDashboardReportsRoute,
+    AuthenticatedDashboardSubscriptionRoute:
+      AuthenticatedDashboardSubscriptionRoute,
+    AuthenticatedDashboardWhatsappTemplatesRoute:
+      AuthenticatedDashboardWhatsappTemplatesRoute,
+    AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  }
 
-interface DashboardRouteChildren {
-  DashboardBookingsRoute: typeof DashboardBookingsRouteWithChildren
-  DashboardCalendarRoute: typeof DashboardCalendarRoute
-  DashboardContractsRoute: typeof DashboardContractsRoute
-  DashboardPricingRoute: typeof DashboardPricingRoute
-  DashboardProductionRoute: typeof DashboardProductionRoute
-  DashboardProfileRoute: typeof DashboardProfileRoute
-  DashboardReferralsRoute: typeof DashboardReferralsRoute
-  DashboardReportsRoute: typeof DashboardReportsRoute
-  DashboardSubscriptionRoute: typeof DashboardSubscriptionRoute
-  DashboardWhatsappTemplatesRoute: typeof DashboardWhatsappTemplatesRoute
-  DashboardIndexRoute: typeof DashboardIndexRoute
+const AuthenticatedDashboardRouteWithChildren =
+  AuthenticatedDashboardRoute._addFileChildren(
+    AuthenticatedDashboardRouteChildren,
+  )
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
 }
 
-const DashboardRouteChildren: DashboardRouteChildren = {
-  DashboardBookingsRoute: DashboardBookingsRouteWithChildren,
-  DashboardCalendarRoute: DashboardCalendarRoute,
-  DashboardContractsRoute: DashboardContractsRoute,
-  DashboardPricingRoute: DashboardPricingRoute,
-  DashboardProductionRoute: DashboardProductionRoute,
-  DashboardProfileRoute: DashboardProfileRoute,
-  DashboardReferralsRoute: DashboardReferralsRoute,
-  DashboardReportsRoute: DashboardReportsRoute,
-  DashboardSubscriptionRoute: DashboardSubscriptionRoute,
-  DashboardWhatsappTemplatesRoute: DashboardWhatsappTemplatesRoute,
-  DashboardIndexRoute: DashboardIndexRoute,
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
 }
 
-const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
-  DashboardRouteChildren,
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
-  AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRoute,
   ContactRoute: ContactRoute,
-  DashboardRoute: DashboardRouteWithChildren,
   FaqRoute: FaqRoute,
   ForClientsRoute: ForClientsRoute,
   ForPhotographersRoute: ForPhotographersRoute,

@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/dashboard/pricing")({ component: PricingMgr });
+export const Route = createFileRoute("/_authenticated/dashboard/pricing")({ component: PricingMgr });
 
 type Rule = {
   id?: string; service: "photography" | "cinematic_video"; package: "hourly" | "full_day" | "addon";

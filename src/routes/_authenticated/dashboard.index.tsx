@@ -33,7 +33,7 @@ import { staggerContainer, fadeUp } from "@/lib/animations";
 import { useCountUp } from "@/hooks/use-count-up";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 
-export const Route = createFileRoute("/dashboard/")({
+export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: Dashboard,
 });
 

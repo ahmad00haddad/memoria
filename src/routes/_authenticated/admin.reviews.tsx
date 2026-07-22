@@ -10,7 +10,7 @@ import {
   adminRejectReview,
 } from "@/lib/admin.functions";
 
-export const Route = createFileRoute("/admin/reviews")({
+export const Route = createFileRoute("/_authenticated/admin/reviews")({
   component: AdminReviews,
 });
 

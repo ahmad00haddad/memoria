@@ -12,7 +12,7 @@ import { updateRefundPolicy } from "@/lib/cancellation.functions";
 import { uploadProfilePhoto, uploadPortfolioPhoto } from "@/lib/upload";
 import { requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 
-export const Route = createFileRoute("/dashboard/profile")({ component: ProfilePage });
+export const Route = createFileRoute("/_authenticated/dashboard/profile")({ component: ProfilePage });
 
 function ProfilePage() {
   const nav = useNavigate();

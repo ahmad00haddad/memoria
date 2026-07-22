@@ -7,7 +7,7 @@ import { PageLoader } from "@/components/ui/loading";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/roles")({
+export const Route = createFileRoute("/_authenticated/admin/roles")({
   component: AdminRoles,
 });
 

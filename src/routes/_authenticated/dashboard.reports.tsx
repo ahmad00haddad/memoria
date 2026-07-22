@@ -9,7 +9,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { DollarSign, TrendingUp, Wallet, Clock, CheckCircle2, Download } from "lucide-react";
 import { getReportStats, type ReportStats } from "@/lib/reports.functions";
 
-export const Route = createFileRoute("/dashboard/reports")({ component: ReportsPage });
+export const Route = createFileRoute("/_authenticated/dashboard/reports")({ component: ReportsPage });
 
 function ReportsPage() {
   const nav = useNavigate();

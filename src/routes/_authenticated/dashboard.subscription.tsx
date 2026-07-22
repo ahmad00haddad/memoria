@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { createSubscriptionCheckout } from "@/lib/payments.functions";
 
-export const Route = createFileRoute("/dashboard/subscription")({
+export const Route = createFileRoute("/_authenticated/dashboard/subscription")({
   component: SubscriptionPage,
 });
 

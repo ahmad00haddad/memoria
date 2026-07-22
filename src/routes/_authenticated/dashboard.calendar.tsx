@@ -15,7 +15,7 @@ import { CalendarIcon } from "lucide-react";
 import { ar } from "date-fns/locale";
 import { format } from "date-fns";
 
-export const Route = createFileRoute("/dashboard/calendar")({ component: CalendarPage });
+export const Route = createFileRoute("/_authenticated/dashboard/calendar")({ component: CalendarPage });
 
 let cachedCalendarData: {
   unavail: any[];

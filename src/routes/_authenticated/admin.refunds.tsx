@@ -8,7 +8,7 @@ import { processDepositRefund } from "@/lib/payments.functions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { RefreshCw, CheckCircle2, Clock, DollarSign, AlertTriangle } from "lucide-react";
 
-export const Route = createFileRoute("/admin/refunds")({
+export const Route = createFileRoute("/_authenticated/admin/refunds")({
   component: AdminRefundsPage,
 });
 

@@ -5,7 +5,7 @@ import { listReferralsAdmin } from "@/lib/admin.functions";
 import { PageLoader } from "@/components/ui/loading";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/referrals")({
+export const Route = createFileRoute("/_authenticated/admin/referrals")({
   component: AdminReferrals,
 });
 

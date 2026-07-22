@@ -6,7 +6,7 @@ import { RefreshCw } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/audit-log")({
+export const Route = createFileRoute("/_authenticated/admin/audit-log")({
   component: AdminAuditLog,
 });
 

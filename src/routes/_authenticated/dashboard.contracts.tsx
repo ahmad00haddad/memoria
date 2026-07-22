@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ScrollText, Plus, Copy } from "lucide-react";
 
-export const Route = createFileRoute("/dashboard/contracts")({ component: Contracts });
+export const Route = createFileRoute("/_authenticated/dashboard/contracts")({ component: Contracts });
 
 const DEFAULT_TEMPLATE = `بسم الله الرحمن الرحيم
 عقد خدمات تصوير زفاف

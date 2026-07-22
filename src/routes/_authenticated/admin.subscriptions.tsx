@@ -10,7 +10,7 @@ import {
 } from "@/lib/admin.functions";
 import { PageLoader } from "@/components/ui/loading";
 
-export const Route = createFileRoute("/admin/subscriptions")({
+export const Route = createFileRoute("/_authenticated/admin/subscriptions")({
   component: AdminSubs,
 });
 

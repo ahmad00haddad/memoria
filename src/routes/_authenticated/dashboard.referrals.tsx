@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Copy, Gift, Users } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/dashboard/referrals")({
+export const Route = createFileRoute("/_authenticated/dashboard/referrals")({
   component: ReferralsPage,
 });
 

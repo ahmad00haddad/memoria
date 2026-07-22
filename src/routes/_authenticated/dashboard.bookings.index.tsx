@@ -12,7 +12,7 @@ import {
   Inbox, Search, CheckCircle2, XCircle, Calendar, User, DollarSign, ChevronLeft,
 } from "lucide-react";
 
-export const Route = createFileRoute("/dashboard/bookings/")({ component: BookingsList });
+export const Route = createFileRoute("/_authenticated/dashboard/bookings/")({ component: BookingsList });
 
 const STATUS_LABELS: Record<string, string> = {
   pending_deposit: "بانتظار العربون",

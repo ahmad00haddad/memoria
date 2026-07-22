@@ -9,7 +9,7 @@ import { Plus, Trash2, Save, RefreshCw, MessageCircle, Info } from "lucide-react
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { PageLoader } from "@/components/ui/loading";
 
-export const Route = createFileRoute("/dashboard/whatsapp-templates")({ component: TemplatesPage });
+export const Route = createFileRoute("/_authenticated/dashboard/whatsapp-templates")({ component: TemplatesPage });
 
 const CATEGORIES = [
   { value: "welcome", label: "ترحيب" },

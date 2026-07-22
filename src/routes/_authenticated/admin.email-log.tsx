@@ -6,7 +6,7 @@ import { Mail, CheckCircle2, XCircle } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/email-log")({
+export const Route = createFileRoute("/_authenticated/admin/email-log")({
   component: AdminEmailLog,
 });
 

@@ -6,7 +6,7 @@ import { Bell, Trash2 } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/admin/notifications")({
+export const Route = createFileRoute("/_authenticated/admin/notifications")({
   component: AdminNotifications,
 });
 

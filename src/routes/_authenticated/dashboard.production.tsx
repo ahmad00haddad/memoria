@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export const Route = createFileRoute("/dashboard/production")({ component: ProductionBoard });
+export const Route = createFileRoute("/_authenticated/dashboard/production")({ component: ProductionBoard });
 
 // ألوان المراحل: تباين أوضح + دعم dark mode كامل (نص وخلفية وحدود)
 const STAGES: { key: string; label: string; icon: any; color: string }[] = [

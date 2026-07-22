@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { AlertTriangle, Check, X, RefreshCw, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 
-export const Route = createFileRoute("/admin/disputes")({
+export const Route = createFileRoute("/_authenticated/admin/disputes")({
   component: AdminDisputesPage,
 });
 
