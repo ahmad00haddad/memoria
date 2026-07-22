@@ -9,7 +9,7 @@ export function Footer() {
       <div className="container-editorial py-12 grid gap-8 sm:grid-cols-4 text-sm">
         <div>
           <div className="font-serif text-xl mb-2">Memoria <span className="text-muted-foreground text-base">· ميموريا</span></div>
-          <p className="text-muted-foreground leading-relaxed">ذاكرة يومكِ، محفوظة بأمان. منصة أردنية متخصّصة في حجز مصوّرات الأعراس.</p>
+          <p className="text-muted-foreground leading-relaxed">ذاكرة يومكِ، محفوظة بأمان. شركة أردنية مسجلة (ذ.م.م) متخصّصة في حجز وتوثيق خدمات التصوير.</p>
           <p className="text-xs text-muted-foreground mt-3">للدعم: <a href="mailto:support@memoria.jo" className="hover:text-gold">support@memoria.jo</a></p>
         </div>
         <div>
