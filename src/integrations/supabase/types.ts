@@ -575,6 +575,7 @@ export type Database = {
           id: string
           processed_at: string
           provider: string
+          reference_type: string | null
           related_booking_id: string | null
           related_user_id: string | null
         }
@@ -584,6 +585,7 @@ export type Database = {
           id: string
           processed_at?: string
           provider: string
+          reference_type?: string | null
           related_booking_id?: string | null
           related_user_id?: string | null
         }
@@ -593,6 +595,7 @@ export type Database = {
           id?: string
           processed_at?: string
           provider?: string
+          reference_type?: string | null
           related_booking_id?: string | null
           related_user_id?: string | null
         }
@@ -1083,6 +1086,60 @@ export type Database = {
           photographer_id?: string
           sort_order?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          id: string
+          token: string
+          action: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          token: string
+          action: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          token?: string
+          action?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_log: {
+        Row: {
+          id: string
+          photographer_id: string
+          recipient_phone: string
+          template_name: string
+          payload: Json | null
+          status: string
+          error_message: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          photographer_id: string
+          recipient_phone: string
+          template_name: string
+          payload?: Json | null
+          status?: string
+          error_message?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          photographer_id?: string
+          recipient_phone?: string
+          template_name?: string
+          payload?: Json | null
+          status?: string
+          error_message?: string | null
+          created_at?: string
         }
         Relationships: []
       }

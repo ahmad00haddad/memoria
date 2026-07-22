@@ -86,7 +86,8 @@ type NotificationCategory =
   | "editing"
   | "delivery"
   | "review"
-  | "cancellation";
+  | "cancellation"
+  | "recover_links";
 
 type TemplateVars = {
   client_name: string;
@@ -189,6 +190,18 @@ function buildDefaultMessage(category: NotificationCategory, vars: TemplateVars)
         refund_note ? `\n${refund_note}` : null,
         ``,
         `لأي استفسار، يُرجى التواصل معنا عبر Memoria.`,
+      ].filter(Boolean).join("\n");
+
+    case "recover_links":
+      return [
+        `مرحباً ${client_name} 👋`,
+        ``,
+        `طلبتِ استرداد رابط تتبع حجزك مع *${photographer_name}* بتاريخ *${event_date}*.`,
+        ``,
+        `يمكنك متابعة حالة حجزك من هنا:`,
+        tracking_url ? tracking_url : null,
+        ``,
+        `إذا لم تطلبي هذا الرابط، يمكنك تجاهل هذه الرسالة بأمان.`,
       ].filter(Boolean).join("\n");
 
     default:

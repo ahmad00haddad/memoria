@@ -409,7 +409,7 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     if (bk.deposit_checkout_session_id && !bk.deposit_confirmed_at) {
       try {
         const { reconcilePaymentStatus } = await import("@/lib/payments.functions");
-        await reconcilePaymentStatus({ data: { token: bk.client_tracking_token } });
+        await reconcilePaymentStatus({ data: { token: bk.client_tracking_token! } });
       } catch (e) {
         console.error("[booking] auto-reconciliation failed during manual confirm", e);
       }
@@ -444,12 +444,12 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
       // إنشاء إشعار للمصورة بفشل توليد العقد (M4)
       try {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin.from("notifications").insert({
+         await supabaseAdmin.from("notifications").insert({
           user_id: userId,
           type: "system",
           title: "فشل توليد العقد التلقائي",
-          message: "حدث خطأ أثناء محاولة توليد العقد تلقائياً لهذا الحجز. يرجى إنشاء العقد يدوياً.",
-          action_url: `/dashboard/bookings/${data.booking_id}`
+          body: "حدث خطأ أثناء محاولة توليد العقد تلقائياً لهذا الحجز. يرجى إنشاء العقد يدوياً.",
+          link: `/dashboard/bookings/${data.booking_id}`
         });
       } catch (err) { console.error("[booking] failed to create contract failure notification", err); }
     }

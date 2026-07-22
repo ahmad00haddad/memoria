@@ -37,6 +37,7 @@ export type SubscriptionCheckoutInput = {
   success_url: string;
   cancel_url: string;
   photographer_email?: string | null;
+  metadata?: Record<string, string>;
 };
 
 export type DepositCheckoutResult = {
@@ -320,6 +321,49 @@ function createHyperPayProvider(accessToken: string, entityId: string): PaymentP
       // أو نعيد رابط redirect مباشر لـ COPYandPAY
       const checkoutUrl = `${input.success_url.split("?")[0]}?hyperpay_checkout=${json.id}`;
 
+      return {
+        url: checkoutUrl,
+        session_id: json.id as string,
+        provider: "hyperpay",
+      };
+    },
+
+    async createSubscriptionCheckout(input) {
+      // اشتراكات المصوّرات عبر HyperPay — يُعامَل كدفعة عادية مع metadata للاشتراك
+      const currency = input.currency?.toUpperCase() || "JOD";
+      const isThreeDecimal = new Set(["bhd","iqd","jod","kwd","lyd","omr","tnd"]).has(currency.toLowerCase());
+      const amount = toMinorUnit(input.amount, currency);
+      const amountStr = isThreeDecimal
+        ? (amount / 1000).toFixed(3)
+        : (amount / 100).toFixed(2);
+
+      const params = new URLSearchParams({
+        "authentication.userId": "",
+        "authentication.password": accessToken,
+        "authentication.entityId": entityId,
+        amount: amountStr,
+        currency,
+        paymentType: "DB",
+        descriptor: "Memoria Subscription",
+        "shopperResultUrl": input.success_url,
+        "customParameters[kind]": "subscription",
+        "customParameters[photographer_id]": input.metadata?.photographer_id || "",
+        "customParameters[months]": String(input.metadata?.months || 1),
+      });
+
+      const res = await fetch(`${BASE_URL}/v1/checkouts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: params.toString(),
+      });
+      const json: any = await res.json().catch(() => ({}));
+      if (!res.ok || !json?.id) {
+        throw new Error(json?.result?.description || `HyperPay subscription checkout failed (HTTP ${res.status})`);
+      }
+      const checkoutUrl = `${input.success_url.split("?")[0]}?hyperpay_checkout=${json.id}`;
       return {
         url: checkoutUrl,
         session_id: json.id as string,

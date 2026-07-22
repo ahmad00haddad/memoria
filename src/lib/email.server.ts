@@ -237,3 +237,15 @@ export function tplBookingCancelled(args: {
       args.booking_id ? { label: "فتح الحجز", url: `${appBase()}/dashboard/bookings/${args.booking_id}` } : undefined),
   };
 }
+
+/**
+ * إيميل للعميل: تم استرداد العربون بنجاح.
+ */
+export function tplDepositRefunded(clientName: string, amount: number, eventDate: string) {
+  return layout("تم استرداد العربون ✓", `
+    <p>مرحباً ${escapeHtml(clientName)},</p>
+    <p>نودّ إبلاغك بأنّه تم استرداد العربون بقيمة <strong style="color:#a07a32;">${amount.toFixed(2)} د.أ</strong> بنجاح.</p>
+    <p>كان العربون مرتبطاً بحجزك بتاريخ <strong>${escapeHtml(eventDate)}</strong>.</p>
+    <p>يُرجى مراجعة حسابك البنكي خلال 3-5 أيام عمل لتأكيد وصول المبلغ.</p>
+    <p>شكراً لاستخدامك Memoria.</p>`);
+}
