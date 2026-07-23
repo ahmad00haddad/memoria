@@ -18,8 +18,6 @@ import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as RecoverRouteImport } from './routes/recover'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -36,6 +34,8 @@ import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
@@ -112,16 +112,6 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NotificationsRoute = NotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -203,6 +193,17 @@ const ContractsTokenRoute = ContractsTokenRouteImport.update({
   path: '/contracts/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -400,8 +401,6 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
-  '/notifications': typeof NotificationsRoute
-  '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/recover': typeof RecoverRoute
@@ -413,6 +412,8 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -460,8 +461,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
-  '/notifications': typeof NotificationsRoute
-  '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/recover': typeof RecoverRoute
@@ -471,6 +470,8 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -519,8 +520,6 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
-  '/notifications': typeof NotificationsRoute
-  '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/recover': typeof RecoverRoute
@@ -532,6 +531,8 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
@@ -581,8 +582,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/guide'
     | '/login'
-    | '/notifications'
-    | '/onboarding'
     | '/pricing'
     | '/privacy'
     | '/recover'
@@ -594,6 +593,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/dashboard'
+    | '/notifications'
+    | '/onboarding'
     | '/contracts/$token'
     | '/photographers/$username'
     | '/photographers/join'
@@ -641,8 +642,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/guide'
     | '/login'
-    | '/notifications'
-    | '/onboarding'
     | '/pricing'
     | '/privacy'
     | '/recover'
@@ -652,6 +651,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/notifications'
+    | '/onboarding'
     | '/contracts/$token'
     | '/photographers/$username'
     | '/photographers/join'
@@ -699,8 +700,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/guide'
     | '/login'
-    | '/notifications'
-    | '/onboarding'
     | '/pricing'
     | '/privacy'
     | '/recover'
@@ -712,6 +711,8 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
+    | '/_authenticated/notifications'
+    | '/_authenticated/onboarding'
     | '/contracts/$token'
     | '/photographers/$username'
     | '/photographers/join'
@@ -761,8 +762,6 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
-  NotificationsRoute: typeof NotificationsRoute
-  OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RecoverRoute: typeof RecoverRoute
@@ -846,20 +845,6 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notifications': {
-      id: '/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -973,6 +958,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/contracts/$token'
       preLoaderRoute: typeof ContractsTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -1295,11 +1294,15 @@ const AuthenticatedDashboardRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -1318,8 +1321,6 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
-  NotificationsRoute: NotificationsRoute,
-  OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RecoverRoute: RecoverRoute,

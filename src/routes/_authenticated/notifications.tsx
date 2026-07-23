@@ -7,7 +7,7 @@ import { Bell, CheckCheck } from "lucide-react";
 import { ListSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export const Route = createFileRoute("/notifications")({ component: NotificationsPage });
+export const Route = createFileRoute("/_authenticated/notifications")({ component: NotificationsPage });
 
 function NotificationsPage() {
   const nav = useNavigate();
