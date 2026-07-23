@@ -1,129 +1,59 @@
-# خطة التدقيق الشامل لمشروع Memoria
+## تصحيح لتقييمي السابق
 
-**المخرج الوحيد:** تقرير Markdown مفصّل يُحفظ في `AUDIT_REPORT.md` بجذر المشروع. **لن يتم تعديل أي ملف مصدري أو تشغيل أي هجرة.**
+اعتذر — قلتُ سابقاً «17 خطأ TypeScript يمنع build الإنتاج». هذا **غير صحيح**. أعدتُ التحقق الآن:
 
----
+- `bunx tsgo --noEmit` → ✅ صفر أخطاء
+- `bun run build` → ✅ نجح (9.67s)
 
-## 1. نطاق التدقيق
+الحكم الواقعي: **جاهز تقنياً ~75%**. البناء يعمل، لكن هناك ديون أمنية وتحسينات واقعية يجب معالجتها قبل الإطلاق العام.
 
-- **الموقع الحي:** `https://memoria-jo.lovable.app` والمعاينة.
-- **الكود:** كل ما في `src/` و `supabase/migrations/` و `public/`.
-- **قاعدة البيانات:** فحص RLS، السياسات، والصلاحيات عبر أدوات القراءة فقط.
-- **الاستبعاد:** لا فحص لكود خارجي، لا اختبارات تحميل مكثفة، لا اختراق فعلي.
+## المشاكل الحقيقية المتبقية
 
----
+### 🟠 أمان قاعدة البيانات (30 تحذير linter)
+- **~25 دالة `SECURITY DEFINER`** قابلة للاستدعاء من `anon` أو `authenticated` بلا حاجة. بعضها OK (RPCs عامة عن قصد مثل `search_photographers`, `get_booking_by_token`)، لكن يجب مراجعة كل دالة وREVOKE ما لا يحتاج وصولاً عاماً.
+- **Extension في `public` schema** — نقل إلى schema مخصّص.
+- **RLS مفعّل بلا policy** على جدول واحد (INFO) — إما policy واضحة أو إزالة الجدول.
 
-## 2. منهجية التنفيذ (7 مراحل متتابعة)
+### 🟠 حماية المسارات
+- 4 مسارات محمية بحساسية عالية لا تزال خارج `_authenticated/`:
+  - `notifications.tsx`, `onboarding.tsx` (يحتاجان جلسة)
+  - `admin.*` عبر layout حراسة role (`has_role('admin')`) — الحالي يعتمد فحصاً في كل ملف
 
-### المرحلة أ — استكشاف بنية المشروع (قراءة فقط)
-- قراءة `package.json`, `vite.config.ts`, `tsconfig.json`, `src/router.tsx`, `src/routes/__root.tsx`, `src/start.ts`, `src/server.ts`.
-- استخراج قائمة كل المسارات من `src/routes/` وربطها بالرحلات.
-- قراءة كل ملفات `src/lib/*.functions.ts` لفهم منطق الأعمال في server functions.
+### 🟡 محتوى الإطلاق
+- `about.tsx` / `contact.tsx` تحتوي بيانات placeholder (اسم كيان، عنوان، رقم دعم).
+- `noreply@memoria.jo` غير مؤكَّد في Resend (SPF/DKIM/DMARC) → إيميلات قد تسقط في السبام.
+- `memoria.jo` غير مربوط كنطاق مخصّص في Lovable حتى الآن.
 
-### المرحلة ب — تدقيق UX/UI مباشرة على الموقع
-- تشغيل Playwright headless ضد `http://localhost:8080` لالتقاط لقطات لـ:
-  - الصفحة الرئيسية `/`
-  - `/search`, `/for-clients`, `/for-photographers`, `/pricing`, `/faq`
-  - `/login`, `/photographers/join`, `/onboarding`
-  - `/dashboard`, `/dashboard/bookings`, `/dashboard/calendar`, `/dashboard/profile`
-  - صفحة تتبع عميل `/track/$token` (بأي token موجود)
-  - `/photographers/$username` عيّنة
-- التقاط لقطات بمقاسين: `375x812` (هاتف) و `1280x900` (ديسكتوب).
-- فحص: CTA، الوضوح، التسلسل البصري، الحالات الفارغة، RTL.
+### 🟡 جودة/مراقبة
+- لا Sentry ولا PostHog مربوطة → أخطاء الإنتاج ستضيع.
+- `bunx vitest` غير مُهيّأ رغم وجود `src/lib/tests/security.test.ts`.
+- سلة الحركة ثقيلة: `framer-motion` + `gsap` + `@gsap/react` + `lenis` — GSAP لم يعد مستعملاً بعد اعتمادنا framer-motion.
 
-### المرحلة ج — تدقيق بنية المعلومات والتنقل
-- رسم شجرة المسارات فعلياً من `routeTree.gen.ts`.
-- تقييم `MobileBottomNav`, `Header`, `Footer` للاتساق والاكتمال.
-- كشف الصفحات اليتيمة أو المكررة أو الروابط المكسورة.
+## الخطة المقترحة (جلسة واحدة → ~90%)
 
-### المرحلة د — تدقيق الأداء والاستجابة وإمكانية الوصول
-- فحص `Network` عبر Playwright: حجم الحزم، طلبات مبدئية، صور غير محسّنة.
-- فحص Lighthouse-like يدوي: `Largest Contentful Paint`، خطوط `@fontsource`، `lazy loading`.
-- فحص a11y أساسي: contrast، `alt`، `aria-label`، بنية العناوين.
-- اختبار عيّنة صفحات على 3 مقاسات (`375`, `768`, `1280`).
+### دفعة 1 — أمان قاعدة البيانات (هجرة واحدة)
+1. `REVOKE EXECUTE ... FROM anon, authenticated` على الدوال الإدارية الحساسة (`delete_photographer_cascade`, `admin_renew_subscription`, `admin_set_published`, `restore_photographer`, `soft_delete_photographer`, `approve_review`, `reject_review`, `renew_subscription_paid`, `log_audit`, `refresh_featured_photographers`, `seed_default_shot_list`, `seed_default_whatsapp_templates`، إلخ).
+2. إبقاء الوصول العام فقط على: `search_photographers`, `get_booking_by_token`, `is_subscription_active`, `is_photographer_busy`, `get_photographer_busy_dates`, `client_*`, `has_role`.
+3. نقل الـ extension من `public` schema.
+4. معالجة تحذير «RLS بلا policy».
 
-### المرحلة هـ — تدقيق المنطق الوظيفي والأمان
-- **قاعدة البيانات:** تشغيل `supabase--linter` و `security--get_scan_results` و `supabase--read_query` لفحص:
-  - جداول بلا RLS.
-  - سياسات مفرطة الصلاحية (خصوصاً `bookings`, `profiles`, `photographer_private`, `payment_events`, `subscription_payments`).
-  - `GRANT` مفقودة على جداول public.
-  - أعمدة حساسة معرّضة (bank_info, cliq_alias, phone).
-- **Server Functions:** مراجعة كل `*.functions.ts` بحثاً عن:
-  - غياب `requireSupabaseAuth` على عمليات كتابة.
-  - غياب Zod validation.
-  - استخدام `supabaseAdmin` دون فحص صلاحية.
-- **Webhooks:** فحص `src/routes/api/public/hooks/*` لسلامة التحقق من التوقيع (payment, ical, email-reminders).
-- **حالات حدّية:** double booking، race conditions في الحجز، انتهاء token، refund policy.
-- **CSP و Headers:** مراجعة `src/server.ts` والتأكد من صرامتها الفعلية.
+### دفعة 2 — حراسة المسارات
+5. نقل `notifications.tsx` و`onboarding.tsx` تحت `_authenticated/`.
+6. إنشاء `_authenticated/admin.tsx` layout يتحقق من `has_role('admin')` وإعادة توجيه غير المخوّلين.
 
-### المرحلة و — تدقيق الجاهزية للنشر
-- فحص متغيرات البيئة، إعدادات `wrangler.jsonc`، `supabase/config.toml`.
-- فحص `public/sw.js`, `manifest.webmanifest`, `robots.txt`, `sitemap.xml`.
-- فحص SEO لكل route: `head()`, `og:image`, JSON-LD.
-- فحص وجود اختبارات ومراقبة أخطاء (Sentry/analytics).
-- فحص `email.server.ts` و `whatsapp.server.ts` لتحمّل الفشل.
+### دفعة 3 — محتوى وثقة
+7. تنظيف placeholders في `about.tsx` / `contact.tsx` (أو إضافة شارة «قريباً»).
+8. إزالة `gsap` و`@gsap/react` من `package.json` (تنظيف bundle).
 
-### المرحلة ز — تدقيق جاهزية PWA (بدل تطبيقات أصلية)
-- فحص `sw.js`: استراتيجية الكاش، offline fallback، تحديث النسخة.
-- فحص `manifest.webmanifest`: أيقونات، shortcuts، display mode.
-- تقييم قابلية التثبيت (`beforeinstallprompt` مدار في `__root.tsx`).
-- توصيات لتحسين تجربة PWA بدل الانتقال إلى Native.
+### خارج نطاق هذه الجلسة (أقترحها بعدها)
+- تأكيد `memoria.jo` في Resend + ربطه كنطاق مخصّص → عمل خارج المحرر.
+- تثبيت Sentry + إعداد `vitest.config` → دفعة منفصلة.
+- تدوير مفاتيح Supabase مرة أخيرة بعد التأكد من نظافة git.
 
----
+## النتيجة المتوقعة بعد التنفيذ
+- تحذيرات linter: 30 → ≤5
+- المسارات المحمية: مركزية تحت `_authenticated/`
+- Bundle client أخف بـ ~100KB (إزالة gsap)
+- جاهزية واقعية: 75% → ~90%
 
-## 3. هيكل التقرير النهائي `AUDIT_REPORT.md`
-
-```text
-1. ملخص تنفيذي
-   - حالة المشروع
-   - أهم 5 مخاطر
-   - قرار الجاهزية للنشر: جاهز / جاهز بشروط / غير جاهز
-   - قرار جاهزية PWA
-2. فهم المنتج والسياق
-3. نتائج التدقيق حسب المحاور الستة
-   3.1 UX/UI          — عيوب + أدلة (لقطات) + حلول
-   3.2 IA والتنقل     — عيوب + خرائط + حلول
-   3.3 الأداء/a11y/الاستجابة
-   3.4 المنطق والأمان — أخطر قسم
-   3.5 الجاهزية للنشر
-   3.6 جاهزية PWA
-4. جدول بطاقات العيوب (مصفوفة كاملة)
-5. خارطة طريق مرحلية
-   - Quick Wins (1-3 أيام)
-   - قصير المدى (1-2 أسبوع)
-   - هيكلي
-6. الملاحق: لقطات الشاشة تحت /tmp/browser/audit/
-```
-
-### صيغة بطاقة العيب الواحدة
-```text
-[#ID] [المحور] [الشدة: حرج/عالٍ/متوسط/منخفض]
-العنوان: ...
-المكان: مسار/ملف:سطر
-الوصف: ...
-الدليل: لقطة أو مقتطف كود
-الأثر: ...
-السبب المرجح: ...
-الحل المقترح: خطوات ملموسة
-الجهد التقديري: سريع/متوسط/هيكلي
-```
-
----
-
-## 4. الأدوات المستخدمة (قراءة فقط)
-
-- `code--view`, `code--list_dir`, `rg` عبر `code--exec` (بدون تعديل).
-- Playwright headless للقطات وقياس الأداء.
-- `supabase--read_query`, `supabase--linter`.
-- `security--get_scan_results`, `security--run_security_scan`.
-- `seo_chat--trigger_scan` ثم `seo_chat--list_findings`.
-
----
-
-## 5. التسليم
-
-- ملف واحد: `AUDIT_REPORT.md` بجذر المشروع.
-- مجلد لقطات: `/tmp/browser/audit/*.png` (مرجعية داخلية، غير مضمومة للريبو).
-- في نهاية التقرير: **حكم صريح** على الجاهزية للنشر وجاهزية PWA، مع قائمة أعلى 10 إصلاحات مرتبة بالأولوية.
-
-**لن يتم أي تعديل على الكود، الهجرات، الأسرار، أو الإعدادات في هذه الجولة.** إذا رغبت لاحقاً بتنفيذ الإصلاحات، نبدأ جولة بناء منفصلة بعد اعتمادك للتقرير.
+هل أنفّذ الدفعات الثلاث؟

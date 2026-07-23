@@ -7,7 +7,7 @@ import { Footer } from "@/components/site/Footer";
 import { toast } from "sonner";
 import { CheckCircle2, ArrowLeft, ArrowRight, Camera, DollarSign, Wallet, Eye, Sparkles, Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/onboarding")({
+export const Route = createFileRoute("/_authenticated/onboarding")({
   component: Onboarding,
   head: () => ({
     meta: [

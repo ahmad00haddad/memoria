@@ -330,7 +330,7 @@ export const reconcilePaymentStatus = createServerFn({ method: "POST" })
 
     // Rate Limit: Max 3 attempts per 10 minutes per token
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    const { count } = await supabaseAdmin
+    const { count } = await (supabaseAdmin as any)
       .from("rate_limits")
       .select("*", { count: "exact", head: true })
       .eq("token", data.token)
@@ -342,9 +342,9 @@ export const reconcilePaymentStatus = createServerFn({ method: "POST" })
     }
     
     // Log attempt
-    await supabaseAdmin.from("rate_limits").insert({
+    await (supabaseAdmin as any).from("rate_limits").insert({
       token: data.token,
-      action: "reconcile"
+      action: "reconcile",
     });
 
     // 1) جلب الحجز من رمز التتبع
