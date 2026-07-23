@@ -272,7 +272,7 @@ export async function sendWhatsAppNotification(
   // تسجيل الإشعار في قاعدة البيانات (Notification Queue / Log)
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("whatsapp_log").insert({
+    await (supabaseAdmin as any).from("whatsapp_log").insert({
       photographer_id: photographerId,
       recipient_phone: to,
       template_name: category,

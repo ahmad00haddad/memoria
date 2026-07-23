@@ -54,7 +54,7 @@ export const Route = createFileRoute("/api/public/hooks/payment")({
           kind === "deposit" ? (meta.booking_id || obj.client_reference_id || null) : null;
         const relatedUserId = kind === "subscription" ? (meta.photographer_id || null) : null;
 
-        const { error: claimErr } = await supabaseAdmin.from("payment_events").insert({
+        const { error: claimErr } = await (supabaseAdmin as any).from("payment_events").insert({
           id: evt.event_id,
           provider: provider.name,
           event_type: evt.type,
