@@ -30,6 +30,7 @@ function ProductionBoard() {
   const [loading, setLoading] = useState(true);
   const [activeStage, setActiveStage] = useState<string>("awaiting");
   const [err, setErr] = useState<string | null>(null);
+  const [movingId, setMovingId] = useState<string | null>(null);
 
   const load = async (id: string) => {
     const { data, error } = await supabase.from("bookings")
@@ -58,18 +59,34 @@ function ProductionBoard() {
   const move = async (id: string, dir: 1 | -1) => {
     const b = bookings.find((x) => x.id === id);
     if (!b) return;
+    if (movingId) return;
+    // منع السفر عبر الزمن: الحجز مكتمل لا يمكن تحريكه
+    if (b.status === "completed") {
+      toast.error("هذا الحجز مغلق (مكتمل) ولا يمكن تعديل مرحلته.");
+      return;
+    }
     const idx = STAGES.findIndex((s) => s.key === (b.production_stage || "awaiting"));
-    const next = STAGES[Math.max(0, Math.min(STAGES.length - 1, idx + dir))];
+    const targetIdx = idx + dir;
+    if (targetIdx < 0 || targetIdx > STAGES.length - 1) return; // خارج النطاق
+    const next = STAGES[targetIdx];
+    // تحقق: لا تنقل إلى "اختيار الصور" بدون رابط معرض
+    if (next.key === "selecting" && dir === 1 && !b.selection_link) {
+      if (!window.confirm("لم تضيفي رابط اختيار الصور (Selection Link) لهذا الحجز بعد. العميلة لن تجد شيئاً عند فتح الرابط. هل تريدين المتابعة على أي حال؟")) return;
+    }
     if (next.key === "delivered" && idx !== STAGES.length - 1) {
       if (!window.confirm("هل أنت متأكدة من إتمام تسليم هذا الحجز؟ لا يمكن التراجع عن هذه الخطوة وسيتم إغلاق الحجز.")) return;
     }
     const patch: any = { production_stage: next.key };
     if (next.key === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
     if (next.key === "delivered") { patch.editing_completed_at = new Date().toISOString(); patch.delivered_at = new Date().toISOString(); patch.status = "completed"; }
+    setMovingId(id);
     const { error } = await supabase.from("bookings").update(patch).eq("id", id).eq("photographer_id", uid);
-    if (error) { toast.error("تعذّر تحديث المرحلة."); console.error("[production] move error:", error.message); return; }
+    if (error) { setMovingId(null); toast.error("تعذّر تحديث المرحلة."); console.error("[production] move error:", error.message); return; }
     toast.success(`نُقل إلى: ${next.label}`);
-    load(uid).catch(console.error);
+    // Mobile: انقلي التبويب تلقائياً حتى لا يختفي الحجز من أمام المصوّرة
+    setActiveStage(next.key);
+    try { await load(uid); } catch (e) { console.error(e); }
+    setMovingId(null);
   };
 
   if (loading) return <PageLoader />;
