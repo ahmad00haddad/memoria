@@ -12,14 +12,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 
 export const Route = createFileRoute("/_authenticated/dashboard/production")({ component: ProductionBoard });
 
-// ألوان المراحل: تباين أوضح + دعم dark mode كامل (نص وخلفية وحدود)
 const STAGES: { key: string; label: string; icon: any; color: string }[] = [
-  { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-4 w-4" />, color: "bg-slate-100 border-slate-400 text-slate-900 dark:bg-slate-900/80 dark:border-slate-600 dark:text-slate-50" },
-  { key: "shooting", label: "يوم التصوير", icon: <Camera className="h-4 w-4" />, color: "bg-amber-100 border-amber-400 text-amber-950 dark:bg-amber-950/80 dark:border-amber-700 dark:text-amber-50" },
-  { key: "selecting", label: "اختيار الصور", icon: <ImageIcon className="h-4 w-4" />, color: "bg-blue-100 border-blue-400 text-blue-950 dark:bg-blue-950/80 dark:border-blue-700 dark:text-blue-50" },
-  { key: "editing", label: "قيد التحرير", icon: <Edit3 className="h-4 w-4" />, color: "bg-violet-100 border-violet-400 text-violet-950 dark:bg-violet-950/80 dark:border-violet-700 dark:text-violet-50" },
-  { key: "ready", label: "جاهز للتسليم", icon: <Send className="h-4 w-4" />, color: "bg-emerald-100 border-emerald-400 text-emerald-950 dark:bg-emerald-950/80 dark:border-emerald-700 dark:text-emerald-50" },
-  { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-4 w-4" />, color: "bg-secondary border-border text-foreground" },
+  { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-4 w-4 text-slate-500 dark:text-slate-400" />, color: "bg-secondary/40 border-t-4 border-t-slate-400 border-x-border border-b-border text-foreground" },
+  { key: "shooting", label: "يوم التصوير", icon: <Camera className="h-4 w-4 text-amber-500 dark:text-amber-400" />, color: "bg-secondary/40 border-t-4 border-t-amber-400 border-x-border border-b-border text-foreground" },
+  { key: "selecting", label: "اختيار الصور", icon: <ImageIcon className="h-4 w-4 text-blue-500 dark:text-blue-400" />, color: "bg-secondary/40 border-t-4 border-t-blue-400 border-x-border border-b-border text-foreground" },
+  { key: "editing", label: "قيد التحرير", icon: <Edit3 className="h-4 w-4 text-violet-500 dark:text-violet-400" />, color: "bg-secondary/40 border-t-4 border-t-violet-400 border-x-border border-b-border text-foreground" },
+  { key: "ready", label: "جاهز للتسليم", icon: <Send className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />, color: "bg-secondary/40 border-t-4 border-t-emerald-400 border-x-border border-b-border text-foreground" },
+  { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-4 w-4 text-muted-foreground" />, color: "bg-card border border-border text-muted-foreground opacity-80" },
 ];
 
 
