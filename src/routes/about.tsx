@@ -50,8 +50,8 @@ function AboutPage() {
         <section className="mt-16 rounded-2xl border border-border/60 bg-card p-8">
           <h2 className="font-serif text-2xl mb-6">الكيان والتواصل</h2>
           <ul className="space-y-3 text-sm">
-            <li className="flex items-start gap-3"><MapPin className="h-4 w-4 mt-1 text-gold" /><span>عمّان، الأردن</span></li>
-            <li className="flex items-start gap-3"><Mail className="h-4 w-4 mt-1 text-gold" /><a href="mailto:support@memoria.jo" className="hover:text-gold">support@memoria.jo</a></li>
+            <li className="flex items-start gap-3"><MapPin className="h-4 w-4 mt-1 text-gold" /><span>عمّان، المملكة الأردنية الهاشمية</span></li>
+            <li className="flex items-start gap-3"><Mail className="h-4 w-4 mt-1 text-gold" /><a href="mailto:ahmad000haddad@gmail.com" className="hover:text-gold">ahmad000haddad@gmail.com</a></li>
           </ul>
           <div className="mt-6 flex gap-3">
             <Link to="/contact" className="text-sm rounded-md border border-border/60 px-4 py-2 hover:bg-secondary">تواصلي معنا</Link>
