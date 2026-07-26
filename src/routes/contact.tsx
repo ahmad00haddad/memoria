@@ -41,7 +41,7 @@ function ContactPage() {
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("contact_messages")
         .insert({ name, email, phone: phone || null, message });
 
