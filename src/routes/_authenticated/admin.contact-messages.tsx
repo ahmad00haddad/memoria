@@ -18,7 +18,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 async function fetchMessages(filter: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  let q: any = (supabaseAdmin as any).from("contact_messages").select("*").order("created_at", { ascending: false });
+  let q = supabaseAdmin.from("contact_messages").select("*").order("created_at", { ascending: false });
   if (filter !== "all") q = q.eq("status", filter);
   const { data, error } = await q;
   if (error) throw error;
@@ -39,7 +39,7 @@ function AdminContactMessages() {
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, admin_notes }: { id: string; status: string; admin_notes?: string }) => {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { error } = await (supabaseAdmin as any)
+      const { error } = await supabaseAdmin
         .from("contact_messages")
         .update({ status, ...(admin_notes !== undefined ? { admin_notes } : {}) })
         .eq("id", id);

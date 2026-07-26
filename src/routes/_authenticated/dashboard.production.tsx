@@ -7,7 +7,7 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox } from "lucide-react";
+import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox, Loader2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export const Route = createFileRoute("/_authenticated/dashboard/production")({ component: ProductionBoard });
@@ -139,7 +139,7 @@ function ProductionBoard() {
             </div>
 
             <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
-              {STAGES.map((s) => {
+              {STAGES.map((s, sIdx) => {
                 const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
                 return (
                   <div key={s.key} className={`rounded-sm border ${s.color} p-3 min-h-[200px]`}>
@@ -169,8 +169,16 @@ function ProductionBoard() {
                               </div>
                             )}
                             <div className="flex gap-1 pt-1">
-                              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, -1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="السابق"><ChevronRight className="h-3 w-3" /></motion.button>
-                              <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, 1)} className="p-1 border border-border rounded-sm hover:bg-secondary" title="التالي"><ChevronLeft className="h-3 w-3" /></motion.button>
+                              {sIdx > 0 && sIdx < STAGES.length - 1 && (
+                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="p-1 border border-border rounded-sm hover:bg-secondary disabled:opacity-50" title="السابق">
+                                  {movingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <ChevronRight className="h-3 w-3" />}
+                                </motion.button>
+                              )}
+                              {sIdx < STAGES.length - 1 && (
+                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, 1)} disabled={movingId === b.id} className="p-1 border border-border rounded-sm hover:bg-secondary disabled:opacity-50" title="التالي">
+                                  {movingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <ChevronLeft className="h-3 w-3" />}
+                                </motion.button>
+                              )}
                             </div>
                           </motion.div>
                         );
@@ -186,7 +194,8 @@ function ProductionBoard() {
             {/* Mobile single-column view */}
             <div className="lg:hidden">
               {(() => {
-                const s = STAGES.find((x) => x.key === activeStage) ?? STAGES[0];
+                const sIdx = STAGES.findIndex((x) => x.key === activeStage);
+                const s = STAGES[Math.max(0, sIdx)];
                 const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
                 return (
                   <div className={`rounded-sm border ${s.color} p-3`}>
@@ -216,12 +225,16 @@ function ProductionBoard() {
                               </div>
                             )}
                             <div className="flex gap-2 pt-2 border-t border-border">
-                              <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs">
-                                <ChevronRight className="h-4 w-4" /> السابق
-                              </motion.button>
-                              <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, 1)} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs">
-                                التالي <ChevronLeft className="h-4 w-4" />
-                              </motion.button>
+                              {sIdx > 0 && sIdx < STAGES.length - 1 && (
+                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs disabled:opacity-50">
+                                  {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />} السابق
+                                </motion.button>
+                              )}
+                              {sIdx < STAGES.length - 1 && (
+                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, 1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs disabled:opacity-50">
+                                  التالي {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronLeft className="h-4 w-4" />}
+                                </motion.button>
+                              )}
                             </div>
                           </motion.div>
                         );
