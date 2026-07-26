@@ -60,6 +60,7 @@ import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminEmailLogRouteImport } from './routes/_authenticated/admin.email-log'
 import { Route as AuthenticatedAdminDisputesRouteImport } from './routes/_authenticated/admin.disputes'
 import { Route as AuthenticatedAdminContractsRouteImport } from './routes/_authenticated/admin.contracts'
+import { Route as AuthenticatedAdminContactMessagesRouteImport } from './routes/_authenticated/admin.contact-messages'
 import { Route as AuthenticatedAdminBookingsRouteImport } from './routes/_authenticated/admin.bookings'
 import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin.audit-log'
 import { Route as AuthenticatedDashboardBookingsIndexRouteImport } from './routes/_authenticated/dashboard.bookings.index'
@@ -344,6 +345,12 @@ const AuthenticatedAdminContractsRoute =
     path: '/contracts',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminContactMessagesRoute =
+  AuthenticatedAdminContactMessagesRouteImport.update({
+    id: '/contact-messages',
+    path: '/contact-messages',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminBookingsRoute =
   AuthenticatedAdminBookingsRouteImport.update({
     id: '/bookings',
@@ -421,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/track/$token': typeof TrackTokenRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/admin/contact-messages': typeof AuthenticatedAdminContactMessagesRoute
   '/admin/contracts': typeof AuthenticatedAdminContractsRoute
   '/admin/disputes': typeof AuthenticatedAdminDisputesRoute
   '/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
@@ -479,6 +487,7 @@ export interface FileRoutesByTo {
   '/track/$token': typeof TrackTokenRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/admin/contact-messages': typeof AuthenticatedAdminContactMessagesRoute
   '/admin/contracts': typeof AuthenticatedAdminContractsRoute
   '/admin/disputes': typeof AuthenticatedAdminDisputesRoute
   '/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
@@ -540,6 +549,7 @@ export interface FileRoutesById {
   '/track/$token': typeof TrackTokenRoute
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/admin/bookings': typeof AuthenticatedAdminBookingsRoute
+  '/_authenticated/admin/contact-messages': typeof AuthenticatedAdminContactMessagesRoute
   '/_authenticated/admin/contracts': typeof AuthenticatedAdminContractsRoute
   '/_authenticated/admin/disputes': typeof AuthenticatedAdminDisputesRoute
   '/_authenticated/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
@@ -602,6 +612,7 @@ export interface FileRouteTypes {
     | '/track/$token'
     | '/admin/audit-log'
     | '/admin/bookings'
+    | '/admin/contact-messages'
     | '/admin/contracts'
     | '/admin/disputes'
     | '/admin/email-log'
@@ -660,6 +671,7 @@ export interface FileRouteTypes {
     | '/track/$token'
     | '/admin/audit-log'
     | '/admin/bookings'
+    | '/admin/contact-messages'
     | '/admin/contracts'
     | '/admin/disputes'
     | '/admin/email-log'
@@ -720,6 +732,7 @@ export interface FileRouteTypes {
     | '/track/$token'
     | '/_authenticated/admin/audit-log'
     | '/_authenticated/admin/bookings'
+    | '/_authenticated/admin/contact-messages'
     | '/_authenticated/admin/contracts'
     | '/_authenticated/admin/disputes'
     | '/_authenticated/admin/email-log'
@@ -1141,6 +1154,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminContractsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/contact-messages': {
+      id: '/_authenticated/admin/contact-messages'
+      path: '/contact-messages'
+      fullPath: '/admin/contact-messages'
+      preLoaderRoute: typeof AuthenticatedAdminContactMessagesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/bookings': {
       id: '/_authenticated/admin/bookings'
       path: '/bookings'
@@ -1203,6 +1223,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAuditLogRoute: typeof AuthenticatedAdminAuditLogRoute
   AuthenticatedAdminBookingsRoute: typeof AuthenticatedAdminBookingsRoute
+  AuthenticatedAdminContactMessagesRoute: typeof AuthenticatedAdminContactMessagesRoute
   AuthenticatedAdminContractsRoute: typeof AuthenticatedAdminContractsRoute
   AuthenticatedAdminDisputesRoute: typeof AuthenticatedAdminDisputesRoute
   AuthenticatedAdminEmailLogRoute: typeof AuthenticatedAdminEmailLogRoute
@@ -1219,6 +1240,8 @@ interface AuthenticatedAdminRouteChildren {
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAuditLogRoute: AuthenticatedAdminAuditLogRoute,
   AuthenticatedAdminBookingsRoute: AuthenticatedAdminBookingsRoute,
+  AuthenticatedAdminContactMessagesRoute:
+    AuthenticatedAdminContactMessagesRoute,
   AuthenticatedAdminContractsRoute: AuthenticatedAdminContractsRoute,
   AuthenticatedAdminDisputesRoute: AuthenticatedAdminDisputesRoute,
   AuthenticatedAdminEmailLogRoute: AuthenticatedAdminEmailLogRoute,
