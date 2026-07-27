@@ -20,9 +20,34 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 
+import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+
 export const Route = createFileRoute("/track/$token")({
   component: TrackingPage,
+  errorComponent: ClientError,
 });
+
+function ClientError({ error, reset }: any) {
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
+        <div className="h-24 w-24 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+          <AlertTriangle className="h-12 w-12 text-red-500" />
+        </div>
+        <div className="space-y-2 max-w-md">
+          <h1 className="font-serif text-3xl">عذراً! رابط التتبع واجه مشكلة</h1>
+          <p className="text-muted-foreground">الرابط غير صحيح أو حدث خطأ في النظام.</p>
+        </div>
+        <div className="flex gap-4">
+          <button onClick={reset} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 transition">
+            <RefreshCcw className="h-4 w-4" /> تحديث الصفحة
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 type Booking = any;
 
@@ -167,43 +192,28 @@ function TrackingPage() {
   );
 
   const onSendDeposit = async () => {
+    const file = fileRef.current?.files?.[0];
+    if (!file) return;
     setUploading(true);
+    toast.loading("جاري رفع الإيصال...", { id: "upload-receipt" });
     try {
-      let proofPath: string | null = null;
-      const file = fileRef.current?.files?.[0];
-      if (file) {
-        // ✅ رفع آمن مع معالجة كاملة للأخطاء
-        const { uploadFile } = await import("@/lib/upload");
-        const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const uploadResult = await uploadFile(file, {
-          bucket: "deposit-proofs",
-          path: `public-tokens/${token}/${Date.now()}.${ext}`,
-          maxMb: 5,
-          allowedTypes: "image_or_pdf",
-          upsert: false,
-        });
-        if (!uploadResult.ok) {
-          toast.error(uploadResult.userMessage);
-          setUploading(false);
-          return;
-        }
-        proofPath = uploadResult.path;
-      }
-      await sendDeposit({ data: { token, proof_path: proofPath, reference: reference || null, note: note || null } });
-      toast.success("تم إبلاغ المصورة. ستتم مراجعة الإثبات قريبًا.");
+      // 1. Upload to storage
+      const ext = file.name.split('.').pop();
+      const path = `${b.id}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('deposit-proofs')
+        .upload(path, file);
+        
+      if (uploadError) throw uploadError;
+
+      // 2. Update booking
+      await sendDeposit({ data: { token, proof_path: path, reference: reference || null, note: note || null } });
+      toast.success("تم إرسال الإيصال بنجاح. سنقوم بتأكيد الحجز قريباً.", { id: "upload-receipt" });
       setReference(""); setNote("");
       if (fileRef.current) fileRef.current.value = "";
       load();
     } catch (e: any) {
-      // إذا كان الخطأ من الشبكة أو انتهاء الجلسة
-      const msg = e?.message || "";
-      if (msg.includes("jwt") || msg.includes("auth")) {
-        toast.error("انتهت جلستك. يرجى تحديث الصفحة وإعادة المحاولة.");
-      } else if (msg.includes("network") || msg.includes("fetch")) {
-        toast.error("انقطع الاتصال. تحقق من الإنترنت وأعد المحاولة.");
-      } else {
-        toast.error(msg || "تعذّر إرسال الطلب. يرجى المحاولة مجدداً.");
-      }
+      toast.error(e.message || "حدث خطأ أثناء رفع الملف", { id: "upload-receipt" });
     } finally {
       setUploading(false);
     }
@@ -273,14 +283,15 @@ function TrackingPage() {
 
   const handleConfirmCancel = async () => {
     setCancelLoading(true);
+    toast.loading("جاري إلغاء الحجز...", { id: "cancel-booking" });
     try {
-      await cancelFn({ data: { token, reason: cancelReason.trim() || null } });
-      toast.success("تم إلغاء الطلب");
+      await cancelFn({ data: { token, reason: cancelReason } });
+      toast.success("تم إلغاء الحجز بنجاح", { id: "cancel-booking" });
       setShowCancelDialog(false);
       setCancelReason("");
       load();
     } catch (e: any) {
-      toast.error(e?.message || "تعذّر الإلغاء");
+      toast.error(e.message, { id: "cancel-booking" });
     } finally {
       setCancelLoading(false);
     }
@@ -573,6 +584,7 @@ function TrackingPage() {
                 disabled={cancelLoading}
                 className="px-4 py-2 text-sm bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
+                {cancelLoading && <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                 {cancelLoading ? "جاري الإلغاء…" : "تأكيد الإلغاء"}
               </button>
             </div>
