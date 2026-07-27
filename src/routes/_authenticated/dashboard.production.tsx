@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate, ErrorComponentProps } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
+import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
@@ -172,7 +173,38 @@ function ProductionBoard() {
     await executeMove(b, dir, next, idx);
   };
 
-  if (loading) return <PageLoader />;
+  if (loading) return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <section className="container-editorial py-12">
+        <BackToDashboard />
+        <h1 className="font-serif text-4xl mt-2 mb-2">لوحة متابعة الإنتاج</h1>
+        <p className="text-sm text-muted-foreground mb-6 max-w-2xl text-charcoal/70 dark:text-ivory/70">جاري تحميل حجوزاتك بأمان...</p>
+
+        {/* Desktop Skeleton */}
+        <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6 mb-8">
+          {STAGES.map((s) => (
+            <div key={s.key} className={`rounded-sm border ${s.color} p-3 min-h-[200px]`}>
+              <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                {s.icon}<span>{s.label}</span>
+              </div>
+              <div className="space-y-2">
+                <SkeletonCard lines={2} className="border-border/50" />
+                <SkeletonCard lines={2} className="border-border/50 opacity-70" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile Skeleton */}
+        <div className="lg:hidden space-y-4 mb-8">
+           <SkeletonCard aspectRatio="16/9" lines={3} className="border-border/50" />
+           <SkeletonCard aspectRatio="16/9" lines={3} className="border-border/50 opacity-70" />
+        </div>
+      </section>
+      <Footer />
+    </div>
+  );
   if (err) return (
     <div className="min-h-screen bg-background">
       <Header />
