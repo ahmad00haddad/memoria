@@ -142,6 +142,7 @@ function Onboarding() {
   };
 
   const next = async () => {
+    if (saving) return;
     const err = validateStep();
     if (err) { toast.error(err); return; }
     setSaving(true);
@@ -156,6 +157,7 @@ function Onboarding() {
   const back = () => setStep((s) => Math.max(0, s - 1));
 
   const finish = async () => {
+    if (saving) return;
     setSaving(true);
     const { error } = await supabase.from("profiles").update({
       onboarding_completed_at: new Date().toISOString(),
@@ -169,6 +171,8 @@ function Onboarding() {
   };
 
   const skip = async () => {
+    if (saving) return;
+    setSaving(true);
     await supabase.from("profiles").update({
       onboarding_completed_at: new Date().toISOString(),
       onboarding_step: STEPS.length,

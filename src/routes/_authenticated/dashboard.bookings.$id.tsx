@@ -22,8 +22,29 @@ import {
   updateBookingStatus,
   saveBookingSelectionLink,
 } from "@/lib/production.functions";
+import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({ component: BookingDetail });
+export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({ 
+  component: BookingDetail,
+  errorComponent: BookingDetailError,
+});
+
+function BookingDetailError({ error, reset }: any) {
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-6">
+      <div className="h-16 w-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+        <AlertTriangle className="h-8 w-8 text-red-500" />
+      </div>
+      <div className="space-y-2 max-w-md">
+        <h1 className="font-serif text-2xl">عذراً! حدث خطأ أثناء تحميل الحجز</h1>
+        <p className="text-muted-foreground text-sm">بيانات هذا الحجز قد تكون غير مكتملة أو تم حذفها.</p>
+      </div>
+      <button onClick={reset} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 transition text-sm">
+        إعادة المحاولة
+      </button>
+    </div>
+  );
+}
 
 function BookingDetail() {
   const { id } = Route.useParams();
@@ -35,6 +56,7 @@ function BookingDetail() {
   const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [contract, setContract] = useState<any>(null);
   const [templates, setTemplates] = useState<any[]>([]);
   const confirmFn = useServerFn(confirmBookingAfterDeposit);
@@ -83,31 +105,41 @@ function BookingDetail() {
 
   // ✅ آمن: server fn تتحقق من الملكية + تسجّل في audit_logs + ترسل إيميل التسليم
   const setStage = async (stage: string) => {
+    if (actionLoading === "stage") return;
+    setActionLoading("stage");
     try {
       await updateStageFn({ data: { booking_id: id, stage } });
       toast.success("تم تحديث المرحلة");
       load();
     } catch (e: any) {
       toast.error(e?.message || "تعذّر تحديث المرحلة");
+    } finally {
+      setActionLoading(null);
     }
   };
 
   // ✅ آمن: server fn تتحقق من الملكية + تُشعر العميل بالرابط
   const saveSelectionLink = async (link: string) => {
+    if (actionLoading === "link") return;
+    setActionLoading("link");
     try {
       await saveSelectionFn({ data: { booking_id: id, link } });
       toast.success("تم حفظ الرابط وإشعار العميل");
       load();
     } catch (e: any) {
       toast.error(e?.message || "تعذّر حفظ الرابط");
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const setStatus = async (status: "quote" | "pending_deposit" | "confirmed" | "completed" | "cancelled") => {
+    if (actionLoading === "status") return;
+    setActionLoading("status");
     if (status === "confirmed") {
       // Server fn تتطلب إثبات العربون — لا تغيير
       try { await confirmFn({ data: { booking_id: id } }); }
-      catch (e: any) { return toast.error(e?.message || "تعذّر التأكيد"); }
+      catch (e: any) { setActionLoading(null); return toast.error(e?.message || "تعذّر التأكيد"); }
       toast.success("تم تأكيد الحجز");
       await load();
       const { data: existing } = await supabase.from("contracts").select("id").eq("booking_id", id).maybeSingle();
@@ -115,6 +147,7 @@ function BookingDetail() {
         await generateContract();
         toast.success("تم إنشاء العقد تلقائياً");
       }
+      setActionLoading(null);
       return;
     }
     // ✅ آمن: server fn بدلاً من الكتابة المباشرة
@@ -124,6 +157,8 @@ function BookingDetail() {
       await load();
     } catch (e: any) {
       toast.error(e?.message || "تعذّر تحديث الحالة");
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -156,13 +191,16 @@ function BookingDetail() {
       await load();
     } catch (e: any) {
       toast.error(e?.message || "تعذّر الإلغاء");
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const send = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || actionLoading === "send") return;
     const body = text.trim();
     setText("");
+    setActionLoading("send");
     // Optimistic: realtime channel will reconcile, but show immediately.
     const optimistic = { id: `tmp-${Date.now()}`, sender_id: uid, sender_name: "المصوّر", body, created_at: new Date().toISOString(), read_at: null };
     setMsgs((prev) => [...prev, optimistic]);
@@ -171,10 +209,12 @@ function BookingDetail() {
       toast.error("تعذّر إرسال الرسالة");
       setMsgs((prev) => prev.filter((m) => m.id !== optimistic.id));
     }
+    setActionLoading(null);
   };
 
   const generateContract = async (templateId?: string) => {
-    if (!b) return;
+    if (!b || actionLoading === "contract") return;
+    setActionLoading("contract");
     const tpl = templates.find((t) => t.id === templateId);
     const privacyLabels: Record<string, string> = {
       public: "عام — يحق للمصوّرة استخدام لقطات للترويج",
@@ -197,6 +237,8 @@ function BookingDetail() {
       toast.success("تم إنشاء العقد"); load();
     } catch (e: any) {
       toast.error(e?.message || "تعذّر إنشاء العقد");
+    } finally {
+      setActionLoading(null);
     }
   };
 
