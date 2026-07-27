@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox, Loader2, AlertTriangle, RefreshCcw, Info } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 function ProductionError({ error, reset }: ErrorComponentProps) {
   return (
@@ -61,6 +62,11 @@ function ProductionBoard() {
   const [activeStage, setActiveStage] = useState<string>("awaiting");
   const [err, setErr] = useState<string | null>(null);
   const [movingId, setMovingId] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; b?: any; dir?: 1|-1; next?: any; idx?: number }>({ open: false });
+  const [wiggleId, setWiggleId] = useState<string | null>(null);
+  const [tourStep, setTourStep] = useState<number>(() => {
+    return localStorage.getItem('memoria-production-tour-seen') ? -1 : 0;
+  });
 
   const load = async (id: string, isRetry = false) => {
     try {
@@ -108,6 +114,15 @@ function ProductionBoard() {
   const executeMove = async (b: any, dir: 1 | -1, next: typeof STAGES[0], idx: number) => {
     const patch: any = { production_stage: next.key };
     
+    // Save previous state for undo
+    const previousState = {
+      production_stage: b.production_stage,
+      editing_started_at: b.editing_started_at,
+      editing_completed_at: b.editing_completed_at,
+      status: b.status,
+      delivered_at: b.delivered_at
+    };
+    
     if (dir === -1 && b.production_stage === "editing" && next.key === "selecting") {
       patch.editing_started_at = null;
       patch.editing_completed_at = null;
@@ -129,7 +144,21 @@ function ProductionBoard() {
     }
     
     
-    toast.success(`نُقل إلى: ${next.label}`);
+    toast.success(`نُقل إلى: ${next.label}`, {
+      duration: 5000,
+      action: {
+        label: "تراجع",
+        onClick: async () => {
+          setMovingId(b.id);
+          const { error: undoErr } = await supabase.from("bookings").update(previousState).eq("id", b.id).eq("photographer_id", uid);
+          if (!undoErr) {
+            toast.success("تم التراجع بنجاح");
+            try { await load(uid); } catch (e) {}
+          }
+          setMovingId(null);
+        }
+      }
+    });
     // Mobile: انقلي التبويب تلقائياً حتى لا يختفي الحجز من أمام المصوّرة
     setActiveStage(next.key);
     try { await load(uid); } catch (e) { console.error(e); }
@@ -139,7 +168,12 @@ function ProductionBoard() {
   const move = async (id: string, dir: 1 | -1) => {
     const b = bookings.find((x) => x.id === id);
     if (!b) return;
-    if (movingId) return;
+    if (movingId) {
+      // Snap-back / Wiggle animation on spam click
+      setWiggleId(id);
+      setTimeout(() => setWiggleId(null), 300);
+      return;
+    }
     
     // منع السفر عبر الزمن: الحجز مكتمل لا يمكن تحريكه
     if (b.status === "completed") {
@@ -161,13 +195,7 @@ function ProductionBoard() {
     }
     
     if (next.key === "delivered" && dir === 1) {
-      toast("تأكيد التسليم سيُغلق الحجز نهائياً ولا يمكن التراجع. هل أنت متأكدة؟", {
-        duration: 10000,
-        action: {
-          label: "نعم، أكّدي التسليم",
-          onClick: () => executeMove(b, dir, next, idx)
-        }
-      });
+      setConfirmDialog({ open: true, b, dir, next, idx });
       return;
     }
     
@@ -233,13 +261,57 @@ function ProductionBoard() {
           />
         ) : (
           <>
-            <Alert className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <AlertTitle className="text-blue-800 dark:text-blue-300 font-medium">مرحباً بك في لوحة الإنتاج!</AlertTitle>
-              <AlertDescription className="text-blue-700 dark:text-blue-400 text-xs mt-1">
-                دليلك السريع: استخدمي أزرار <strong>التالي</strong> و <strong>السابق</strong> أسفل كل بطاقة لنقل الحجز بين المراحل. سيتم الحفظ تلقائياً!
-              </AlertDescription>
-            </Alert>
+            <AnimatePresence mode="wait">
+              {tourStep >= 0 && tourStep < 4 && bookings.length > 0 && (
+                <motion.div
+                  key="tour-card"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mb-6 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 p-4 rounded-md shadow-sm relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-1 h-full bg-blue-500" />
+                  <div className="flex gap-3">
+                    <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                        {tourStep === 0 && "هنا الحجوزات الجديدة"}
+                        {tourStep === 1 && "استخدمي هذه الأزرار للنقل"}
+                        {tourStep === 2 && "تتبع وقت التعديل"}
+                        {tourStep === 3 && "الوجهة النهائية"}
+                      </h4>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
+                        {tourStep === 0 && "سوف تظهر حجوزاتك الجديدة دائماً في عمود «بانتظار الجلسة» لتبدئي العمل عليها."}
+                        {tourStep === 1 && "يمكنك نقل أي حجز عبر المراحل المختلفة باستخدام زري «التالي» و «السابق» الموجودين أسفل كل بطاقة."}
+                        {tourStep === 2 && "عند نقل الحجز لمرحلة «قيد التحرير»، سيبدأ عداد يحسب عدد أيام التعديل تلقائياً."}
+                        {tourStep === 3 && "بمجرد تسليم الحجز للعميل، انقرِ على زر التسليم، وسيتم إغلاق الحجز ولا يمكن تعديله مجدداً."}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-1.5" dir="ltr">
+                          {[0, 1, 2, 3].map((step) => (
+                            <div key={step} className={`h-1.5 rounded-full transition-all ${step === tourStep ? "w-4 bg-blue-600 dark:bg-blue-400" : "w-1.5 bg-blue-200 dark:bg-blue-800/50"}`} />
+                          ))}
+                        </div>
+                        <button 
+                          onClick={async () => {
+                            if (tourStep < 3) {
+                              setTourStep(tourStep + 1);
+                            } else {
+                              setTourStep(-1);
+                              localStorage.setItem("memoria-production-tour-seen", "true");
+                              try { await supabase.from("profiles").update({ onboarding_completed_at: new Date().toISOString() }).eq("id", uid); } catch(e) {}
+                            }
+                          }}
+                          className="text-xs bg-blue-600 text-white px-4 py-1.5 rounded-sm hover:bg-blue-700 transition"
+                        >
+                          {tourStep === 3 ? "فهمت، لننطلق!" : "التالي"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             {/* Mobile stage selector */}
             <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto">
               <div className="flex gap-2 min-w-max pb-2">
@@ -361,9 +433,16 @@ function ProductionBoard() {
                                   {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />} السابق
                                 </motion.button>
                               )}
-                              {sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, 1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs disabled:opacity-50" title="انقلي الحجز إلى المرحلة التالية">
-                                  التالي {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronLeft className="h-4 w-4" />}
+                              {b.status === "completed" || b.production_stage === "delivered" ? null : (
+                                <motion.button
+                                  animate={wiggleId === b.id ? { x: [-5, 5, -5, 5, 0] } : {}}
+                                  transition={{ duration: 0.3 }}
+                                  disabled={movingId !== null || sIdx >= STAGES.length - 1}
+                                  onClick={() => move(b.id, 1)}
+                                  className="p-1.5 rounded-full hover:bg-secondary transition disabled:opacity-30 disabled:cursor-not-allowed text-primary"
+                                  title="نقل للمرحلة التالية"
+                                >
+                                  {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronLeft className="h-4 w-4" />}
                                 </motion.button>
                               )}
                             </div>
@@ -380,6 +459,32 @@ function ProductionBoard() {
           </>
         )}
       </section>
+      
+      {/* Confirmation Dialog for Delivery */}
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>تأكيد تسليم الحجز</AlertDialogTitle>
+            <AlertDialogDescription>
+              هل أنت متأكدة من إكمال وتسليم هذا الحجز؟ نقل الحجز لمرحلة "تم التسليم" سيغلق بطاقة الحجز نهائياً ولن تستطيعي التراجع لتعديله لاحقاً.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>تراجع</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                const { b, dir, next, idx } = confirmDialog;
+                if (b && dir && next && idx !== undefined) executeMove(b, dir, next, idx);
+                setConfirmDialog({ open: false });
+              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              نعم، أكّدي التسليم
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Footer />
     </div>
   );
