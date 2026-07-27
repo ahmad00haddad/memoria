@@ -12,6 +12,8 @@ import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCirc
 import { EmptyState } from "@/components/ui/empty-state";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { useServerFn } from "@tanstack/react-start";
+import { logMove } from "@/lib/log-move";
 
 function ProductionError({ error, reset }: ErrorComponentProps) {
   return (
@@ -56,22 +58,16 @@ const STAGES: { key: string; label: string; icon: any; color: string }[] = [
 
 function ProductionBoard() {
   const nav = useNavigate();
+  const logMoveFn = useServerFn(logMove);
   const [uid, setUid] = useState("");
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeStage, setActiveStage] = useState<string>("awaiting");
   const [err, setErr] = useState<string | null>(null);
   const [movingId, setMovingId] = useState<string | null>(null);
+  // منع النقر السريع لنقل نفس البطاقة مجدداً خلال نافذة الـ Undo
+  const [undoLockUntil, setUndoLockUntil] = useState<Record<string, number>>({});
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; b?: any; dir?: 1|-1; next?: any; idx?: number }>({ open: false });
-  const [dialogReady, setDialogReady] = useState(false);
-  
-  useEffect(() => {
-    if (confirmDialog.open) {
-      setDialogReady(false);
-      const t = setTimeout(() => setDialogReady(true), 600);
-      return () => clearTimeout(t);
-    }
-  }, [confirmDialog.open]);
 
   const [wiggleId, setWiggleId] = useState<string | null>(null);
   const [tourStep, setTourStep] = useState<number>(() => {
@@ -82,7 +78,7 @@ function ProductionBoard() {
     try {
       if (isRetry) toast.loading("جاري إعادة المحاولة...", { id: "load-retry" });
       const { data, error } = await supabase.from("bookings")
-        .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at")
+        .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at,delivered_at")
         .eq("photographer_id", id).is("deleted_at", null).neq("status", "cancelled").order("event_date", { ascending: true });
       
       if (error) throw new Error(error.message);
@@ -123,7 +119,8 @@ function ProductionBoard() {
 
   const executeMove = async (b: any, dir: 1 | -1, next: typeof STAGES[0], idx: number) => {
     const patch: any = { production_stage: next.key };
-    
+    const prevStage = b.production_stage || "awaiting";
+
     // Save previous state for undo
     const previousState = {
       production_stage: b.production_stage,
@@ -136,43 +133,58 @@ function ProductionBoard() {
     if (dir === -1 && b.production_stage === "editing" && next.key === "selecting") {
       patch.editing_started_at = null;
       patch.editing_completed_at = null;
+      toast.message("تنبيه: تم تصفير عدّاد أيام التحرير لهذا الحجز.");
     }
     
     if (next.key === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
     if (next.key === "delivered") { patch.editing_completed_at = new Date().toISOString(); patch.delivered_at = new Date().toISOString(); patch.status = "completed"; }
     
     setMovingId(b.id);
-    const { error } = await supabase.from("bookings").update(patch).eq("id", b.id).eq("photographer_id", uid);
-    
-    if (error) { 
-      setMovingId(null); 
-      toast.error(`تعذّر نقل «${b.client_name}» — تحقّق من الاتصال وحاول مجدداً.`, {
-        action: { label: "إعادة المحاولة", onClick: () => move(b.id, dir) }
-      }); 
-      console.error("[production] move error:", error.message); 
-      return; 
-    }
-    
-    
-    toast.success(`نُقل إلى: ${next.label}`, {
-      duration: 5000,
-      action: {
-        label: "تراجع",
-        onClick: async () => {
-          setMovingId(b.id);
-          const { error: undoErr } = await supabase.from("bookings").update(previousState).eq("id", b.id).eq("photographer_id", uid);
-          if (!undoErr) {
-            toast.success("تم التراجع بنجاح");
-            try { await load(uid); } catch (e) {}
-          }
-          setMovingId(null);
-        }
+    try {
+      const { error } = await supabase.from("bookings").update(patch).eq("id", b.id).eq("photographer_id", uid);
+      if (error) {
+        toast.error(`تعذّر نقل «${b.client_name}» — تحقّق من الاتصال وحاول مجدداً.`, {
+          action: { label: "إعادة المحاولة", onClick: () => move(b.id, dir) }
+        });
+        console.error("[production] move error:", error.message);
+        return;
       }
-    });
-    // Mobile: انقلي التبويب تلقائياً حتى لا يختفي الحجز من أمام المصوّرة
-    setActiveStage(next.key);
-    try { await load(uid); } catch (e) { console.error(e); }
-    setMovingId(null);
+
+      // Audit trail — fire-and-forget، لا يوقف الـ UX إن فشل
+      logMoveFn({ data: { bookingId: b.id, fromStage: prevStage, toStage: next.key } }).catch(() => {});
+
+      // قفل نافذة الـ Undo لمدة 5 ثوانٍ حتى لا يُنقل نفس الحجز مجدداً بالخطأ
+      const lockUntil = Date.now() + 5000;
+      setUndoLockUntil((prev) => ({ ...prev, [b.id]: lockUntil }));
+
+      toast.success(`نُقل إلى: ${next.label}`, {
+        duration: 5000,
+        action: {
+          label: "تراجع",
+          onClick: async () => {
+            setMovingId(b.id);
+            try {
+              const { error: undoErr } = await supabase.from("bookings").update(previousState).eq("id", b.id).eq("photographer_id", uid);
+              if (!undoErr) {
+                toast.success("تم التراجع بنجاح");
+                logMoveFn({ data: { bookingId: b.id, fromStage: next.key, toStage: prevStage } }).catch(() => {});
+                try { await load(uid); } catch {}
+              } else {
+                toast.error("تعذّر التراجع، حاولي يدوياً.");
+              }
+            } finally {
+              setUndoLockUntil((prev) => { const n = { ...prev }; delete n[b.id]; return n; });
+              setMovingId(null);
+            }
+          }
+        }
+      });
+      // Mobile: انقلي التبويب تلقائياً حتى لا يختفي الحجز من أمام المصوّرة
+      setActiveStage(next.key);
+      try { await load(uid); } catch (e) { console.error(e); }
+    } finally {
+      setMovingId(null);
+    }
   };
 
   const move = async (id: string, dir: 1 | -1) => {
@@ -184,7 +196,17 @@ function ProductionBoard() {
       setTimeout(() => setWiggleId(null), 300);
       return;
     }
-    
+
+    // قفل نافذة الـ Undo — نمنع تحريك نفس البطاقة لمدة 5 ثوانٍ بعد آخر نقل
+    const lockedUntil = undoLockUntil[id] ?? 0;
+    if (lockedUntil > Date.now()) {
+      const secs = Math.ceil((lockedUntil - Date.now()) / 1000);
+      toast.message(`انتظري ${secs} ثانية — يمكنك التراجع عن آخر نقلة قبل تحريك هذا الحجز مجدداً.`);
+      setWiggleId(id);
+      setTimeout(() => setWiggleId(null), 300);
+      return;
+    }
+
     // منع السفر عبر الزمن: الحجز مكتمل لا يمكن تحريكه
     if (b.status === "completed") {
       toast.error("هذا الحجز مغلق (مكتمل) ولا يمكن تعديل مرحلته.");
@@ -512,13 +534,12 @@ function ProductionBoard() {
           <AlertDialogFooter>
             <AlertDialogCancel>تراجع</AlertDialogCancel>
             <AlertDialogAction 
-              disabled={!dialogReady}
               onClick={() => {
                 const { b, dir, next, idx } = confirmDialog;
                 if (b && dir && next && idx !== undefined) executeMove(b, dir, next, idx);
                 setConfirmDialog({ open: false });
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               {confirmDialog.next?.key === "delivered" ? "نعم، أكّدي التسليم" : "تأكيد النقل"}
             </AlertDialogAction>
