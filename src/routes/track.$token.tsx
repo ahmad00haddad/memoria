@@ -115,6 +115,9 @@ function TrackingPage() {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  // حارس polling: لا نستبدل الحالة أثناء تفاعل المستخدم مع رفع/إلغاء/دفع
+  const busyRef = useRef(false);
+  busyRef.current = uploading || cancelLoading || payLoading || reconcileLoading;
 
   const load = async () => {
     try {
@@ -151,7 +154,7 @@ function TrackingPage() {
 
   // Polling refresh — keeps gallery/messages live without realtime RLS gymnastics
   useEffect(() => {
-    const id = setInterval(() => { load(); }, 30000);
+    const id = setInterval(() => { if (!busyRef.current) load(); }, 30000);
     return () => clearInterval(id);
   }, []);
 

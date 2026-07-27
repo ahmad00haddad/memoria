@@ -95,6 +95,9 @@ function Onboarding() {
       if (!f.display_name.trim()) return "أدخلي الاسم الذي سيظهر للعميل.";
       if (uname.length < 3 || !/^[a-z0-9_]+$/.test(uname)) return "اسم المستخدم يجب أن يكون ٣ أحرف على الأقل (a-z, 0-9, _).";
       if (!f.city.trim()) return "اختاري المدينة الأساسية.";
+      if (f.avatar_url.trim() && !/^https?:\/\/.+/i.test(f.avatar_url.trim())) {
+        return "رابط الصورة يجب أن يبدأ بـ http:// أو https://";
+      }
     }
     if (step === 2) {
       if (!f.pkg_label.trim()) return "أدخلي اسم الباقة (مثال: باقة الساعة الواحدة).";
@@ -102,6 +105,9 @@ function Onboarding() {
     }
     if (step === 3) {
       if (!f.cliq_alias.trim() && !f.whatsapp.trim()) return "أضيفي CliQ أو رقم واتساب على الأقل.";
+      if (f.whatsapp.trim() && !/^\+?\d{9,15}$/.test(f.whatsapp.trim().replace(/[\s-]/g, ""))) {
+        return "رقم واتساب غير صحيح — أدخلي رقماً دولياً مثل +9627XXXXXXXX.";
+      }
     }
     return null;
   };
@@ -180,11 +186,18 @@ function Onboarding() {
   const skip = async () => {
     if (saving) return;
     setSaving(true);
-    await supabase.from("profiles").update({
-      onboarding_completed_at: new Date().toISOString(),
-      onboarding_step: STEPS.length,
-    } as any).eq("id", uid);
-    nav({ to: "/dashboard" });
+    try {
+      const { error } = await supabase.from("profiles").update({
+        onboarding_completed_at: new Date().toISOString(),
+        onboarding_step: STEPS.length,
+      } as any).eq("id", uid);
+      if (error) throw error;
+      nav({ to: "/dashboard" });
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر التخطي، حاولي مجدداً.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) return <PageLoader />;
