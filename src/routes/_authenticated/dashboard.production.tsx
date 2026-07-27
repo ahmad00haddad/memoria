@@ -226,6 +226,10 @@ function ProductionBoard() {
       return;
     }
     
+    if (b.production_stage === "editing" && next.key === "selecting" && dir === -1) {
+      toast.warning("تنبيه: إرجاع الحجز لمرحلة اختيار الصور سيُصفِّر وقت بدء التحرير، ولن تُحسب مدة التحرير السابقة.", { duration: 6000 });
+    }
+
     setConfirmDialog({ open: true, b, dir, next, idx });
   };
 

@@ -8,7 +8,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose 
 import { useAuthState } from "@/hooks/use-auth-state";
 
 export function Header() {
-  const [unread, setUnread] = useState(0);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
+  const [unreadMsgs, setUnreadMsgs] = useState(0);
   const [openMenu, setOpenMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { loading: authLoading, authed, userId, isPhotographer } = useAuthState();
@@ -25,13 +26,24 @@ export function Header() {
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const loadUnread = async () => {
-      if (!userId) { setUnread(0); return; }
-      const { count } = await supabase
+      if (!userId) { setUnreadNotifs(0); setUnreadMsgs(0); return; }
+      
+      const { count: notifCount } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
         .eq("is_read", false);
-      if (active) setUnread(count ?? 0);
+        
+      const { count: msgCount } = await supabase
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .neq("sender_id", userId)
+        .is("read_at", null); // Assuming null read_at means unread and sender is not us.
+        
+      if (active) {
+        setUnreadNotifs(notifCount ?? 0);
+        setUnreadMsgs(msgCount ?? 0);
+      }
     };
 
     void loadUnread();
@@ -49,7 +61,7 @@ export function Header() {
             filter: `user_id=eq.${userId}`,
           },
           () => {
-            if (active) setUnread((prev) => prev + 1);
+            if (active) setUnreadNotifs((prev) => prev + 1);
           }
         )
         .on(
@@ -62,6 +74,29 @@ export function Header() {
           },
           () => {
             // عند قراءة الإشعارات، أعد حساب العدد
+            if (active) void loadUnread();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+          },
+          (payload) => {
+             // Only count if sender is not us (we need to fetch if it's meant for us, but simple check is sender_id != userId)
+             if (active && payload.new.sender_id !== userId) setUnreadMsgs((prev) => prev + 1);
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "messages",
+          },
+          () => {
             if (active) void loadUnread();
           }
         )
@@ -101,12 +136,20 @@ export function Header() {
             <NavLink to="/photographers/join" className="hidden md:inline-flex">انضم كمصوّر</NavLink>
           )}
           {authed && (
-            <Link to="/notifications" className="relative px-3 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="إشعارات">
-              <Bell className="h-5 w-5" />
-              {unread > 0 && (
-                <span className="absolute -top-1 -left-1 bg-destructive text-destructive-foreground text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unread}</span>
-              )}
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to="/dashboard" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="الرسائل">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {unreadMsgs > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-blue-600 text-white text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadMsgs}</span>
+                )}
+              </Link>
+              <Link to="/notifications" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="إشعارات">
+                <Bell className="h-5 w-5" />
+                {unreadNotifs > 0 && (
+                  <span className="absolute -top-1 -left-1 bg-destructive text-destructive-foreground text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadNotifs}</span>
+                )}
+              </Link>
+            </div>
           )}
           <ThemeToggle />
           {authLoading ? (
