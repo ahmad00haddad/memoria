@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, ErrorComponentProps } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,10 +7,40 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox, Loader2, AlertTriangle, RefreshCcw } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 
-export const Route = createFileRoute("/_authenticated/dashboard/production")({ component: ProductionBoard });
+function ProductionError({ error, reset }: ErrorComponentProps) {
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
+        <div className="h-24 w-24 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+          <AlertTriangle className="h-12 w-12 text-red-500" />
+        </div>
+        <div className="space-y-2 max-w-md">
+          <h1 className="font-serif text-3xl">عذراً! يبدو أن هناك سلكاً قد انقطع 🔌</h1>
+          <p className="text-muted-foreground">حدث خطأ غير متوقع أثناء تحميل لوحة الإنتاج. لا تقلقي، بياناتك بأمان.</p>
+          <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-sm mt-4 text-left font-mono" dir="ltr">{error.message}</p>
+        </div>
+        <div className="flex gap-4">
+          <button onClick={reset} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 transition">
+            <RefreshCcw className="h-4 w-4" /> تحديث الصفحة
+          </button>
+          <Link to="/dashboard" className="inline-flex items-center gap-2 border border-border px-6 py-3 rounded-sm hover:bg-secondary transition">
+            العودة للرئيسية
+          </Link>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}
+
+export const Route = createFileRoute("/_authenticated/dashboard/production")({ 
+  component: ProductionBoard,
+  errorComponent: ProductionError
+});
 
 const STAGES: { key: string; label: string; icon: any; color: string }[] = [
   { key: "awaiting", label: "بانتظار الجلسة", icon: <Clock className="h-4 w-4 text-slate-500 dark:text-slate-400" />, color: "bg-secondary/40 border-t-4 border-t-slate-400 border-x-border border-b-border text-foreground" },
