@@ -21,7 +21,6 @@ const STAGES: { key: string; label: string; icon: any; color: string }[] = [
   { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-4 w-4 text-muted-foreground" />, color: "bg-card border border-border text-muted-foreground opacity-80" },
 ];
 
-
 function ProductionBoard() {
   const nav = useNavigate();
   const [uid, setUid] = useState("");
@@ -43,7 +42,10 @@ function ProductionBoard() {
     (async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return nav({ to: "/login" });
+        if (!session) {
+          toast.info("انتهت جلستك لأسباب أمنية. سجّلي الدخول للعودة إلى لوحة الإنتاج.");
+          return nav({ to: "/login" });
+        }
         setUid(session.user.id);
         await load(session.user.id);
       } catch (e: any) {
@@ -55,37 +57,69 @@ function ProductionBoard() {
     })();
   }, [nav]);
 
+  const executeMove = async (b: any, dir: 1 | -1, next: typeof STAGES[0], idx: number) => {
+    const patch: any = { production_stage: next.key };
+    
+    if (dir === -1 && b.production_stage === "editing" && next.key === "selecting") {
+      patch.editing_started_at = null;
+      patch.editing_completed_at = null;
+    }
+    
+    if (next.key === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
+    if (next.key === "delivered") { patch.editing_completed_at = new Date().toISOString(); patch.delivered_at = new Date().toISOString(); patch.status = "completed"; }
+    
+    setMovingId(b.id);
+    const { error } = await supabase.from("bookings").update(patch).eq("id", b.id).eq("photographer_id", uid);
+    
+    if (error) { 
+      setMovingId(null); 
+      toast.error(`تعذّر نقل «${b.client_name}» — تحقّق من الاتصال وحاول مجدداً.`, {
+        action: { label: "إعادة المحاولة", onClick: () => move(b.id, dir) }
+      }); 
+      console.error("[production] move error:", error.message); 
+      return; 
+    }
+    
+    toast.success(`نُقل إلى: ${next.label}`);
+    setActiveStage(next.key);
+    try { await load(uid); } catch (e) { console.error(e); }
+    setMovingId(null);
+  };
+
   const move = async (id: string, dir: 1 | -1) => {
     const b = bookings.find((x) => x.id === id);
     if (!b) return;
     if (movingId) return;
-    // منع السفر عبر الزمن: الحجز مكتمل لا يمكن تحريكه
+    
     if (b.status === "completed") {
       toast.error("هذا الحجز مغلق (مكتمل) ولا يمكن تعديل مرحلته.");
       return;
     }
+    
     const idx = STAGES.findIndex((s) => s.key === (b.production_stage || "awaiting"));
     const targetIdx = idx + dir;
-    if (targetIdx < 0 || targetIdx > STAGES.length - 1) return; // خارج النطاق
+    if (targetIdx < 0 || targetIdx > STAGES.length - 1) return;
     const next = STAGES[targetIdx];
-    // تحقق: لا تنقل إلى "اختيار الصور" بدون رابط معرض
+    
     if (next.key === "selecting" && dir === 1 && !b.selection_link) {
-      if (!window.confirm("لم تضيفي رابط اختيار الصور (Selection Link) لهذا الحجز بعد. العميلة لن تجد شيئاً عند فتح الرابط. هل تريدين المتابعة على أي حال؟")) return;
+      toast.error("لا يمكن الانتقال إلى «اختيار الصور» بدون رابط معرض. أضيفي الرابط من صفحة الحجز أولاً.", {
+        action: { label: "فتح الحجز", onClick: () => nav({ to: "/dashboard/bookings/$id", params: { id: b.id } }) }
+      });
+      return;
     }
-    if (next.key === "delivered" && idx !== STAGES.length - 1) {
-      if (!window.confirm("هل أنت متأكدة من إتمام تسليم هذا الحجز؟ لا يمكن التراجع عن هذه الخطوة وسيتم إغلاق الحجز.")) return;
+    
+    if (next.key === "delivered" && dir === 1) {
+      toast("تأكيد التسليم سيُغلق الحجز نهائياً ولا يمكن التراجع. هل أنت متأكدة؟", {
+        duration: 10000,
+        action: {
+          label: "نعم، أكّدي التسليم",
+          onClick: () => executeMove(b, dir, next, idx)
+        }
+      });
+      return;
     }
-    const patch: any = { production_stage: next.key };
-    if (next.key === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
-    if (next.key === "delivered") { patch.editing_completed_at = new Date().toISOString(); patch.delivered_at = new Date().toISOString(); patch.status = "completed"; }
-    setMovingId(id);
-    const { error } = await supabase.from("bookings").update(patch).eq("id", id).eq("photographer_id", uid);
-    if (error) { setMovingId(null); toast.error("تعذّر تحديث المرحلة."); console.error("[production] move error:", error.message); return; }
-    toast.success(`نُقل إلى: ${next.label}`);
-    // Mobile: انقلي التبويب تلقائياً حتى لا يختفي الحجز من أمام المصوّرة
-    setActiveStage(next.key);
-    try { await load(uid); } catch (e) { console.error(e); }
-    setMovingId(null);
+    
+    await executeMove(b, dir, next, idx);
   };
 
   if (loading) return <PageLoader />;
@@ -137,6 +171,8 @@ function ProductionBoard() {
               </div>
             </div>
 
+            {movingId && <div className="fixed inset-0 z-40 bg-background/20 pointer-events-none" />}
+            
             <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
               {STAGES.map((s, sIdx) => {
                 const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
@@ -154,28 +190,31 @@ function ProductionBoard() {
                           <motion.div
                             key={b.id}
                             layout
+                            aria-busy={movingId === b.id}
                             initial={{ opacity: 0, scale: 0.95, y: 8 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: -8 }}
                             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                            className="bg-card text-foreground rounded-sm border border-border p-3 text-xs space-y-1.5"
+                            className={`bg-card text-foreground rounded-sm border ${due !== null && due < 0 && s.key !== "delivered" ? "border-red-500/50" : "border-border"} p-3 text-xs space-y-1.5`}
                           >
-                            <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-sm hover:text-gold block">{b.client_name}</Link>
+                            <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="cursor-pointer">
+                              <span className="font-medium text-sm hover:text-gold block">{b.client_name}</span>
+                            </Link>
                             <div className="text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
                             {due !== null && s.key !== "delivered" && (
-                              <div className={due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
+                              <div className={`text-[10px] ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
                                 {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
                               </div>
                             )}
-                            <div className="flex gap-1 pt-1">
+                            <div className="flex gap-1.5 pt-2 border-t border-border mt-1.5">
                               {sIdx > 0 && sIdx < STAGES.length - 1 && (
-                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="p-1 border border-border rounded-sm hover:bg-secondary disabled:opacity-50" title="السابق">
-                                  {movingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <ChevronRight className="h-3 w-3" />}
+                                <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,-1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 border border-border rounded-sm hover:bg-secondary text-[10px] disabled:opacity-50" title="أرجعي الحجز إلى المرحلة السابقة">
+                                  {movingId===b.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <ChevronRight className="h-3 w-3"/>} السابق
                                 </motion.button>
                               )}
                               {sIdx < STAGES.length - 1 && (
-                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.92 }} onClick={() => move(b.id, 1)} disabled={movingId === b.id} className="p-1 border border-border rounded-sm hover:bg-secondary disabled:opacity-50" title="التالي">
-                                  {movingId === b.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <ChevronLeft className="h-3 w-3" />}
+                                <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-[10px] disabled:opacity-50" title="انقلي الحجز إلى المرحلة التالية">
+                                  التالي {movingId===b.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <ChevronLeft className="h-3 w-3"/>}
                                 </motion.button>
                               )}
                             </div>
@@ -210,13 +249,16 @@ function ProductionBoard() {
                           <motion.div
                             key={b.id}
                             layout
+                            aria-busy={movingId === b.id}
                             initial={{ opacity: 0, y: 8 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}
                             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                            className="bg-card text-foreground rounded-sm border border-border p-4 text-sm space-y-2"
+                            className={`bg-card text-foreground rounded-sm border ${due !== null && due < 0 && s.key !== "delivered" ? "border-red-500/50" : "border-border"} p-4 text-sm space-y-2`}
                           >
-                            <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="font-medium text-base hover:text-gold block">{b.client_name}</Link>
+                            <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="cursor-pointer">
+                              <span className="font-medium text-base hover:text-gold block">{b.client_name}</span>
+                            </Link>
                             <div className="text-xs text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
                             {due !== null && s.key !== "delivered" && (
                               <div className={`text-xs ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
@@ -225,12 +267,12 @@ function ProductionBoard() {
                             )}
                             <div className="flex gap-2 pt-2 border-t border-border">
                               {sIdx > 0 && sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs disabled:opacity-50">
+                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs disabled:opacity-50" title="أرجعي الحجز إلى المرحلة السابقة">
                                   {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />} السابق
                                 </motion.button>
                               )}
                               {sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, 1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs disabled:opacity-50">
+                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, 1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-xs disabled:opacity-50" title="انقلي الحجز إلى المرحلة التالية">
                                   التالي {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronLeft className="h-4 w-4" />}
                                 </motion.button>
                               )}
