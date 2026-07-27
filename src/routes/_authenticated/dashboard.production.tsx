@@ -60,18 +60,34 @@ function ProductionBoard() {
   const [err, setErr] = useState<string | null>(null);
   const [movingId, setMovingId] = useState<string | null>(null);
 
-  const load = async (id: string) => {
-    const { data, error } = await supabase.from("bookings")
-      .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at")
-      .eq("photographer_id", id).is("deleted_at", null).neq("status", "cancelled").order("event_date", { ascending: true });
-    if (error) throw new Error(error.message);
-    setBookings(data ?? []);
+  const load = async (id: string, isRetry = false) => {
+    try {
+      if (isRetry) toast.loading("جاري إعادة المحاولة...", { id: "load-retry" });
+      const { data, error } = await supabase.from("bookings")
+        .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at")
+        .eq("photographer_id", id).is("deleted_at", null).neq("status", "cancelled").order("event_date", { ascending: true });
+      
+      if (error) throw new Error(error.message);
+      
+      setBookings(data ?? []);
+      if (isRetry) toast.success("تم التحديث بنجاح!", { id: "load-retry" });
+      setErr(null);
+    } catch (e: any) {
+      toast.error("فشل تحميل البيانات. قد يكون الإنترنت ضعيفاً.", {
+        id: "load-retry",
+        action: { label: "حاول مرة أخرى", onClick: () => load(id, true) }
+      });
+      setErr("تعذّر تحميل لوحة الإنتاج. يرجى التحقق من اتصالك بالإنترنت.");
+      console.error("[production] fetch error:", e?.message);
+    }
   };
 
   useEffect(() => {
     (async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
         if (!session) {
           toast.info("انتهت جلستك لأسباب أمنية. سجّلي الدخول للعودة إلى لوحة الإنتاج.");
           return nav({ to: "/login", search: { redirect: window.location.pathname } });
@@ -79,8 +95,8 @@ function ProductionBoard() {
         setUid(session.user.id);
         await load(session.user.id);
       } catch (e: any) {
-        setErr("تعذّر تحميل لوحة الإنتاج. تحقّق من اتصالك وحاول مجدداً.");
-        console.error("[production] fetch error:", e?.message);
+        toast.error("تعذّر التحقق من هويتك. الرجاء تحديث الصفحة.");
+        setErr("مشكلة في التحقق من الجلسة (Session).");
       } finally {
         setLoading(false);
       }
