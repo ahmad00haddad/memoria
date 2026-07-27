@@ -30,6 +30,7 @@ function ReviewPage() {
 
   const submit = async () => {
     if (!name.trim()) return toast.error("الاسم مطلوب");
+    if (rating <= 3 && comment.trim().length < 5) return toast.error("يرجى كتابة سبب التقييم (5 أحرف على الأقل) لنتمكن من تحسين خدماتنا.");
     setBusy(true);
     try {
       await submitFn({ data: { token, rating, comment, client_name: name.trim() } });
@@ -42,7 +43,18 @@ function ReviewPage() {
   };
 
   if (isLoading) return <PageLoader />;
-  if (!booking) return <div className="min-h-screen grid place-items-center">رابط غير صالح</div>;
+  if (!booking || (booking as any).deleted_at || (booking as any).expired) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container-editorial py-24 text-center">
+          <h1 className="font-serif text-3xl mb-2 text-destructive">رابط غير صالح</h1>
+          <p className="text-muted-foreground">هذا الرابط أصبح غير فعّال أو تم حذفه.</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   const status = (booking as any).status;
   if (status !== "completed") {

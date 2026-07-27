@@ -25,6 +25,7 @@ function ForgotPasswordPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return toast.error("الرجاء إدخال البريد الإلكتروني");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return toast.error("يرجى إدخال بريد إلكتروني صحيح");
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
       redirectTo: `${window.location.origin}/reset-password`,

@@ -115,7 +115,14 @@ function Onboarding() {
         bio: f.bio.trim() || null,
         avatar_url: f.avatar_url.trim() || null,
       }).eq("id", uid);
-      if (error) { toast.error(error.message || "تعذّر حفظ المعلومات"); return false; }
+      if (error) {
+        if (error.code === '23505') {
+          toast.error("اسم المستخدم هذا محجوز، يرجى اختيار اسم آخر.");
+        } else {
+          toast.error(error.message || "تعذّر حفظ المعلومات");
+        }
+        return false;
+      }
     }
     if (step === 2) {
       const { data: existing } = await supabase.from("pricing_rules")

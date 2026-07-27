@@ -63,6 +63,16 @@ function ProductionBoard() {
   const [err, setErr] = useState<string | null>(null);
   const [movingId, setMovingId] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; b?: any; dir?: 1|-1; next?: any; idx?: number }>({ open: false });
+  const [dialogReady, setDialogReady] = useState(false);
+  
+  useEffect(() => {
+    if (confirmDialog.open) {
+      setDialogReady(false);
+      const t = setTimeout(() => setDialogReady(true), 600);
+      return () => clearTimeout(t);
+    }
+  }, [confirmDialog.open]);
+
   const [wiggleId, setWiggleId] = useState<string | null>(null);
   const [tourStep, setTourStep] = useState<number>(() => {
     return localStorage.getItem('memoria-production-tour-seen') ? -1 : 0;
@@ -194,12 +204,7 @@ function ProductionBoard() {
       return;
     }
     
-    if (next.key === "delivered" && dir === 1) {
-      setConfirmDialog({ open: true, b, dir, next, idx });
-      return;
-    }
-    
-    await executeMove(b, dir, next, idx);
+    setConfirmDialog({ open: true, b, dir, next, idx });
   };
 
   if (loading) return (
@@ -363,11 +368,19 @@ function ProductionBoard() {
                               <span className="font-medium text-sm hover:text-gold block">{b.client_name}</span>
                             </Link>
                             <div className="text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
-                            {due !== null && s.key !== "delivered" && (
-                              <div className={`text-[10px] ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
-                                {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
-                              </div>
-                            )}
+                            
+                            <div className="flex items-center justify-between text-[10px] pt-1">
+                              <span className="text-muted-foreground">المرحلة {sIdx + 1} من {STAGES.length}</span>
+                              {due !== null && s.key !== "delivered" && (
+                                <span className={due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
+                                  {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
+                                </span>
+                              )}
+                            </div>
+                            <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
+                              <div className="h-full bg-gold transition-all" style={{ width: `${((sIdx + 1) / STAGES.length) * 100}%` }} />
+                            </div>
+
                             <div className="flex gap-1.5 pt-2 border-t border-border mt-1.5">
                               {sIdx > 0 && sIdx < STAGES.length - 1 && (
                                 <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,-1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 border border-border rounded-sm hover:bg-secondary text-[10px] disabled:opacity-50" title="أرجعي الحجز إلى المرحلة السابقة">
@@ -384,7 +397,12 @@ function ProductionBoard() {
                         );
                       })}
                       </AnimatePresence>
-                      {items.length === 0 && <p className="text-[11px] text-muted-foreground text-center py-4">—</p>}
+                      {items.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground opacity-60">
+                          <Inbox className="h-6 w-6 mb-2" />
+                          <p className="text-[11px]">لا حجوزات هنا</p>
+                        </div>
+                      )}
                     </motion.div>
                   </div>
                 );
@@ -422,11 +440,19 @@ function ProductionBoard() {
                               <span className="font-medium text-base hover:text-gold block">{b.client_name}</span>
                             </Link>
                             <div className="text-xs text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
-                            {due !== null && s.key !== "delivered" && (
-                              <div className={`text-xs ${due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
-                                {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
-                              </div>
-                            )}
+                            
+                            <div className="flex items-center justify-between text-xs pt-1">
+                              <span className="text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-sm">المرحلة {sIdx + 1} من {STAGES.length}</span>
+                              {due !== null && s.key !== "delivered" && (
+                                <span className={due < 0 ? "text-destructive font-medium" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
+                                  {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
+                                </span>
+                              )}
+                            </div>
+                            <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                              <div className="h-full bg-gold transition-all" style={{ width: `${((sIdx + 1) / STAGES.length) * 100}%` }} />
+                            </div>
+
                             <div className="flex gap-2 pt-2 border-t border-border">
                               {sIdx > 0 && sIdx < STAGES.length - 1 && (
                                 <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs disabled:opacity-50" title="أرجعي الحجز إلى المرحلة السابقة">
@@ -450,7 +476,13 @@ function ProductionBoard() {
                         );
                       })}
                       </AnimatePresence>
-                      {items.length === 0 && <p className="text-xs text-muted-foreground text-center py-8">لا حجوزات في هذه المرحلة</p>}
+                      {items.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground opacity-60 bg-background/30 rounded-sm border border-dashed border-border mt-4">
+                          <Inbox className="h-10 w-10 mb-3" />
+                          <p className="text-sm font-medium">العمود فارغ</p>
+                          <p className="text-xs mt-1 text-center px-4">لا توجد أي حجوزات في مرحلة "{s.label}" حالياً.</p>
+                        </div>
+                      )}
                     </motion.div>
                   </div>
                 );
@@ -460,26 +492,35 @@ function ProductionBoard() {
         )}
       </section>
       
-      {/* Confirmation Dialog for Delivery */}
+      {/* Confirmation Dialog for All Stages */}
       <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false })}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>تأكيد تسليم الحجز</AlertDialogTitle>
+            <AlertDialogTitle>
+              {confirmDialog.next?.key === "delivered" 
+                ? "تأكيد تسليم الحجز" 
+                : confirmDialog.dir === 1 
+                  ? `نقل الحجز إلى: ${confirmDialog.next?.label}` 
+                  : `إرجاع الحجز إلى: ${confirmDialog.next?.label}`}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              هل أنت متأكدة من إكمال وتسليم هذا الحجز؟ نقل الحجز لمرحلة "تم التسليم" سيغلق بطاقة الحجز نهائياً ولن تستطيعي التراجع لتعديله لاحقاً.
+              {confirmDialog.next?.key === "delivered"
+                ? "هل أنت متأكدة من إكمال وتسليم هذا الحجز؟ نقل الحجز لمرحلة \"تم التسليم\" سيغلق بطاقة الحجز نهائياً ولن تستطيعي التراجع لتعديله لاحقاً."
+                : `سيتم تغيير حالة الحجز "${confirmDialog.b?.client_name}" إلى مرحلة "${confirmDialog.next?.label}".`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>تراجع</AlertDialogCancel>
             <AlertDialogAction 
+              disabled={!dialogReady}
               onClick={() => {
                 const { b, dir, next, idx } = confirmDialog;
                 if (b && dir && next && idx !== undefined) executeMove(b, dir, next, idx);
                 setConfirmDialog({ open: false });
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              نعم، أكّدي التسليم
+              {confirmDialog.next?.key === "delivered" ? "نعم، أكّدي التسليم" : "تأكيد النقل"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -521,6 +521,17 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
   const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length || !gallery) return;
+    
+    if (files.length > 50) {
+      toast.error("لا يمكن رفع أكثر من 50 صورة دفعة واحدة لتجنب بطء المتصفح.");
+      return;
+    }
+    const invalidTypes = files.filter(f => !f.type.startsWith("image/"));
+    if (invalidTypes.length > 0) {
+      toast.error("يرجى اختيار ملفات صور فقط.");
+      return;
+    }
+
     setUploading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();

@@ -106,6 +106,15 @@ function SubscriptionPage() {
 
   const handleProofUpload = async (file: File) => {
     if (!userId) return;
+    if (reference && !/^[a-zA-Z0-9]+$/.test(reference)) {
+      toast.error("الرقم المرجعي يجب أن يحتوي على حروف إنجليزية وأرقام فقط.");
+      return;
+    }
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("صيغة الملف غير مدعومة. يرجى رفع صورة (JPG/PNG) أو ملف PDF.");
+      return;
+    }
     setUploading(true);
     try {
       // ✅ رفع آمن مع معالجة شاملة للأخطاء

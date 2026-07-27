@@ -163,8 +163,11 @@ function TrackingPage() {
         <h1 className="font-serif text-3xl mb-2">انتهت صلاحية الرابط</h1>
         <p className="text-muted-foreground mb-4">هذا الرابط أصبح غير فعّال. يرجى التواصل مع المصورة للحصول على رابط جديد.</p>
         {b.photographer?.whatsapp && (
-          <a href={`https://wa.me/${String(b.photographer.whatsapp).replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
-             className="inline-block bg-charcoal text-ivory px-5 py-2 rounded-sm">تواصل عبر واتساب</a>
+          <button onClick={async () => {
+            const ok = await confirm({ title: "التحويل لواتساب", description: "سيتم نقلك لتطبيق واتساب للتواصل مع المصورة.", confirmText: "حسناً" });
+            if (ok) window.open(`https://wa.me/${String(b.photographer.whatsapp).replace(/\D/g, "")}`, "_blank");
+          }}
+             className="inline-block bg-charcoal text-ivory px-5 py-2 rounded-sm">تواصل عبر واتساب</button>
         )}
       </div>
       <Footer />
@@ -194,6 +197,18 @@ function TrackingPage() {
   const onSendDeposit = async () => {
     const file = fileRef.current?.files?.[0];
     if (!file) return;
+
+    // File validation
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("صيغة الملف غير مدعومة. يرجى رفع صورة (JPG/PNG) أو ملف PDF.", { id: "upload-receipt" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت).", { id: "upload-receipt" });
+      return;
+    }
+
     setUploading(true);
     toast.loading("جاري رفع الإيصال...", { id: "upload-receipt" });
     try {
@@ -527,7 +542,10 @@ function TrackingPage() {
         <div className="rounded-sm border border-border bg-card p-5 text-sm">
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">للتواصل عند الحاجة</div>
           <div className="space-y-1">
-            {ph.whatsapp && <div>واتساب: <a className="text-gold underline" href={`https://wa.me/${ph.whatsapp.replace(/[^0-9]/g,'')}`} target="_blank" rel="noreferrer">{ph.whatsapp}</a></div>}
+            {ph.whatsapp && <div>واتساب: <button className="text-gold underline" onClick={async () => {
+              const ok = await confirm({ title: "التحويل لواتساب", description: "سيتم نقلك لتطبيق واتساب للتواصل مع المصورة.", confirmText: "حسناً" });
+              if (ok) window.open(`https://wa.me/${ph.whatsapp.replace(/[^0-9]/g,'')}`, "_blank");
+            }}>{ph.whatsapp}</button></div>}
             {ph.phone && <div>هاتف: {ph.phone}</div>}
           </div>
         </div>

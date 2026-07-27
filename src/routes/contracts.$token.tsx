@@ -38,6 +38,9 @@ function SignPage() {
     if (!agreed || !signature.trim() || !name.trim()) {
       toast.error("يرجى تعبئة الاسم والتوقيع والموافقة"); return;
     }
+    if (signature.trim().length < 3) {
+      toast.error("التوقيع قصير جداً. يرجى كتابة 3 حروف على الأقل."); return;
+    }
     setSubmitting(true);
     try {
       await signFn({ data: { token, signature, client_name: name } });
