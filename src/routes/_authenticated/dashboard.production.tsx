@@ -32,7 +32,7 @@ function ProductionBoard() {
 
   const load = async (id: string) => {
     const { data, error } = await supabase.from("bookings")
-      .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status")
+      .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at")
       .eq("photographer_id", id).is("deleted_at", null).neq("status", "cancelled").order("event_date", { ascending: true });
     if (error) throw new Error(error.message);
     setBookings(data ?? []);
@@ -44,7 +44,7 @@ function ProductionBoard() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           toast.info("انتهت جلستك لأسباب أمنية. سجّلي الدخول للعودة إلى لوحة الإنتاج.");
-          return nav({ to: "/login" });
+          return nav({ to: "/login", search: { redirect: window.location.pathname } });
         }
         setUid(session.user.id);
         await load(session.user.id);
@@ -80,7 +80,9 @@ function ProductionBoard() {
       return; 
     }
     
+    
     toast.success(`نُقل إلى: ${next.label}`);
+    // Mobile: انقلي التبويب تلقائياً حتى لا يختفي الحجز من أمام المصوّرة
     setActiveStage(next.key);
     try { await load(uid); } catch (e) { console.error(e); }
     setMovingId(null);
@@ -91,6 +93,7 @@ function ProductionBoard() {
     if (!b) return;
     if (movingId) return;
     
+    // منع السفر عبر الزمن: الحجز مكتمل لا يمكن تحريكه
     if (b.status === "completed") {
       toast.error("هذا الحجز مغلق (مكتمل) ولا يمكن تعديل مرحلته.");
       return;
@@ -98,9 +101,10 @@ function ProductionBoard() {
     
     const idx = STAGES.findIndex((s) => s.key === (b.production_stage || "awaiting"));
     const targetIdx = idx + dir;
-    if (targetIdx < 0 || targetIdx > STAGES.length - 1) return;
+    if (targetIdx < 0 || targetIdx > STAGES.length - 1) return; // خارج النطاق
     const next = STAGES[targetIdx];
     
+    // تحقق: لا تنقل إلى "اختيار الصور" بدون رابط معرض
     if (next.key === "selecting" && dir === 1 && !b.selection_link) {
       toast.error("لا يمكن الانتقال إلى «اختيار الصور» بدون رابط معرض. أضيفي الرابط من صفحة الحجز أولاً.", {
         action: { label: "فتح الحجز", onClick: () => nav({ to: "/dashboard/bookings/$id", params: { id: b.id } }) }
