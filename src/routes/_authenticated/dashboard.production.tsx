@@ -8,8 +8,9 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox, Loader2, AlertTriangle, RefreshCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Edit3, CheckCircle2, Send, Clock, Inbox, Loader2, AlertTriangle, RefreshCcw, Info } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 function ProductionError({ error, reset }: ErrorComponentProps) {
   return (
@@ -227,11 +228,18 @@ function ProductionBoard() {
         {bookings.length === 0 ? (
           <EmptyState
             icon={Inbox}
-            title="لا توجد حجوزات في لوحة الإنتاج"
-            description="عند تأكيد حجوزات جديدة، ستظهر هنا لمتابعة مراحل تجهيزها."
+            title="🎉 لا توجد حجوزات قيد المعالجة!"
+            description="عند تأكيد حجوزات جديدة، ستظهر هنا لمتابعة مراحل تجهيزها خطوة بخطوة. استمتعي بفنجان قهوة ☕ ريثما يصلك حجز جديد."
           />
         ) : (
           <>
+            <Alert className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <AlertTitle className="text-blue-800 dark:text-blue-300 font-medium">مرحباً بك في لوحة الإنتاج!</AlertTitle>
+              <AlertDescription className="text-blue-700 dark:text-blue-400 text-xs mt-1">
+                دليلك السريع: استخدمي أزرار <strong>التالي</strong> و <strong>السابق</strong> أسفل كل بطاقة لنقل الحجز بين المراحل. سيتم الحفظ تلقائياً!
+              </AlertDescription>
+            </Alert>
             {/* Mobile stage selector */}
             <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto">
               <div className="flex gap-2 min-w-max pb-2">
