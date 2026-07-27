@@ -1,0 +1,46 @@
+[
+  {
+    "id": "UX001",
+    "severity": "critical",
+    "category": "error-handling",
+    "scenario": "فقدان الاتصال بالإنترنت أثناء استخدام لوحة الإنتاج",
+    "currentBehavior": "الصفحة تنهار بشاشة بيضاء أو تظهر رسالة خطأ غير ملائمة بصرياً",
+    "userPerception": "الموقع معطل تماماً، لا أعرف ماذا أفعل",
+    "proposedFix": "إضافة ErrorBoundary شامل يعرض شاشة ملائمة وزر إعادة المحاولة",
+    "estimatedHours": 1,
+    "files": ["src/routes/_authenticated/dashboard.production.tsx"]
+  },
+  {
+    "id": "UX002",
+    "severity": "critical",
+    "category": "performance",
+    "scenario": "فتح اللوحة بإنترنت بطيء (تحميل مبدئي)",
+    "currentBehavior": "ظهور PageLoader يشغل كامل الشاشة، يشعر المستخدم ببطء شديد لأن الهيكل العام غير مرئي",
+    "userPerception": "الموقع ثقيل ولا يستجيب بسرعة",
+    "proposedFix": "استخدام SkeletonCard كبديل للتحميل الكامل لعرض هيكل الكانبان قبل البيانات",
+    "estimatedHours": 2,
+    "files": ["src/routes/_authenticated/dashboard.production.tsx"]
+  },
+  {
+    "id": "UX003",
+    "severity": "high",
+    "category": "visual-design",
+    "scenario": "استخدام اللوحة في الوضع المظلم (Dark Mode)",
+    "currentBehavior": "بعض ألوان bg-*-50 الخاصة بخلفيات المراحل قد لا تظهر بتباين صحيح في الوضع المظلم",
+    "userPerception": "لا أستطيع قراءة تفاصيل البطاقة بسهولة",
+    "proposedFix": "تحديث ألوان bg-*-50 لتصبح متوافقة مع الوضع المظلم (مثل bg-secondary/40 مع تحديد border)",
+    "estimatedHours": 1,
+    "files": ["src/routes/_authenticated/dashboard.production.tsx"]
+  },
+  {
+    "id": "UX004",
+    "severity": "medium",
+    "category": "onboarding",
+    "scenario": "مصورة جديدة تسجل الدخول وتفتح لوحة الإنتاج لأول مرة",
+    "currentBehavior": "ترى رسالة 'لا توجد حجوزات' بشكل مباشر",
+    "userPerception": "ما هذه الصفحة؟ وكيف تعمل عندما يكون لدي حجوزات؟",
+    "proposedFix": "إضافة جولة تعريفية (Onboarding Tour) من 4 خطوات تشرح وظيفة الأعمدة وكيفية نقل البطاقات",
+    "estimatedHours": 4,
+    "files": ["src/routes/_authenticated/dashboard.production.tsx"]
+  }
+]
