@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Calendar, DollarSign, FileSignature, MessageCircle, ListChecks, BarChart3, Bell, Share2, Camera, Image as ImageIcon, Lock, Smartphone, Globe, Sparkles, ArrowLeft, Wallet, ShieldCheck, Users } from "lucide-react";
+import { useAuthState } from "@/hooks/use-auth-state";
 
 export const Route = createFileRoute("/for-photographers")({
   head: () => ({
@@ -35,6 +36,8 @@ const FEATURES = [
 ];
 
 function ForPhotographersPage() {
+  const { authed, isPhotographer } = useAuthState();
+  
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -48,9 +51,15 @@ function ForPhotographersPage() {
             Memoria ليست فقط منصّة عرض — بل نظام إدارة متكامل صُمّم خصيصاً لمصوّرات الأعراس في الأردن. حجوزات، عقود، عرابين، تسليم صور، تقارير، وقوالب واتساب — كل ذلك بالعربية وبواجهة Mobile-first.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/photographers/join" className="bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
-              انضمّي مجاناً ١٤ يوم <ArrowLeft className="h-4 w-4" />
-            </Link>
+            {authed && isPhotographer ? (
+              <Link to="/dashboard" className="bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
+                انتقلي إلى لوحة التحكم <ArrowLeft className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link to="/photographers/join" className="bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
+                انضمّي مجاناً ١٤ يوم <ArrowLeft className="h-4 w-4" />
+              </Link>
+            )}
             <Link to="/pricing" className="border border-border px-6 py-3 rounded-sm hover:bg-secondary">شاهدي خطط الاشتراك</Link>
           </div>
         </section>
