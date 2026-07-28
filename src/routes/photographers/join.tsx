@@ -30,13 +30,26 @@ function JoinPage() {
   const referralFn = useServerFn(recordReferralAfterSignup);
 
   useEffect(() => {
+    let active = true;
+    
+    // Redirect if already logged in
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (active && session) {
+        navigate({ to: "/dashboard", replace: true });
+      }
+    };
+    checkSession();
+
     const ref = new URLSearchParams(window.location.search).get("ref");
     if (ref) {
       setRefCode(ref);
       // Persist referral code for OAuth flow (Google signup)
       try { sessionStorage.setItem("pending_referral_code", ref); } catch {}
     }
-  }, []);
+    
+    return () => { active = false; };
+  }, [navigate]);
 
   const upd = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
