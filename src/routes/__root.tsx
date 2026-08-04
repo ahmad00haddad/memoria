@@ -21,6 +21,7 @@ import { SmoothScroll } from "@/components/SmoothScroll";
 import { LazyMotion, domAnimation, motion, AnimatePresence } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
+import { ClientTour } from "@/components/ClientTour";
 
 function NotFoundComponent() {
   return (
@@ -283,6 +284,7 @@ function RootComponent() {
             </AnimatePresence>
             <MobileTabBar />
             <PwaInstallPrompt />
+            <ClientTour />
             <Toaster position="top-center" richColors closeButton />
           </LazyMotion>
         </ConfirmProvider>
