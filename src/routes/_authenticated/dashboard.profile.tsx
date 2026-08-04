@@ -11,6 +11,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
 import { uploadProfilePhoto, uploadPortfolioPhoto } from "@/lib/upload";
 import { requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
+import { startTour, useTourState, resetTour } from "@/components/ClientTour";
 
 export const Route = createFileRoute("/_authenticated/dashboard/profile")({ component: ProfilePage });
 
@@ -25,6 +26,7 @@ function ProfilePage() {
   const [p, setP] = useState<any>({});
   const fileRef = useRef<HTMLInputElement>(null);
   const portfolioRef = useRef<HTMLInputElement>(null);
+  const tourState = useTourState();
 
   useEffect(() => {
     (async () => {
@@ -195,6 +197,33 @@ function ProfilePage() {
             <Field label="إنستغرام (اسم المستخدم)" v={p.instagram} on={(v) => setP({ ...p, instagram: v })} />
             <Field label="CliQ Alias لاستلام العربون" v={p.cliq_alias} on={(v) => setP({ ...p, cliq_alias: v })} />
             <Area label="معلومات الحساب البنكي (بنك / رقم حساب / IBAN)" v={p.bank_info} on={(v) => setP({ ...p, bank_info: v })} />
+          </Card>
+
+          <Card title="إعدادات الجولة التعريفية">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">حالة الجولة:</span>
+                <span className="text-sm font-medium">
+                  {tourState.status === "active" ? "فعالة الآن" :
+                   tourState.status === "completed" ? "مكتملة" :
+                   tourState.status === "skipped" ? "تم تخطيها" : "لم تبدأ"}
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { startTour(); toast.success("تم تشغيل الجولة التعريفية"); }}
+                  className="px-4 py-2 bg-charcoal text-ivory rounded-sm text-xs hover:opacity-90"
+                >
+                  تشغيل الجولة
+                </button>
+                <button
+                  onClick={() => { resetTour(); toast.success("تم تصفير الجولة التعريفية"); }}
+                  className="px-4 py-2 border border-border rounded-sm text-xs hover:bg-secondary"
+                >
+                  تعطيل / تصفير
+                </button>
+              </div>
+            </div>
           </Card>
 
           <Card title="إعدادات الحجز">

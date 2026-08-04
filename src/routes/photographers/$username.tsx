@@ -14,11 +14,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functions";
 import { getPhotographerProfileData } from "@/lib/profile.functions";
 import { Lightbox } from "@/components/Lightbox";
-// ✅ إضافة: تحسين الصور (WebP + responsive) عبر Cloudflare Images أو Supabase Transform
 import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
 import { hapticVibrate } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
+import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
+import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,

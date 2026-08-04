@@ -1,5 +1,6 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { startTour } from "@/components/ClientTour";
 
 export function Footer() {
   const { loading: authLoading, authed, isPhotographer } = useAuthState();
@@ -20,6 +21,7 @@ export function Footer() {
             <li><Link to="/faq" className="hover:text-gold">الأسئلة الشائعة</Link></li>
             <li><Link to="/app" className="hover:text-gold">حمّل التطبيق</Link></li>
             <li><Link to="/guide" className="hover:text-gold">كيف يعمل النظام</Link></li>
+            <li><button onClick={() => startTour()} className="hover:text-gold text-right">أعد الجولة التعريفية</button></li>
           </ul>
         </div>
         <div>
