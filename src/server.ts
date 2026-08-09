@@ -100,7 +100,7 @@ export default {
       headers.set("Content-Security-Policy", 
         "default-src 'self'; " +
         `script-src ${scriptSrc}; ` +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com; " +
+        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io; " +
         "img-src 'self' data: blob: https:; " +
         "style-src 'self' 'unsafe-inline'; " +
         "font-src 'self' data:; " +
