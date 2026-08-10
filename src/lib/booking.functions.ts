@@ -86,10 +86,18 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     // Photographer's deposit configuration
     const { data: profile, error: profErr } = await supabaseAdmin
       .from("profiles")
-      .select("id, display_name, username, fixed_deposit, deposit_percent")
+      .select("id, display_name, username, fixed_deposit, deposit_percent, min_session_minutes")
       .eq("id", data.photographer_id)
       .single();
     if (profErr || !profile) throw new Error("المصوّرة غير موجودة");
+
+    // احترام الحد الأدنى لمدة الجلسة الذي حدّدته المصوّرة
+    const toMinutes = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
+    const bookedMinutes = toMinutes(data.end_time) - toMinutes(data.start_time);
+    const minMinutes = Number(profile.min_session_minutes ?? 0);
+    if (minMinutes > 0 && bookedMinutes < minMinutes) {
+      throw new Error(`الحد الأدنى لمدة الجلسة لدى هذه المصوّرة هو ${Math.round(minMinutes / 60 * 10) / 10} ساعة`);
+    }
 
     const deposit = total > 0
       ? (profile.fixed_deposit != null

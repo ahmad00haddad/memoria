@@ -199,7 +199,10 @@ function TrackingPage() {
 
   const onSendDeposit = async () => {
     const file = fileRef.current?.files?.[0];
-    if (!file) return;
+    if (!file) {
+      toast.error("الرجاء اختيار صورة إيصال التحويل أولاً، أو استخدمي زر «حوّلت بدون إيصال».", { id: "upload-receipt" });
+      return;
+    }
 
     // File validation
     const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
@@ -232,6 +235,22 @@ function TrackingPage() {
       load();
     } catch (e: any) {
       toast.error(e.message || "حدث خطأ أثناء رفع الملف", { id: "upload-receipt" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // بعض العميلات يحوّلن عبر CliQ من تطبيق البنك بدون حفظ إيصال —
+  // نسمح بإبلاغ المصوّرة بدون مرفق بدل أن يعلق الزر بلا استجابة.
+  const onSendDepositWithoutProof = async () => {
+    setUploading(true);
+    try {
+      await sendDeposit({ data: { token, proof_path: null, reference: reference || null, note: note || null } });
+      toast.success("أبلغنا المصوّرة بالتحويل. قد تطلب منكِ الإيصال للتأكيد.");
+      setReference(""); setNote("");
+      load();
+    } catch (e: any) {
+      toast.error(e.message || "تعذّر إرسال الإشعار");
     } finally {
       setUploading(false);
     }
@@ -319,9 +338,9 @@ function TrackingPage() {
   const stages = [
     { key: "request", label: "طلب الحجز", done: true, icon: <CheckCircle2 className="h-5 w-5" /> },
     { key: "deposit", label: "إرسال العربون", done: !!b.deposit_sent_at, icon: <Upload className="h-5 w-5" /> },
-    { key: "confirmed", label: "تأكيد الحجز", done: !!b.deposit_confirmed_at || ["confirmed","in_production","delivered","completed"].includes(b.status), icon: <CheckCircle2 className="h-5 w-5" /> },
-    { key: "shoot", label: "يوم التصوير", done: b.production_stage !== "awaiting" || ["delivered","completed"].includes(b.status), icon: <Camera className="h-5 w-5" /> },
-    { key: "editing", label: "التحرير", done: ["editing","delivered","completed"].includes(b.production_stage) || ["delivered","completed"].includes(b.status), icon: <ImageIcon className="h-5 w-5" /> },
+    { key: "confirmed", label: "تأكيد الحجز", done: !!b.deposit_confirmed_at || ["confirmed","completed"].includes(b.status), icon: <CheckCircle2 className="h-5 w-5" /> },
+    { key: "shoot", label: "يوم التصوير", done: b.production_stage !== "awaiting" || !!b.delivered_at || b.status === "completed", icon: <Camera className="h-5 w-5" /> },
+    { key: "editing", label: "التحرير", done: ["editing","delivered","completed"].includes(b.production_stage) || !!b.delivered_at || b.status === "completed", icon: <ImageIcon className="h-5 w-5" /> },
     { key: "delivered", label: "التسليم", done: !!b.delivered_at || b.status === "completed", icon: <Truck className="h-5 w-5" /> },
   ];
 
@@ -454,6 +473,10 @@ function TrackingPage() {
                       className="bg-gold text-charcoal py-3 rounded-sm font-medium hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
                 <Upload className="h-4 w-4" /> {uploading ? "جاري الإرسال…" : "تم إرسال العربون"}
               </button>
+              <button onClick={onSendDepositWithoutProof} disabled={uploading}
+                      className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground disabled:opacity-60">
+                حوّلت بدون إيصال — أبلغي المصوّرة فقط
+              </button>
             </div>
           </div>
         )}
@@ -516,7 +539,7 @@ function TrackingPage() {
         )}
 
         {/* Delivered → mark received */}
-        {(b.status === "delivered" || b.delivered_at) && !b.client_received_at && (
+        {!!b.delivered_at && !b.client_received_at && (
           <div className="rounded-sm border border-emerald-200 bg-emerald-50 p-5 mb-6">
             <h2 className="font-serif text-xl mb-2">تم تسليم الصور</h2>
             <p className="text-sm mb-3">إذا استلمتِ الصور بشكل كامل، اضغطي للتأكيد.</p>
