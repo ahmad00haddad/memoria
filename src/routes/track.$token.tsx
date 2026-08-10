@@ -241,6 +241,7 @@ function TrackingPage() {
   };
 
   const onAddNote = async () => {
+    void 0;
     if (!newNote.trim()) return;
     try {
       await addNote({ data: { token, note: newNote.trim() } });
