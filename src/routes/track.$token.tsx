@@ -199,7 +199,10 @@ function TrackingPage() {
 
   const onSendDeposit = async () => {
     const file = fileRef.current?.files?.[0];
-    if (!file) return;
+    if (!file) {
+      toast.error("الرجاء اختيار صورة إيصال التحويل أولاً، أو استخدمي زر «حوّلت بدون إيصال».", { id: "upload-receipt" });
+      return;
+    }
 
     // File validation
     const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
