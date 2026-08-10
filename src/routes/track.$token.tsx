@@ -338,9 +338,9 @@ function TrackingPage() {
   const stages = [
     { key: "request", label: "طلب الحجز", done: true, icon: <CheckCircle2 className="h-5 w-5" /> },
     { key: "deposit", label: "إرسال العربون", done: !!b.deposit_sent_at, icon: <Upload className="h-5 w-5" /> },
-    { key: "confirmed", label: "تأكيد الحجز", done: !!b.deposit_confirmed_at || ["confirmed","in_production","delivered","completed"].includes(b.status), icon: <CheckCircle2 className="h-5 w-5" /> },
-    { key: "shoot", label: "يوم التصوير", done: b.production_stage !== "awaiting" || ["delivered","completed"].includes(b.status), icon: <Camera className="h-5 w-5" /> },
-    { key: "editing", label: "التحرير", done: ["editing","delivered","completed"].includes(b.production_stage) || ["delivered","completed"].includes(b.status), icon: <ImageIcon className="h-5 w-5" /> },
+    { key: "confirmed", label: "تأكيد الحجز", done: !!b.deposit_confirmed_at || ["confirmed","completed"].includes(b.status), icon: <CheckCircle2 className="h-5 w-5" /> },
+    { key: "shoot", label: "يوم التصوير", done: b.production_stage !== "awaiting" || !!b.delivered_at || b.status === "completed", icon: <Camera className="h-5 w-5" /> },
+    { key: "editing", label: "التحرير", done: ["editing","delivered","completed"].includes(b.production_stage) || !!b.delivered_at || b.status === "completed", icon: <ImageIcon className="h-5 w-5" /> },
     { key: "delivered", label: "التسليم", done: !!b.delivered_at || b.status === "completed", icon: <Truck className="h-5 w-5" /> },
   ];
 
@@ -539,7 +539,7 @@ function TrackingPage() {
         )}
 
         {/* Delivered → mark received */}
-        {(b.status === "delivered" || b.delivered_at) && !b.client_received_at && (
+        {!!b.delivered_at && !b.client_received_at && (
           <div className="rounded-sm border border-emerald-200 bg-emerald-50 p-5 mb-6">
             <h2 className="font-serif text-xl mb-2">تم تسليم الصور</h2>
             <p className="text-sm mb-3">إذا استلمتِ الصور بشكل كامل، اضغطي للتأكيد.</p>
