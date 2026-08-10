@@ -240,6 +240,22 @@ function TrackingPage() {
     }
   };
 
+  // بعض العميلات يحوّلن عبر CliQ من تطبيق البنك بدون حفظ إيصال —
+  // نسمح بإبلاغ المصوّرة بدون مرفق بدل أن يعلق الزر بلا استجابة.
+  const onSendDepositWithoutProof = async () => {
+    setUploading(true);
+    try {
+      await sendDeposit({ data: { token, proof_path: null, reference: reference || null, note: note || null } });
+      toast.success("أبلغنا المصوّرة بالتحويل. قد تطلب منكِ الإيصال للتأكيد.");
+      setReference(""); setNote("");
+      load();
+    } catch (e: any) {
+      toast.error(e.message || "تعذّر إرسال الإشعار");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const onAddNote = async () => {
     if (!newNote.trim()) return;
     try {
