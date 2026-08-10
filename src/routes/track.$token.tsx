@@ -473,6 +473,10 @@ function TrackingPage() {
                       className="bg-gold text-charcoal py-3 rounded-sm font-medium hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
                 <Upload className="h-4 w-4" /> {uploading ? "جاري الإرسال…" : "تم إرسال العربون"}
               </button>
+              <button onClick={onSendDepositWithoutProof} disabled={uploading}
+                      className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground disabled:opacity-60">
+                حوّلت بدون إيصال — أبلغي المصوّرة فقط
+              </button>
             </div>
           </div>
         )}
