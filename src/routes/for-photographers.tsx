@@ -91,9 +91,15 @@ function ForPhotographersPage() {
             <DollarSign className="h-10 w-10 text-gold mx-auto mb-4" />
             <h2 className="font-serif text-3xl mb-3">ابدئي اليوم — بدون بطاقة</h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">تجربة مجانية ١٤ يوماً. كل المميزات مفتوحة. ألغي في أي وقت دون التزام.</p>
-            <Link to="/photographers/join" className="bg-gold text-charcoal px-8 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
-              أنشئي حسابك الآن <ArrowLeft className="h-4 w-4" />
-            </Link>
+            {authed && isPhotographer ? (
+              <Link to="/dashboard" className="bg-gold text-charcoal px-8 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
+                انتقلي إلى لوحة التحكم <ArrowLeft className="h-4 w-4" />
+              </Link>
+            ) : (
+              <Link to="/photographers/join" className="bg-gold text-charcoal px-8 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
+                أنشئي حسابك الآن <ArrowLeft className="h-4 w-4" />
+              </Link>
+            )}
           </div>
         </section>
       </main>
