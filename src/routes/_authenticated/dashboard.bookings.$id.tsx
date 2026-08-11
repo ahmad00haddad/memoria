@@ -77,7 +77,7 @@ function BookingDetail() {
     const [{ data: bk }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
       supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_address, client_notes, privacy_level, status, addons, total_price, deposit_amount, client_tracking_token, deposit_proof_url, final_paid_at, final_paid_amount, cancellation_reason, cancelled_at, deleted_at").eq("id", id).maybeSingle(),
       supabase.from("messages").select("id, created_at, booking_id, sender_id, sender_name, body, read_at").eq("booking_id", id).order("created_at"),
-      supabase.from("contracts").select("id, status, template_id, pdf_url").eq("booking_id", id).maybeSingle(),
+      supabase.from("contracts").select("id, status, sign_token").eq("booking_id", id).maybeSingle(),
       supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
     ]);
     setB(bk); setMsgs(m ?? []); setContract(ct); setTemplates(tpl ?? []);
