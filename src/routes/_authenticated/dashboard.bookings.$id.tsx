@@ -30,6 +30,18 @@ export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({
 });
 
 function BookingDetailError({ error, reset }: any) {
+  return _BookingDetailErrorBody(reset);
+}
+
+const statusLabels: Record<string, string> = {
+  quote: "عرض سعر",
+  pending_deposit: "بانتظار العربون",
+  confirmed: "مؤكّد",
+  completed: "مكتمل",
+  cancelled: "ملغى",
+};
+
+function _BookingDetailErrorBody(reset: () => void) {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-6">
       <div className="h-16 w-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
@@ -77,7 +89,7 @@ function BookingDetail() {
     const [{ data: bk }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
       supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_address, client_notes, privacy_level, status, addons, total_price, deposit_amount, client_tracking_token, deposit_proof_url, final_paid_at, final_paid_amount, cancellation_reason, cancelled_at, deleted_at").eq("id", id).maybeSingle(),
       supabase.from("messages").select("id, created_at, booking_id, sender_id, sender_name, body, read_at").eq("booking_id", id).order("created_at"),
-      supabase.from("contracts").select("id, status, template_id, pdf_url").eq("booking_id", id).maybeSingle(),
+      supabase.from("contracts").select("id, status, sign_token").eq("booking_id", id).maybeSingle(),
       supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
     ]);
     setB(bk); setMsgs(m ?? []); setContract(ct); setTemplates(tpl ?? []);
@@ -280,7 +292,7 @@ function BookingDetail() {
 
           <div className="rounded-sm border border-border bg-card p-6">
             <h2 className="font-serif text-xl mb-3">الحالة والإجراءات</h2>
-            <div className="text-sm mb-3">الحالة الحالية: <strong>{b.status}</strong></div>
+            <div className="text-sm mb-3">الحالة الحالية: <strong>{statusLabels[b.status] ?? b.status}</strong></div>
 
             <DeliveryCountdown b={b} />
 
@@ -304,8 +316,14 @@ function BookingDetail() {
               </div>
             )}
 
+            {b.status === "pending_deposit" && !proofUrl && b.deposit_sent_at && (
+              <div className="mb-4 rounded-sm border border-amber-300/50 bg-amber-50 dark:bg-amber-950/20 p-3 text-sm">
+                أشارت العميلة إلى تحويل العربون بدون إرفاق إيصال. تحقّقي من حسابك ثم أكّدي العربون.
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
-              {b.status === "pending_deposit" && proofUrl && (
+              {b.status === "pending_deposit" && (
                 <button onClick={() => setStatus("confirmed")} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تأكيد العربون</button>
               )}
               {!b.final_paid_at && b.status !== "cancelled" && (
