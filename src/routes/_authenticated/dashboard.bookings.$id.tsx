@@ -280,7 +280,7 @@ function BookingDetail() {
 
           <div className="rounded-sm border border-border bg-card p-6">
             <h2 className="font-serif text-xl mb-3">الحالة والإجراءات</h2>
-            <div className="text-sm mb-3">الحالة الحالية: <strong>{b.status}</strong></div>
+            <div className="text-sm mb-3">الحالة الحالية: <strong>{statusLabels[b.status] ?? b.status}</strong></div>
 
             <DeliveryCountdown b={b} />
 
@@ -304,8 +304,14 @@ function BookingDetail() {
               </div>
             )}
 
+            {b.status === "pending_deposit" && !proofUrl && b.deposit_sent_at && (
+              <div className="mb-4 rounded-sm border border-amber-300/50 bg-amber-50 dark:bg-amber-950/20 p-3 text-sm">
+                أشارت العميلة إلى تحويل العربون بدون إرفاق إيصال. تحقّقي من حسابك ثم أكّدي العربون.
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
-              {b.status === "pending_deposit" && proofUrl && (
+              {b.status === "pending_deposit" && (
                 <button onClick={() => setStatus("confirmed")} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تأكيد العربون</button>
               )}
               {!b.final_paid_at && b.status !== "cancelled" && (
