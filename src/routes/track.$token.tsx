@@ -549,6 +549,17 @@ function TrackingPage() {
           </div>
         )}
 
+        {/* Completed → review link */}
+        {!!b.client_received_at && (
+          <div className="rounded-sm border border-gold/30 bg-gold/5 p-5 mb-6">
+            <h2 className="font-serif text-xl mb-2 text-gold">شكراً لثقتك! 🌟</h2>
+            <p className="text-sm mb-3">يسعدنا أن تكون تجربتك رائعة. يرجى تقييم المصورة لمساعدتها ومساعدة العرائس الأخريات.</p>
+            <Link to="/review/$token" params={{ token }} className="bg-charcoal text-ivory px-4 py-2 rounded-sm text-sm inline-flex items-center gap-2">
+              قيّمي المصورة
+            </Link>
+          </div>
+        )}
+
         {/* Notes */}
         <div className="rounded-sm border border-border bg-card p-5 mb-6">
           <h2 className="font-serif text-lg mb-3 inline-flex items-center gap-2"><MessageSquare className="h-4 w-4" /> ملاحظاتي</h2>

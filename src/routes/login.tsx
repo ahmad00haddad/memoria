@@ -44,6 +44,8 @@ function LoginPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const search = Route.useSearch() as any;
+  const redirectPath = search?.redirect || "/dashboard";
 
   useEffect(() => {
     let active = true;
@@ -54,7 +56,7 @@ function LoginPage() {
       } = await supabase.auth.getSession();
 
       if (active && session) {
-        navigate({ to: "/dashboard", replace: true });
+        navigate({ to: redirectPath, replace: true });
       }
     };
 
@@ -92,7 +94,7 @@ function LoginPage() {
 
       setSuccess("تم تسجيل الدخول بنجاح، يتم تحويلك الآن.");
       toast.success("تم تسجيل الدخول بنجاح");
-      navigate({ to: "/dashboard", replace: true });
+      navigate({ to: redirectPath, replace: true });
     } catch (error: any) {
       const message = error?.message || "حدث خلل غير متوقع أثناء تسجيل الدخول.";
       setErr(message);

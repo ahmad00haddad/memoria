@@ -38,6 +38,11 @@ export const updateProductionStage = createServerFn({ method: "POST" })
     const patch: any = { production_stage: data.stage, updated_at: now };
 
     // ضبط timestamps تلقائياً حسب المرحلة
+    const STAGES_ORDER = ["awaiting", "shooting", "selecting", "editing", "ready", "delivered"];
+    const fromIdx = STAGES_ORDER.indexOf(bk.production_stage || "awaiting");
+    const toIdx = STAGES_ORDER.indexOf(data.stage);
+    const isMovingBackward = toIdx < fromIdx;
+
     if (data.stage === "editing" && !bk.editing_started_at) {
       patch.editing_started_at = now;
     }
@@ -45,6 +50,18 @@ export const updateProductionStage = createServerFn({ method: "POST" })
       patch.editing_completed_at = now;
       patch.delivered_at = now;
       patch.status = "completed";
+    }
+
+    if (isMovingBackward) {
+      if (bk.production_stage === "editing" && data.stage === "selecting") {
+        patch.editing_started_at = null;
+        patch.editing_completed_at = null;
+      }
+      if (bk.production_stage === "delivered") {
+        patch.delivered_at = null;
+        patch.editing_completed_at = null;
+        patch.status = "confirmed";
+      }
     }
 
     const { error: updateErr } = await supabase

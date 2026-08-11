@@ -14,6 +14,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { useServerFn } from "@tanstack/react-start";
 import { logMove } from "@/lib/log-move";
+import { updateProductionStage } from "@/lib/production.functions";
 
 function ProductionError({ error, reset }: ErrorComponentProps) {
   return (
@@ -59,6 +60,7 @@ const STAGES: { key: string; label: string; icon: any; color: string }[] = [
 function ProductionBoard() {
   const nav = useNavigate();
   const logMoveFn = useServerFn(logMove);
+  const updateStageFn = useServerFn(updateProductionStage);
   const [uid, setUid] = useState("");
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,29 +133,17 @@ function ProductionBoard() {
     };
     
     if (dir === -1 && b.production_stage === "editing" && next.key === "selecting") {
-      patch.editing_started_at = null;
-      patch.editing_completed_at = null;
       toast.message("تنبيه: تم تصفير عدّاد أيام التحرير لهذا الحجز.");
     }
     
-    if (next.key === "editing" && !b.editing_started_at) patch.editing_started_at = new Date().toISOString();
-    if (next.key === "delivered") { patch.editing_completed_at = new Date().toISOString(); patch.delivered_at = new Date().toISOString(); patch.status = "completed"; }
-    
     setMovingId(b.id);
     try {
-      const { error } = await supabase.from("bookings").update(patch).eq("id", b.id).eq("photographer_id", uid);
-      if (error) {
-        toast.error(`تعذّر نقل «${b.client_name}» — تحقّق من الاتصال وحاول مجدداً.`, {
-          action: { label: "إعادة المحاولة", onClick: () => move(b.id, dir) }
-        });
-        console.error("[production] move error:", error.message);
-        return;
-      }
+      await updateStageFn({ data: { booking_id: b.id, stage: next.key } });
 
-      // Audit trail — fire-and-forget، لا يوقف الـ UX إن فشل
+      // Audit trail
       logMoveFn({ data: { bookingId: b.id, fromStage: prevStage, toStage: next.key } }).catch(() => {});
 
-      // قفل نافذة الـ Undo لمدة 5 ثوانٍ حتى لا يُنقل نفس الحجز مجدداً بالخطأ
+      // قفل نافذة الـ Undo لمدة 5 ثوانٍ
       const lockUntil = Date.now() + 5000;
       setUndoLockUntil((prev) => ({ ...prev, [b.id]: lockUntil }));
 
@@ -164,10 +154,15 @@ function ProductionBoard() {
           onClick: async () => {
             setMovingId(b.id);
             try {
-              const { error: undoErr } = await supabase.from("bookings").update(previousState).eq("id", b.id).eq("photographer_id", uid);
-              if (!undoErr) {
+              await updateStageFn({ data: { booking_id: b.id, stage: prevStage } });
+              toast.success("تم التراجع بنجاح");
+              logMoveFn({ data: { bookingId: b.id, fromStage: next.key, toStage: prevStage } }).catch(() => {});
+              try { await load(uid); } catch {}
+            } catch (undoErr: any) {
+              // fallback
+              const { error } = await supabase.from("bookings").update(previousState).eq("id", b.id).eq("photographer_id", uid);
+              if (!error) {
                 toast.success("تم التراجع بنجاح");
-                logMoveFn({ data: { bookingId: b.id, fromStage: next.key, toStage: prevStage } }).catch(() => {});
                 try { await load(uid); } catch {}
               } else {
                 toast.error("تعذّر التراجع، حاولي يدوياً.");
