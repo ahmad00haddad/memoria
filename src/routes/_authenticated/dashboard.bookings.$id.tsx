@@ -30,6 +30,18 @@ export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({
 });
 
 function BookingDetailError({ error, reset }: any) {
+  return _BookingDetailErrorBody(reset);
+}
+
+const statusLabels: Record<string, string> = {
+  quote: "عرض سعر",
+  pending_deposit: "بانتظار العربون",
+  confirmed: "مؤكّد",
+  completed: "مكتمل",
+  cancelled: "ملغى",
+};
+
+function _BookingDetailErrorBody(reset: () => void) {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-6">
       <div className="h-16 w-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
