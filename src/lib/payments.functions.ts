@@ -272,6 +272,7 @@ export const processDepositRefund = createServerFn({ method: "POST" })
       .from("bookings")
       .update({
         refund_status: "refunded",
+        refund_amount: refundAmount,
         updated_at: now,
       } as any)
       .eq("id", data.booking_id);

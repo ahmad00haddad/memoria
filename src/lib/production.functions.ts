@@ -27,7 +27,7 @@ export const updateProductionStage = createServerFn({ method: "POST" })
     // التحقق من الملكية قبل التحديث
     const { data: bk, error: fetchErr } = await supabase
       .from("bookings")
-      .select("id, photographer_id, status, production_stage, editing_started_at, client_email, client_name, event_date, client_tracking_token, client_user_id")
+      .select("id, photographer_id, status, production_stage, editing_started_at, client_email, client_name, client_phone, event_date, client_tracking_token, client_user_id")
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
@@ -42,6 +42,14 @@ export const updateProductionStage = createServerFn({ method: "POST" })
     const fromIdx = STAGES_ORDER.indexOf(bk.production_stage || "awaiting");
     const toIdx = STAGES_ORDER.indexOf(data.stage);
     const isMovingBackward = toIdx < fromIdx;
+
+    // حراسة خادمية للتسلسل والحالة (لا نعتمد على واجهة العميل)
+    if (bk.status === "cancelled") throw new Error("لا يمكن تغيير مرحلة حجز ملغي");
+    if (bk.status === "completed" && bk.production_stage !== "delivered") {
+      throw new Error("هذا الحجز مغلق ولا يمكن تغيير مرحلته");
+    }
+    if (toIdx === fromIdx) return { ok: true, stage: data.stage, unchanged: true };
+    if (toIdx > fromIdx + 1) throw new Error("لا يمكن تخطي المراحل. انقلي الحجز خطوة بخطوة.");
 
     if (data.stage === "editing" && !bk.editing_started_at) {
       patch.editing_started_at = now;
