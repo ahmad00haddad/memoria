@@ -200,7 +200,7 @@ export const adminRenewSubscription = createServerFn({ method: "POST" })
         status: "active",
         current_period_start: now.toISOString(),
         current_period_end: end.toISOString(),
-        trial_ends_at: now.toISOString(),
+        trial_ends_at: (sub as any)?.trial_ends_at ?? now.toISOString(),
         updated_at: now.toISOString(),
       }, { onConflict: "photographer_id" });
     if (subErr) throw new Error(subErr.message);
@@ -375,7 +375,7 @@ export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" }
         status: "active",
         current_period_start: now.toISOString(),
         current_period_end: end.toISOString(),
-        trial_ends_at: now.toISOString(),
+        trial_ends_at: (sub as any)?.trial_ends_at ?? now.toISOString(),
         updated_at: now.toISOString(),
       }, { onConflict: "photographer_id" });
     if (e2) throw new Error(e2.message);
@@ -870,7 +870,14 @@ export const listUserRolesAdmin = createServerFn({ method: "GET" })
 
 export const adminGrantRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { user_id: string; role: string }) => d)
+  .inputValidator((d: { user_id: string; role: string }) => {
+    const ROLES = ["admin", "photographer", "client"];
+    if (!d || typeof d.user_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.user_id)) {
+      throw new Error("invalid user_id");
+    }
+    if (!ROLES.includes(d.role)) throw new Error(`role يجب أن يكون من: ${ROLES.join(", ")}`);
+    return d;
+  })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
