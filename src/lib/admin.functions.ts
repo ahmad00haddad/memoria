@@ -183,7 +183,7 @@ export const adminRenewSubscription = createServerFn({ method: "POST" })
     
     const { data: sub } = await supabaseAdmin
       .from("subscriptions")
-      .select("current_period_end")
+      .select("current_period_end, trial_ends_at")
       .eq("photographer_id", data.photographer_id)
       .maybeSingle();
 
@@ -358,7 +358,7 @@ export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" }
     // Renew subscription directly without RPC (avoids auth.uid() issue)
     const { data: sub } = await supabaseAdmin
       .from("subscriptions")
-      .select("current_period_end")
+      .select("current_period_end, trial_ends_at")
       .eq("photographer_id", payment.photographer_id)
       .maybeSingle();
 
