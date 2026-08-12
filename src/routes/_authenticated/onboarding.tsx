@@ -172,6 +172,17 @@ function Onboarding() {
   const finish = async () => {
     if (saving) return;
     setSaving(true);
+    // لا نُنشر الملف بدون باقة سعرية واحدة على الأقل (تحقّق فعلي وليس على الواجهة فقط)
+    const { count: pkgCount } = await supabase
+      .from("pricing_rules")
+      .select("id", { count: "exact", head: true })
+      .eq("photographer_id", uid);
+    if (!pkgCount) {
+      setSaving(false);
+      toast.error("أضيفي باقة سعرية واحدة على الأقل قبل نشر ملفك");
+      setStep(1);
+      return;
+    }
     const { error } = await supabase.from("profiles").update({
       onboarding_completed_at: new Date().toISOString(),
       onboarding_step: STEPS.length,

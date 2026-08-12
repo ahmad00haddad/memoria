@@ -1,16 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // ============================================================================
 // sendGalleryDeliveredEmail — إيميل تسليم الصور (يُستدعى من updateProductionStage)
 // ============================================================================
 export const sendGalleryDeliveredEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: { booking_id: string }) => {
     if (!d || typeof d.booking_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.booking_id)) {
       throw new Error("invalid booking_id");
     }
     return d;
   })
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { userId } = context as any;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { sendEmail } = await import("@/lib/email.server");
 
@@ -20,6 +23,9 @@ export const sendGalleryDeliveredEmail = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .maybeSingle();
 
+    if (!bk) return { ok: false, reason: "not_found" };
+    // المصوّرة صاحبة الحجز فقط يمكنها إطلاق هذا الإيميل
+    if (bk.photographer_id !== userId) throw new Error("غير مصرح");
     if (!bk?.client_email) return { ok: false, reason: "no_client_email" };
 
     // منع إعادة الإرسال (idempotency)

@@ -32,7 +32,8 @@ function validateInput(d: SubmitInput): SubmitInput {
   if (duration <= 0) throw new Error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
   if (duration < 30) throw new Error("الحد الأدنى لمدة الحجز هو 30 دقيقة");
   // التاريخ يجب أن يكون اليوم أو في المستقبل
-  const todayStr = new Date().toISOString().split("T")[0];
+  // اليوم بتوقيت الأردن (UTC+3) وليس UTC، لتفادي رفض/قبول يوم كامل بالخطأ قرب منتصف الليل
+  const todayStr = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().split("T")[0];
   if (d.event_date < todayStr) throw new Error("لا يمكن اختيار تاريخ في الماضي");
   if (!Array.isArray(d.items) || d.items.length === 0 || d.items.length > 30) throw new Error("invalid items");
   for (const it of d.items) {
