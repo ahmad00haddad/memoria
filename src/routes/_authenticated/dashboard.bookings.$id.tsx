@@ -5,7 +5,8 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus, Star } from "lucide-react";
+import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus, Star, Info } from "lucide-react";
+import imageCompression from 'browser-image-compression';
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
@@ -570,8 +571,23 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
       if (!session) throw new Error("جلسة منتهية");
       const uid = session.user.id;
 
-      for (const f of files) {
-        if (f.size > 25 * 1024 * 1024) { toast.error(`${f.name}: أكبر من 25MB`); continue; }
+      for (const rawFile of files) {
+        if (rawFile.size > 25 * 1024 * 1024) { toast.error(`${rawFile.name}: أكبر من 25MB`); continue; }
+
+        let f = rawFile;
+        // Compression to prevent massive files from exhausting storage
+        if (rawFile.type.startsWith('image/') && rawFile.type !== 'image/gif' && rawFile.type !== 'image/svg+xml') {
+          try {
+            f = await imageCompression(rawFile, {
+              maxSizeMB: 2,
+              maxWidthOrHeight: 4096,
+              useWebWorker: true,
+              fileType: rawFile.type === 'image/png' ? 'image/png' : 'image/jpeg',
+            });
+          } catch (e) {
+            console.warn("Gallery image compression failed:", e);
+          }
+        }
 
         const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         const ext = f.name.split(".").pop()?.toLowerCase() || "jpg";
@@ -579,7 +595,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
 
         if (watermarkOn && watermarkText.trim() && isImage) {
           // ── نظام الرفع الثنائي ──────────────────────────────────────────
-          // 1) رفع الأصل النظيف في originals/
+          // 1) رفع الأصل النظيف في originals/ (لكن بعد ضغطه لتخفيف الحمل)
           const originalPath = `${uid}/${gallery.id}/originals/${fileId}.${ext}`;
           const { error: origErr } = await supabase.storage
             .from("delivery-photos")
@@ -661,6 +677,12 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
               <span><strong>تلميح:</strong> الحجز مكتمل ولكن المعرض فارغ! العروس بانتظار الصور بفارغ الصبر. ارفعي دفعة أولية لتشويقها.</span>
             </div>
           )}
+          <div className="mb-4 text-xs text-indigo-800 bg-indigo-50 border border-indigo-200 p-2.5 rounded-sm flex items-start gap-2">
+            <Info className="h-4 w-4 shrink-0 mt-0.5" />
+            <span>
+              <strong>للتسليم النهائي (حجم كامل):</strong> يُفضل استخدام روابط Google Drive أو WeTransfer ووضعها في خانة "رابط تسليم الصور" أعلاه. معرض الصور هنا مخصص للمعاينة (الصور تُضغط تلقائياً لتسريع التصفح).
+            </span>
+          </div>
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <label className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm cursor-pointer hover:bg-secondary text-sm">
               <Upload className="h-4 w-4" />

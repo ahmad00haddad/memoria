@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import React from "react";
-
+import imageCompression from 'browser-image-compression';
+import { supabase } from "@/integrations/supabase/client";
 // ============================================================================
 // upload.ts — مساعد رفع الملفات الشامل (مُصلَح)
 // ----------------------------------------------------------------------------
@@ -22,7 +23,7 @@ import React from "react";
 //   * إضافة detailedError لكل نوع خطأ (للـ logging).
 // ============================================================================
 
-import { supabase } from "@/integrations/supabase/client";
+
 
 export type AllowedFileType = "image" | "image_or_pdf" | "any";
 
@@ -191,16 +192,32 @@ export async function uploadFile(
     return { ok: false, error: typeError, userMessage: typeError, errorType: "invalid_type" };
   }
 
-  // 2. تحقّق من الحجم
+  // Optimize Image (Client-Side Compression) before anything else
+  let finalFile = file;
+  if (file.type.startsWith('image/') && file.type !== 'image/gif' && file.type !== 'image/svg+xml') {
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: maxDimension,
+        useWebWorker: true,
+        fileType: file.type === 'image/png' ? 'image/png' : 'image/jpeg',
+      };
+      finalFile = await imageCompression(file, options);
+    } catch (e) {
+      console.warn("Image compression failed, falling back to original:", e);
+    }
+  }
+
+  // 2. تحقّق من الحجم (using finalFile)
   const maxBytes = maxMb * 1024 * 1024;
-  if (file.size > maxBytes) {
-    const sizeMb = (file.size / 1024 / 1024).toFixed(1);
+  if (finalFile.size > maxBytes) {
+    const sizeMb = (finalFile.size / 1024 / 1024).toFixed(1);
     const msg = `حجم الملف كبير (${sizeMb} MB). الحد الأقصى المسموح هو ${maxMb} MB.`;
     return { ok: false, error: msg, userMessage: msg, errorType: "file_too_large" };
   }
 
-  // 3. تحقّق من أبعاد الصورة
-  const dimError = await validateImageDimensions(file, maxDimension);
+  // 3. تحقّق من أبعاد الصورة (using finalFile)
+  const dimError = await validateImageDimensions(finalFile, maxDimension);
   if (dimError) {
     return { ok: false, error: dimError, userMessage: dimError, errorType: "invalid_dimension" };
   }
@@ -220,9 +237,9 @@ export async function uploadFile(
   try {
     const { error: uploadErr, data } = await supabase.storage
       .from(bucket)
-      .upload(path, file, {
+      .upload(path, finalFile, {
         upsert,
-        contentType: file.type || "application/octet-stream",
+        contentType: finalFile.type || "application/octet-stream",
         cacheControl: "3600",
       });
 
@@ -233,7 +250,7 @@ export async function uploadFile(
       if (isConflict && !upsert) {
         const { error: retryErr, data: retryData } = await supabase.storage
           .from(bucket)
-          .upload(path, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
+          .upload(path, finalFile, { upsert: true, contentType: finalFile.type, cacheControl: "3600" });
         if (retryErr) {
           const { userMessage, errorType, details } = parseStorageError(retryErr);
           return { ok: false, error: retryErr.message, userMessage, errorType, details };
