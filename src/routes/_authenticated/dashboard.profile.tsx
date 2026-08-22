@@ -150,6 +150,12 @@ function ProfilePage() {
             </Link>
           )}
         </div>
+        
+        {!p?.cover_url && (
+          <div className="mb-8 bg-amber-50 border border-amber-200 text-amber-800 rounded-sm p-4 text-sm">
+            💡 <strong>تلميح:</strong> المصوّرات اللواتي يضعن صورة غلاف جذابة يحصلن على نقرات أكثر بنسبة 40% في صفحة البحث!
+          </div>
+        )}
 
         {!p?.is_published && (
           <div className="rounded-sm border border-gold/30 bg-gold/10 p-4 mb-8 text-sm leading-relaxed">

@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Camera, Bell, Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -14,6 +14,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | "guest" | null>(null);
   const { loading: authLoading, authed, userId, isPhotographer } = useAuthState();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -153,7 +154,7 @@ export function Header() {
                 onClick={() => { 
                   try { localStorage.setItem("memoria_visitor_role", "photographer"); } catch {} 
                   setVisitorRole("photographer");
-                  // Optional: we could navigate to /for-photographers here, but let's just update the nav
+                  navigate({ to: "/photographers/join" });
                 }}
                 className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
                 title="تغيير الدور"
@@ -171,6 +172,7 @@ export function Header() {
                 onClick={() => { 
                   try { localStorage.setItem("memoria_visitor_role", "client"); } catch {} 
                   setVisitorRole("client");
+                  navigate({ to: "/search" });
                 }}
                 className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
                 title="تغيير الدور"
@@ -244,6 +246,11 @@ export function Header() {
                       try { localStorage.setItem("memoria_visitor_role", newRole); } catch {}
                       setVisitorRole(newRole);
                       setOpenMenu(false);
+                      if (newRole === "photographer") {
+                        navigate({ to: "/photographers/join" });
+                      } else {
+                        navigate({ to: "/search" });
+                      }
                     }}
                     className="px-3 py-2.5 rounded-sm text-muted-foreground hover:bg-secondary text-right"
                   >

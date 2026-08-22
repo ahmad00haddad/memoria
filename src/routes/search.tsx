@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, MapPin, Star, X, SlidersHorizontal, BadgeCheck } from "lucide-react";
+import { Search, MapPin, Star, X, SlidersHorizontal, BadgeCheck, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -395,40 +395,52 @@ function SearchPage() {
             ))}
           </div>
         ) : displayResults.length === 0 ? (
-          <EmptyState
-            icon={Search}
-            title="لا توجد نتائج"
-            description="لم نعثر على مصوّرات تطابق فلترك الحالي. جرّبي اقتراحاتنا التالية:"
-            action={
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {date && (
-                  <button onClick={() => setDate("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                    إزالة التاريخ
-                  </button>
-                )}
-                {city && (
-                  <button onClick={() => setCity("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                    البحث في كل المدن
-                  </button>
-                )}
-                {(minPrice || maxPrice) && (
-                  <button onClick={() => { setMinPrice(""); setMaxPrice(""); }} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                    إزالة السعر
-                  </button>
-                )}
-                {verifiedOnly && (
-                  <button onClick={() => setVerifiedOnly(false)} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                    إظهار جميع المصوّرات
-                  </button>
-                )}
-                {hasFilters && (
-                  <button onClick={clearAll} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 text-sm">
-                    <X className="h-4 w-4" /> مسح كل الفلاتر
-                  </button>
-                )}
-              </div>
-            }
-          />
+          <div className="space-y-4">
+            <EmptyState
+              icon={Search}
+              title="لا توجد نتائج"
+              description="لم نعثر على مصوّرات تطابق فلترك الحالي. جرّبي اقتراحاتنا التالية:"
+              action={
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {date && (
+                    <button onClick={() => setDate("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                      إزالة التاريخ
+                    </button>
+                  )}
+                  {city && (
+                    <button onClick={() => setCity("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                      البحث في كل المدن
+                    </button>
+                  )}
+                  {(minPrice || maxPrice) && (
+                    <button onClick={() => { setMinPrice(""); setMaxPrice(""); }} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                      إزالة السعر
+                    </button>
+                  )}
+                  {verifiedOnly && (
+                    <button onClick={() => setVerifiedOnly(false)} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                      إظهار جميع المصوّرات
+                    </button>
+                  )}
+                  {hasFilters && (
+                    <button onClick={clearAll} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 text-sm">
+                      <X className="h-4 w-4" /> مسح كل الفلاتر
+                    </button>
+                  )}
+                </div>
+              }
+            />
+            {city && city !== "عمان" && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto bg-gold/10 border border-gold/20 rounded-sm p-4 text-center">
+                <p className="text-sm text-foreground">
+                  💡 <strong>تلميح:</strong> لم تجدي طلبكِ في <span className="font-bold">{city}</span>؟ العديد من مصوّرات عمّان يغطّين المحافظات الأخرى (قد تُضاف رسوم تنقّل بسيطة).
+                </p>
+                <button onClick={() => setCity("عمان")} className="mt-3 text-xs bg-background border border-border px-4 py-1.5 rounded-sm hover:bg-secondary transition">
+                  جربي البحث في عمّان
+                </button>
+              </motion.div>
+            )}
+          </div>
         ) : (
           <motion.div
             className="columns-1 sm:columns-2 lg:columns-3 gap-4 -mx-4 sm:mx-0"
@@ -447,6 +459,32 @@ function SearchPage() {
 }
 
 function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number }) {
+  const [isFav, setIsFav] = useState(false);
+
+  useEffect(() => {
+    try {
+      const favs = JSON.parse(localStorage.getItem("memoria_favs") || "[]");
+      setIsFav(favs.includes(p.username));
+    } catch {}
+  }, [p.username]);
+
+  const toggleFav = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const favs = JSON.parse(localStorage.getItem("memoria_favs") || "[]");
+      let newFavs;
+      if (favs.includes(p.username)) {
+        newFavs = favs.filter((f: string) => f !== p.username);
+        setIsFav(false);
+      } else {
+        newFavs = [...favs, p.username];
+        setIsFav(true);
+      }
+      localStorage.setItem("memoria_favs", JSON.stringify(newFavs));
+    } catch {}
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 32 }}
@@ -467,6 +505,19 @@ function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number })
           className="relative overflow-hidden sm:rounded-sm cursor-pointer group bg-gradient-royal border-b sm:border-0 border-border/5"
           style={{ aspectRatio: "3/4" }}
         >
+          <button
+            onClick={toggleFav}
+            className="absolute top-3 end-3 z-20 h-9 w-9 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-background/80 transition shadow-sm"
+          >
+            <motion.div
+              initial={false}
+              animate={isFav ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Heart className={`h-4 w-4 ${isFav ? "fill-gold text-gold" : "text-foreground"}`} />
+            </motion.div>
+          </button>
+          
           {p.cover_url ? (
             <img
               src={p.cover_url}

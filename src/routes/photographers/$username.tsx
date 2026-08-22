@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy } from "lucide-react";
+import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,7 @@ import { getPhotographerProfileData } from "@/lib/profile.functions";
 import { Lightbox } from "@/components/Lightbox";
 import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
 import { hapticVibrate } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { MapPin } from "lucide-react";
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
@@ -209,7 +209,18 @@ function PhotographerPage() {
   // بل تُعرض كفترات مشغولة بالساعات حتى يمكن حجز جلسة أخرى في نفس اليوم.
   const blockedDates = [...new Set(unavail)];
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
-  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const yOffset = -80; 
+      const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+      el.classList.add("ring-2", "ring-gold", "bg-gold/5", "transition-all", "duration-1000");
+      setTimeout(() => {
+        el.classList.remove("ring-2", "ring-gold", "bg-gold/5");
+      }, 1000);
+    }
+  };
   const pickPackage = (id: string) => { setPickedPackageId(id); setTimeout(() => scrollTo("book"), 50); };
 
   return (
@@ -589,6 +600,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const selectedDateObj = f.event_date
     ? (() => { const [y, m, day] = f.event_date.split("-").map(Number); return new Date(y, m - 1, day); })()
     : undefined;
+  const daysUntil = selectedDateObj ? Math.floor((selectedDateObj.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
 
   // تعبئة تلقائية للأوقات والملاحظات حسب نوع الباقة
   const onSelectPackage = (id: string) => {
@@ -805,6 +817,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
               </div>
             </PopoverContent>
           </Popover>
+          {daysUntil !== null && daysUntil < 7 && !isBlocked && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-sm p-2">
+              💡 <strong>تاريخ قريب!</strong> ننصحكِ بإرسال الطلب الآن والتواصل مع المصوّرة فوراً عبر الواتساب لتأكيد التفرّغ.
+            </motion.div>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="من" type="time" v={f.start_time} on={(v) => setF({ ...f, start_time: v })} />
@@ -830,7 +847,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         </div>
         {addonPackages.length > 0 && (
           <div className="sm:col-span-2">
-            <label className="text-sm text-muted-foreground">إضافات اختيارية</label>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-muted-foreground">إضافات اختيارية</label>
+              <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">يتم الاتفاق على تفاصيلها لاحقاً</span>
+            </div>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {addonPackages.map((a) => {
                 const qty = addonQty[a.id] || 0;
@@ -926,8 +946,16 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             التالي <ChevronLeft className="h-4 w-4" />
           </button>
         ) : (
-          <button onClick={submit} disabled={submitting || !consent} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm">
-            <Send className="h-4 w-4" /> {submitting ? "جاري الإرسال…" : "إرسال طلب الحجز"}
+          <button onClick={submit} disabled={submitting || !consent} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm transition-all duration-300">
+            {submitting ? (
+              <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> جاري الإرسال…
+              </motion.div>
+            ) : (
+              <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2">
+                <Send className="h-4 w-4" /> إرسال طلب الحجز
+              </motion.div>
+            )}
           </button>
         )}
       </div>
@@ -944,6 +972,15 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
 }
 
 function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqAlias: string | null; bankInfo: string | null }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    if (!cliqAlias) return;
+    navigator.clipboard.writeText(cliqAlias);
+    setCopied(true);
+    hapticVibrate();
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="bg-charcoal text-ivory rounded-sm p-6 sm:p-8 h-fit lg:sticky lg:top-24">
       <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">العربون</div>
@@ -955,11 +992,32 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
           <Row label="نسبة العربون" value={`${profile.deposit_percent}%`} />
         )}
         {cliqAlias && (
-          <div className="bg-ivory/10 rounded-sm p-3">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1">CliQ Alias</div>
+          <div className="bg-ivory/10 rounded-sm p-3 group">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1 flex items-center justify-between">
+              <span>CliQ Alias</span>
+              <span className="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">
+                {copied ? "تم النسخ بنجاح" : "الدفع لحساب المصوّرة مباشرة"}
+              </span>
+            </div>
             <div className="flex items-center justify-between gap-2">
-              <div className="font-mono text-lg">{cliqAlias}</div>
-              <button onClick={() => { navigator.clipboard.writeText(cliqAlias); toast.success("تم النسخ"); }} className="p-2 hover:bg-ivory/10 rounded-sm"><Copy className="h-4 w-4" /></button>
+              <div className="font-mono text-lg truncate">{cliqAlias}</div>
+              <button 
+                onClick={handleCopy} 
+                className={`p-2 rounded-sm transition-all duration-300 ${copied ? "bg-green-500/20 text-green-400" : "hover:bg-ivory/10"}`}
+                aria-label="نسخ"
+              >
+                <AnimatePresence mode="wait">
+                  {copied ? (
+                    <motion.div key="check" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+                      <Check className="h-4 w-4" />
+                    </motion.div>
+                  ) : (
+                    <motion.div key="copy" initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} transition={{ type: "spring", stiffness: 400, damping: 25 }}>
+                      <Copy className="h-4 w-4" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
             </div>
           </div>
         )}
@@ -976,7 +1034,8 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
         )}
       </div>
       <p className="text-[11px] text-ivory/60 mt-5 leading-relaxed">
-        بعد التحويل ارفعي صورة إثبات الدفع من صفحة تتبّع الحجز الخاصة بكِ — يصل التأكيد تلقائيًا للمصوّرة.
+        <Shield className="h-3 w-3 inline-block me-1 -mt-0.5 opacity-70" />
+        يُدفع هذا العربون مباشرة لحساب المصوّرة الشخصي لتثبيت حجزكِ فوراً.
       </p>
     </div>
   );
