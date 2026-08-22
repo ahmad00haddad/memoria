@@ -7,7 +7,7 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
     const { pid } = data;
 
     // Use the RPC to fetch all data bypassing RLS (since we don't have Service Role Key)
-    const { data: result, error } = await supabase.rpc("get_public_profile_data", { p_id: pid });
+    const { data: result, error } = await (supabase as any).rpc("get_public_profile_data", { p_id: pid });
     
     if (error || !result) {
       console.error("RPC Error:", error);
@@ -24,3 +24,4 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
       completedCount: r.completedCount ?? 0,
     };
   });
+
