@@ -33,7 +33,7 @@ export const Route = createFileRoute("/")({
 // ─── اختيار الدور عند أول زيارة ────────────────────────────────────────────
 export const VISITOR_ROLE_KEY = "memoria_visitor_role";
 
-function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer") => void }) {
+function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "guest") => void }) {
   return (
     <motion.div
       key="role-gate"
@@ -110,7 +110,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer") =>
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        onClick={() => onSelect("client")}
+        onClick={() => onSelect("guest")}
         className="mt-8 text-xs text-muted-foreground hover:text-foreground underline transition-colors"
       >
         تخطّي — سأستكشف بنفسي
@@ -183,14 +183,15 @@ function Landing() {
     } catch {}
   }, [authLoading, authed]);
 
-  const handleRoleSelect = (role: "client" | "photographer") => {
+  const handleRoleSelect = (role: "client" | "photographer" | "guest") => {
     try { localStorage.setItem(VISITOR_ROLE_KEY, role); } catch {}
     setShowRoleGate(false);
     if (role === "photographer") {
       navigate({ to: "/photographers/join" });
-    } else {
+    } else if (role === "client") {
       navigate({ to: "/search" });
     }
+    // if guest, just close the gate and stay on landing page
   };
 
   return (

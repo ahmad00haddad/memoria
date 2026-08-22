@@ -12,7 +12,7 @@ export function Header() {
   const [unreadMsgs, setUnreadMsgs] = useState(0);
   const [openMenu, setOpenMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | null>(null);
+  const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | "guest" | null>(null);
   const { loading: authLoading, authed, userId, isPhotographer } = useAuthState();
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export function Header() {
   // قراءة دور الزائر من localStorage
   useEffect(() => {
     try {
-      const r = localStorage.getItem("memoria_visitor_role") as "client" | "photographer" | null;
+      const r = localStorage.getItem("memoria_visitor_role") as "client" | "photographer" | "guest" | null;
       setVisitorRole(r);
     } catch {}
   }, []);
@@ -150,7 +150,11 @@ export function Header() {
               <NavLink to="/search" className="hidden sm:inline-flex">ابحثي عن مصوّرة</NavLink>
               <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
               <button
-                onClick={() => { try { localStorage.removeItem("memoria_visitor_role"); } catch {} setVisitorRole(null); }}
+                onClick={() => { 
+                  try { localStorage.setItem("memoria_visitor_role", "photographer"); } catch {} 
+                  setVisitorRole("photographer");
+                  // Optional: we could navigate to /for-photographers here, but let's just update the nav
+                }}
                 className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
                 title="تغيير الدور"
               >
@@ -164,7 +168,10 @@ export function Header() {
               <NavLink to="/photographers/join" className="hidden md:inline-flex">انضمي مجاناً</NavLink>
               <NavLink to="/pricing" className="hidden md:inline-flex">الأسعار</NavLink>
               <button
-                onClick={() => { try { localStorage.removeItem("memoria_visitor_role"); } catch {} setVisitorRole(null); }}
+                onClick={() => { 
+                  try { localStorage.setItem("memoria_visitor_role", "client"); } catch {} 
+                  setVisitorRole("client");
+                }}
                 className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
                 title="تغيير الدور"
               >
@@ -230,9 +237,14 @@ export function Header() {
                   <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضمي مجاناً</Link></SheetClose>
                 )}
                 {/* تغيير الدور */}
-                {!authed && visitorRole && (
+                {!authed && (visitorRole === "client" || visitorRole === "photographer") && (
                   <button
-                    onClick={() => { try { localStorage.removeItem("memoria_visitor_role"); } catch {} setVisitorRole(null); setOpenMenu(false); }}
+                    onClick={() => {
+                      const newRole = visitorRole === "client" ? "photographer" : "client";
+                      try { localStorage.setItem("memoria_visitor_role", newRole); } catch {}
+                      setVisitorRole(newRole);
+                      setOpenMenu(false);
+                    }}
                     className="px-3 py-2.5 rounded-sm text-muted-foreground hover:bg-secondary text-right"
                   >
                     {visitorRole === "client" ? "📷 أنا مصوّرة — غيّري الدور" : "🌸 أنا عروس — غيّري الدور"}
