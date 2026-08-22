@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { PageLoader } from "@/components/ui/loading";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -23,6 +24,7 @@ function ReviewPage() {
   });
 
   const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [name, setName] = useState("");
   const [done, setDone] = useState(false);
@@ -85,12 +87,17 @@ function ReviewPage() {
           <div className="rounded-sm border border-border bg-card p-8 space-y-5">
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسمك" maxLength={120}
               className="w-full border border-border rounded-sm px-3 py-2 bg-background" />
-            <div className="flex justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button key={n} onClick={() => setRating(n)} aria-label={`${n} نجوم`}>
-                  <Star className={`h-8 w-8 ${n <= rating ? "fill-gold text-gold" : "text-muted-foreground/30"}`} />
-                </button>
-              ))}
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex justify-center gap-2">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button key={n} onMouseEnter={() => setHoverRating(n)} onMouseLeave={() => setHoverRating(0)} onClick={() => setRating(n)} aria-label={`${n} نجوم`} className="transition-transform hover:scale-110 active:scale-95">
+                    <Star className={`h-8 w-8 transition-colors duration-200 ${(hoverRating || rating) >= n ? "fill-gold text-gold" : "text-muted-foreground/30"}`} />
+                  </button>
+                ))}
+              </div>
+              <motion.div key={hoverRating || rating} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="text-sm font-medium text-gold h-5">
+                {{ 1: "سيء جداً 😞", 2: "غير مرضٍ 😕", 3: "جيد 😐", 4: "ممتاز! 😊", 5: "استثنائي! 🌟" }[hoverRating || rating]}
+              </motion.div>
             </div>
             <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={4} maxLength={2000}
               placeholder="كلمة عن تجربتك (اختياري)"

@@ -50,8 +50,17 @@ function JoinPage() {
       try { sessionStorage.setItem("pending_referral_code", ref); } catch {}
     }
     
+    // Idea 5: Smart Autofill Hint
+    const prefillEmail = new URLSearchParams(window.location.search).get("email");
+    if (prefillEmail) {
+      setForm((prev) => ({ ...prev, email: prefillEmail }));
+      setAutofillHint(true);
+    }
+    
     return () => { active = false; };
   }, [navigate]);
+
+  const [autofillHint, setAutofillHint] = useState(false);
 
   const upd = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -153,6 +162,11 @@ function JoinPage() {
           )}
           <Field label="الاسم الكامل / اسم الاستوديو" value={form.display_name} onChange={upd("display_name")} required />
           <Field label="اسم المستخدم (بالإنجليزية)" value={form.username} onChange={upd("username")} required placeholder="مثال: studio_amman" />
+          {autofillHint && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="text-xs text-sky-800 bg-sky-50 p-2 rounded-sm border border-sky-200">
+              💡 <strong>يبدو أنكِ جديدة!</strong> قمنا بتجهيز إيميلك لكِ اختصاراً لوقتك.
+            </motion.div>
+          )}
           <Field label="البريد الإلكتروني" type="email" value={form.email} onChange={upd("email")} required />
           <Field label="كلمة المرور" type="password" value={form.password} onChange={upd("password")} required />
           {form.password && form.password.length > 0 && form.password.length < 8 && (

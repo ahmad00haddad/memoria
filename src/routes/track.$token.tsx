@@ -359,6 +359,15 @@ function TrackingPage() {
           </div>
         </div>
 
+        {b.event_date && new Date(b.event_date).getTime() > Date.now() && (
+          <div className="mb-6 bg-gradient-to-r from-gold/20 via-gold/5 to-transparent border-r-4 border-gold p-4 rounded-s-sm flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold uppercase tracking-wider text-gold mb-1">العد التنازلي للزفاف</div>
+              <div className="text-sm text-foreground">بقي <strong>{Math.ceil((new Date(b.event_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}</strong> يوم على فرحتك الكبرى! 🤍</div>
+            </div>
+          </div>
+        )}
+
         {/* ══════════════════════════════════════════
             مؤشر تقدم الحجز البصري (Fix #2)
             يُظهر المرحلة الحالية بوضوح تام للعميل

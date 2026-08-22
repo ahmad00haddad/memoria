@@ -13,6 +13,7 @@ export function Lightbox({
 }) {
   const [i, setI] = useState(index);
   const startX = useRef<number | null>(null);
+  const startY = useRef<number | null>(null);
 
   useEffect(() => setI(index), [index]);
 
@@ -30,12 +31,23 @@ export function Lightbox({
   const next = () => setI((p) => (p + 1) % images.length);
   const prev = () => setI((p) => (p - 1 + images.length) % images.length);
 
-  const onTouchStart = (e: React.TouchEvent) => { startX.current = e.touches[0].clientX; };
+  const onTouchStart = (e: React.TouchEvent) => { 
+    startX.current = e.touches[0].clientX; 
+    startY.current = e.touches[0].clientY;
+  };
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (startX.current == null) return;
+    if (startX.current == null || startY.current == null) return;
     const dx = e.changedTouches[0].clientX - startX.current;
-    if (Math.abs(dx) > 40) (dx > 0 ? prev : next)();
+    const dy = e.changedTouches[0].clientY - startY.current;
+    
+    // Swipe down to close (Native feel)
+    if (dy > 80 && Math.abs(dy) > Math.abs(dx)) {
+      onClose();
+    } else if (Math.abs(dx) > 40) {
+      (dx > 0 ? prev : next)();
+    }
     startX.current = null;
+    startY.current = null;
   };
 
   if (!images.length) return null;

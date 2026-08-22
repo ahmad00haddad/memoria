@@ -383,7 +383,7 @@ function BookingDetail() {
 
         <ProductionPanel b={b} onSetStage={setStage} onSaveLink={saveSelectionLink} />
 
-        <GalleryPanel bookingId={id} clientToken={b.client_tracking_token} />
+        <GalleryPanel bookingId={id} clientToken={b.client_tracking_token} b={b} />
         <ShotList bookingId={id} service={b.service} />
 
         <div className="mt-8 rounded-sm border border-border bg-card p-6">
@@ -489,7 +489,7 @@ function DeliveryCountdown({ b }: { b: any }) {
   );
 }
 
-function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientToken: string | null }) {
+function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; clientToken: string | null; b: any }) {
   const ensure = useServerFn(ensureGallery);
   const fetchG = useServerFn(getGalleryForPhotographer);
   const add = useServerFn(addGalleryPhoto);
@@ -641,6 +641,12 @@ function GalleryPanel({ bookingId, clientToken }: { bookingId: string; clientTok
         </div>
       ) : (
         <div>
+          {b.status === "completed" && photos.length === 0 && (
+            <div className="mb-4 text-xs text-sky-800 bg-sky-50 border border-sky-200 p-2.5 rounded-sm flex items-start gap-2">
+              <span className="text-base leading-none mt-0.5">💡</span>
+              <span><strong>تلميح:</strong> الحجز مكتمل ولكن المعرض فارغ! العروس بانتظار الصور بفارغ الصبر. ارفعي دفعة أولية لتشويقها.</span>
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <label className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm cursor-pointer hover:bg-secondary text-sm">
               <Upload className="h-4 w-4" />

@@ -268,11 +268,17 @@ function PhotographerPage() {
               <h1 className="display-serif text-[clamp(3rem,8vw,7rem)] mb-6">
                 {profile.display_name}
               </h1>
-              {profile.is_featured && (
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30 mb-6">
-                  <Star className="h-3 w-3 fill-gold" /> اختيار المحرّر
+              <div className="flex flex-wrap items-center gap-2 mb-6">
+                {profile.is_featured && (
+                  <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30">
+                    <Star className="h-3 w-3 fill-gold" /> اختيار المحرّر
+                  </span>
+                )}
+                {/* ⚡ تلميح: سرعة الرد */}
+                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30" title="هذه المصورة ترد بسرعة على طلبات الحجز">
+                  <span className="text-emerald-400">⚡</span> ترد سريعاً
                 </span>
-              )}
+              </div>
               {profile.bio && (
                 <p className="max-w-md text-base sm:text-lg leading-[1.8] opacity-85 whitespace-pre-line mb-8">
                   {profile.bio}
@@ -358,16 +364,33 @@ function PhotographerPage() {
         {pricing.length === 0 ? (
           <p className="text-center text-muted-foreground">لم تُحدَّد الباقات بعد.</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {pricing.filter((p) => p.package !== "addon").map((p) => (
-              <div key={p.id} className="relative rounded-sm border border-border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant">
-                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? "فيديو سينمائي" : "تصوير فوتوغرافي"}</div>
-                <h3 className="font-serif text-2xl mb-1">{p.label}</h3>
-                {p.description && <p className="text-sm text-muted-foreground mb-4 whitespace-pre-line">{p.description}</p>}
-                <div className="font-serif text-3xl text-gold mb-4">{Number(p.price).toLocaleString("ar-JO")} <span className="text-sm">د.أ</span></div>
-                <button onClick={() => pickPackage(p.id)} className="w-full bg-charcoal text-ivory py-2 rounded-sm hover:opacity-90 text-sm">احجزي هذه الباقة</button>
-              </div>
-            ))}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 relative">
+            {pricing.filter((p) => p.package !== "addon").map((p, idx, arr) => {
+              const isPopular = arr.length >= 3 && idx === 1;
+              return (
+                <div key={p.id} className={`relative rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${isPopular ? 'border-gold border-2 ring-1 ring-gold/20 shadow-[0_0_20px_rgba(201,162,39,0.15)]' : 'border-border'}`}>
+                  {isPopular && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-charcoal px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">
+                      الباقة الأكثر طلباً
+                    </span>
+                  )}
+                  <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? "فيديو سينمائي" : "تصوير فوتوغرافي"}</div>
+                  <h3 className="font-serif text-2xl mb-1">{p.label}</h3>
+                  {p.description && <p className="text-sm text-muted-foreground mb-4 whitespace-pre-line">{p.description}</p>}
+                  <div className="font-serif text-3xl text-gold mb-4">{Number(p.price).toLocaleString("ar-JO")} <span className="text-sm">د.أ</span></div>
+                  <button onClick={() => pickPackage(p.id)} className={`w-full py-2 rounded-sm text-sm ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>احجزي هذه الباقة</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        
+        {/* High Demand Hint */}
+        {completedCount >= 3 && (
+          <div className="mt-8 flex justify-center">
+            <span className="inline-flex items-center gap-2 text-xs text-amber-700 bg-amber-50 px-4 py-2 rounded-sm border border-amber-200">
+              <span className="animate-pulse">🔥</span> <strong>طلب عالي:</strong> تم حجز هذه المصوّرة مرات عديدة مؤخراً. سارعي بتأكيد حجزكِ!
+            </span>
           </div>
         )}
       </section>
@@ -922,7 +945,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           <Field label="الإيميل" type="email" v={f.client_email} on={(v) => setF({ ...f, client_email: v })} />
         </div>
         {selected && (
-          <div className="sm:col-span-2 rounded-sm bg-secondary/60 border border-border p-3 text-sm space-y-1.5">
+          <motion.div 
+            key={f.event_date + f.package_id + Object.values(addonQty).join("")}
+            initial={{ scale: 1, backgroundColor: "var(--secondary)" }}
+            animate={{ scale: [1, 1.02, 1], backgroundColor: ["var(--secondary)", "rgba(201,162,39,0.1)", "var(--secondary)"] }}
+            transition={{ duration: 0.5 }}
+            className="sm:col-span-2 rounded-sm bg-secondary/60 border border-border p-3 text-sm space-y-1.5"
+          >
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">ملخّص الطلب</div>
             <div className="flex justify-between text-muted-foreground"><span>التاريخ</span><span>{selectedDateObj ? format(selectedDateObj, "d MMMM yyyy", { locale: ar }) : "—"}</span></div>
             <div className="flex justify-between"><span>{selected.label}</span><span>{basePrice.toLocaleString("ar-JO")} د.أ</span></div>
@@ -934,7 +963,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             ))}
             <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">المجموع</span><span className="font-semibold">{total.toLocaleString("ar-JO")} د.أ</span></div>
             <div className="flex justify-between text-gold"><span>العربون المطلوب</span><span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span></div>
-          </div>
+          </motion.div>
         )}
         <label className="sm:col-span-2 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed cursor-pointer">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-gold" />
