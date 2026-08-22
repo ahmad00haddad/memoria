@@ -172,12 +172,14 @@ function Landing() {
     };
   }, [isPhotographer, userId]);
 
+  const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | "guest" | null>(null);
+
   // ── Role gate: أظهر شاشة الاختيار عند أول زيارة لغير المسجّلين ──
   useEffect(() => {
-    if (authLoading) return;
-    if (authed) return;
     try {
-      if (!localStorage.getItem(VISITOR_ROLE_KEY)) {
+      const r = localStorage.getItem(VISITOR_ROLE_KEY) as "client" | "photographer" | "guest" | null;
+      setVisitorRole(r);
+      if (!authLoading && !authed && !r) {
         setShowRoleGate(true);
       }
     } catch {}
@@ -186,10 +188,11 @@ function Landing() {
   const handleRoleSelect = (role: "client" | "photographer" | "guest") => {
     try { localStorage.setItem(VISITOR_ROLE_KEY, role); } catch {}
     setShowRoleGate(false);
+    
     if (role === "photographer") {
-      navigate({ to: "/photographers/join" });
+      setTimeout(() => navigate({ to: "/photographers/join" }), 250);
     } else if (role === "client") {
-      navigate({ to: "/search" });
+      setTimeout(() => navigate({ to: "/search" }), 250);
     }
     // if guest, just close the gate and stay on landing page
   };
@@ -232,31 +235,35 @@ function Landing() {
               إلى <span className="text-gold italic">الذكرى الأبدية</span>.
             </motion.h1>
             <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-              احجز مصوّر عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، عربون آمن — بدون رسائل واتساب لا تنتهي.
+              {visitorRole === "photographer" || isPhotographer
+                ? "ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان."
+                : "احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون آمن."}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
-              <Link
-                to="/search"
-                className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm shadow-elegant hover:opacity-90 transition"
-              >
-                ابحث عن مصوّر
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-              {authLoading || isPhotographer ? (
+              {(visitorRole === "client" || !visitorRole) && !isPhotographer && (
+                <Link
+                  to="/search"
+                  className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm shadow-elegant hover:opacity-90 transition"
+                >
+                  ابحثي عن مصوّرة
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              )}
+              {authLoading || authed ? (
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition"
+                  className={visitorRole === "client" ? "hidden" : "inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition bg-charcoal text-ivory"}
                 >
-                  ادخل إلى لوحتي
+                  لوحتي
                 </Link>
-              ) : (
+              ) : (visitorRole === "photographer" || !visitorRole) ? (
                 <Link
                   to="/photographers/join"
                   className="inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition"
                 >
-                  أنا مصوّر — انضم
+                  انضمي مجاناً
                 </Link>
-              )}
+              ) : null}
             </motion.div>
             {isPhotographer && trialDaysLeft !== null && (
               <motion.div variants={fadeUp} className="rounded-sm border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-foreground max-w-xl">
@@ -303,45 +310,47 @@ function Landing() {
       </section>
 
       {/* Role chooser */}
-      <ScrollReveal delay={0.05}>
-      <motion.section
-        className="container-editorial py-16"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewportOnce}
-      >
-        <div className="text-center mb-10">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">ابدأ من هنا</div>
-          <h2 className="font-serif text-3xl sm:text-4xl">من أنت؟</h2>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
-          <RoleCard
-            title="العروس وأهل الزفاف"
-            desc="ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فورًا."
-            cta="ابحثي عن مصوّرة"
-            href="/search"
-          />
-          {!authLoading && !isPhotographer ? (
+      {(!visitorRole || visitorRole === "guest" || isPhotographer) && (
+        <ScrollReveal delay={0.05}>
+        <motion.section
+          className="container-editorial py-16"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+        >
+          <div className="text-center mb-10">
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">ابدأ من هنا</div>
+            <h2 className="font-serif text-3xl sm:text-4xl">من أنت؟</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
             <RoleCard
-              title="مصوّرة محترفة"
-              desc="أنشئي ملفكِ، حدّدي أسعاركِ واربطي تقويمكِ — ودعي النظام يدير حجوزاتكِ."
-              cta="انضمي إلى المنصة"
-              href="/photographers/join"
-              highlight
+              title="العروس وأهل الزفاف"
+              desc="ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فورًا."
+              cta="ابحثي عن مصوّرة"
+              href="/search"
             />
-          ) : (
-            <RoleCard
-              title="حسابك جاهز"
-              desc="أنتِ مسجّلة بالفعل. انتقلي مباشرة إلى لوحة التحكم لإدارة الباقات والحجوزات والاشتراك."
-              cta="افتحي لوحة التحكم"
-              href="/dashboard"
-              highlight
-            />
-          )}
-        </div>
-      </motion.section>
-      </ScrollReveal>
+            {!authLoading && !isPhotographer ? (
+              <RoleCard
+                title="مصوّرة محترفة"
+                desc="أنشئي ملفكِ، حدّدي أسعاركِ واربطي تقويمكِ — ودعي النظام يدير حجوزاتكِ."
+                cta="انضمي إلى المنصة"
+                href="/photographers/join"
+                highlight
+              />
+            ) : (
+              <RoleCard
+                title="حسابك جاهز"
+                desc="أنتِ مسجّلة بالفعل. انتقلي مباشرة إلى لوحة التحكم لإدارة الباقات والحجوزات والاشتراك."
+                cta="افتحي لوحة التحكم"
+                href="/dashboard"
+                highlight
+              />
+            )}
+          </div>
+        </motion.section>
+        </ScrollReveal>
+      )}
 
       {/* How */}
       <ScrollReveal delay={0.1}>
@@ -367,46 +376,49 @@ function Landing() {
       </ScrollReveal>
 
       {/* Testimonials */}
-      <ScrollReveal delay={0.1}>
-      <motion.section
-        className="bg-charcoal text-ivory py-16 lg:py-24"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewportOnce}
-      >
-        <div className="container-editorial">
-          <div className="text-center mb-12">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">تجارب حقيقية</div>
-            <h2 className="font-serif text-3xl sm:text-4xl text-ivory">آراء العرائس</h2>
+      {(visitorRole !== "photographer" && !isPhotographer) && (
+        <ScrollReveal delay={0.1}>
+        <motion.section
+          className="bg-charcoal text-ivory py-16 lg:py-24"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+        >
+          <div className="container-editorial">
+            <div className="text-center mb-12">
+              <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">تجارب حقيقية</div>
+              <h2 className="font-serif text-3xl sm:text-4xl text-ivory">آراء العرائس</h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
+                </div>
+                <p className="text-sm leading-relaxed text-ivory/90 mb-6">"تجربة رائعة من البداية للنهاية. أسعار واضحة وبدون مفاجآت، والمصورة كانت لطيفة جداً وصورها خيالية. أنقذتني من ضياع الأوقات والبحث العشوائي."</p>
+                <div className="font-serif text-ivory">— سارة الأحمد</div>
+              </motion.div>
+              <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
+                </div>
+                <p className="text-sm leading-relaxed text-ivory/90 mb-6">"أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير."</p>
+                <div className="font-serif text-ivory">— دانة وليد</div>
+              </motion.div>
+              <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
+                </div>
+                <p className="text-sm leading-relaxed text-ivory/90 mb-6">"ميزة التوفر الفوري خلتني أقدر أرتب أموري خلال ساعات، بدل ما أنتظر أيام عشان أسمع رد المصورات. الصور وصلتني أسرع من المتوقع، شكراً ميموريا!"</p>
+                <div className="font-serif text-ivory">— لين المجالي</div>
+              </motion.div>
+            </div>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
-              <div className="flex gap-1 mb-4">
-                {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
-              </div>
-              <p className="text-sm leading-relaxed text-ivory/90 mb-6">"تجربة رائعة من البداية للنهاية. أسعار واضحة وبدون مفاجآت، والمصورة كانت لطيفة جداً وصورها خيالية. أنقذتني من ضياع الأوقات والبحث العشوائي."</p>
-              <div className="font-serif text-ivory">— سارة الأحمد</div>
-            </motion.div>
-            <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
-              <div className="flex gap-1 mb-4">
-                {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
-              </div>
-              <p className="text-sm leading-relaxed text-ivory/90 mb-6">"أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير."</p>
-              <div className="font-serif text-ivory">— دانة وليد</div>
-            </motion.div>
-            <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
-              <div className="flex gap-1 mb-4">
-                {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
-              </div>
-              <p className="text-sm leading-relaxed text-ivory/90 mb-6">"ميزة التوفر الفوري خلتني أقدر أرتب أموري خلال ساعات، بدل ما أنتظر أيام عشان أسمع رد المصورات. الصور وصلتني أسرع من المتوقع، شكراً ميموريا!"</p>
-              <div className="font-serif text-ivory">— لين المجالي</div>
-            </motion.div>
-          </div>
-        </div>
-      </motion.section>
-      </ScrollReveal>
-      {featured.length > 0 && (
+        </motion.section>
+        </ScrollReveal>
+      )}
+
+      {featured.length > 0 && (visitorRole !== "photographer" && !isPhotographer) && (
         <ScrollReveal delay={0.1}>
         <motion.section
           className="container-editorial py-16"
