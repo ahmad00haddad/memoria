@@ -270,22 +270,43 @@ function SearchPage() {
             </div>
           </fieldset>
 
-          {/* Mobile Segmented City Filter (Scrollable Pills) */}
-          <div className="sm:hidden mt-4 -mx-4 px-4 overflow-x-auto pb-2 scrollbar-hide">
-            <div className="flex gap-2 w-max">
+          {/* Unified Mobile Quick Filters */}
+          <div className="sm:hidden mt-4 -mx-4 px-4 overflow-x-auto pb-2 no-scrollbar">
+            <div className="flex gap-2 w-max items-center">
+              <button
+                type="button"
+                onClick={() => { setVerifiedOnly(true); setCity(""); setMinRating(0); }}
+                className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
+                  verifiedOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"
+                }`}
+              >
+                <BadgeCheck className="h-3.5 w-3.5" />
+                موثّقة
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMinRating(4.5); setCity(""); setVerifiedOnly(false); }}
+                className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
+                  minRating === 4.5 ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"
+                }`}
+              >
+                <Star className="h-3.5 w-3.5" />
+                أعلى تقييم
+              </button>
+              <div className="w-px h-5 bg-border mx-1" />
               <button
                 type="button"
                 onClick={() => setCity("")}
-                className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors touch-card ${!city ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground"}`}
+                className={`px-4 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors touch-card ${!city ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
               >
-                الكل
+                كل المدن
               </button>
               {(citiesQ.data ?? []).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setCity(c)}
-                  className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors touch-card ${city === c ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground"}`}
+                  className={`px-4 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors touch-card ${city === c ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
                 >
                   {c}
                 </button>
