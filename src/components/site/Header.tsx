@@ -12,6 +12,7 @@ export function Header() {
   const [unreadMsgs, setUnreadMsgs] = useState(0);
   const [openMenu, setOpenMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | null>(null);
   const { loading: authLoading, authed, userId, isPhotographer } = useAuthState();
 
   useEffect(() => {
@@ -19,6 +20,14 @@ export function Header() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // قراءة دور الزائر من localStorage
+  useEffect(() => {
+    try {
+      const r = localStorage.getItem("memoria_visitor_role") as "client" | "photographer" | null;
+      setVisitorRole(r);
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -128,12 +137,46 @@ export function Header() {
           </div>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
-          <NavLink to="/search" className="hidden sm:inline-flex">ابحث عن مصوّر</NavLink>
-          <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
-          <NavLink to="/pricing" className="hidden md:inline-flex">باقات المصوّرين</NavLink>
-          <NavLink to="/for-photographers" className="hidden lg:inline-flex">للمصوّرات</NavLink>
-          {!authLoading && !authed && !isPhotographer && (
-            <NavLink to="/photographers/join" className="hidden md:inline-flex">انضم كمصوّر</NavLink>
+          {/* ── روابط تكيّفية حسب دور الزائر ── */}
+          {authed ? (
+            // ── مسجّل دخول: عرض الروابط الكاملة ──
+            <>
+              <NavLink to="/search" className="hidden sm:inline-flex">ابحث عن مصوّر</NavLink>
+              <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
+            </>
+          ) : visitorRole === "client" ? (
+            // ── زائر | دور العروس: روابط البحث فقط ──
+            <>
+              <NavLink to="/search" className="hidden sm:inline-flex">ابحثي عن مصوّرة</NavLink>
+              <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
+              <button
+                onClick={() => { try { localStorage.removeItem("memoria_visitor_role"); } catch {} setVisitorRole(null); }}
+                className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
+                title="تغيير الدور"
+              >
+                📷 أنا مصوّرة
+              </button>
+            </>
+          ) : visitorRole === "photographer" ? (
+            // ── زائر | دور المصوّرة: روابط المصوّرات فقط ──
+            <>
+              <NavLink to="/for-photographers" className="hidden sm:inline-flex">للمصوّرات</NavLink>
+              <NavLink to="/photographers/join" className="hidden md:inline-flex">انضمي مجاناً</NavLink>
+              <NavLink to="/pricing" className="hidden md:inline-flex">الأسعار</NavLink>
+              <button
+                onClick={() => { try { localStorage.removeItem("memoria_visitor_role"); } catch {} setVisitorRole(null); }}
+                className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
+                title="تغيير الدور"
+              >
+                🌸 أنا عروس
+              </button>
+            </>
+          ) : (
+            // ── زائر جديد بدون دور محفوظ: روابط محايدة ──
+            <>
+              <NavLink to="/search" className="hidden sm:inline-flex">ابحث عن مصوّر</NavLink>
+              <NavLink to="/for-photographers" className="hidden lg:inline-flex">للمصوّرات</NavLink>
+            </>
           )}
           {authed && (
             <div className="flex items-center gap-2">
@@ -170,12 +213,31 @@ export function Header() {
                 <SheetTitle>القائمة</SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-1 text-sm">
-                <SheetClose asChild><Link to="/search" className="px-3 py-2.5 rounded-sm hover:bg-secondary">ابحث عن مصوّر</Link></SheetClose>
-                <SheetClose asChild><Link to="/guide" className="px-3 py-2.5 rounded-sm hover:bg-secondary">كيف يعمل</Link></SheetClose>
-                <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">باقات المصوّرين</Link></SheetClose>
-                <SheetClose asChild><Link to="/for-clients" className="px-3 py-2.5 rounded-sm hover:bg-secondary">للعملاء</Link></SheetClose>
-                <SheetClose asChild><Link to="/for-photographers" className="px-3 py-2.5 rounded-sm hover:bg-secondary">للمصوّرات</Link></SheetClose>
-                {!authLoading && !authed && !isPhotographer && <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضم كمصوّر</Link></SheetClose>}
+                {/* روابط حسب الدور */}
+                {authed || visitorRole === "client" || !visitorRole ? (
+                  <SheetClose asChild><Link to="/search" className="px-3 py-2.5 rounded-sm hover:bg-secondary">ابحثي عن مصوّرة</Link></SheetClose>
+                ) : null}
+                {authed || !visitorRole ? (
+                  <SheetClose asChild><Link to="/guide" className="px-3 py-2.5 rounded-sm hover:bg-secondary">كيف يعمل</Link></SheetClose>
+                ) : null}
+                {(authed || visitorRole === "photographer" || !visitorRole) && (
+                  <>
+                    <SheetClose asChild><Link to="/for-photographers" className="px-3 py-2.5 rounded-sm hover:bg-secondary">للمصوّرات</Link></SheetClose>
+                    <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">الأسعار</Link></SheetClose>
+                  </>
+                )}
+                {!authLoading && !authed && visitorRole === "photographer" && (
+                  <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضمي مجاناً</Link></SheetClose>
+                )}
+                {/* تغيير الدور */}
+                {!authed && visitorRole && (
+                  <button
+                    onClick={() => { try { localStorage.removeItem("memoria_visitor_role"); } catch {} setVisitorRole(null); setOpenMenu(false); }}
+                    className="px-3 py-2.5 rounded-sm text-muted-foreground hover:bg-secondary text-right"
+                  >
+                    {visitorRole === "client" ? "📷 أنا مصوّرة — غيّري الدور" : "🌸 أنا عروس — غيّري الدور"}
+                  </button>
+                )}
                 <div className="my-2 h-px bg-border" />
                 {authLoading ? (
                   <div className="h-10 rounded-sm bg-secondary/70" aria-hidden="true" />

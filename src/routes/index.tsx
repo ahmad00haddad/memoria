@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Calendar, MessageSquareOff, Receipt, ShieldCheck, Sparkles, Star } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Calendar, Camera, MessageSquareOff, Receipt, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -30,10 +30,101 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
+// ─── اختيار الدور عند أول زيارة ────────────────────────────────────────────
+export const VISITOR_ROLE_KEY = "memoria_visitor_role";
+
+function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer") => void }) {
+  return (
+    <motion.div
+      key="role-gate"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.22 }}
+      className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6 sm:p-10"
+    >
+      {/* Logo */}
+      <div className="flex items-center gap-3 mb-10">
+        <div className="grid h-12 w-12 place-items-center rounded-sm bg-gradient-gold">
+          <Camera className="h-6 w-6 text-charcoal" />
+        </div>
+        <div>
+          <div className="font-serif text-xl tracking-wide">Memoria <span className="text-muted-foreground text-base">ميموريا</span></div>
+          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
+        </div>
+      </div>
+
+      {/* Heading */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="text-center mb-10"
+      >
+        <h1 className="font-serif text-4xl sm:text-5xl mb-3">أهلاً بكِ 👋</h1>
+        <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto">
+          أخبرينا من أنتِ حتى نُوجّهكِ مباشرةً لما يناسبكِ — بدون ضياع
+        </p>
+      </motion.div>
+
+      {/* Role cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18 }}
+        className="grid sm:grid-cols-2 gap-4 w-full max-w-2xl"
+      >
+        {/* Client */}
+        <button
+          onClick={() => onSelect("client")}
+          className="group flex flex-col items-start p-7 rounded-sm border-2 border-border bg-card hover:border-gold/60 hover:bg-gold/5 hover:shadow-elegant transition-all text-right"
+        >
+          <div className="text-4xl mb-4">🌸</div>
+          <div className="font-serif text-2xl mb-2">عروس أو أهل الزفاف</div>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">
+            ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فوراً بدون واتساب.
+          </p>
+          <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
+            ابحثي الآن <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          </div>
+        </button>
+
+        {/* Photographer */}
+        <button
+          onClick={() => onSelect("photographer")}
+          className="group flex flex-col items-start p-7 rounded-sm border-2 border-charcoal bg-charcoal text-ivory hover:opacity-95 hover:shadow-elegant transition-all text-right"
+        >
+          <div className="text-4xl mb-4">📷</div>
+          <div className="font-serif text-2xl mb-2">مصوّرة محترفة</div>
+          <p className="text-sm text-ivory/70 leading-relaxed mb-6 flex-1">
+            أنشئي ملفكِ، حدّدي أسعاركِ، واستقبلي حجوزاتكِ — تجربة مجانية ١٤ يوماً بدون بطاقة.
+          </p>
+          <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
+            انضمّي مجاناً <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+          </div>
+        </button>
+      </motion.div>
+
+      {/* Skip */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+        onClick={() => onSelect("client")}
+        className="mt-8 text-xs text-muted-foreground hover:text-foreground underline transition-colors"
+      >
+        تخطّي — سأستكشف بنفسي
+      </motion.button>
+    </motion.div>
+  );
+}
+
 function Landing() {
   const [featured, setFeatured] = useState<any[]>([]);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
-  const { loading: authLoading, isPhotographer, userId } = useAuthState();
+  const [showRoleGate, setShowRoleGate] = useState(false);
+  const { loading: authLoading, authed, isPhotographer, userId } = useAuthState();
+  const navigate = useNavigate();
   useEffect(() => {
     let active = true;
 
@@ -81,9 +172,35 @@ function Landing() {
     };
   }, [isPhotographer, userId]);
 
+  // ── Role gate: أظهر شاشة الاختيار عند أول زيارة لغير المسجّلين ──
+  useEffect(() => {
+    if (authLoading) return;
+    if (authed) return;
+    try {
+      if (!localStorage.getItem(VISITOR_ROLE_KEY)) {
+        setShowRoleGate(true);
+      }
+    } catch {}
+  }, [authLoading, authed]);
+
+  const handleRoleSelect = (role: "client" | "photographer") => {
+    try { localStorage.setItem(VISITOR_ROLE_KEY, role); } catch {}
+    setShowRoleGate(false);
+    if (role === "photographer") {
+      navigate({ to: "/photographers/join" });
+    } else {
+      navigate({ to: "/search" });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
+      <AnimatePresence>
+        {showRoleGate && <RoleGate onSelect={handleRoleSelect} />}
+      </AnimatePresence>
+      <div className="min-h-screen bg-background">
+        <Header />
+
 
       {/* Hero */}
       <section className="relative overflow-hidden">
@@ -322,7 +439,8 @@ function Landing() {
       )}
 
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }
 
