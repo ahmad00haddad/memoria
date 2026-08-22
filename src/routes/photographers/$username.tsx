@@ -314,7 +314,7 @@ function PhotographerPage() {
             className="order-1 lg:order-2 lg:col-span-7 relative min-h-[420px] lg:min-h-[640px] rounded-sm overflow-hidden bg-gradient-royal"
           >
             {profile.cover_url && (
-              <img
+              <ProgressiveImage
                 src={profile.cover_url}
                 alt={profile.display_name}
                 className="absolute inset-0 h-full w-full object-cover"
@@ -382,7 +382,7 @@ function PhotographerPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {profile.portfolio_urls!.slice(0, 12).map((u, i) => (
               <button type="button" key={i} onClick={() => setLightboxIdx(i)} className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in">
-                <img src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" loading="lazy" decoding="async" />
+                <ProgressiveImage src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" />
               </button>
             ))}
           </div>
@@ -497,6 +497,18 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
       <div className="font-serif text-2xl leading-none">{value}</div>
       {sub && <div className="text-[11px] opacity-60 mt-1 truncate">{sub}</div>}
     </div>
+  );
+}
+
+function ProgressiveImage({ src, alt, className }: { src: string, alt?: string, className?: string }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`${className} transition-all duration-700 ease-in-out ${loaded ? "blur-0 scale-100" : "blur-md scale-[1.02]"}`}
+      onLoad={() => setLoaded(true)}
+    />
   );
 }
 

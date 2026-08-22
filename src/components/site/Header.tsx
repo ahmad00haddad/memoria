@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Camera, Bell, Menu } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -13,8 +13,18 @@ export function Header() {
   const [openMenu, setOpenMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | "guest" | null>(null);
+  const [jiggle, setJiggle] = useState(false);
+  const prevNotifs = useRef(0);
   const { loading: authLoading, authed, userId, isPhotographer } = useAuthState();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (unreadNotifs > prevNotifs.current) {
+      setJiggle(true);
+      setTimeout(() => setJiggle(false), 1000);
+    }
+    prevNotifs.current = unreadNotifs;
+  }, [unreadNotifs]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -195,10 +205,12 @@ export function Header() {
                   <span className="absolute -top-1 -left-1 bg-blue-600 text-white text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadMsgs}</span>
                 )}
               </Link>
-              <Link to="/notifications" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="إشعارات">
-                <Bell className="h-5 w-5" />
+              <Link to="/notifications" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors group" aria-label="إشعارات">
+                <motion.div animate={jiggle ? { rotate: [0, -20, 20, -15, 15, -10, 10, 0] } : { rotate: 0 }} transition={{ duration: 0.6 }}>
+                  <Bell className="h-5 w-5" />
+                </motion.div>
                 {unreadNotifs > 0 && (
-                  <span className="absolute -top-1 -left-1 bg-destructive text-destructive-foreground text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadNotifs}</span>
+                  <span className="absolute -top-1 -left-1 bg-red-600 text-white text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadNotifs}</span>
                 )}
               </Link>
             </div>

@@ -1,5 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { motion } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -152,7 +154,12 @@ function JoinPage() {
           <Field label="الاسم الكامل / اسم الاستوديو" value={form.display_name} onChange={upd("display_name")} required />
           <Field label="اسم المستخدم (بالإنجليزية)" value={form.username} onChange={upd("username")} required placeholder="مثال: studio_amman" />
           <Field label="البريد الإلكتروني" type="email" value={form.email} onChange={upd("email")} required />
-          <Field label="كلمة المرور (8 أحرف على الأقل)" type="password" value={form.password} onChange={upd("password")} required />
+          <Field label="كلمة المرور" type="password" value={form.password} onChange={upd("password")} required />
+          {form.password && form.password.length > 0 && form.password.length < 8 && (
+            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-amber-600 bg-amber-50 p-2 rounded-sm border border-amber-200">
+              💡 <strong>تلميح:</strong> سرّكِ في أمان! اكتبي كلمة مرور لا تقل عن 8 حروف لتأمين حسابكِ، وتأكدي من تذكرها جيداً.
+            </motion.div>
+          )}
           {err && <p className="text-sm text-destructive">{err}</p>}
           <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
             {loading ? "جاري الإنشاء…" : "إنشاء حسابي"}
@@ -199,17 +206,32 @@ function JoinPage() {
 }
 
 function Field({ label, type = "text", value, onChange, required, placeholder }: { label: string; type?: string; value: string; onChange: (v: string) => void; required?: boolean; placeholder?: string }) {
+  const [show, setShow] = useState(false);
+  const isPwd = type === "password";
+
   return (
-    <label className="block">
+    <label className="block relative">
       <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
       <input
-        type={type}
+        type={isPwd ? (show ? "text" : "password") : type}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         required={required}
         className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60"
+        style={isPwd ? { paddingInlineEnd: '40px' } : {}}
       />
+      {isPwd && (
+        <button 
+          type="button" 
+          onClick={() => setShow(!show)}
+          className="absolute end-3 top-8 text-muted-foreground hover:text-foreground"
+        >
+          <motion.div initial={false} animate={{ scaleY: [1, 0, 1] }} transition={{ duration: 0.2 }} key={show ? "open" : "closed"}>
+             {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </motion.div>
+        </button>
+      )}
     </label>
   );
 }

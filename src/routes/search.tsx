@@ -440,6 +440,16 @@ function SearchPage() {
                 </button>
               </motion.div>
             )}
+            {maxPrice && Number(maxPrice) <= 100 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto bg-amber-50 border border-amber-200 text-amber-800 rounded-sm p-4 text-center">
+                <p className="text-sm">
+                  💡 <strong>تلميح الميزانية:</strong> باقات تصوير الأعراس الاحترافية في الأردن تبدأ عادةً من 150 د.أ.
+                </p>
+                <button onClick={() => { setMaxPrice("150"); setMinPrice(""); }} className="mt-3 text-xs bg-background border border-border px-4 py-1.5 rounded-sm hover:bg-secondary transition">
+                  رفع الحد الأعلى إلى 150 د.أ
+                </button>
+              </motion.div>
+            )}
           </div>
         ) : (
           <motion.div

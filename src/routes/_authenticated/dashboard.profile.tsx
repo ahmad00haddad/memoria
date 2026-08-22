@@ -179,9 +179,20 @@ function ProfilePage() {
                     <button onClick={() => removePortfolio(i)} className="absolute top-1 left-1 bg-black/60 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
                   </div>
                 ))}
-                <button onClick={() => portfolioRef.current?.click()} className="aspect-square border-2 border-dashed border-border rounded-sm grid place-items-center text-muted-foreground hover:bg-secondary">
-                  <Upload className="h-5 w-5" />
-                </button>
+                <div 
+                  onClick={() => portfolioRef.current?.click()} 
+                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-gold", "bg-gold/10", "shadow-[0_0_15px_rgba(201,162,39,0.3)]", "scale-105"); }}
+                  onDragLeave={(e) => e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-[0_0_15px_rgba(201,162,39,0.3)]", "scale-105")}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-[0_0_15px_rgba(201,162,39,0.3)]", "scale-105");
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) onPortfolio(e.dataTransfer.files);
+                  }}
+                  className="aspect-square border-2 border-dashed border-border rounded-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground hover:bg-secondary group"
+                >
+                  <Upload className="h-6 w-6 mb-2 transition-transform duration-300 group-hover:-translate-y-1" />
+                  <span className="text-[10px] uppercase text-center px-2">إضافة صور</span>
+                </div>
                 <input ref={portfolioRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && onPortfolio(e.target.files)} />
               </div>
             </div>

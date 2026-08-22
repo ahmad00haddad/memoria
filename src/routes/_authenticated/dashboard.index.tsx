@@ -421,6 +421,17 @@ function Dashboard() {
 
         <SubscriptionBanner sub={sub} />
 
+        {!hasAnyStats && profile?.is_published && (
+          <div className="mb-8 bg-gold/10 border border-gold/30 text-foreground rounded-sm p-4 text-sm flex items-start gap-3">
+            <span className="text-xl">🚀</span>
+            <div>
+              <strong>بداية موفّقة!</strong> ملفكِ جاهز ومنشور، لكن لم تصلكِ حجوزات بعد.
+              <br />
+              💡 <em>تلميح:</em> انسخي رابط ملفكِ (<Link to="/photographers/$username" params={{ username: profile.username }} className="underline font-semibold text-gold">@{profile.username}</Link>) وضعيه في بايو الإنستجرام لتبدأ العرائس بالحجز مباشرة!
+            </div>
+          </div>
+        )}
+
         {/* ── إحصائيات: مخفية للمستخدمة الجديدة وتُعرض فقط بعد أول نشاط ── */}
         {hasAnyStats && (
           <>
