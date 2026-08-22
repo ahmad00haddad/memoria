@@ -15,7 +15,7 @@ export function initMonitoring() {
       replaysSessionSampleRate: 0,
       replaysOnErrorSampleRate: 0.1,
       sendDefaultPii: false,
-      beforeSend(event) {
+      beforeSend(event: any) {
         // لا نرسل بيانات حسّاسة
         if (event.request?.cookies) delete event.request.cookies;
         return event;
