@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check } from "lucide-react";
 import { Header } from "@/components/site/Header";
@@ -17,6 +17,7 @@ import { getPhotographerProfileData } from "@/lib/profile.functions";
 import { Lightbox } from "@/components/Lightbox";
 import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
 import { hapticVibrate } from "@/lib/utils";
+import { playSound } from "@/lib/sounds";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin } from "lucide-react";
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
@@ -122,6 +123,7 @@ function PhotographerPage() {
   const [bookedSlots, setBookedSlots] = useState<{ event_date: string; start_time: string; end_time: string }[]>([]);
   const [completedCount, setCompletedCount] = useState<number>(0);
   const [formError, setFormError] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
@@ -248,7 +250,12 @@ function PhotographerPage() {
       
       {/* إخفاء الهيدر التقليدي في الموبايل واستبداله بزر رجوع بسيط */}
       <div className="hidden sm:block">
-        <Header />
+              <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
+        <button onClick={() => document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' })} className="w-full bg-charcoal text-gold py-3.5 rounded-full font-bold shadow-2xl flex items-center justify-center gap-2 border border-gold/30 backdrop-blur-md hover:bg-charcoal/90 transition-all active:scale-95">
+          احجزي هذه المصورة 📸
+        </button>
+      </div>
+      <Header />
       </div>
 
       {/* شريط التنقل العلوي للموبايل (App-like Top Bar) */}
@@ -594,6 +601,22 @@ function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profi
   );
 }
 
+const formatPhone = (v: string) => {
+  const clean = v.replace(/\D/g, '').slice(0, 10);
+  if (clean.length > 7) return clean.slice(0, 3) + ' ' + clean.slice(3, 6) + ' ' + clean.slice(6);
+  if (clean.length > 3) return clean.slice(0, 3) + ' ' + clean.slice(3);
+  return clean;
+};
+
+const getAddonEmoji = (name: string) => {
+  if (name.includes('ألبوم') || name.includes('البوم')) return '📖';
+  if (name.includes('درون') || name.includes('طيارة')) return '🚁';
+  if (name.includes('مطبوع') || name.includes('طباعة')) return '🖼️';
+  if (name.includes('فيديو') || name.includes('تصوير')) return '🎥';
+  if (name.includes('ساعة') || name.includes('اضافي') || name.includes('وقت')) return '⏱️';
+  return '✨';
+};
+
 function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
   const storageKey = `memoria.booking-draft.${profile.username}`;
   const initial = {
@@ -609,6 +632,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [consent, setConsent] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [shake, setShake] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Restore draft from localStorage on mount
@@ -1179,6 +1203,11 @@ function Field({ label, v, on, type = "text" }: { label: string; v: string; on: 
 function FallbackPage({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
+            <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
+        <button onClick={() => document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' })} className="w-full bg-charcoal text-gold py-3.5 rounded-full font-bold shadow-2xl flex items-center justify-center gap-2 border border-gold/30 backdrop-blur-md hover:bg-charcoal/90 transition-all active:scale-95">
+          احجزي هذه المصورة 📸
+        </button>
+      </div>
       <Header />
       <div className="container-editorial py-24 text-center text-muted-foreground">{children}</div>
       <Footer />

@@ -1,4 +1,4 @@
-@import "tailwindcss" source(none);
+﻿@import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
 @import "@fontsource-variable/playfair-display";
@@ -291,3 +291,12 @@
 }
 .touch-card { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation; }
 .gallery-tile { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+.animate-shake {
+  animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+}
