@@ -1,24 +1,26 @@
-import { createServerFn } from "@tanstack/react-start";
+﻿import { createServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
 
 export const getPhotographerProfileData = createServerFn({ method: "GET" })
   .inputValidator((d: { pid: string }) => d)
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { pid } = data;
 
-    const [{ data: p }, { data: r }, { data: u }, { data: bk }, { count: cc }] = await Promise.all([
-      supabaseAdmin.from("pricing_rules").select("*").eq("photographer_id", pid),
-      supabaseAdmin.from("reviews").select("*").eq("photographer_id", pid).eq("is_published", true).order("created_at", { ascending: false }),
-      supabaseAdmin.rpc("get_photographer_busy_dates", { _pid: pid }),
-      supabaseAdmin.from("bookings").select("event_date,start_time,end_time").eq("photographer_id", pid).is("deleted_at", null).in("status", ["confirmed", "pending_deposit"]),
-      supabaseAdmin.from("bookings").select("id", { count: "exact", head: true }).eq("photographer_id", pid).eq("status", "completed").is("deleted_at", null),
-    ]);
+    // Use the RPC to fetch all data bypassing RLS (since we don't have Service Role Key)
+    const { data: result, error } = await supabase.rpc("get_public_profile_data", { p_id: pid });
+    
+    if (error || !result) {
+      console.error("RPC Error:", error);
+      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0 };
+    }
 
+    // The RPC returns a JSON object with the keys we need
+    const r = result as any;
     return {
-      pricing: p ?? [],
-      reviews: r ?? [],
-      unavail: u ?? [],
-      bookedSlots: bk ?? [],
-      completedCount: cc ?? 0,
+      pricing: r.pricing ?? [],
+      reviews: r.reviews ?? [],
+      unavail: r.unavail ?? [],
+      bookedSlots: r.bookedSlots ?? [],
+      completedCount: r.completedCount ?? 0,
     };
   });
