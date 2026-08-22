@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 
 // Lightbox مع دعم اللمس (سحب يمين/يسار)، أزرار، ولوحة المفاتيح.
 export function Lightbox({
@@ -14,6 +14,9 @@ export function Lightbox({
   const [i, setI] = useState(index);
   const startX = useRef<number | null>(null);
   const startY = useRef<number | null>(null);
+  const lastTap = useRef<number>(0);
+  const [showHeart, setShowHeart] = useState(false);
+  const [heartPos, setHeartPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => setI(index), [index]);
 
@@ -81,11 +84,34 @@ export function Lightbox({
           <div className="absolute top-3 right-3 text-white/70 text-xs bg-white/10 px-2 py-1 rounded-sm">{i + 1} / {images.length}</div>
         </>
       )}
+      {/* Double Tap Heart Animation */}
+      {showHeart && (
+        <Heart 
+          className="absolute h-24 w-24 text-white fill-white pointer-events-none drop-shadow-2xl animate-[ping_0.5s_cubic-bezier(0,0,0.2,1)_forwards]" 
+          style={{ 
+            top: heartPos.y - 48, 
+            left: heartPos.x - 48,
+            animationDuration: '0.6s'
+          }} 
+        />
+      )}
       <img
         src={images[i]}
         alt=""
-        className="max-w-full max-h-full object-contain p-4"
-        onClick={(e) => e.stopPropagation()}
+        className="max-w-full max-h-full object-contain p-4 transition-transform duration-200"
+        onClick={(e) => {
+          e.stopPropagation();
+          const now = Date.now();
+          if (now - lastTap.current < 300) {
+            // Double tap detected!
+            setHeartPos({ x: e.clientX, y: e.clientY });
+            setShowHeart(true);
+            setTimeout(() => setShowHeart(false), 800);
+            lastTap.current = 0;
+          } else {
+            lastTap.current = now;
+          }
+        }}
       />
     </div>
   );

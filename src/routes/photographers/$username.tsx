@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { ar } from "date-fns/locale";
 import { format } from "date-fns";
+import confetti from "canvas-confetti";
 import { useServerFn } from "@tanstack/react-start";
 import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functions";
 import { getPhotographerProfileData } from "@/lib/profile.functions";
@@ -202,6 +203,19 @@ function PhotographerPage() {
     return () => { el.remove(); };
   }, [profile, reviews]);
 
+  // Idea 8: Scroll Progress Bar Logic
+  useEffect(() => {
+    const el = document.getElementById("scroll-progress-bar");
+    if (!el) return;
+    const updateScroll = () => {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scroll = window.scrollY;
+      el.style.transform = `scaleX(${Math.max(0, Math.min(1, scroll / docHeight))})`;
+    };
+    window.addEventListener("scroll", updateScroll, { passive: true });
+    return () => window.removeEventListener("scroll", updateScroll);
+  }, []);
+
   if (loading) return <FallbackPage>جاري التحميل…</FallbackPage>;
   if (!profile) return <FallbackPage>لا يوجد مصوّر بهذا الاسم. <Link to="/search" className="underline">عُد للبحث</Link></FallbackPage>;
 
@@ -225,6 +239,13 @@ function PhotographerPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
+      {/* Idea 8: Scroll Progress Bar */}
+      <div 
+        id="scroll-progress-bar"
+        className="fixed top-0 left-0 right-0 h-1 bg-gold origin-left z-50 transition-transform duration-75" 
+        style={{ transform: "scaleX(0)" }}
+      />
+      
       {/* إخفاء الهيدر التقليدي في الموبايل واستبداله بزر رجوع بسيط */}
       <div className="hidden sm:block">
         <Header />
@@ -706,6 +727,15 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       });
       setSuccess({ token: res.tracking_token });
       hapticVibrate("success");
+      
+      // Idea 1: Confetti on Booking Submit
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#C9A227', '#E5E7EB', '#111827', '#FFFFFF']
+      });
+      
       try { window.localStorage.removeItem(storageKey); } catch {}
     } catch (e: any) {
       hapticVibrate("error");
@@ -764,6 +794,22 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     2: true,
     3: !!f.client_name && !!f.client_phone && !!f.client_email && consent,
   };
+  
+  // Idea 4: Dynamic Page Title
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const originalTitle = document.title;
+    const handleVisibilityChange = () => {
+      if (document.hidden && !success && (f.event_date || f.package_id)) {
+        document.title = "عُودي لإكمال حجزك! 💍";
+      } else {
+        document.title = originalTitle;
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [f, success]);
+
   const goNext = () => {
     if (!stepValid[step]) {
       const msg = step === 1 ? "يجب اختيار التاريخ والباقة قبل المتابعة للخطوة التالية." :
@@ -774,10 +820,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     }
     setFormError(null);
     setStep((s) => (s === 3 ? 3 : ((s + 1) as 1 | 2 | 3)));
+    // Idea 6: Auto-save Draft Toast
+    toast("تم حفظ مسودتك 📝", { position: "bottom-center" });
   };
   const goBack = () => {
     setFormError(null);
     setStep((s) => (s === 1 ? 1 : ((s - 1) as 1 | 2 | 3)));
+    toast("تم حفظ مسودتك 📝", { position: "bottom-center" });
   };
   const stepLabels = ["التاريخ والباقة", "الموقع والإضافات", "البيانات والتأكيد"];
 
@@ -847,8 +896,16 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                 locale={ar}
                 className="pointer-events-auto"
               />
-              <div className="border-t border-border p-2 text-[11px] text-muted-foreground flex items-center gap-3">
-                <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-destructive/20 line-through">×</span> أيام محجوزة/محجوبة</span>
+              <div className="border-t border-border p-2 text-[11px] text-muted-foreground flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-destructive/20 line-through">×</span> أيام محجوزة/محجوبة</span>
+                </div>
+                {/* Idea 5: Busy Month Hint */}
+                {blockedDates.filter(d => new Date(d).getMonth() === (selectedDateObj?.getMonth() ?? new Date().getMonth())).length >= 15 && (
+                  <div className="text-amber-700 bg-amber-50 p-1.5 rounded-sm border border-amber-200">
+                    🔥 <strong>هذا الشهر شبه ممتلئ!</strong> سارعي بتأكيد موعدكِ قبل نفاد الأيام المتاحة.
+                  </div>
+                )}
               </div>
             </PopoverContent>
           </Popover>
@@ -1000,6 +1057,15 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           </button>
         )}
       </div>
+      
+      {/* Idea 3: Late Night Hint */}
+      {step === 3 && (new Date().getHours() >= 0 && new Date().getHours() <= 7) && (
+        <div className="mt-4 text-xs text-indigo-800 bg-indigo-50 border border-indigo-200 p-2.5 rounded-sm flex items-start gap-2">
+          <span className="text-base leading-none mt-0.5">🌙</span>
+          <span>المصوّرة قد تكون نائمة الآن، سيصلها إشعارك فور استيقاظها.</span>
+        </div>
+      )}
+      
       {daySlots.length > 0 && !isBlocked && step === 1 && (
         <div className="mt-3 rounded-sm border border-amber-200 bg-amber-50 p-3 text-sm">
           <div className="font-medium text-amber-900 mb-1">فترات محجوزة في هذا اليوم:</div>

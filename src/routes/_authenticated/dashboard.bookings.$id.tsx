@@ -5,7 +5,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus } from "lucide-react";
+import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus, Star } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
@@ -331,6 +331,18 @@ function BookingDetail() {
               )}
               {!b.delivered_at && b.status !== "cancelled" && (
                 <button onClick={markDelivered} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تسليم الصور وإنهاء</button>
+              )}
+              {/* Idea 2: WhatsApp Review Request */}
+              {b.status === "completed" && (
+                <button 
+                  onClick={() => {
+                    const text = encodeURIComponent(`مرحباً ${b.client_name} 🤍\nأتمنى أن تكون الصور قد نالت إعجابك! يسعدني جداً سماع رأيك وتقييمك لتجربتك معي عبر هذا الرابط:\n${window.location.origin}/review/${b.client_tracking_token}\n\nشكراً لكِ!`);
+                    window.open(`https://wa.me/?text=${text}`, "_blank");
+                  }}
+                  className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 border border-emerald-200 px-4 py-2 rounded-sm hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800"
+                >
+                  <Star className="h-4 w-4" /> اطلبي تقييماً (واتساب)
+                </button>
               )}
               {b.status !== "cancelled" && b.status !== "completed" && (
                 <button onClick={onCancel} className="inline-flex items-center gap-2 text-destructive border border-destructive/30 px-4 py-2 rounded-sm hover:bg-destructive/10"><XCircle className="h-4 w-4" /> إلغاء الحجز</button>

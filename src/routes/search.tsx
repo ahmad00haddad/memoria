@@ -163,7 +163,7 @@ function SearchPage() {
                     </button>
                   </Drawer.Trigger>
                   <Drawer.Portal>
-                    <Drawer.Overlay className="fixed inset-0 bg-black/40 z-40" />
+                    <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-md z-40 transition-all duration-300" />
                     <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-background border-t border-border pb-safe">
                       <div className="mx-auto w-12 h-1.5 rounded-full bg-border mt-3 mb-4" />
                       <div className="px-4 pb-6 space-y-4 max-h-[80vh] overflow-y-auto">

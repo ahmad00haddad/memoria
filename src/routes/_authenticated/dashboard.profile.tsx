@@ -28,6 +28,8 @@ function ProfilePage() {
   const portfolioRef = useRef<HTMLInputElement>(null);
   const tourState = useTourState();
 
+  const [originalP, setOriginalP] = useState<any>(null);
+
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -37,10 +39,26 @@ function ProfilePage() {
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
         supabase.from("photographer_private").select("*").eq("user_id", session.user.id).maybeSingle(),
       ]);
-      setP({ ...(data ?? {}), ...(priv ?? {}) });
+      const merged = { ...(data ?? {}), ...(priv ?? {}) };
+      setP(merged);
+      setOriginalP(merged);
       setLoading(false);
     })();
   }, [nav]);
+
+  // Idea 9: Unsaved Changes Warning
+  useEffect(() => {
+    const isDirty = originalP && p && JSON.stringify(originalP) !== JSON.stringify(p);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "لديك تعديلات غير محفوظة. هل أنت متأكد من المغادرة؟";
+        return e.returnValue;
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [originalP, p]);
 
   const onAvatar = async (f: File) => {
     const res = await uploadProfilePhoto(f, uid, "avatar");
@@ -126,6 +144,7 @@ function ProfilePage() {
     }
     setSaving(false);
     if (error || pErr) return toast.error((error ?? pErr)!.message);
+    setOriginalP(p);
     toast.success("تم الحفظ");
   };
 
