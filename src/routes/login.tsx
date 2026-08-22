@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 
-import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
+import { AlertTriangle, RefreshCcw, Home, Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -176,16 +176,29 @@ function LoginPage() {
 }
 
 function Field({ label, name, type, autoComplete, required }: { label: string; name: string; type: string; autoComplete?: string; required?: boolean }) {
+  const [show, setShow] = useState(false);
+  const isPassword = type === "password";
+  
   return (
-    <label className="block">
+    <label className="block relative">
       <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
       <input
         name={name}
-        type={type}
+        type={isPassword && show ? "text" : type}
         autoComplete={autoComplete}
         required={required}
-        className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60"
+        className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60 pr-10"
       />
+      {isPassword && (
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute left-3 top-[32px] text-muted-foreground hover:text-foreground transition-colors"
+          tabIndex={-1}
+        >
+          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      )}
     </label>
   );
 }

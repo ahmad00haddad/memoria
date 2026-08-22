@@ -406,7 +406,9 @@ function BookingDetail() {
               <div key={m.id} className={`p-3 rounded-sm ${m.sender_id === uid ? "bg-charcoal text-ivory mr-12" : "bg-secondary ml-12"}`}>
                 <div className="text-[10px] opacity-70 mb-1 flex items-center gap-1.5">
                   <span>{m.sender_name} · {new Date(m.created_at).toLocaleString("ar-JO")}</span>
-                  {m.sender_id === uid && m.read_at && <span title="مقروءة">✓✓</span>}
+                  {m.sender_id === uid && (
+                    <span className={m.read_at ? "text-blue-400" : "text-ivory/50"} title={m.read_at ? "مقروءة" : "مرسلة"}>✓✓</span>
+                  )}
                 </div>
                 <div className="text-sm whitespace-pre-wrap">{m.body}</div>
               </div>

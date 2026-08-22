@@ -266,12 +266,15 @@ function DashboardSkeleton() {
   );
 }
 
-function Card({ title, desc, cta, to, external, disabled, icon }: { title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; }) {
+function Card({ title, desc, cta, to, external, disabled, icon, badge }: { title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; badge?: boolean }) {
   const sharedClassName = `group flex min-h-[190px] flex-col justify-between rounded-sm border border-border bg-card p-6 shadow-soft transition ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-0.5 hover:border-gold/40 hover:bg-secondary/20 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
   const content = (
     <>
       <div>
-        <h3 className="font-serif text-xl mb-1">{title}</h3>
+        <h3 className="font-serif text-xl mb-1 flex items-center gap-2">
+          {title}
+          {badge && <span className="h-2 w-2 rounded-full bg-gold shadow-[0_0_8px_rgba(201,162,39,0.8)] animate-pulse" />}
+        </h3>
         <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
       </div>
       <div className="mt-6 inline-flex items-center gap-2 text-sm text-gold">
@@ -545,8 +548,14 @@ function Dashboard() {
         ) : (
           // مستخدمة نشطة → كل البطاقات ظاهرة
           <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3">
-            <Card title="الملف الشخصي" desc="الصور، النبذة، المعدّات، التواصل، إعدادات الحجز." cta="تعديل الملف" to="/dashboard/profile" />
-            <Card title="بطاقة الأسعار" desc="باقات التصوير والفيديو والإضافات." cta="إدارة الأسعار" to="/dashboard/pricing" />
+              <Card title="ملف المصوّرة" desc="المعلومات الأساسية وصورة الغلاف ومعرض الأعمال." cta="تعديل الملف" to="/dashboard/profile" />
+              <Card 
+                title="بطاقات الأسعار" 
+                desc="حددي الباقات الأساسية والإضافات." 
+                cta="إدارة الباقات" 
+                to="/dashboard/pricing" 
+                badge={true} 
+              />
             <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
             <Card title="الحجوزات" desc="جميع الطلبات والمؤكّدة والمنتهية." cta="عرض الحجوزات" to="/dashboard/bookings" />
             <Card title="متابعة الإنتاج" desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." cta="افتح اللوحة" to="/dashboard/production" />

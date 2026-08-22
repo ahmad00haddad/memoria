@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
+import { hapticVibrate } from "@/lib/utils";
 import {
   searchPhotographers,
   listPublishedCities,
@@ -81,7 +82,6 @@ function SearchPage() {
 
   const results: SearchResultItem[] = resultsQ.data ?? [];
 
-  // ✅ تطبيق فلتر التقييم client-side بعد جلب النتائج
   const displayResults = results
     .filter((r) => (minRating > 0 ? r.avg_rating >= minRating : true))
     .filter((r) => (verifiedOnly ? r.verification_status === "verified" : true));
@@ -92,6 +92,7 @@ function SearchPage() {
   );
 
   const clearAll = () => {
+    hapticVibrate("light");
     setQ("");
     setCity("");
     setMinPrice("");
@@ -102,9 +103,19 @@ function SearchPage() {
     setVerifiedOnly(false);
   };
 
+  // Idea 6: Scroll-to-Top Button
+  const [showScroll, setShowScroll] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShowScroll(window.scrollY > 800);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
     <PullToRefresh onRefresh={async () => {
+      hapticVibrate("light");
       await queryClient.invalidateQueries({ queryKey: ["search"] });
+      hapticVibrate("success");
     }}>
       <div className="min-h-screen bg-background sm:pb-0 pb-20">
         <div className="hidden sm:block">
@@ -401,32 +412,48 @@ function SearchPage() {
               title="لا توجد نتائج"
               description="لم نعثر على مصوّرات تطابق فلترك الحالي. جرّبي اقتراحاتنا التالية:"
               action={
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {date && (
-                    <button onClick={() => setDate("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                      إزالة التاريخ
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    {date && (
+                      <button onClick={() => setDate("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                        إزالة التاريخ
+                      </button>
+                    )}
+                    {city && (
+                      <button onClick={() => setCity("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                        البحث في كل المدن
+                      </button>
+                    )}
+                    {(minPrice || maxPrice) && (
+                      <button onClick={() => { setMinPrice(""); setMaxPrice(""); }} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                        إزالة السعر
+                      </button>
+                    )}
+                    {verifiedOnly && (
+                      <button onClick={() => setVerifiedOnly(false)} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                        إظهار جميع المصوّرات
+                      </button>
+                    )}
+                    {hasFilters && (
+                      <button onClick={clearAll} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 text-sm">
+                        <X className="h-4 w-4" /> مسح كل الفلاتر
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Idea 5: Empty Search Suggestions */}
+                  <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+                    <span className="text-xs text-muted-foreground w-full block mb-1">اقتراحات سريعة:</span>
+                    <button onClick={() => { clearAll(); setCity("عمان"); }} className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition-colors">
+                      استكشفي مصورات عمّان
                     </button>
-                  )}
-                  {city && (
-                    <button onClick={() => setCity("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                      البحث في كل المدن
+                    <button onClick={() => { clearAll(); setQ("فيديو"); }} className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
+                      تصوير فيديو سينمائي
                     </button>
-                  )}
-                  {(minPrice || maxPrice) && (
-                    <button onClick={() => { setMinPrice(""); setMaxPrice(""); }} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                      إزالة السعر
+                    <button onClick={() => { clearAll(); setMaxPrice("300"); }} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-100 transition-colors">
+                      أقل من 300 دينار
                     </button>
-                  )}
-                  {verifiedOnly && (
-                    <button onClick={() => setVerifiedOnly(false)} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                      إظهار جميع المصوّرات
-                    </button>
-                  )}
-                  {hasFilters && (
-                    <button onClick={clearAll} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 text-sm">
-                      <X className="h-4 w-4" /> مسح كل الفلاتر
-                    </button>
-                  )}
+                  </div>
                 </div>
               }
             />
@@ -462,6 +489,22 @@ function SearchPage() {
           </motion.div>
         )}
       </section>
+      
+      {/* Idea 6: Scroll-to-Top Button */}
+      <AnimatePresence>
+        {showScroll && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="fixed bottom-24 sm:bottom-8 right-4 sm:right-8 z-50 h-12 w-12 rounded-full bg-white/70 backdrop-blur-md border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center text-charcoal hover:bg-white/90 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
+      
       <Footer />
       </div>
     </PullToRefresh>

@@ -536,8 +536,11 @@ function PhotographerPage() {
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div>
-      <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-1">{label}</div>
+    <div className="group">
+      <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-1 flex items-center gap-1">
+        {label === "الموقع" && <MapPin className="h-3 w-3 group-hover:animate-bounce" />}
+        {label}
+      </div>
       <div className="font-serif text-2xl leading-none">{value}</div>
       {sub && <div className="text-[11px] opacity-60 mt-1 truncate">{sub}</div>}
     </div>
@@ -547,12 +550,16 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
 function ProgressiveImage({ src, alt, className }: { src: string, alt?: string, className?: string }) {
   const [loaded, setLoaded] = useState(false);
   return (
-    <img
-      src={src}
-      alt={alt}
-      className={`${className} transition-all duration-700 ease-in-out ${loaded ? "blur-0 scale-100" : "blur-md scale-[1.02]"}`}
-      onLoad={() => setLoaded(true)}
-    />
+    <div className={`relative overflow-hidden ${className}`}>
+      {/* Idea 10: Skeleton Crossfade */}
+      <div className={`absolute inset-0 bg-secondary/80 animate-pulse transition-opacity duration-700 ${loaded ? "opacity-0" : "opacity-100"}`} />
+      <img
+        src={src}
+        alt={alt}
+        className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-md scale-105"}`}
+        onLoad={() => setLoaded(true)}
+      />
+    </div>
   );
 }
 
@@ -602,6 +609,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [consent, setConsent] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   // Restore draft from localStorage on mount
   useEffect(() => {
@@ -774,10 +782,22 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             <Send className="h-4 w-4" /> اذهبي لصفحة تتبع الحجز
           </button>
           <button
-            onClick={() => { navigator.clipboard.writeText(fullUrl); toast.success("نُسخ رابط التتبّع"); }}
-            className="sm:w-auto border border-border py-3 px-4 rounded-sm hover:bg-secondary inline-flex items-center justify-center gap-2 text-sm"
+            onClick={() => { 
+              navigator.clipboard.writeText(fullUrl); 
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            className="sm:w-auto border border-border py-3 px-4 rounded-sm hover:bg-secondary inline-flex items-center justify-center gap-2 text-sm transition-colors"
           >
-            <ClipboardCopy className="h-4 w-4" /> نسخ الرابط
+            {copied ? (
+              <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} className="flex items-center gap-2 text-emerald-600">
+                <CheckCircle2 className="h-4 w-4" /> تم النسخ
+              </motion.div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <ClipboardCopy className="h-4 w-4" /> نسخ الرابط
+              </div>
+            )}
           </button>
         </div>
         <p className="text-xs text-muted-foreground mt-3 leading-relaxed">

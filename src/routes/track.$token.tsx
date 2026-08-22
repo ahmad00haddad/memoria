@@ -349,7 +349,9 @@ function TrackingPage() {
       <Header />
       <section className="container-editorial py-10 max-w-4xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">تتبع الحجز</div>
-        <h1 className="font-serif text-3xl mb-1">مرحبًا {b.client_name}</h1>
+        <h1 className="font-serif text-3xl mb-1">
+          {new Date().getHours() < 12 ? "صباح الخير" : "مساء الخير"}، {b.client_name}
+        </h1>
         <p className="text-muted-foreground text-sm mb-4">حجز مع {ph.display_name} (@{ph.username})</p>
 
         <div className="rounded-sm border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30 p-3 mb-6 flex gap-3 text-amber-900 dark:text-amber-200">
@@ -875,7 +877,12 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
           const mine = !m.sender_id; // client messages have null sender_id
           return (
             <div key={m.id} className={`p-3 rounded-sm ${mine ? "bg-charcoal text-ivory mr-8" : "bg-secondary ml-8"}`}>
-              <div className="text-[10px] opacity-70 mb-1">{mine ? clientName : (m.sender_name || "المصوّرة")} · {new Date(m.created_at).toLocaleString("ar-JO")}</div>
+              <div className="text-[10px] opacity-70 mb-1 flex items-center gap-1.5">
+                <span>{mine ? clientName : (m.sender_name || "المصوّرة")} · {new Date(m.created_at).toLocaleString("ar-JO")}</span>
+                {mine && (
+                  <span className={m.read_at ? "text-blue-400" : "text-ivory/50"} title={m.read_at ? "مقروءة" : "مرسلة"}>✓✓</span>
+                )}
+              </div>
               <div className="text-sm whitespace-pre-wrap">{m.body}</div>
             </div>
           );
