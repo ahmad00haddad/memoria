@@ -97,53 +97,142 @@ function SubscriptionBanner({ sub }: { sub: any }) {
   );
 }
 
+// ── مكوّن "ابدئي هنا" للمستخدمة الجديدة — ٣ خطوات واضحة فقط ──────────────────
+function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pricingCount: number; hasCliq: boolean }) {
+  const steps = [
+    {
+      num: 1,
+      title: "أكملي ملفك وأضيفي أول باقة",
+      why: "بعد هذه الخطوة يستطيع العميل رؤية اسمك وسعرك — جاهزة للحجز",
+      done: !!profile?.display_name && !!profile?.username && pricingCount > 0,
+      to: pricingCount === 0 ? "/dashboard/pricing" : "/dashboard/profile",
+      cta: "ابدئي من هنا",
+    },
+    {
+      num: 2,
+      title: "أضيفي طريقة استقبال العربون",
+      why: "CliQ alias أو واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية",
+      done: hasCliq,
+      to: "/dashboard/profile",
+      cta: "أضيفي بيانات الدفع",
+    },
+    {
+      num: 3,
+      title: "انشري ملفك وشاركيه",
+      why: "بنقرة واحدة يصبح ملفك مرئياً ويمكن للعملاء طلب الحجز مباشرة",
+      done: !!profile?.is_published && !!profile?.username,
+      to: "/dashboard/profile",
+      cta: "فعّلي النشر",
+    },
+  ];
+
+  const doneCount = steps.filter((s) => s.done).length;
+  const activeIdx = steps.findIndex((s) => !s.done);
+
+  return (
+    <div className="mb-10">
+      {/* Header */}
+      <div className="mb-6 text-center">
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">خطوات البداية</div>
+        <h2 className="font-serif text-3xl mb-1">٣ خطوات وملفك جاهز ✨</h2>
+        <p className="text-sm text-muted-foreground">تستغرق أقل من ٥ دقائق</p>
+        {/* شريط التقدم */}
+        <div className="flex items-center justify-center gap-2 mt-4 max-w-[200px] mx-auto">
+          {steps.map((s, i) => (
+            <div key={i} className={`h-2 flex-1 rounded-full transition-all duration-500 ${s.done ? "bg-gold" : i === activeIdx ? "bg-gold/40" : "bg-secondary"}`} />
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">{doneCount} من {steps.length} مكتملة</p>
+      </div>
+
+      {/* الخطوات */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {steps.map((s, i) => {
+          const isActive = i === activeIdx;
+          return (
+            <div key={s.num} className={`relative rounded-sm border p-5 transition-all ${
+              s.done
+                ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                : isActive
+                  ? "border-gold/50 bg-gold/5 shadow-elegant"
+                  : "border-border bg-card opacity-40 pointer-events-none"
+            }`}>
+              {/* رقم الخطوة */}
+              <div className={`inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold mb-4 ${
+                s.done
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400"
+                  : isActive
+                    ? "bg-gold/20 text-gold"
+                    : "bg-secondary text-muted-foreground"
+              }`}>
+                {s.done ? <CheckCircle2 className="h-4 w-4" /> : s.num}
+              </div>
+              <h3 className="font-medium text-base mb-1.5 leading-snug">{s.title}</h3>
+              <p className="text-xs text-muted-foreground mb-5 leading-relaxed">{s.why}</p>
+              {s.done ? (
+                <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> اكتملت ✓
+                </span>
+              ) : isActive ? (
+                <Link to={s.to} className="inline-flex items-center gap-2 bg-charcoal text-ivory text-sm px-5 py-2.5 rounded-sm hover:opacity-90 transition-opacity">
+                  {s.cta} <ArrowLeft className="h-3.5 w-3.5" />
+                </Link>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── حالة الجاهزية المبسّطة (للمستخدمة النشطة التي لم تكمل بعض الخطوات) ────────
 function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCount, onDismiss }: { profile: any; pricingCount: number; bookingCount: number; hasCliq: boolean; templatesCount: number; onDismiss: () => void }) {
   const steps = [
-    { title: "أكملي الملف الشخصي", desc: "الاسم، الصورة، المدينة، معلومات التواصل وإعدادات الحجز.", done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url, to: "/dashboard/profile", cta: "افتحي الملف" },
-    { title: "أضيفي الباقات والأسعار", desc: "بدون باقات لن يرى العميل أسعارك ولن يستطيع اختيار خدمة واضحة.", done: pricingCount > 0, to: "/dashboard/pricing", cta: pricingCount > 0 ? `لديك ${pricingCount} باقة` : "أضيفي أول باقة" },
-    { title: "أضيفي وسائل الدفع والتواصل", desc: "CliQ alias ورقم واتساب — يظهر للعميل بعد تأكيد الحجز.", done: hasCliq, to: "/dashboard/profile", cta: hasCliq ? "تم الإعداد" : "أضيفي البيانات" },
-    { title: "جهّزي قوالب الواتساب", desc: "6 قوالب جاهزة (ترحيب، عربون، تذكير، تسليم) لتوفير وقتك في الردود.", done: templatesCount > 0, to: "/dashboard/whatsapp-templates", cta: templatesCount > 0 ? `لديك ${templatesCount} قالب` : "أضيفي القوالب" },
-    { title: "فعّلي الظهور العام", desc: "انشري ملفك العام ثم افتحيه كما يراه العميل واختبري الحجز بنفسك.", done: !!profile?.is_published && !!profile?.username, to: "/dashboard/profile", cta: profile?.is_published ? "الملف منشور" : "فعّلي النشر" },
-    { title: "راجعي أول الحجوزات", desc: "من هنا ستؤكدين العربون، تنشئين العقود وتتابعين الرسائل.", done: bookingCount > 0, to: "/dashboard/bookings", cta: bookingCount > 0 ? `لديك ${bookingCount} حجز` : "لا توجد حجوزات بعد" },
+    { title: "الملف الشخصي", done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url, to: "/dashboard/profile", cta: "تعديل" },
+    { title: `الأسعار${pricingCount > 0 ? ` (${pricingCount})` : ""}`, done: pricingCount > 0, to: "/dashboard/pricing", cta: "إضافة" },
+    { title: "بيانات الدفع", done: hasCliq, to: "/dashboard/profile", cta: "إعداد" },
+    { title: "النشر العام", done: !!profile?.is_published, to: "/dashboard/profile", cta: "نشر" },
   ];
-  const allDone = steps.every((s) => s.done);
+  const doneCount = steps.filter((s) => s.done).length;
+  const allDone = doneCount === steps.length;
+
   return (
-    <div className="mb-8 rounded-sm border border-border bg-card p-6 shadow-soft">
-      <div className="flex items-start justify-between gap-3 mb-4">
+    <div className="mb-8 rounded-sm border border-border bg-card p-4 sm:p-5">
+      <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
-          <ListChecks className="h-5 w-5 text-gold" />
-          <h2 className="font-serif text-2xl">حالة الجاهزية</h2>
+          <ListChecks className="h-4 w-4 text-gold" />
+          <span className="text-sm font-medium">إعداد الحساب</span>
+          <span className="text-xs text-muted-foreground tabular-nums">({doneCount}/{steps.length})</span>
         </div>
-        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary" aria-label="إخفاء حالة الجاهزية">
-          <X className="h-5 w-5" />
+        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary" aria-label="إخفاء">
+          <X className="h-4 w-4" />
         </button>
       </div>
-      {allDone && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-400">
-          <div className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-300">
-            <PartyPopper className="h-5 w-5" />
-            أكملتِ كل الخطوات — حسابك جاهز تماماً! 🎉
-          </div>
-          <button onClick={onDismiss} className="inline-flex items-center gap-2 rounded-sm bg-emerald-600 px-4 py-2 text-sm text-white hover:opacity-90">
-            <CheckCircle2 className="h-4 w-4" /> تم — أخفِ هذه اللوحة
-          </button>
-        </div>
-      )}
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {steps.map((step) => (
-          <div key={step.title} className="rounded-sm border border-border bg-background p-4">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="font-medium leading-relaxed">{step.title}</div>
-              {step.done ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" /> : <CircleDashed className="h-4 w-4 text-muted-foreground shrink-0" />}
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed min-h-[56px]">{step.desc}</p>
-            <Link to={step.to} className="mt-4 inline-flex items-center gap-2 text-sm text-gold">
-              <span className="border-b border-current pb-0.5">{step.cta}</span>
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </div>
+      {/* شريط تقدم */}
+      <div className="flex gap-1.5 mb-4">
+        {steps.map((s, i) => (
+          <div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${s.done ? "bg-gold" : "bg-secondary"}`} />
         ))}
       </div>
+      {allDone ? (
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+            <PartyPopper className="h-4 w-4" /> حسابك جاهز تماماً! 🎉
+          </span>
+          <button onClick={onDismiss} className="text-xs text-muted-foreground hover:text-foreground underline">إخفاء</button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {steps.filter((s) => !s.done).map((s) => (
+            <Link key={s.title} to={s.to} className="inline-flex items-center gap-1.5 text-xs border border-border rounded-sm px-3 py-1.5 hover:bg-secondary hover:border-gold/40 transition-colors">
+              <CircleDashed className="h-3 w-3 text-muted-foreground" />
+              {s.title}
+              <span className="text-gold">← {s.cta}</span>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -215,6 +304,7 @@ function Dashboard() {
   const [templatesCount, setTemplatesCount] = useState(cachedDashboard?.templatesCount ?? 0);
   const [stats, setStats] = useState(cachedDashboard?.stats ?? { confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, upcoming30: 0, pendingDepositsAmount: 0, deliveriesDueSoon: 0 });
   const [qsDismissed, setQsDismissed] = useState(false);
+  const [showAllCards, setShowAllCards] = useState(false);
   const navigate = useNavigate();
 
   const loadData = async () => {
@@ -293,6 +383,10 @@ function Dashboard() {
 
   if (loading) return <DashboardSkeleton />;
   const onboardingNeeded = !profile?.display_name || !profile?.username || !profile?.avatar_url || pricingCount === 0;
+  const totalBookings = stats.confirmed + stats.pending + stats.completed;
+  // مستخدمة جديدة: ملف ناقص + لا حجوزات بعد
+  const isNewUser = onboardingNeeded && totalBookings === 0;
+  const hasAnyStats = stats.confirmed > 0 || stats.pending > 0 || stats.revenue > 0 || stats.reviews > 0;
 
   return (
     <PullToRefresh onRefresh={async () => { await loadData(); }}>
@@ -327,74 +421,133 @@ function Dashboard() {
 
         <SubscriptionBanner sub={sub} />
 
-        {/* Stats — mobile horizontal scroll */}
-        <div className="md:hidden overflow-x-auto scrollbar-none pb-2 -mx-4 px-4 mb-8">
-          <div className="flex gap-3">
-            <NumStat icon={<Calendar className="h-5 w-5 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
-            <NumStat icon={<Clock className="h-5 w-5 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
-            <NumStat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="الإيرادات" value={stats.revenue} suffix=" د.أ" />
-            <NumStat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
-          </div>
-        </div>
+        {/* ── إحصائيات: مخفية للمستخدمة الجديدة وتُعرض فقط بعد أول نشاط ── */}
+        {hasAnyStats && (
+          <>
+            {/* Stats — mobile horizontal scroll */}
+            <div className="md:hidden overflow-x-auto scrollbar-none pb-2 -mx-4 px-4 mb-8">
+              <div className="flex gap-3">
+                <NumStat icon={<Calendar className="h-5 w-5 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
+                <NumStat icon={<Clock className="h-5 w-5 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
+                <NumStat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="الإيرادات" value={stats.revenue} suffix=" د.أ" />
+                <NumStat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
+              </div>
+            </div>
 
-        {/* Stats — desktop grid */}
-        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <NumStat icon={<Calendar className="h-5 w-5 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
-          <NumStat icon={<Clock className="h-5 w-5 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
-          <NumStat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="الإيرادات" value={stats.revenue} suffix=" د.أ" />
-          <NumStat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
-        </motion.div>
-
-        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <NumStat icon={<TrendingUp className="h-5 w-5 text-emerald-700" />} label="إيرادات هذا الشهر" value={stats.monthRevenue} suffix=" د.أ" />
-          <NumStat icon={<Calendar className="h-5 w-5 text-blue-600" />} label="حجوزات خلال 30 يوماً" value={stats.upcoming30} />
-          <NumStat icon={<DollarSign className="h-5 w-5 text-amber-600" />} label="عرابين معلّقة" value={stats.pendingDepositsAmount} suffix=" د.أ" />
-          <NumStat icon={<Send className="h-5 w-5 text-violet-600" />} label="تسليمات خلال 7 أيام" value={stats.deliveriesDueSoon} />
-        </motion.div>
-
-        {/* Quick Actions chips — mobile only */}
-        <div className="md:hidden overflow-x-auto scrollbar-none -mx-4 px-4 mb-6">
-          <div className="flex gap-2 w-max">
-            {([
-              { icon: <Calendar className="h-4 w-4" />, label: 'الحجوزات', to: '/dashboard/bookings' },
-              { icon: <ListChecks className="h-4 w-4" />, label: 'الإنتاج', to: '/dashboard/production' },
-              { icon: <MessageCircle className="h-4 w-4" />, label: 'قوالب', to: '/dashboard/whatsapp-templates' },
-              { icon: <TrendingUp className="h-4 w-4" />, label: 'التقارير', to: '/dashboard/reports' },
-            ] as const).map((chip) => (
-              <Link
-                key={chip.to}
-                to={chip.to}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-card border border-border text-sm whitespace-nowrap"
-              >
-                {chip.icon}
-                {chip.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <AnimatePresence initial={false}>
-          {!profile?.quickstart_dismissed_at && !qsDismissed && (
-            <motion.div key="qs" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0, scale: 0.98 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
-              <QuickStart profile={profile} pricingCount={pricingCount} bookingCount={stats.confirmed + stats.pending + stats.completed} hasCliq={hasCliq} templatesCount={templatesCount} onDismiss={dismissQuickStart} />
+            {/* Stats — desktop grid */}
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <NumStat icon={<Calendar className="h-5 w-5 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
+              <NumStat icon={<Clock className="h-5 w-5 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
+              <NumStat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="الإيرادات" value={stats.revenue} suffix=" د.أ" />
+              <NumStat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
             </motion.div>
-          )}
-        </AnimatePresence>
 
-        <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3">
-          <Card title="الملف الشخصي" desc="الصور، النبذة، المعدّات، التواصل، إعدادات الحجز." cta="تعديل الملف" to="/dashboard/profile" />
-          <Card title="بطاقة الأسعار" desc="باقات التصوير والفيديو والإضافات." cta="إدارة الأسعار" to="/dashboard/pricing" />
-          <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
-          <Card title="الحجوزات" desc="جميع الطلبات والمؤكّدة والمنتهية." cta="عرض الحجوزات" to="/dashboard/bookings" />
-          <Card title="متابعة الإنتاج" desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." cta="افتح اللوحة" to="/dashboard/production" />
-          <Card title="التقارير المالية" desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." cta="عرض التقارير" to="/dashboard/reports" />
-          <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
-          <Card title="رسائل واتساب" desc="قوالب جاهزة (ترحيب، عربون، تذكير، تسليم) ترسليها بنقرة." cta="إدارة القوالب" to="/dashboard/whatsapp-templates" icon={<MessageCircle className="h-4 w-4" />} />
-          <Card title="الاشتراك" desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." cta="إدارة الاشتراك" to="/dashboard/subscription" />
-          <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
-          <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهراً مجانياً للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
-          <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={profile?.username ? `/photographers/${profile.username}` : undefined} external={!!profile?.username} disabled={!profile?.username} />
-        </motion.div>
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <NumStat icon={<TrendingUp className="h-5 w-5 text-emerald-700" />} label="إيرادات هذا الشهر" value={stats.monthRevenue} suffix=" د.أ" />
+              <NumStat icon={<Calendar className="h-5 w-5 text-blue-600" />} label="حجوزات خلال 30 يوماً" value={stats.upcoming30} />
+              <NumStat icon={<DollarSign className="h-5 w-5 text-amber-600" />} label="عرابين معلّقة" value={stats.pendingDepositsAmount} suffix=" د.أ" />
+              <NumStat icon={<Send className="h-5 w-5 text-violet-600" />} label="تسليمات خلال 7 أيام" value={stats.deliveriesDueSoon} />
+            </motion.div>
+          </>
+        )}
+
+        {/* Quick Actions chips — mobile only (للمستخدمات النشطات فقط) */}
+        {!isNewUser && (
+          <div className="md:hidden overflow-x-auto scrollbar-none -mx-4 px-4 mb-6">
+            <div className="flex gap-2 w-max">
+              {([
+                { icon: <Calendar className="h-4 w-4" />, label: 'الحجوزات', to: '/dashboard/bookings' },
+                { icon: <ListChecks className="h-4 w-4" />, label: 'الإنتاج', to: '/dashboard/production' },
+                { icon: <MessageCircle className="h-4 w-4" />, label: 'قوالب', to: '/dashboard/whatsapp-templates' },
+                { icon: <TrendingUp className="h-4 w-4" />, label: 'التقارير', to: '/dashboard/reports' },
+              ] as const).map((chip) => (
+                <Link
+                  key={chip.to}
+                  to={chip.to}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-card border border-border text-sm whitespace-nowrap"
+                >
+                  {chip.icon}
+                  {chip.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Welcome / QuickStart: Progressive Disclosure ── */}
+        {isNewUser ? (
+          // مستخدمة جديدة → شاشة "ابدئي هنا" مبسّطة
+          <NewUserWelcome profile={profile} pricingCount={pricingCount} hasCliq={hasCliq} />
+        ) : (
+          // مستخدمة نشطة → شريط حالة الجاهزية المضغوط (قابل للإخفاء)
+          <AnimatePresence initial={false}>
+            {!profile?.quickstart_dismissed_at && !qsDismissed && (
+              <motion.div key="qs" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0, scale: 0.98 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
+                <QuickStart profile={profile} pricingCount={pricingCount} bookingCount={totalBookings} hasCliq={hasCliq} templatesCount={templatesCount} onDismiss={dismissQuickStart} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
+
+        {/* ── بطاقات الأدوات ── */}
+        {isNewUser ? (
+          // مستخدمة جديدة → ٣ بطاقات أساسية فقط + زر "عرض كل الأدوات"
+          <div>
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3 mb-4">
+              <Card title="الحجوزات" desc="راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز." cta="عرض الحجوزات" to="/dashboard/bookings" />
+              <Card title="الملف الشخصي" desc="الاسم، الصورة، الباقات، بيانات الدفع وإعدادات النشر." cta="تعديل الملف" to="/dashboard/profile" />
+              <Card title="بطاقة الأسعار" desc="أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة." cta="إدارة الأسعار" to="/dashboard/pricing" />
+            </motion.div>
+            <AnimatePresence>
+              {showAllCards && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3 mb-4">
+                    <Card title="متابعة الإنتاج" desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." cta="افتح اللوحة" to="/dashboard/production" />
+                    <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
+                    <Card title="التقارير المالية" desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." cta="عرض التقارير" to="/dashboard/reports" />
+                    <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
+                    <Card title="رسائل واتساب" desc="قوالب جاهزة (ترحيب، عربون، تذكير، تسليم) ترسليها بنقرة." cta="إدارة القوالب" to="/dashboard/whatsapp-templates" icon={<MessageCircle className="h-4 w-4" />} />
+                    <Card title="الاشتراك" desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." cta="إدارة الاشتراك" to="/dashboard/subscription" />
+                    <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
+                    <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهراً مجانياً للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
+                    <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={profile?.username ? `/photographers/${profile.username}` : undefined} external={!!profile?.username} disabled={!profile?.username} />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <div className="text-center mt-2">
+              <button
+                onClick={() => setShowAllCards((v) => !v)}
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-5 py-2 hover:bg-secondary transition-colors"
+              >
+                {showAllCards ? "إخفاء الأدوات الإضافية" : "عرض كل الأدوات (" + 9 + ")"}
+                <ArrowLeft className={`h-3.5 w-3.5 transition-transform ${showAllCards ? "rotate-90" : "-rotate-90"}`} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          // مستخدمة نشطة → كل البطاقات ظاهرة
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3">
+            <Card title="الملف الشخصي" desc="الصور، النبذة، المعدّات، التواصل، إعدادات الحجز." cta="تعديل الملف" to="/dashboard/profile" />
+            <Card title="بطاقة الأسعار" desc="باقات التصوير والفيديو والإضافات." cta="إدارة الأسعار" to="/dashboard/pricing" />
+            <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
+            <Card title="الحجوزات" desc="جميع الطلبات والمؤكّدة والمنتهية." cta="عرض الحجوزات" to="/dashboard/bookings" />
+            <Card title="متابعة الإنتاج" desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." cta="افتح اللوحة" to="/dashboard/production" />
+            <Card title="التقارير المالية" desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." cta="عرض التقارير" to="/dashboard/reports" />
+            <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
+            <Card title="رسائل واتساب" desc="قوالب جاهزة (ترحيب، عربون، تذكير، تسليم) ترسليها بنقرة." cta="إدارة القوالب" to="/dashboard/whatsapp-templates" icon={<MessageCircle className="h-4 w-4" />} />
+            <Card title="الاشتراك" desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." cta="إدارة الاشتراك" to="/dashboard/subscription" />
+            <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
+            <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهراً مجانياً للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
+            <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={profile?.username ? `/photographers/${profile.username}` : undefined} external={!!profile?.username} disabled={!profile?.username} />
+          </motion.div>
+        )}
       </section>
       <Footer />
     </div>

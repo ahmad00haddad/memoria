@@ -33,11 +33,11 @@ type Form = {
 };
 
 const STEPS = [
-  { icon: Sparkles, title: "مرحباً بكِ في Memoria", desc: "٥ خطوات قصيرة لإطلاق ملفك الاحترافي واستقبال أول حجز." },
-  { icon: Camera, title: "معلوماتك الأساسية", desc: "الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة." },
-  { icon: DollarSign, title: "أول باقة أسعار", desc: "بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز." },
-  { icon: Wallet, title: "بيانات الدفع والتواصل", desc: "CliQ alias ورقم واتساب — تظهر للعميل فقط بعد تأكيد الحجز." },
-  { icon: Eye, title: "نشر ملفك", desc: "راجعي البيانات وفعّلي ظهور ملفك العام." },
+  { icon: Sparkles, title: "مرحباً بكِ في Memoria", desc: "٤ خطوات قصيرة تستغرق أقل من ٥ دقائق — بعدها ملفك جاهز لاستقبال أول حجز." },
+  { icon: Camera, title: "معلوماتك الأساسية", desc: "الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بكِ." },
+  { icon: DollarSign, title: "أول باقة أسعار", desc: "بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لكِ باب الحجوزات." },
+  { icon: Wallet, title: "بيانات الدفع والتواصل", desc: "CliQ alias ورقم واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية تماماً." },
+  { icon: Eye, title: "نشر ملفك", desc: "راجعي البيانات ثم انشري بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم." },
 ];
 
 function Onboarding() {
@@ -245,11 +245,19 @@ function Onboarding() {
           </div>
 
           {step === 0 && (
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              {["معلوماتك الأساسية والمدينة", "أول باقة أسعار", "بيانات الدفع والتواصل", "نشر ملفك للعملاء"].map((t) => (
-                <li key={t} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-gold" />{t}</li>
-              ))}
-            </ul>
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 text-xs bg-gold/10 text-gold border border-gold/20 rounded-full px-3 py-1.5 mb-2">
+                <Sparkles className="h-3.5 w-3.5" />
+                تستغرق أقل من ٥ دقائق
+              </div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                {["الاسم الظاهر للعميل ورابط ملفك الخاص", "أول باقة أسعار لتفعيل الحجوزات", "بيانات الدفع — آمنة ومخفية عن الزوار", "نشر ملفك بنقرة واحدة"].map((t) => (
+                  <li key={t} className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-gold shrink-0" />{t}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           {step === 1 && (
