@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
@@ -197,7 +198,7 @@ function CalendarPage() {
             <input placeholder="السبب (اختياري)" value={reason} onChange={(e) => setReason(e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[200px]" />
             <button onClick={block} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90">حجب</button>
           </div>
-          {blocked.length >= 7 && (
+          {unavail.length >= 7 && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 bg-sky-50 text-sky-800 border border-sky-200 rounded-sm p-3 text-sm flex items-start gap-2">
               <span className="text-lg">🌴</span>
               <p>💡 <strong>تلميح الإجازة:</strong> يبدو أنكِ قمتِ بحجب أيام عديدة! هذا ممتاز لمنع الحجوزات أثناء إجازتكِ. لن تظهر هذه الأيام للعرائس في نموذج الحجز أبداً.</p>
