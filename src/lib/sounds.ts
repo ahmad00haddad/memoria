@@ -1,4 +1,4 @@
-﻿export const playSound = (type: 'tick' | 'swoosh' | 'success' | 'error') => {
+export const playSound = (type: 'tick' | 'swoosh' | 'success' | 'error') => {
   try {
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContext) return;

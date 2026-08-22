@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check } from "lucide-react";
 import { Header } from "@/components/site/Header";
@@ -252,7 +252,7 @@ function PhotographerPage() {
       <div className="hidden sm:block">
               <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
         <button onClick={() => document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' })} className="w-full bg-charcoal text-gold py-3.5 rounded-full font-bold shadow-2xl flex items-center justify-center gap-2 border border-gold/30 backdrop-blur-md hover:bg-charcoal/90 transition-all active:scale-95">
-          احجزي هذه المصورة 📸
+          Ø§Ø­Ø¬Ø²Ù ÙØ°Ù Ø§ÙÙØµÙÙØ±Ø© ð¸
         </button>
       </div>
       <Header />
@@ -608,15 +608,6 @@ const formatPhone = (v: string) => {
   return clean;
 };
 
-const getAddonEmoji = (name: string) => {
-  if (name.includes('ألبوم') || name.includes('البوم')) return '📖';
-  if (name.includes('درون') || name.includes('طيارة')) return '🚁';
-  if (name.includes('مطبوع') || name.includes('طباعة')) return '🖼️';
-  if (name.includes('فيديو') || name.includes('تصوير')) return '🎥';
-  if (name.includes('ساعة') || name.includes('اضافي') || name.includes('وقت')) return '⏱️';
-  return '✨';
-};
-
 function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
   const storageKey = `memoria.booking-draft.${profile.username}`;
   const initial = {
@@ -722,6 +713,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
 
   const submit = async () => {
     if (!f.client_name || !f.client_phone || !f.client_email || !f.event_date || !selected) {
+      playSound('error'); setShake(true); setTimeout(() => setShake(false), 300);
       return toast.error("الرجاء تعبئة الاسم والهاتف والإيميل والتاريخ واختيار الباقة");
     }
     if (!consent) {
@@ -1205,7 +1197,7 @@ function FallbackPage({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background">
             <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
         <button onClick={() => document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' })} className="w-full bg-charcoal text-gold py-3.5 rounded-full font-bold shadow-2xl flex items-center justify-center gap-2 border border-gold/30 backdrop-blur-md hover:bg-charcoal/90 transition-all active:scale-95">
-          احجزي هذه المصورة 📸
+          Ø§Ø­Ø¬Ø²Ù ÙØ°Ù Ø§ÙÙØµÙÙØ±Ø© ð¸
         </button>
       </div>
       <Header />
