@@ -140,10 +140,13 @@ function LoginPage() {
             onClick={async () => {
               setErr(null);
               setLoading(true);
-              const result = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: window.location.origin,
+              const { error } = await supabase.auth.signInWithOAuth({
+                provider: "google",
+                options: {
+                  redirectTo: window.location.origin,
+                }
               });
-              if (result.error) {
+              if (error) {
                 setLoading(false);
                 setErr("تعذّر تسجيل الدخول عبر Google. حاول مجدداً.");
                 return;
