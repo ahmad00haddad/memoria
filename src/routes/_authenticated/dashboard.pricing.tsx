@@ -41,6 +41,17 @@ function PricingMgr() {
     })();
   }, [nav]);
 
+  
+  const injectMarketTemplates = () => {
+    const templates: Rule[] = [
+      { service: "photography", package: "hourly", label: "الباقة الأساسية (4 ساعات)", price: 150, per_photo_price: 0, description: "تغطية 4 ساعات، 100 صورة معدلة، تسليم فلاش ميموري" },
+      { service: "photography", package: "full_day", label: "الباقة الذهبية (يوم كامل)", price: 250, per_photo_price: 0, description: "تغطية كاملة من الصالون للقاعة، ألبوم مطبوع 10 صفحات" },
+      { service: "cinematic_video", package: "full_day", label: "باقة VIP (تصوير + فيديو)", price: 400, per_photo_price: 0, description: "تغطية فريقين، تصوير فيديو سينمائي، ألبوم حراري فاخر" }
+    ];
+    setRules([...rules, ...templates]);
+    toast.success("تم إضافة باقات السوق بنجاح! يمكنك تعديل أسعارها الآن وحفظها.");
+  };
+
   const add = () => setRules([...rules, { service: "photography", package: "hourly", label: "", price: 0 }]);
   const upd = (i: number, k: keyof Rule, v: any) => { const a = [...rules]; (a[i] as any)[k] = v; setRules(a); };
   const del = async (i: number) => {
@@ -92,6 +103,24 @@ function PricingMgr() {
         <p className="text-sm text-muted-foreground mb-6">حدّدي باقات التصوير <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2 bg-secondary/30 p-2 rounded-md border border-border/50"><Lightbulb className="h-4 w-4 text-[var(--gold)]" /> 💡 تلميح: توفير 3 باقات (أساسية، متوسطة، فاخرة) يزيد من احتمالية الحجز بنسبة 40% حسب إحصائيات ميموريا.</div> والفيديو والإضافات. تظهر فورًا للعملاء على ملفك العام.</p>
 
         {rules.length === 0 && (
+            <div className="rounded-sm border border-gold/40 bg-gold/5 p-6 shadow-soft mb-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none" />
+              <h2 className="font-serif text-2xl mb-2 flex items-center gap-2">
+                <Lightbulb className="h-6 w-6 text-gold" />
+                هل أنتِ مستعجلة؟
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                لا داعي للتفكير طويلاً! استخدمي الباقات القياسية المعتمدة في السوق الأردني بضغطة زر واحدة، ثم قومي بتعديل الأسعار بما يناسبك.
+              </p>
+              <button 
+                onClick={injectMarketTemplates}
+                className="bg-gold text-white px-6 py-2.5 rounded-sm hover:shadow-elegant hover:-translate-y-0.5 active:scale-95 transition-all duration-300 font-medium"
+              >
+                استخدام الباقات القياسية الآن 🪄
+              </button>
+            </div>
+          )}
+          {rules.length === 0 && false && (
           <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-6">
             <h2 className="font-serif text-2xl mb-2">ابدئي بأول باقة</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">

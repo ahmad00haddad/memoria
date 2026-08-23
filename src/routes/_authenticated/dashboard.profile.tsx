@@ -17,6 +17,65 @@ import { startTour, useTourState, resetTour } from "@/components/ClientTour";
 
 export const Route = createFileRoute("/_authenticated/dashboard/profile")({ component: ProfilePage });
 
+
+function LivePhonePreview({ p }: { p: any }) {
+  return (
+    <div className="hidden lg:block sticky top-24">
+      <div className="text-xs font-bold text-muted-foreground mb-3 flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        المعاينة الحية (كما تراها العروس)
+      </div>
+      <div className="relative w-[320px] h-[650px] bg-background border-[10px] border-charcoal rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col">
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-charcoal rounded-b-2xl z-50"></div>
+        
+        {/* Cover */}
+        <div className="h-40 bg-secondary/50 relative overflow-hidden shrink-0">
+          {p.cover_url ? (
+            <img src={p.cover_url} className="w-full h-full object-cover" alt="Cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground/30 font-bold text-2xl">MEMORIA</div>
+          )}
+        </div>
+        
+        {/* Avatar */}
+        <div className="absolute top-28 right-6 w-20 h-20 bg-background rounded-full p-1 shadow-md z-10">
+          {p.avatar_url ? (
+             <img src={p.avatar_url} className="w-full h-full rounded-full object-cover" alt="Avatar" />
+          ) : (
+             <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center">📷</div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="px-5 pt-12 pb-4 flex-1 overflow-y-auto">
+          <h2 className="font-serif text-xl font-bold">{p.display_name || "اسم المصورة"}</h2>
+          <p className="text-[10px] text-muted-foreground mb-3">{p.city || "المدينة"} • 100% نسبة الرد</p>
+          <div className="text-xs mb-4 p-3 bg-secondary/30 rounded-lg text-foreground/80 leading-relaxed border border-border/50">
+            {p.bio || "اكتبي نبذة تعريفية جذابة هنا لتظهر للعرائس..."}
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="bg-emerald-50 text-emerald-700 text-center py-2 rounded-md text-[10px] font-bold border border-emerald-100">
+              واتساب
+            </div>
+            <div className="bg-charcoal text-white text-center py-2 rounded-md text-[10px] font-bold">
+              طلب حجز
+            </div>
+          </div>
+          
+          <h3 className="font-bold text-xs mb-2">معرض الصور</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="aspect-square bg-secondary/50 rounded-md"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProfilePage() {
   const nav = useNavigate();
   const updRefundFn = useServerFn(updateRefundPolicy);
@@ -155,7 +214,7 @@ function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12 max-w-3xl">
+      <section className="container-editorial py-12 max-w-6xl">
         <BackToDashboard />
         <div className="flex items-center justify-between mt-2 mb-8 flex-wrap gap-4">
           <h1 className="font-serif text-4xl">تعديل الملف الشخصي</h1>
@@ -171,6 +230,7 @@ function ProfilePage() {
             </Link>
           )}
         </div>
+<div className="grid lg:grid-cols-[1fr_auto] gap-12 items-start"><div className="space-y-10 min-w-0">
         
         {!p?.cover_url && (
           <div className="mb-8 bg-amber-50 border border-amber-200 text-amber-800 rounded-sm p-4 text-sm">
@@ -381,7 +441,7 @@ function ProfilePage() {
             </div>
           </Card>
         </div>
-      </section>
+      </div><LivePhonePreview p={p} /></div></section>
       <Footer />
     </div>
   );
