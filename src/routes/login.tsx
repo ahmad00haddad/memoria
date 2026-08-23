@@ -151,7 +151,7 @@ function LoginPage() {
                 setErr("تعذّر تسجيل الدخول عبر Google. حاول مجدداً.");
                 return;
               }
-              if (result.redirected) return;
+              
               setLoading(false);
               navigate({ to: "/dashboard", replace: true });
             }}
