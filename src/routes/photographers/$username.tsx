@@ -965,11 +965,47 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         </div>
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">الباقة الأساسية</label>
-          <select value={f.package_id} onChange={(e) => onSelectPackage(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background">
-            <option value="">— اختاري الباقة —</option>
-            {mainPackages.map((r) => <option key={r.id} value={r.id}>{r.label} — {r.price} د.أ</option>)}
-          </select>
-          {selected?.description && <div className="text-xs text-muted-foreground mt-2 whitespace-pre-line">{selected.description}</div>}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+              {mainPackages.map((r) => {
+                const isSelected = f.package_id === r.id;
+                const isVIP = r.package === 'full_day'; // Visual Anchor logic
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => onSelectPackage(r.id)}
+                    className={`relative text-start rounded-xl border p-4 transition-all duration-300 flex flex-col focus:outline-none ${
+                      isSelected 
+                        ? (isVIP ? "border-gold bg-gold/5 shadow-[0_0_15px_rgba(201,162,39,0.2)] md:-translate-y-2 ring-1 ring-gold" : "border-gold bg-gold/5 ring-1 ring-gold md:-translate-y-1") 
+                        : (isVIP ? "border-gold/50 bg-background hover:-translate-y-1 hover:border-gold shadow-sm" : "border-border bg-background hover:-translate-y-1 hover:border-foreground/30")
+                    }`}
+                  >
+                    {isVIP && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-white text-[10px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap animate-shimmer overflow-hidden shadow-sm z-10">
+                        👑 الخيار المفضل
+                        <div className="absolute inset-0 bg-white/30 translate-x-[-100%] animate-[shimmer_2s_infinite]" />
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-start mb-2 w-full">
+                      <div className={`font-serif font-bold ${isSelected ? 'text-gold' : 'text-foreground'}`}>
+                        {r.label}
+                      </div>
+                    </div>
+                    
+                    <div className="text-xl font-bold mb-3">
+                      {r.price} <span className="text-xs font-normal text-muted-foreground">د.أ</span>
+                    </div>
+                    
+                    {r.description && (
+                      <div className="text-[11px] text-muted-foreground leading-relaxed mt-auto whitespace-pre-line border-t border-border pt-2">
+                        {r.description}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div></div>}
         </div>
         {isBlocked && <p className="text-sm text-destructive sm:col-span-2">⚠️ هذا اليوم غير متاح</p>}
         {hasConflict && <p className="text-sm text-destructive sm:col-span-2">⚠️ يتعارض مع فترة محجوزة</p>}
