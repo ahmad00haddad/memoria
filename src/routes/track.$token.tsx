@@ -14,7 +14,7 @@ import { clientCancelBooking } from "@/lib/cancellation.functions";
 import { createDepositCheckout, isPaymentsEnabled, reconcilePaymentStatus } from "@/lib/payments.functions";
 import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle2, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, CreditCard, XCircle } from "lucide-react";
+import { CheckCircle2, CalendarPlus, LockKeyhole, Unlock, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, CreditCard, XCircle } from "lucide-react";
 import { Lightbox } from "@/components/Lightbox";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -389,7 +389,49 @@ function TrackingPage() {
           </ol>
         </div>
 
-        {/* Booking summary */}
+        
+          {/* Sneak Peek Gamification */}
+          {b.sneak_peek_url && (
+            <div className="rounded-sm border border-border bg-card overflow-hidden mb-6 relative">
+              <div className="p-5 border-b border-border/50 bg-secondary/20 flex items-center gap-2">
+                <ImageIcon className="h-5 w-5 text-[var(--gold)]" />
+                <h2 className="font-serif text-lg font-bold">لمحة من صورك!</h2>
+              </div>
+              <div className="relative h-64 w-full">
+                <img 
+                  src={b.sneak_peek_url} 
+                  className={`w-full h-full object-cover transition-all duration-700 ${b.status === 'completed' ? '' : 'blur-xl scale-110 opacity-70 grayscale'}`} 
+                  alt="Sneak Peek" 
+                />
+                {b.status !== 'completed' && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/30 backdrop-blur-[2px]">
+                    <div className="bg-background/90 p-6 rounded-2xl shadow-elegant text-center max-w-xs border border-border animate-fade-in-up">
+                      <LockKeyhole className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
+                      <h3 className="font-bold text-lg mb-2">الصورة مقفلة</h3>
+                      <p className="text-sm text-muted-foreground mb-4">ادفعي الدفعة الأخيرة لفتح اللمحة السريعة لصورك!</p>
+                    </div>
+                  </div>
+                )}
+                {b.status === 'completed' && (
+                  <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm p-2 rounded-full animate-bounce">
+                    <Unlock className="h-5 w-5 text-emerald-500" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Add to Calendar */}
+          {(b.status === 'confirmed' || b.status === 'completed') && (
+            <div className="flex justify-center mb-6">
+              <button onClick={addToCalendar} className="flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 px-6 py-3 rounded-full font-medium transition-colors shadow-soft">
+                <CalendarPlus className="h-5 w-5" />
+                أضيفي الموعد لتقويمك (Google Calendar)
+              </button>
+            </div>
+          )}
+
+          {/* Booking summary */}
         <div className="rounded-sm border border-border bg-card p-5 mb-6 text-sm">
           <div className="grid sm:grid-cols-2 gap-3 mb-4">
             <Info label="التاريخ" v={b.event_date} />

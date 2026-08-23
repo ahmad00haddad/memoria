@@ -552,3 +552,14 @@ export const regenerateBookingToken = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { token: token as string };
   });
+
+export const uploadSneakPeek = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: { booking_id: string; url: string }) => d)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    const { data: b } = await supabase.from("bookings").select("photographer_id").eq("id", data.booking_id).single();
+    if (b?.photographer_id !== userId) throw new Error("Unauthorized");
+    await supabase.from("bookings").update({ sneak_peek_url: data.url }).eq("id", data.booking_id);
+    return { ok: true };
+  });

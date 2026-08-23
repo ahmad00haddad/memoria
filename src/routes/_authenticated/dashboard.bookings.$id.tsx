@@ -9,7 +9,8 @@ import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, Badg
 import imageCompression from 'browser-image-compression';
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
-import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken } from "@/lib/booking.functions";
+import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken   uploadSneakPeek
+} from "@/lib/booking.functions";
 import { createContractForBooking } from "@/lib/contracts.functions";
 import { cancelBooking } from "@/lib/cancellation.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
