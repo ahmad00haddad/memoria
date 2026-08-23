@@ -110,6 +110,17 @@ function TrackingPage() {
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [newNote, setNewNote] = useState("");
+  const addToCalendar = () => {
+    if (!b) return;
+    const date = b.event_date.replace(/-/g, '');
+    const start = (b.start_time || "09:00").replace(/:/g, '') + '00';
+    const end = (b.end_time || "12:00").replace(/:/g, '') + '00';
+    const text = encodeURIComponent(جلسة تصوير مع ${b.photographer.display_name});
+    const details = encodeURIComponent(رابط التتبع: ${window.location.href});
+    const location = encodeURIComponent(b.venue_address || "موقع التصوير");
+    const url = https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${date}T${start}/${date}T${end}&details=${details}&location=${location};
+    window.open(url, '_blank');
+  };
   // ✅ إصلاح: Dialog حقيقي بدلاً من window.prompt
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
