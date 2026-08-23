@@ -51,13 +51,6 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
-
     // Server-side authoritative price recompute.
     const ruleIds = data.items.map((i) => i.rule_id);
     const { data: rules, error: rulesErr } = await supabaseAdmin
@@ -256,13 +249,6 @@ export const getBookingByToken = createServerFn({ method: "GET" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
     const { data: row, error } = await supabaseAdmin.rpc("get_booking_by_token", { _token: data.token });
     if (error) throw new Error(error.message);
     return row ?? null;
@@ -278,13 +264,6 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
     const { error } = await supabaseAdmin.rpc("client_mark_deposit_sent", {
       _token: data.token,
       _proof_path: (data.proof_path ?? null) as any,
@@ -305,13 +284,6 @@ export const clientMarkReceived = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
     const { error } = await supabaseAdmin.rpc("client_mark_received", { _token: data.token });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -328,13 +300,6 @@ export const clientAddNote = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
     const { error } = await supabaseAdmin.rpc("client_add_note", { _token: data.token, _note: data.note });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -350,13 +315,6 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
     const { data: booking, error: bErr } = await supabaseAdmin
       .from("bookings")
       .select("id, photographer_id, status, client_name, client_received_at")
@@ -417,13 +375,6 @@ export const recordReferralAfterSignup = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const newUserId = (context as any).userId as string;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
     const { data: referrer } = await supabaseAdmin
       .from("profiles")
       .select("id")
@@ -483,13 +434,6 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     // سجلّ تدقيق (عبر service-role لتجاوز RLS على audit_logs).
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
       await supabaseAdmin.from("audit_logs").insert({
         action: "booking.confirm_deposit",
         actor_id: userId,
@@ -509,13 +453,6 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
       // إنشاء إشعار للمصورة بفشل توليد العقد (M4)
       try {
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
          await supabaseAdmin.from("notifications").insert({
           user_id: userId,
           type: "system",
@@ -562,13 +499,6 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     // Send confirmation email to client (fire-and-forget).
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-      // Validate photographer subscription status
-      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
-      if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
-      }
-
       const { sendEmail, tplDepositConfirmed } = await import("@/lib/email.server");
       const { data: full } = await supabaseAdmin.from("bookings")
         .select("client_email, client_name, event_date, client_tracking_token")
