@@ -107,6 +107,8 @@ function TrackingPage() {
   const [payLoading, setPayLoading] = useState(false);
   const [reconcileLoading, setReconcileLoading] = useState(false);
   const [payEnabled, setPayEnabled] = useState(false);
+  const isExpired = b?.status === 'pending_deposit' && (b as any)?.created_at && new Date((b as any).created_at).getTime() < Date.now() - 48 * 3600 * 1000;
+
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [newNote, setNewNote] = useState("");
