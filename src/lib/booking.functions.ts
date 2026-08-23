@@ -562,7 +562,7 @@ export const regenerateBookingToken = createServerFn({ method: "POST" })
 
 export const uploadSneakPeek = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: { booking_id: string; url: string }) => d)
+  .inputValidator((d: { booking_id: string; url: string }) => d)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     const { data: b } = await supabase.from("bookings").select("photographer_id").eq("id", data.booking_id).single();
