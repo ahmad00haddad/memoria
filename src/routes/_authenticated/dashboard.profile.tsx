@@ -253,31 +253,50 @@ function ProfilePage() {
 
             <div className="mt-6">
               <div className="text-sm mb-2">معرض الأعمال ({(p.portfolio_urls ?? []).length})</div>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {(p.portfolio_urls ?? []).map((u: string, i: number) => (
-                  <div key={i} className="relative aspect-square bg-secondary rounded-sm overflow-hidden active:scale-95 transition-transform duration-200">
-                    <img src={u} className="w-full h-full object-cover" alt="" />
-                    <button onClick={() => removePortfolio(i)} className="absolute top-1 left-1 bg-black/60 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
+              <div className="mt-4">
+                  {!(p.portfolio_urls?.length > 0) && (
+                    <div className="w-full bg-charcoal text-ivory p-6 rounded-xl border border-border mb-4 flex flex-col items-center text-center shadow-2xl relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-gold/20 to-transparent pointer-events-none opacity-50" />
+                      <Lightbulb className="h-8 w-8 text-gold mb-3 animate-pulse" />
+                      <h3 className="font-serif font-bold text-lg mb-2">ملفك الشخصي غير مرئي للعرائس!</h3>
+                      <p className="text-xs text-ivory/80 leading-relaxed mb-4 max-w-sm">
+                        لا يكتمل سحر أعمالك إلا برؤيتها. العرائس يبحثن عن مصورة يمكنهن الوثوق بعدستها.
+                        <br/><span className="text-gold font-bold">ارفعي أول 5 صور لكِ الآن لتتصدري نتائج البحث! 📸</span>
+                      </p>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <div key={i} className="w-10 h-10 rounded-md bg-white/10 border border-white/20 animate-pulse" style={{ animationDelay: `${i * 150}ms` }} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    {(p.portfolio_urls ?? []).map((u: string, i: number) => (
+                      <div key={i} className="relative aspect-square bg-secondary rounded-lg overflow-hidden active:scale-95 transition-transform duration-200 shadow-sm border border-border">
+                        <img src={u} className="w-full h-full object-cover" alt="" />
+                        <button onClick={() => removePortfolio(i)} className="absolute top-1 left-1 bg-black/60 text-white rounded-full p-1.5 hover:bg-red-500 transition-colors shadow-sm"><X className="h-3 w-3" /></button>
+                      </div>
+                    ))}
+                    <div 
+                      onClick={() => portfolioRef.current?.click()} 
+                      onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-gold", "bg-gold/10", "shadow-elegant", "scale-105"); }}
+                      onDragLeave={(e) => e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-elegant", "scale-105")}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-elegant", "scale-105");
+                        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) onPortfolio(e.dataTransfer.files);
+                      }}
+                      className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground hover:bg-secondary group active:scale-95 bg-background shadow-sm"
+                    >
+                      <Upload className="h-6 w-6 mb-2 transition-transform duration-300 group-hover:-translate-y-1 group-hover:text-gold" />
+                      <span className="text-[10px] uppercase text-center px-2 font-medium">إضافة صور</span>
+                    </div>
+                    <input ref={portfolioRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && onPortfolio(e.target.files)} />
                   </div>
-                ))}
-                <div 
-                  onClick={() => portfolioRef.current?.click()} 
-                  onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-gold", "bg-gold/10", "shadow-[0_0_15px_rgba(201,162,39,0.3)]", "scale-105"); }}
-                  onDragLeave={(e) => e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-[0_0_15px_rgba(201,162,39,0.3)]", "scale-105")}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-[0_0_15px_rgba(201,162,39,0.3)]", "scale-105");
-                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) onPortfolio(e.dataTransfer.files);
-                  }}
-                  className="aspect-square border-2 border-dashed border-border rounded-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground hover:bg-secondary group active:scale-95 transition-transform duration-200"
-                >
-                  <Upload className="h-6 w-6 mb-2 transition-transform duration-300 group-hover:-translate-y-1" />
-                  <span className="text-[10px] uppercase text-center px-2">إضافة صور</span>
                 </div>
-                <input ref={portfolioRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && onPortfolio(e.target.files)} />
               </div>
-            </div>
-          </Card>
+            </Card>
 
           <Card title="المعلومات الأساسية">
             <Field label="الاسم المعروض" v={p.display_name} on={(v) => setP({ ...p, display_name: v })} />

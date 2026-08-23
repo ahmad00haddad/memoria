@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
