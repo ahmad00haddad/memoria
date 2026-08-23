@@ -734,3 +734,5 @@ function Dashboard() {
     </PullToRefresh>
   );
 }
+
+// force lovable sync

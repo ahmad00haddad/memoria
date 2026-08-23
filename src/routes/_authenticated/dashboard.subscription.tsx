@@ -162,10 +162,17 @@ function SubscriptionPage() {
   const trialEnds = sub ? new Date(sub.trial_ends_at) : null;
   const periodEnds = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const trialDaysLeft = trialEnds ? Math.max(0, Math.ceil((trialEnds.getTime() - Date.now()) / 86400000)) : 0;
-  const isActive = sub && (
-    (sub.status === "trial" && trialEnds && trialEnds.getTime() > Date.now()) ||
-    (sub.status === "active" && (!periodEnds || periodEnds.getTime() > Date.now()))
-  );
+  
+  let effectiveStatus = sub?.status;
+  if (sub) {
+    if (effectiveStatus === "trial" && trialEnds && trialEnds.getTime() < Date.now()) {
+      effectiveStatus = "expired";
+    } else if (effectiveStatus === "active" && periodEnds && periodEnds.getTime() < Date.now()) {
+      effectiveStatus = "expired";
+    }
+  }
+
+  const isActive = effectiveStatus === "active" || effectiveStatus === "trial";
 
   return (
     <div className="min-h-screen bg-background">
@@ -178,10 +185,10 @@ function SubscriptionPage() {
         </div>
 
         {/* Status card */}
-        <StatusCard sub={sub} isActive={!!isActive} trialDaysLeft={trialDaysLeft} periodEnds={periodEnds} />
+        <StatusCard sub={sub} effectiveStatus={effectiveStatus || "expired"} isActive={!!isActive} trialDaysLeft={trialDaysLeft} periodEnds={periodEnds} />
 
         {/* Payment methods */}
-        {sub?.status !== "active" && (
+        {effectiveStatus === "expired" && (
           <div className="mt-10">
             <h2 className="font-serif text-2xl mb-1">الدفع — {PRICE_USD}$ شهريًا</h2>
             <p className="text-sm text-muted-foreground mb-6">اختاري طريقة الدفع المناسبة لكِ.</p>
@@ -289,8 +296,8 @@ function SubscriptionPage() {
   );
 }
 
-function StatusCard({ sub, isActive, trialDaysLeft, periodEnds }: {
-  sub: Sub | null; isActive: boolean; trialDaysLeft: number; periodEnds: Date | null;
+function StatusCard({ sub, effectiveStatus, isActive, trialDaysLeft, periodEnds }: {
+  sub: Sub | null; effectiveStatus: Sub['status']; isActive: boolean; trialDaysLeft: number; periodEnds: Date | null;
 }) {
   if (!sub) {
     return (
@@ -307,7 +314,7 @@ function StatusCard({ sub, isActive, trialDaysLeft, periodEnds }: {
     pending_review: { color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50", icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, label: "قيد المراجعة" },
     expired: { color: "text-destructive", bg: "bg-destructive/10 border-destructive/30", icon: <AlertTriangle className="h-5 w-5 text-destructive" />, label: "منتهي" },
     canceled: { color: "text-muted-foreground", bg: "bg-secondary border-border", icon: <AlertTriangle className="h-5 w-5" />, label: "ملغى" },
-  }[sub.status];
+  }[effectiveStatus as 'trial' | 'active' | 'pending_review' | 'expired' | 'canceled'] || { color: 'text-muted-foreground', bg: 'bg-secondary border-border', icon: <AlertTriangle />, label: 'Unknown' };
 
   return (
     <div className={`rounded-sm border p-6 ${config.bg}`}>
@@ -316,19 +323,19 @@ function StatusCard({ sub, isActive, trialDaysLeft, periodEnds }: {
         <div className="flex-1">
           <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-1">حالة الاشتراك</div>
           <div className={`font-serif text-2xl ${config.color} mb-2`}>{config.label}</div>
-          {sub.status === "trial" && (
+          {effectiveStatus === "trial" && (
             <div className="text-sm">
               متبقّي <span className="font-semibold">{trialDaysLeft} يومًا</span> من تجربتك المجانية.
               {trialDaysLeft <= 5 && <span className="text-destructive"> اشتركي الآن لتجنّب التوقف!</span>}
             </div>
           )}
-          {sub.status === "active" && periodEnds && (
+          {effectiveStatus === "active" && periodEnds && (
             <div className="text-sm">يتجدّد في {periodEnds.toLocaleDateString("ar-JO")}</div>
           )}
-          {sub.status === "pending_review" && (
+          {effectiveStatus === "pending_review" && (
             <div className="text-sm">تم استلام إثبات الدفع. سيُفعَّل اشتراكك خلال 24 ساعة.</div>
           )}
-          {sub.status === "expired" && (
+          {effectiveStatus === "expired" && (
             <div className="text-sm">انتهى اشتراكك. ادفعي لاستعادة الوصول الكامل.</div>
           )}
         </div>
