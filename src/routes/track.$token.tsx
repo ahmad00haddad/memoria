@@ -220,28 +220,48 @@ function TrackingPage() {
       return;
     }
 
-    // File validation
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    // File validation — نقبل أيضاً HEIC/WebP لأن معظم الإيصالات تُلتقط من الجوال
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'application/pdf'];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("صيغة الملف غير مدعومة. يرجى رفع صورة (JPG/PNG) أو ملف PDF.", { id: "upload-receipt" });
+      toast.error("صيغة الملف غير مدعومة. يرجى رفع صورة (JPG/PNG/WebP) أو ملف PDF.", { id: "upload-receipt" });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("حجم الملف كبير جداً (الحد الأقصى 5 ميجابايت).", { id: "upload-receipt" });
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("حجم الملف كبير جداً (الحد الأقصى 10 ميجابايت).", { id: "upload-receipt" });
       return;
     }
 
     setUploading(true);
     toast.loading("جاري رفع الإيصال...", { id: "upload-receipt" });
     try {
-      // 1. Upload to storage
-      const ext = file.name.split('.').pop();
-      const path = `${b.id}/${Date.now()}.${ext}`;
+      // ضغط الصور قبل الرفع (إيصالات الجوال قد تصل 8-12 ميجا)
+      let finalFile: File = file;
+      if (file.type.startsWith('image/')) {
+        try {
+          const { default: imageCompression } = await import('browser-image-compression');
+          finalFile = await imageCompression(file, {
+            maxSizeMB: 1.2,
+            maxWidthOrHeight: 2400,
+            useWebWorker: true,
+            fileType: 'image/jpeg',
+          });
+        } catch (err) {
+          console.warn('receipt compression failed, uploading original', err);
+        }
+      }
+
+      // 1. Upload to storage — المسار يجب أن يبدأ بـ public-tokens/<token>
+      //    لأن سياسة RLS للزوّار غير المسجّلين تسمح بهذا المسار فقط.
+      const ext = finalFile.type === 'application/pdf'
+        ? 'pdf'
+        : (finalFile.type === 'image/png' ? 'png' : 'jpg');
+      const path = `public-tokens/${token}/${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from('deposit-proofs')
-        .upload(path, file);
-        
+        .upload(path, finalFile, { contentType: finalFile.type, upsert: false });
+
       if (uploadError) throw uploadError;
+
 
       // 2. Update booking
       await sendDeposit({ data: { token, proof_path: path, reference: reference || null, note: note || null } });
