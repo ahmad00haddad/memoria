@@ -26,7 +26,7 @@ import {
   X,
   PartyPopper,
   RefreshCw,
-} from "lucide-react";
+  Plus, Package, Download, Link2, LogOut, CheckCircle2 as CheckCircleIcon } from "lucide-react";
 import { toast } from "sonner";
 import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { NotificationPermission } from "@/components/NotificationPermission";
@@ -340,8 +340,7 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
   if (external) return <a href={to} className={sharedClassName} onMouseMove={handleMouseMove} onClick={() => playSound('tick')}>{cardContent}</a>;
   return <Link to={to} className={sharedClassName} onMouseMove={handleMouseMove} onClick={() => playSound('tick')}>{cardContent}</Link>;
 }
->{content}</Link>;
-}
+
 
 let cachedDashboard: {
   profile: any;
