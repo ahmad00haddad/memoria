@@ -700,7 +700,15 @@ function Dashboard() {
               desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." 
               cta="إدارة الاشتراك" 
               to="/dashboard/subscription" 
-              badgeText={sub?.status === 'active' ? "نشط" : "مجاني"}
+              badgeText={(() => {
+                  if (!sub) return "مجاني";
+                  const isPast = sub.current_period_end ? new Date(sub.current_period_end).getTime() < Date.now() : true;
+                  const effectiveStatus = sub.status === 'active' && isPast ? 'expired' : sub.status;
+                  if (effectiveStatus === 'active') return "نشط";
+                  if (effectiveStatus === 'trial') return "تجريبي";
+                  if (effectiveStatus === 'expired') return "منتهي";
+                  return "مجاني";
+                })()}
               icon={<LogOut className="h-6 w-6" />}
             />
             <Card 
