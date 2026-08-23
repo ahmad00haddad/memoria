@@ -1005,7 +1005,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                   </button>
                 );
               })}
-            </div></div>}
+            </div>
         </div>
         {isBlocked && <p className="text-sm text-destructive sm:col-span-2">⚠️ هذا اليوم غير متاح</p>}
         {hasConflict && <p className="text-sm text-destructive sm:col-span-2">⚠️ يتعارض مع فترة محجوزة</p>}
