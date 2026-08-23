@@ -496,7 +496,7 @@ function PhotographerPage() {
             <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
           )}
           {profile.whatsapp && (
-            <a href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
+            <a href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي..")}`} target="_blank" rel="noreferrer" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
           )}
           <button
             onClick={() => {
@@ -520,7 +520,7 @@ function PhotographerPage() {
           </div>
           {profile.whatsapp && (
             <a
-              href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}`}
+              href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي..")}`}
               target="_blank"
               rel="noreferrer"
               className="h-10 w-10 grid place-items-center rounded-sm border border-border"
