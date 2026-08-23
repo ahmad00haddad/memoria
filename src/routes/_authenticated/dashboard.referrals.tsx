@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
@@ -51,7 +53,7 @@ function ReferralsPage() {
         <div className="border border-border rounded-sm p-6 bg-card mb-6">
           <div className="text-sm text-muted-foreground mb-2">رابطك الخاص</div>
           <div className="flex gap-2">
-            <input readOnly value={link} className="flex-1 bg-secondary px-3 py-2 rounded-sm text-sm" />
+            <input readOnly value={link} className="flex-1 bg-secondary px-3 py-2 rounded-sm text-sm active:scale-95 transition-transform duration-200" />
             <button
               onClick={() => { navigator.clipboard.writeText(link); toast.success("نُسخ الرابط"); }}
               className="px-4 py-2 bg-gold text-background rounded-sm text-sm flex items-center gap-2"
@@ -78,7 +80,7 @@ function ReferralsPage() {
           <div className="mb-8 border border-border rounded-sm overflow-hidden bg-card">
             <table className="w-full text-sm">
               <caption className="sr-only">جدول الإحالات المسجلة</caption>
-              <thead className="bg-secondary text-xs uppercase tracking-wider">
+              <thead className="bg-secondary text-xs uppercase tracking-wider active:scale-95 transition-transform duration-200">
                 <tr>
                   <th className="text-start p-3">تاريخ التسجيل</th>
                   <th className="text-start p-3">الحالة</th>
@@ -92,7 +94,7 @@ function ReferralsPage() {
                     </td>
                     <td className="p-3">
                       {r.reward_granted ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full text-xs">
+                        <span className="inline-flex items-center gap-1 text-emerald-600 bg-emerald-100/50 px-2 py-0.5 rounded-full text-xs active:scale-95 transition-transform duration-200">
                           تم منح المكافأة
                         </span>
                       ) : (

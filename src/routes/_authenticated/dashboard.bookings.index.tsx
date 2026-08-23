@@ -1,3 +1,4 @@
+import { Lightbulb } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -125,7 +126,7 @@ function BookingsList() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="ابحثي باسم العميلة…"
-            className="w-full bg-card border border-border rounded-sm py-2 ps-9 pe-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-gold"
+            className="w-full bg-card border border-border rounded-sm py-2 ps-9 pe-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-gold transition-all duration-300 hover:shadow-md hover:border-border/80 group"
           />
         </div>
 
@@ -153,7 +154,7 @@ function BookingsList() {
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as any)}
-            className="ms-auto flex-shrink-0 bg-card border border-border rounded-sm px-2 py-1.5 text-xs text-muted-foreground focus:outline-none"
+            className="ms-auto flex-shrink-0 bg-card border border-border rounded-sm px-2 py-1.5 text-xs text-muted-foreground focus:outline-none transition-all duration-300 hover:shadow-md hover:border-border/80 group"
           >
             <option value="date_desc">الأحدث أولاً</option>
             <option value="date_asc">الأقدم أولاً</option>
@@ -188,7 +189,7 @@ function BookingsList() {
                 <div className="absolute inset-y-0 start-0 flex items-center px-4 bg-red-500/10">
                   <XCircle className="h-5 w-5 text-red-500" />
                 </div>
-                <div className="absolute inset-y-0 end-0 flex items-center px-4 bg-emerald-500/10">
+                <div className="absolute inset-y-0 end-0 flex items-center px-4 bg-emerald-500/10 active:scale-95 transition-transform duration-200">
                   <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                 </div>
 
@@ -201,7 +202,7 @@ function BookingsList() {
                     if (offset.x < -60 || velocity.x < -400) handleCancel(booking.id);
                     if (offset.x > 60 || velocity.x > 400) handleConfirm(booking.id);
                   }}
-                  className="relative bg-card border border-border rounded-sm p-4 cursor-grab active:cursor-grabbing"
+                  className="relative bg-card border border-border rounded-sm p-4 cursor-grab active:cursor-grabbing transition-all duration-300 hover:shadow-md hover:border-border/80 group"
                   whileDrag={{ boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}
                 >
                   <div className="flex items-center justify-between mb-3">

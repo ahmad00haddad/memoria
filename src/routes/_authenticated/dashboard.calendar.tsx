@@ -1,3 +1,4 @@
+import { Lightbulb } from "lucide-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { PageLoader } from "@/components/ui/loading";
@@ -196,7 +197,7 @@ function CalendarPage() {
               </PopoverContent>
             </Popover>
             <input placeholder="السبب (اختياري)" value={reason} onChange={(e) => setReason(e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[200px]" />
-            <button onClick={block} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90">حجب</button>
+            <button onClick={block} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">حجب</button>
           </div>
           {unavail.length >= 7 && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 bg-sky-50 text-sky-800 border border-sky-200 rounded-sm p-3 text-sm flex items-start gap-2">
@@ -226,12 +227,12 @@ function CalendarPage() {
               <strong>الطريقة:</strong> انسخي الرابط أدناه ثم في Google Calendar → إضافة تقويم → من URL → الصقي الرابط. في iPhone: الإعدادات → التقويم → الحسابات → اشتراك بتقويم.
             </p>
             <div className="flex flex-wrap gap-2 items-center">
-              <input readOnly value={exportUrl} className="border border-border rounded-sm px-3 py-2 bg-secondary/30 flex-1 min-w-[260px] text-xs ltr:font-mono" dir="ltr" />
-              <button onClick={copyExport} className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm hover:bg-secondary">
+              <input readOnly value={exportUrl} className="border border-border rounded-sm px-3 py-2 bg-secondary/30 flex-1 min-w-[260px] text-xs ltr:font-mono active:scale-95 transition-transform duration-200" dir="ltr" />
+              <button onClick={copyExport} className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {copied ? "تم النسخ" : "نسخ"}
               </button>
-              <a href={webcalUrl} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-3 py-2 rounded-sm hover:opacity-90 text-sm">
+              <a href={webcalUrl} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-3 py-2 rounded-sm hover:opacity-90 text-sm active:scale-95 transition-transform duration-200">
                 فتح في تطبيق التقويم
               </a>
             </div>
@@ -252,8 +253,8 @@ function CalendarPage() {
             </p>
             <div className="flex flex-wrap gap-2 items-end">
               <input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[260px] text-xs" dir="ltr" />
-              <button onClick={saveIcalUrl} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary text-sm">حفظ</button>
-              <button onClick={doSync} disabled={syncing || !icalUrl} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm disabled:opacity-60 text-sm">
+              <button onClick={saveIcalUrl} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary text-sm active:scale-95 transition-transform duration-200">حفظ</button>
+              <button onClick={doSync} disabled={syncing || !icalUrl} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm disabled:opacity-60 text-sm active:scale-95 transition-transform duration-200">
                 <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> مزامنة الآن
               </button>
             </div>
@@ -321,7 +322,7 @@ function CalendarPage() {
               <input value={recurringReason} onChange={(e) => setRecurringReason(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
             </div>
           </div>
-          <button onClick={blockRecurring} className="mt-4 bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90">حجب جميع الأيام</button>
+          <button onClick={blockRecurring} className="mt-4 bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">حجب جميع الأيام</button>
         </div>
 
         <h2 className="font-serif text-xl mb-3">الأيام المحجوبة</h2>
@@ -344,7 +345,7 @@ function CalendarPage() {
                   <div className="text-sm">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}–{b.end_time?.slice(0,5)}</div>
                   <div className="text-xs text-muted-foreground">{b.client_name}</div>
                 </div>
-                <span className="text-xs px-2 py-1 bg-secondary rounded-sm">{b.status}</span>
+                <span className="text-xs px-2 py-1 bg-secondary rounded-sm active:scale-95 transition-transform duration-200">{b.status}</span>
               </div>
             ))}
         </div>

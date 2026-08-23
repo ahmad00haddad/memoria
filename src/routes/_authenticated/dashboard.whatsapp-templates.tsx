@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
@@ -110,17 +112,17 @@ function TemplatesPage() {
           </div>
           <div className="flex gap-2">
             {items.length === 0 && (
-              <button onClick={seedDefaults} className="inline-flex items-center gap-2 text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary">
+              <button onClick={seedDefaults} className="inline-flex items-center gap-2 text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">
                 <RefreshCw className="h-4 w-4" /> إضافة قوالب جاهزة
               </button>
             )}
-            <button onClick={addNew} className="inline-flex items-center gap-2 text-sm bg-charcoal text-ivory px-4 py-2 rounded-sm hover:opacity-90">
+            <button onClick={addNew} className="inline-flex items-center gap-2 text-sm bg-charcoal text-ivory px-4 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">
               <Plus className="h-4 w-4" /> قالب جديد
             </button>
           </div>
         </div>
 
-        <div className="mb-6 rounded-sm border border-border bg-secondary/40 p-4 text-sm">
+        <div className="mb-6 rounded-sm border border-border bg-secondary/40 p-4 text-sm active:scale-95 transition-transform duration-200">
           <div className="flex items-center gap-2 font-medium mb-2"><Info className="h-4 w-4 text-gold" /> المتغيرات المتاحة</div>
           <div className="flex flex-wrap gap-2 text-xs">
             {VARIABLES.map((v) => (
@@ -163,7 +165,7 @@ function TemplatesPage() {
                   <button onClick={() => remove(t.id)} className="inline-flex items-center gap-1 text-xs text-destructive border border-destructive/40 px-3 py-1.5 rounded-sm hover:bg-destructive/10">
                     <Trash2 className="h-3.5 w-3.5" /> حذف
                   </button>
-                  <button onClick={() => save(t)} className="inline-flex items-center gap-1 text-xs bg-charcoal text-ivory px-3 py-1.5 rounded-sm hover:opacity-90">
+                  <button onClick={() => save(t)} className="inline-flex items-center gap-1 text-xs bg-charcoal text-ivory px-3 py-1.5 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">
                     <Save className="h-3.5 w-3.5" /> حفظ
                   </button>
                 </div>

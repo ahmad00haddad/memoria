@@ -1,3 +1,4 @@
+import { Lightbulb } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -91,7 +92,7 @@ function SubscriptionBanner({ sub }: { sub: any }) {
         {c.icon}
         <div className="text-sm font-medium">{c.text}</div>
       </div>
-      <Link to="/dashboard/subscription" className="bg-charcoal text-ivory text-xs px-4 py-2 rounded-sm hover:opacity-90 whitespace-nowrap">
+      <Link to="/dashboard/subscription" className="bg-charcoal text-ivory text-xs px-4 py-2 rounded-sm hover:opacity-90 whitespace-nowrap active:scale-95 transition-transform duration-200">
         {c.cta}
       </Link>
     </div>
@@ -175,7 +176,7 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
                   <CheckCircle2 className="h-3.5 w-3.5" /> اكتملت ✓
                 </span>
               ) : isActive ? (
-                <Link to={s.to} className="inline-flex items-center gap-2 bg-charcoal text-ivory text-sm px-5 py-2.5 rounded-sm hover:opacity-90 transition-opacity">
+                <Link to={s.to} className="inline-flex items-center gap-2 bg-charcoal text-ivory text-sm px-5 py-2.5 rounded-sm hover:opacity-90 transition-opacity active:scale-95 transition-transform duration-200">
                   {s.cta} <ArrowLeft className="h-3.5 w-3.5" />
                 </Link>
               ) : null}
@@ -206,7 +207,7 @@ function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCou
           <span className="text-sm font-medium">إعداد الحساب</span>
           <span className="text-xs text-muted-foreground tabular-nums">({doneCount}/{steps.length})</span>
         </div>
-        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary" aria-label="إخفاء">
+        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200" aria-label="إخفاء">
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -226,7 +227,7 @@ function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCou
       ) : (
         <div className="flex flex-wrap gap-2">
           {steps.filter((s) => !s.done).map((s) => (
-            <Link key={s.title} to={s.to} className="inline-flex items-center gap-1.5 text-xs border border-border rounded-sm px-3 py-1.5 hover:bg-secondary hover:border-gold/40 transition-colors">
+            <Link key={s.title} to={s.to} className="inline-flex items-center gap-1.5 text-xs border border-border rounded-sm px-3 py-1.5 hover:bg-secondary hover:border-gold/40 transition-colors active:scale-95 transition-transform duration-200">
               <CircleDashed className="h-3 w-3 text-muted-foreground" />
               {s.title}
               <span className="text-gold">← {s.cta}</span>
@@ -303,7 +304,7 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
 
       <div className="flex flex-col items-center transition-transform duration-500 group-hover:-translate-y-6 z-10 w-full">
         <div className="mb-4 text-muted-foreground/60 transition-all duration-500 group-hover:scale-110 group-hover:text-gold/80 flex justify-center">
-          {icon || <div className="w-12 h-12 rounded-full bg-secondary/40 border border-border/50 flex items-center justify-center group-hover:border-gold/30 transition-colors" />}
+          {icon || <div className="w-12 h-12 rounded-full bg-secondary/40 border border-border/50 flex items-center justify-center group-hover:border-gold/30 transition-colors active:scale-95 transition-transform duration-200" />}
         </div>
         <h3 className="font-serif text-xl mb-1 flex items-center justify-center gap-2 relative w-full">
           {(badge || urgent) && <span className="absolute -right-4 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-gold shadow-[0_0_8px_rgba(201,162,39,0.8)] animate-pulse" />}
@@ -456,7 +457,7 @@ function Dashboard() {
         {/* Mobile Large Title */}
         <div className="sm:hidden mb-6 px-2 flex items-center justify-between">
           <h1 className="font-serif text-3xl font-bold">لوحتي</h1>
-          <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary">خروج</button>
+          <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">خروج</button>
         </div>
 
         <div className="hidden sm:flex items-end justify-between mb-8">
@@ -472,7 +473,7 @@ function Dashboard() {
               )}
             </div>
           </div>
-          <button onClick={signOut} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary">تسجيل الخروج</button>
+          <button onClick={signOut} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">تسجيل الخروج</button>
         </div>
 
         <SubscriptionBanner sub={sub} />
@@ -531,7 +532,7 @@ function Dashboard() {
                 <Link
                   key={chip.to}
                   to={chip.to}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-card border border-border text-sm whitespace-nowrap"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-card border border-border text-sm whitespace-nowrap transition-all duration-300 hover:shadow-md hover:border-border/80 group"
                 >
                   {chip.icon}
                   {chip.label}
@@ -616,7 +617,7 @@ function Dashboard() {
             <div className="text-center mt-2">
               <button
                 onClick={() => setShowAllCards((v) => !v)}
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-5 py-2 hover:bg-secondary transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-5 py-2 hover:bg-secondary transition-colors active:scale-95 transition-transform duration-200"
               >
                 {showAllCards ? "إخفاء الأدوات الإضافية" : "عرض كل الأدوات (" + 9 + ")"}
                 <ArrowLeft className={`h-3.5 w-3.5 transition-transform ${showAllCards ? "rotate-90" : "-rotate-90"}`} />

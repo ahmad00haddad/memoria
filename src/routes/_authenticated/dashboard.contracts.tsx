@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
@@ -132,7 +134,7 @@ function Contracts() {
               className="w-full border border-input rounded-sm px-3 py-2 mb-3 bg-background" />
             <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={14}
               className="w-full border border-input rounded-sm px-3 py-2 bg-background text-sm leading-loose" />
-            <button onClick={saveTemplate} className="mt-3 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90">حفظ القالب</button>
+            <button onClick={saveTemplate} className="mt-3 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">حفظ القالب</button>
           </div>
 
           <div className="space-y-6">
@@ -165,8 +167,8 @@ function Contracts() {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <button onClick={() => copyLink(c.sign_token)} className="text-xs border border-border px-3 py-1 rounded-sm hover:bg-secondary inline-flex items-center gap-1"><Copy className="h-3 w-3" /> رابط</button>
-                          <Link to="/contracts/$token" params={{ token: c.sign_token }} className="text-xs border border-border px-3 py-1 rounded-sm hover:bg-secondary">عرض</Link>
+                          <button onClick={() => copyLink(c.sign_token)} className="text-xs border border-border px-3 py-1 rounded-sm hover:bg-secondary inline-flex items-center gap-1 active:scale-95 transition-transform duration-200"><Copy className="h-3 w-3" /> رابط</button>
+                          <Link to="/contracts/$token" params={{ token: c.sign_token }} className="text-xs border border-border px-3 py-1 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">عرض</Link>
                         </div>
                       </div>
                     </li>

@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
@@ -126,7 +128,7 @@ function ReportsPage() {
                 return (
                   <div key={f.stage} className="flex items-center gap-3">
                     <div className="text-sm w-28 text-left">{f.label}</div>
-                    <div className="flex-1 bg-secondary rounded-sm h-8 relative overflow-hidden">
+                    <div className="flex-1 bg-secondary rounded-sm h-8 relative overflow-hidden active:scale-95 transition-transform duration-200">
                       <div
                         className="h-full rounded-sm transition-all"
                         style={{

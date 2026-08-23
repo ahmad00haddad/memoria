@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
@@ -198,13 +200,13 @@ function SubscriptionPage() {
               <div className="rounded-sm border border-border bg-card p-6 shadow-soft">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-serif text-xl">دفع عبر CliQ</h3>
-                  <span className="text-[10px] uppercase tracking-[0.2em] bg-secondary px-2 py-1 rounded-sm">محلي · أردني</span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] bg-secondary px-2 py-1 rounded-sm active:scale-95 transition-transform duration-200">محلي · أردني</span>
                 </div>
                 <ol className="text-sm space-y-2 text-muted-foreground mb-5 list-decimal list-inside">
                   <li>افتحي تطبيق البنك ورسالة CliQ</li>
                   <li>حوّلي <span className="text-foreground font-semibold">{PRICE_JOD} د.أ</span> (~{PRICE_USD}$) إلى:</li>
                 </ol>
-                <div className="bg-secondary rounded-sm p-3 mb-4 flex items-center justify-between">
+                <div className="bg-secondary rounded-sm p-3 mb-4 flex items-center justify-between active:scale-95 transition-transform duration-200">
                   <div>
                     <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">CliQ Alias</div>
                     <div className="font-mono text-lg">{ADMIN_CLIQ_ALIAS}</div>
@@ -253,7 +255,7 @@ function SubscriptionPage() {
               <div className="rounded-sm border border-dashed border-border bg-card/50 p-6">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-serif text-xl">بطاقة دولية</h3>
-                  <span className="text-[10px] uppercase tracking-[0.2em] bg-secondary px-2 py-1 rounded-sm">قريبًا</span>
+                  <span className="text-[10px] uppercase tracking-[0.2em] bg-secondary px-2 py-1 rounded-sm active:scale-95 transition-transform duration-200">قريبًا</span>
                 </div>
                 <div className="flex items-center gap-3 text-muted-foreground mb-4">
                   <CreditCard className="h-8 w-8" />

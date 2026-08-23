@@ -1,3 +1,4 @@
+import { Lightbulb } from "lucide-react";
 import { createFileRoute, Link, useNavigate, ErrorComponentProps } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
@@ -30,10 +31,10 @@ function ProductionError({ error, reset }: ErrorComponentProps) {
           <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-sm mt-4 text-left font-mono" dir="ltr">{error.message}</p>
         </div>
         <div className="flex gap-4">
-          <button onClick={reset} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 transition">
+          <button onClick={reset} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 transition active:scale-95 transition-transform duration-200">
             <RefreshCcw className="h-4 w-4" /> تحديث الصفحة
           </button>
-          <Link to="/dashboard" className="inline-flex items-center gap-2 border border-border px-6 py-3 rounded-sm hover:bg-secondary transition">
+          <Link to="/dashboard" className="inline-flex items-center gap-2 border border-border px-6 py-3 rounded-sm hover:bg-secondary transition active:scale-95 transition-transform duration-200">
             العودة للرئيسية
           </Link>
         </div>
@@ -398,18 +399,18 @@ function ProductionBoard() {
                                 </span>
                               )}
                             </div>
-                            <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
+                            <div className="h-1 w-full bg-secondary rounded-full overflow-hidden active:scale-95 transition-transform duration-200">
                               <div className="h-full bg-gold transition-all" style={{ width: `${((sIdx + 1) / STAGES.length) * 100}%` }} />
                             </div>
 
                             <div className="flex gap-1.5 pt-2 border-t border-border mt-1.5">
                               {sIdx > 0 && sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,-1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 border border-border rounded-sm hover:bg-secondary text-[10px] disabled:opacity-50" title="أرجعي الحجز إلى المرحلة السابقة">
+                                <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,-1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 border border-border rounded-sm hover:bg-secondary text-[10px] disabled:opacity-50 active:scale-95 transition-transform duration-200" title="أرجعي الحجز إلى المرحلة السابقة">
                                   {movingId===b.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <ChevronRight className="h-3 w-3"/>} السابق
                                 </motion.button>
                               )}
                               {sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-[10px] disabled:opacity-50" title="انقلي الحجز إلى المرحلة التالية">
+                                <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-[10px] disabled:opacity-50 active:scale-95 transition-transform duration-200" title="انقلي الحجز إلى المرحلة التالية">
                                   التالي {movingId===b.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <ChevronLeft className="h-3 w-3"/>}
                                 </motion.button>
                               )}
@@ -463,20 +464,20 @@ function ProductionBoard() {
                             <div className="text-xs text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
                             
                             <div className="flex items-center justify-between text-xs pt-1">
-                              <span className="text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-sm">المرحلة {sIdx + 1} من {STAGES.length}</span>
+                              <span className="text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-sm active:scale-95 transition-transform duration-200">المرحلة {sIdx + 1} من {STAGES.length}</span>
                               {due !== null && s.key !== "delivered" && (
                                 <span className={due < 0 ? "text-destructive font-medium" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
                                   {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
                                 </span>
                               )}
                             </div>
-                            <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                            <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden active:scale-95 transition-transform duration-200">
                               <div className="h-full bg-gold transition-all" style={{ width: `${((sIdx + 1) / STAGES.length) * 100}%` }} />
                             </div>
 
                             <div className="flex gap-2 pt-2 border-t border-border">
                               {sIdx > 0 && sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs disabled:opacity-50" title="أرجعي الحجز إلى المرحلة السابقة">
+                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs disabled:opacity-50 active:scale-95 transition-transform duration-200" title="أرجعي الحجز إلى المرحلة السابقة">
                                   {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />} السابق
                                 </motion.button>
                               )}
@@ -486,7 +487,7 @@ function ProductionBoard() {
                                   transition={{ duration: 0.3 }}
                                   disabled={movingId !== null || sIdx >= STAGES.length - 1}
                                   onClick={() => move(b.id, 1)}
-                                  className="p-1.5 rounded-full hover:bg-secondary transition disabled:opacity-30 disabled:cursor-not-allowed text-primary"
+                                  className="p-1.5 rounded-full hover:bg-secondary transition disabled:opacity-30 disabled:cursor-not-allowed text-primary active:scale-95 transition-transform duration-200"
                                   title="نقل للمرحلة التالية"
                                 >
                                   {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronLeft className="h-4 w-4" />}
@@ -538,7 +539,7 @@ function ProductionBoard() {
                 if (b && dir && next && idx !== undefined) executeMove(b, dir, next, idx);
                 setConfirmDialog({ open: false });
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-transform duration-200"
             >
               {confirmDialog.next?.key === "delivered" ? "نعم، أكّدي التسليم" : "تأكيد النقل"}
             </AlertDialogAction>

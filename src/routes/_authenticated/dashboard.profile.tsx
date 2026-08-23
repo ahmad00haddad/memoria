@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
@@ -162,7 +164,7 @@ function ProfilePage() {
               to="/photographers/$username"
               params={{ username: p.username }}
               target="_blank"
-              className="inline-flex items-center gap-2 bg-secondary text-foreground hover:bg-gold hover:text-white px-4 py-2 rounded-sm text-sm transition"
+              className="inline-flex items-center gap-2 bg-secondary text-foreground hover:bg-gold hover:text-white px-4 py-2 rounded-sm text-sm transition active:scale-95 transition-transform duration-200"
             >
               <Eye className="h-4 w-4" />
               معاينة ملفي العام
@@ -193,7 +195,7 @@ function ProfilePage() {
               <div className="text-sm mb-2">معرض الأعمال ({(p.portfolio_urls ?? []).length})</div>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {(p.portfolio_urls ?? []).map((u: string, i: number) => (
-                  <div key={i} className="relative aspect-square bg-secondary rounded-sm overflow-hidden">
+                  <div key={i} className="relative aspect-square bg-secondary rounded-sm overflow-hidden active:scale-95 transition-transform duration-200">
                     <img src={u} className="w-full h-full object-cover" alt="" />
                     <button onClick={() => removePortfolio(i)} className="absolute top-1 left-1 bg-black/60 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
                   </div>
@@ -207,7 +209,7 @@ function ProfilePage() {
                     e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-[0_0_15px_rgba(201,162,39,0.3)]", "scale-105");
                     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) onPortfolio(e.dataTransfer.files);
                   }}
-                  className="aspect-square border-2 border-dashed border-border rounded-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground hover:bg-secondary group"
+                  className="aspect-square border-2 border-dashed border-border rounded-sm flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground hover:bg-secondary group active:scale-95 transition-transform duration-200"
                 >
                   <Upload className="h-6 w-6 mb-2 transition-transform duration-300 group-hover:-translate-y-1" />
                   <span className="text-[10px] uppercase text-center px-2">إضافة صور</span>
@@ -248,13 +250,13 @@ function ProfilePage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => { startTour(); toast.success("تم تشغيل الجولة التعريفية"); }}
-                  className="px-4 py-2 bg-charcoal text-ivory rounded-sm text-xs hover:opacity-90"
+                  className="px-4 py-2 bg-charcoal text-ivory rounded-sm text-xs hover:opacity-90 active:scale-95 transition-transform duration-200"
                 >
                   تشغيل الجولة
                 </button>
                 <button
                   onClick={() => { resetTour(); toast.success("تم تصفير الجولة التعريفية"); }}
-                  className="px-4 py-2 border border-border rounded-sm text-xs hover:bg-secondary"
+                  className="px-4 py-2 border border-border rounded-sm text-xs hover:bg-secondary active:scale-95 transition-transform duration-200"
                 >
                   تعطيل / تصفير
                 </button>
@@ -303,7 +305,7 @@ function ProfilePage() {
             )}
           </Card>
 
-          <button onClick={save} disabled={saving} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
+          <button onClick={save} disabled={saving} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60 active:scale-95 transition-transform duration-200">
             {saving ? "جاري الحفظ…" : "حفظ التغييرات"}
           </button>
 

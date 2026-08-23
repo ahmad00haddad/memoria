@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 

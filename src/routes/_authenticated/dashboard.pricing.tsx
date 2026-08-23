@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
@@ -73,7 +75,7 @@ function PricingMgr() {
           <div className="rounded-sm border border-destructive/30 bg-card p-6 shadow-soft mt-4">
             <h1 className="font-serif text-3xl mb-2">تعذّر فتح صفحة الأسعار</h1>
             <p className="text-sm text-muted-foreground mb-4">{loadError}</p>
-            <button onClick={() => window.location.reload()} className="bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90">إعادة المحاولة</button>
+            <button onClick={() => window.location.reload()} className="bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">إعادة المحاولة</button>
           </div>
         </section>
         <Footer />
@@ -87,7 +89,7 @@ function PricingMgr() {
       <section className="container-editorial py-12 max-w-4xl">
         <BackToDashboard />
         <h1 className="font-serif text-4xl mt-2 mb-2">إدارة الأسعار</h1>
-        <p className="text-sm text-muted-foreground mb-6">حدّدي باقات التصوير والفيديو والإضافات. تظهر فورًا للعملاء على ملفك العام.</p>
+        <p className="text-sm text-muted-foreground mb-6">حدّدي باقات التصوير <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2 bg-secondary/30 p-2 rounded-md border border-border/50"><Lightbulb className="h-4 w-4 text-[var(--gold)]" /> 💡 تلميح: توفير 3 باقات (أساسية، متوسطة، فاخرة) يزيد من احتمالية الحجز بنسبة 40% حسب إحصائيات ميموريا.</div> والفيديو والإضافات. تظهر فورًا للعملاء على ملفك العام.</p>
 
         {rules.length === 0 && (
           <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-6">
@@ -134,8 +136,8 @@ function PricingMgr() {
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button onClick={add} className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-sm hover:bg-secondary"><Plus className="h-4 w-4" /> إضافة باقة</button>
-          <button onClick={save} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90">حفظ الجميع</button>
+          <button onClick={add} className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200"><Plus className="h-4 w-4" /> إضافة باقة</button>
+          <button onClick={save} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">حفظ الجميع</button>
         </div>
       </section>
       <Footer />

@@ -1,3 +1,5 @@
+import { Lightbulb } from "lucide-react";
+import { motion } from "framer-motion";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
@@ -53,7 +55,7 @@ function _BookingDetailErrorBody(reset: () => void) {
         <h1 className="font-serif text-2xl">عذراً! حدث خطأ أثناء تحميل الحجز</h1>
         <p className="text-muted-foreground text-sm">بيانات هذا الحجز قد تكون غير مكتملة أو تم حذفها.</p>
       </div>
-      <button onClick={reset} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 transition text-sm">
+      <button onClick={reset} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 transition text-sm active:scale-95 transition-transform duration-200">
         إعادة المحاولة
       </button>
     </div>
@@ -313,7 +315,7 @@ function BookingDetail() {
               <div className="mb-4">
                 <div className="text-xs text-muted-foreground mb-2">إثبات العربون:</div>
                 <a href={proofUrl} target="_blank" rel="noreferrer" className="block">
-                  <img src={proofUrl} alt="إثبات" className="w-full max-h-60 object-contain border border-border rounded-sm bg-secondary" />
+                  <img src={proofUrl} alt="إثبات" className="w-full max-h-60 object-contain border border-border rounded-sm bg-secondary active:scale-95 transition-transform duration-200" />
                 </a>
               </div>
             )}
@@ -326,13 +328,13 @@ function BookingDetail() {
 
             <div className="flex flex-wrap gap-2">
               {b.status === "pending_deposit" && (
-                <button onClick={() => setStatus("confirmed")} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تأكيد العربون</button>
+                <button onClick={() => setStatus("confirmed")} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm active:scale-95 transition-transform duration-200"><CheckCircle2 className="h-4 w-4" /> تأكيد العربون</button>
               )}
               {!b.final_paid_at && b.status !== "cancelled" && (
-                <button onClick={markFinalPaid} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm"><BadgeDollarSign className="h-4 w-4" /> تسجيل استلام المتبقي</button>
+                <button onClick={markFinalPaid} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-sm active:scale-95 transition-transform duration-200"><BadgeDollarSign className="h-4 w-4" /> تسجيل استلام المتبقي</button>
               )}
               {!b.delivered_at && b.status !== "cancelled" && (
-                <button onClick={markDelivered} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm"><CheckCircle2 className="h-4 w-4" /> تسليم الصور وإنهاء</button>
+                <button onClick={markDelivered} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm active:scale-95 transition-transform duration-200"><CheckCircle2 className="h-4 w-4" /> تسليم الصور وإنهاء</button>
               )}
               {/* Idea 2: WhatsApp Review Request */}
               {b.status === "completed" && (
@@ -341,7 +343,7 @@ function BookingDetail() {
                     const text = encodeURIComponent(`مرحباً ${b.client_name} 🤍\nأتمنى أن تكون الصور قد نالت إعجابك! يسعدني جداً سماع رأيك وتقييمك لتجربتك معي عبر هذا الرابط:\n${window.location.origin}/review/${b.client_tracking_token}\n\nشكراً لكِ!`);
                     window.open(`https://wa.me/?text=${text}`, "_blank");
                   }}
-                  className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 border border-emerald-200 px-4 py-2 rounded-sm hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800"
+                  className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 border border-emerald-200 px-4 py-2 rounded-sm hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300 dark:border-emerald-800 active:scale-95 transition-transform duration-200"
                 >
                   <Star className="h-4 w-4" /> اطلبي تقييماً (واتساب)
                 </button>
@@ -363,7 +365,7 @@ function BookingDetail() {
                   try { await regenTokenFn({ data: { booking_id: id } }); toast.success("تم تجديد الرابط"); await load(); }
                   catch (e: any) { toast.error(e?.message || "تعذّر التجديد"); }
                 }}
-                className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-sm hover:bg-secondary"
+                className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200"
               ><Copy className="h-4 w-4" /> تجديد رابط التتبّع</button>
             </div>
           </div>
@@ -378,17 +380,17 @@ function BookingDetail() {
                 <div className="text-muted-foreground">وُقّع في {new Date(contract.signed_at).toLocaleString("ar")} بواسطة {contract.client_name}</div>
               )}
               <div className="flex gap-2 pt-2">
-                <button onClick={copyContractLink} className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm hover:bg-secondary"><Copy className="h-4 w-4" /> نسخ رابط العقد</button>
-                <Link to="/contracts/$token" params={{ token: contract.sign_token }} className="border border-border px-3 py-2 rounded-sm hover:bg-secondary">عرض العقد</Link>
+                <button onClick={copyContractLink} className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200"><Copy className="h-4 w-4" /> نسخ رابط العقد</button>
+                <Link to="/contracts/$token" params={{ token: contract.sign_token }} className="border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">عرض العقد</Link>
               </div>
             </div>
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">لم يتمّ إنشاء عقد بعد.</p>
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => generateContract()} className="bg-charcoal text-ivory px-4 py-2 rounded-sm">إنشاء عقد قياسي</button>
+                <button onClick={() => generateContract()} className="bg-charcoal text-ivory px-4 py-2 rounded-sm active:scale-95 transition-transform duration-200">إنشاء عقد قياسي</button>
                 {templates.map((t) => (
-                  <button key={t.id} onClick={() => generateContract(t.id)} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary">من قالب: {t.name}</button>
+                  <button key={t.id} onClick={() => generateContract(t.id)} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">من قالب: {t.name}</button>
                 ))}
               </div>
             </div>
@@ -418,7 +420,7 @@ function BookingDetail() {
           </div>
           <div className="flex gap-2">
             <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="اكتب رسالة…" className="flex-1 border border-border rounded-sm px-3 py-2 bg-background" />
-            <button onClick={send} className="bg-charcoal text-ivory px-5 rounded-sm">إرسال</button>
+            <button onClick={send} className="bg-charcoal text-ivory px-5 rounded-sm active:scale-95 transition-transform duration-200">إرسال</button>
           </div>
         </div>
       </section>
@@ -458,7 +460,7 @@ function ProductionPanel({ b, onSetStage, onSaveLink }: { b: any; onSetStage: (s
   return (
     <div className="mt-8 rounded-sm border border-border bg-card p-6">
       <h2 className="font-serif text-xl mb-4">متابعة الإنتاج</h2>
-      <div className="h-2 w-full bg-secondary rounded-full overflow-hidden mb-4">
+      <div className="h-2 w-full bg-secondary rounded-full overflow-hidden mb-4 active:scale-95 transition-transform duration-200">
         <div className="h-full bg-gold transition-all" style={{ width: `${progress}%` }} />
       </div>
       <div className="flex flex-wrap gap-2 mb-4">
@@ -473,7 +475,7 @@ function ProductionPanel({ b, onSetStage, onSaveLink }: { b: any; onSetStage: (s
         <label className="text-xs text-muted-foreground">رابط معرض اختيار الصور (Pixieset / Drive)</label>
         <div className="flex gap-2 mt-1">
           <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://…" className="flex-1 border border-border rounded-sm px-3 py-2 bg-background text-sm" />
-          <button onClick={() => onSaveLink(link)} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary text-sm">حفظ</button>
+          <button onClick={() => onSaveLink(link)} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary text-sm active:scale-95 transition-transform duration-200">حفظ</button>
         </div>
         {b.selection_link && (
           <a href={b.selection_link} target="_blank" rel="noreferrer" className="text-xs text-gold underline mt-1 inline-block">فتح المعرض الحالي</a>
@@ -486,7 +488,7 @@ function ProductionPanel({ b, onSetStage, onSaveLink }: { b: any; onSetStage: (s
 function DeliveryCountdown({ b }: { b: any }) {
   if (b.delivered_at) {
     return (
-      <div className="mb-4 rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 flex items-center gap-2">
+      <div className="mb-4 rounded-sm border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 flex items-center gap-2 active:scale-95 transition-transform duration-200">
         <CheckCircle2 className="h-4 w-4" /> سُلِّمت الصور في {new Date(b.delivered_at).toLocaleDateString("ar-JO")}
       </div>
     );
@@ -668,7 +670,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
       {!gallery ? (
         <div>
           <p className="text-sm text-muted-foreground mb-3">أنشئي معرضاً خاصاً يصل إليه العميل من رابط التتبع لمعاينة وتحميل الصور المسلَّمة.</p>
-          <button onClick={create} disabled={busy} className="bg-charcoal text-ivory px-4 py-2 rounded-sm disabled:opacity-60">إنشاء معرض</button>
+          <button onClick={create} disabled={busy} className="bg-charcoal text-ivory px-4 py-2 rounded-sm disabled:opacity-60 active:scale-95 transition-transform duration-200">إنشاء معرض</button>
         </div>
       ) : (
         <div>
@@ -685,20 +687,20 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            <label className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm cursor-pointer hover:bg-secondary text-sm">
+            <label className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm cursor-pointer hover:bg-secondary text-sm active:scale-95 transition-transform duration-200">
               <Upload className="h-4 w-4" />
               <span>{uploading ? "جاري الرفع…" : "رفع صور"}</span>
               <input type="file" multiple accept="image/*" className="hidden" onChange={onPick} disabled={uploading} />
             </label>
-            <button onClick={toggleDownloads} className="text-sm border border-border px-3 py-2 rounded-sm hover:bg-secondary">
+            <button onClick={toggleDownloads} className="text-sm border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">
               التحميل: {gallery.allow_downloads ? "مسموح" : "ممنوع"}
             </button>
-            <button onClick={copyClientLink} className="inline-flex items-center gap-2 text-sm border border-border px-3 py-2 rounded-sm hover:bg-secondary">
+            <button onClick={copyClientLink} className="inline-flex items-center gap-2 text-sm border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">
               <Copy className="h-4 w-4" /> رابط العميل
             </button>
             <span className="text-xs text-muted-foreground">{photos.length} صورة</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2 mb-4 p-3 rounded-sm bg-secondary/30 border border-border">
+          <div className="flex flex-wrap items-center gap-2 mb-4 p-3 rounded-sm bg-secondary/30 border border-border active:scale-95 transition-transform duration-200">
             <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" checked={watermarkOn} onChange={(e) => setWatermarkOn(e.target.checked)} />
               <span>علامة مائية تلقائية</span>
@@ -719,7 +721,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {photos.map((p) => (
-                <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden">
+                <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden active:scale-95 transition-transform duration-200">
                   {p.url && <img src={p.url} alt={p.caption ?? ""} className="w-full h-full object-cover" />}
                   <button onClick={() => remove(p.id)} className="absolute top-1 left-1 bg-black/60 text-white p-1 rounded-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                     <Trash2 className="h-3.5 w-3.5" />
