@@ -18,6 +18,10 @@ import {
   type SearchSort,
 } from "@/lib/search.functions";
 import { Drawer } from "vaul";
+import { CompareMode } from "@/components/search/CompareMode";
+import { typoCorrect } from "@/lib/searchUtils";
+import { playSound } from "@/lib/sounds";
+import { BarChart2 } from "lucide-react";
 
 export const Route = createFileRoute("/search")({
   component: SearchPage,
@@ -45,6 +49,10 @@ function SearchPage() {
   // ✅ فلتر "موثّقة" — يعرض فقط المصوّرات المميّزات (اجتزن مراجعة الأدمن)
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [compareList, setCompareList] = useState<SearchResultItem[]>([]);
+  const [availableThisWeek, setAvailableThisWeek] = useState(false);
+  const [isTypoCorrected, setIsTypoCorrected] = useState(false);
+  const [originalQuery, setOriginalQuery] = useState("");
   const navigate = useNavigate();
 
   const runSearch = useServerFn(searchPhotographers);
@@ -64,12 +72,23 @@ function SearchPage() {
     return () => clearTimeout(t);
   }, [q]);
 
+  const correctedQ = useMemo(() => {
+    const fixed = typoCorrect(debouncedQ);
+    if (fixed !== debouncedQ && debouncedQ.length > 2) {
+      setIsTypoCorrected(true);
+      setOriginalQuery(debouncedQ);
+      return fixed;
+    }
+    if (fixed === debouncedQ) setIsTypoCorrected(false);
+    return debouncedQ;
+  }, [debouncedQ]);
+
   const resultsQ = useQuery({
-    queryKey: ["search", debouncedQ, city, minPrice, maxPrice, date, sort],
+    queryKey: ["search", correctedQ, city, minPrice, maxPrice, date, sort],
     queryFn: () =>
       runSearch({
         data: {
-          q: debouncedQ || undefined,
+          q: correctedQ || undefined,
           city: city || undefined,
           min_price: minPrice ? Number(minPrice) : null,
           max_price: maxPrice ? Number(maxPrice) : null,
@@ -393,6 +412,13 @@ function SearchPage() {
         </form>
 
         {/* Results */}
+        {isTypoCorrected && (
+          <div className="col-span-full mb-4 px-4 py-2 bg-secondary/30 rounded-md text-sm">
+            تم التصحيح الإملائي إلى <strong>{correctedQ}</strong> بدلاً من <span className="line-through text-muted-foreground">{originalQuery}</span>. 
+            <button onClick={() => { setIsTypoCorrected(false); /* bypass logic here */ }} className="text-gold hover:underline ms-2">ابحث عن "{originalQuery}" بدلاً من ذلك</button>
+          </div>
+        )}
+        
         {resultsQ.isError ? (
           <div className="col-span-full text-center py-16 text-sm text-destructive">
             تعذّر تحميل النتائج. تحقّق من اتصالك وحاول مجدداً.
@@ -484,7 +510,7 @@ function SearchPage() {
             key={`${debouncedQ}|${city}|${minPrice}|${maxPrice}|${date}|${sort}|${minRating}`}
           >
             {displayResults.map((p, idx) => (
-              <BentoPhotographerCard key={p.username} p={p} idx={idx} />
+              <BentoPhotographerCard key={p.username} p={p} idx={idx} compareList={compareList} setCompareList={setCompareList} />
             ))}
           </motion.div>
         )}
@@ -507,11 +533,12 @@ function SearchPage() {
       
       <Footer />
       </div>
+    <CompareMode compareList={compareList} setCompareList={setCompareList} />
     </PullToRefresh>
   );
 }
 
-function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number }) {
+function BentoPhotographerCard({ p, idx, compareList, setCompareList }: { p: SearchResultItem; idx: number; compareList: SearchResultItem[]; setCompareList: React.Dispatch<React.SetStateAction<SearchResultItem[]>> }) {
   const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
@@ -558,6 +585,22 @@ function BentoPhotographerCard({ p, idx }: { p: SearchResultItem; idx: number })
           className="relative overflow-hidden sm:rounded-sm cursor-pointer group bg-gradient-royal border-b sm:border-0 border-border/5"
           style={{ aspectRatio: "3/4" }}
         >
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              playSound('tick');
+              setCompareList(prev => {
+                if (prev.find(c => c.username === p.username)) return prev.filter(c => c.username !== p.username);
+                if (prev.length >= 3) return prev;
+                return [...prev, p];
+              });
+            }}
+            className={`absolute top-3 end-14 z-20 h-9 px-3 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center transition shadow-sm text-xs font-medium ${compareList.find(c => c.username === p.username) ? 'bg-gold text-charcoal' : 'hover:bg-background/80 text-foreground'}`}
+          >
+            <BarChart2 className="w-3 h-3 me-1" /> {compareList.find(c => c.username === p.username) ? 'مقارنة' : 'قارني'}
+          </button>
+          
           <button
             onClick={toggleFav}
             className="absolute top-3 end-3 z-20 h-9 w-9 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-background/80 transition shadow-sm"
