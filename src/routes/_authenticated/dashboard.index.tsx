@@ -352,6 +352,47 @@ let cachedDashboard: {
   stats: any;
 } | null = null;
 
+
+function getCompleteness(profile: any) {
+  if (!profile) return 0;
+  let score = 0;
+  if (profile.display_name) score += 20;
+  if (profile.bio) score += 20;
+  if (profile.avatar_url) score += 20;
+  if (profile.cover_url) score += 10;
+  if (profile.city) score += 10;
+  if (profile.tagline) score += 20;
+  return score;
+}
+
+function CircularProgress({ value }: { value: number }) {
+  const radius = 20;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (value / 100) * circumference;
+  
+  return (
+    <div className="relative flex items-center justify-center w-14 h-14 group">
+      <svg className="transform -rotate-90 w-14 h-14">
+        <circle cx="28" cy="28" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" className="text-secondary/50" />
+        <motion.circle 
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          cx="28" cy="28" r={radius} stroke="currentColor" strokeWidth="4" fill="transparent" 
+          strokeDasharray={circumference} 
+          className="text-gold" 
+        />
+      </svg>
+      <span className="absolute text-[10px] font-bold">{value}%</span>
+      {value < 100 && (
+        <div className="absolute top-14 bg-popover text-popover-foreground text-[10px] px-3 py-1.5 rounded-sm shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+          أكملي ملفك بنسبة 100% لزيادة الحجوزات!
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Dashboard() {
   const [profile, setProfile] = useState<any>(cachedDashboard?.profile ?? null);
   const [sub, setSub] = useState<any>(cachedDashboard?.sub ?? null);
