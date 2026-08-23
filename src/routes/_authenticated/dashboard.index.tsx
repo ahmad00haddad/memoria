@@ -7,6 +7,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { signOut } from "@/lib/auth";
+import { playSound } from "@/lib/sounds";
 import {
   Clock,
   CheckCircle2,
@@ -266,32 +267,80 @@ function DashboardSkeleton() {
   );
 }
 
-function Card({ title, desc, cta, to, external, disabled, icon, badge }: { title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; badge?: boolean }) {
-  const sharedClassName = `group flex min-h-[190px] flex-col justify-center items-center text-center rounded-sm border border-border bg-card p-6 shadow-soft transition-all duration-500 overflow-hidden relative ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-1 hover:border-gold/40 hover:bg-secondary/20 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
+function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText, hint, urgent, quickAction }: { 
+  title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; badge?: boolean; badgeText?: string; hint?: string; urgent?: boolean; quickAction?: { label: string; to: string } 
+}) {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  const sharedClassName = `group flex min-h-[200px] flex-col justify-center items-center text-center rounded-sm border ${urgent ? 'border-gold shadow-[0_0_15px_rgba(201,162,39,0.15)]' : 'border-border shadow-soft'} bg-card p-6 transition-all duration-500 overflow-hidden relative ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-1 hover:border-gold/50 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
   
-  const content = (
-    <>
-      <div className="flex flex-col items-center transition-transform duration-500 group-hover:-translate-y-6">
-        <h3 className="font-serif text-xl mb-1 flex items-center gap-2">
+  const cardContent = (
+    <div 
+      className="w-full h-full flex flex-col items-center justify-center relative z-10"
+      onMouseEnter={() => !disabled && playSound('tick')}
+    >
+      {!disabled && (
+        <div 
+          className="pointer-events-none absolute -inset-px z-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 rounded-sm"
+          style={{
+            background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, rgba(201,162,39,0.08), transparent 40%)`
+          }}
+        />
+      )}
+
+      {badgeText && (
+        <div className="absolute top-0 right-0 z-20">
+          <span className={`text-[10px] font-bold px-2 py-1 rounded-sm ${urgent ? 'bg-gold text-charcoal animate-pulse' : 'bg-secondary text-muted-foreground'}`}>
+            {badgeText}
+          </span>
+        </div>
+      )}
+
+      <div className="flex flex-col items-center transition-transform duration-500 group-hover:-translate-y-6 z-10 w-full">
+        <div className="mb-4 text-muted-foreground/60 transition-all duration-500 group-hover:scale-110 group-hover:text-gold/80 flex justify-center">
+          {icon || <div className="w-12 h-12 rounded-full bg-secondary/40 border border-border/50 flex items-center justify-center group-hover:border-gold/30 transition-colors" />}
+        </div>
+        <h3 className="font-serif text-xl mb-1 flex items-center justify-center gap-2 relative w-full">
+          {(badge || urgent) && <span className="absolute -right-4 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-gold shadow-[0_0_8px_rgba(201,162,39,0.8)] animate-pulse" />}
           {title}
-          {badge && <span className="h-2 w-2 rounded-full bg-gold shadow-[0_0_8px_rgba(201,162,39,0.8)] animate-pulse" />}
         </h3>
       </div>
       
-      {/* Hidden by default, reveals on hover */}
-      <div className="absolute bottom-6 left-0 right-0 px-6 flex flex-col items-center text-center opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75">
-        <p className="text-sm text-muted-foreground leading-relaxed mb-4">{desc}</p>
-        <div className="inline-flex items-center gap-2 text-sm text-gold">
-          {icon}
-          <span className="border-b border-current pb-0.5">{disabled ? "أكملي اسم المستخدم أولاً" : cta}</span>
-          {!disabled && <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />}
+      <div className="absolute bottom-4 left-0 right-0 px-4 flex flex-col items-center text-center opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75 z-10 pointer-events-none group-hover:pointer-events-auto">
+        <p className="text-[13px] text-muted-foreground leading-relaxed mb-3 line-clamp-2">{desc}</p>
+        
+        <div className="flex flex-col gap-1 w-full items-center">
+          <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
+            <span className="border-b border-transparent group-hover:border-current pb-0.5 transition-colors">{disabled ? "أكملي ملفك أولاً" : cta}</span>
+            {!disabled && <ArrowLeft className="h-4 w-4 transition-all duration-300 group-hover:-translate-x-2" />}
+          </div>
+          
+          {hint && <span className="text-[11px] text-muted-foreground/80 mt-1">{hint}</span>}
+          
+          {quickAction && !disabled && (
+            <Link 
+              to={quickAction.to} 
+              className="mt-1 text-[11px] border border-border hover:border-gold/50 hover:bg-gold/5 hover:text-gold px-2 py-1 rounded-sm transition-colors flex items-center gap-1"
+              onClick={(e: any) => { e.stopPropagation(); playSound('tick'); }}
+            >
+              <Plus className="h-3 w-3" /> {quickAction.label}
+            </Link>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
-  if (!to || disabled) return <div className={sharedClassName}>{content}</div>;
-  if (external) return <a href={to} className={sharedClassName}>{content}</a>;
-  return <Link to={to} className={sharedClassName}>{content}</Link>;
+
+  if (!to || disabled) return <div className={sharedClassName} onMouseMove={handleMouseMove}>{cardContent}</div>;
+  if (external) return <a href={to} className={sharedClassName} onMouseMove={handleMouseMove} onClick={() => playSound('tick')}>{cardContent}</a>;
+  return <Link to={to} className={sharedClassName} onMouseMove={handleMouseMove} onClick={() => playSound('tick')}>{cardContent}</Link>;
+}
+>{content}</Link>;
 }
 
 let cachedDashboard: {
@@ -513,9 +562,34 @@ function Dashboard() {
           // مستخدمة جديدة → ٣ بطاقات أساسية فقط + زر "عرض كل الأدوات"
           <div>
             <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3 mb-4">
-              <Card title="الحجوزات" desc="راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز." cta="عرض الحجوزات" to="/dashboard/bookings" />
-              <Card title="الملف الشخصي" desc="الاسم، الصورة، الباقات، بيانات الدفع وإعدادات النشر." cta="تعديل الملف" to="/dashboard/profile" />
-              <Card title="بطاقة الأسعار" desc="أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة." cta="إدارة الأسعار" to="/dashboard/pricing" />
+              <Card 
+                title="الحجوزات" 
+                desc="راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز." 
+                cta="عرض الحجوزات" 
+                to="/dashboard/bookings" 
+                hint={totalBookings > 0 ? `لديك ${totalBookings} حجوزات مسجلة` : "لا توجد حجوزات بعد"} 
+                icon={<Calendar className="h-6 w-6" />}
+              />
+              <Card 
+                title="الملف الشخصي" 
+                desc="الاسم، الصورة، الباقات، بيانات الدفع وإعدادات النشر." 
+                cta="تعديل الملف" 
+                to="/dashboard/profile" 
+                urgent={!profile?.avatar_url || !profile?.username}
+                badgeText={!profile?.avatar_url || !profile?.username ? "مطلوب للنشر" : "جاهز"}
+                hint="الخطوة الأولى لبدء استقبال الطلبات"
+                icon={<Star className="h-6 w-6" />}
+              />
+              <Card 
+                title="بطاقة الأسعار" 
+                desc="أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة." 
+                cta="إدارة الأسعار" 
+                to="/dashboard/pricing"
+                urgent={pricingCount === 0}
+                badgeText={pricingCount === 0 ? "ابدئي من هنا" : `${pricingCount} باقات`}
+                quickAction={{ label: "إضافة باقة سريعة", to: "/dashboard/pricing" }}
+                icon={<Package className="h-6 w-6" />}
+              />
             </motion.div>
             <AnimatePresence>
               {showAllCards && (
@@ -553,24 +627,106 @@ function Dashboard() {
         ) : (
           // مستخدمة نشطة → كل البطاقات ظاهرة
           <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3">
-              <Card title="ملف المصوّرة" desc="المعلومات الأساسية وصورة الغلاف ومعرض الأعمال." cta="تعديل الملف" to="/dashboard/profile" />
               <Card 
-                title="بطاقات الأسعار" 
-                desc="حددي الباقات الأساسية والإضافات." 
-                cta="إدارة الباقات" 
-                to="/dashboard/pricing" 
-                badge={true} 
-              />
-            <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
-            <Card title="الحجوزات" desc="جميع الطلبات والمؤكّدة والمنتهية." cta="عرض الحجوزات" to="/dashboard/bookings" />
-            <Card title="متابعة الإنتاج" desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." cta="افتح اللوحة" to="/dashboard/production" />
-            <Card title="التقارير المالية" desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." cta="عرض التقارير" to="/dashboard/reports" />
-            <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
-            <Card title="رسائل واتساب" desc="قوالب جاهزة (ترحيب، عربون، تذكير، تسليم) ترسليها بنقرة." cta="إدارة القوالب" to="/dashboard/whatsapp-templates" icon={<MessageCircle className="h-4 w-4" />} />
-            <Card title="الاشتراك" desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." cta="إدارة الاشتراك" to="/dashboard/subscription" />
-            <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
-            <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهراً مجانياً للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
-            <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={profile?.username ? `/photographers/${profile.username}` : undefined} external={!!profile?.username} disabled={!profile?.username} />
+              title="ملف المصوّرة" 
+              desc="المعلومات الأساسية وصورة الغلاف ومعرض الأعمال." 
+              cta="تعديل الملف" 
+              to="/dashboard/profile"
+              badgeText={(!profile?.avatar_url || !profile?.cover_url) ? "غير مكتمل" : "مكتمل ✅"}
+              hint="راجعي تفاصيل ملفك لتظهري بأفضل صورة"
+              icon={<Star className="h-6 w-6" />}
+            />
+            <Card 
+              title="بطاقات الأسعار" 
+              desc="حددي الباقات الأساسية والإضافات لعملائك." 
+              cta="إدارة الباقات" 
+              to="/dashboard/pricing" 
+              badgeText={`${pricingCount} باقات نشطة`}
+              quickAction={{ label: "باقة جديدة", to: "/dashboard/pricing" }}
+              icon={<Package className="h-6 w-6" />}
+            />
+            <Card 
+              title="الحجوزات" 
+              desc="جميع الطلبات والمؤكّدة والمنتهية." 
+              cta="عرض الحجوزات" 
+              to="/dashboard/bookings" 
+              badgeText={stats?.pending > 0 ? `${stats.pending} بانتظار الموافقة` : "لا طلبات جديدة"}
+              urgent={stats?.pending > 0}
+              icon={<Calendar className="h-6 w-6" />}
+            />
+            <Card 
+              title="التقويم والتوفر" 
+              desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." 
+              cta="فتح التقويم" 
+              to="/dashboard/calendar" 
+              hint={stats?.upcoming30 > 0 ? `${stats.upcoming30} مناسبات قادمة هذا الشهر` : "تقويمك متاح"}
+              icon={<Calendar className="h-6 w-6" />}
+            />
+            <Card 
+              title="متابعة الإنتاج" 
+              desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." 
+              cta="افتح اللوحة" 
+              to="/dashboard/production" 
+              hint="نظمي سير عملك بسهولة"
+              icon={<Sparkles className="h-6 w-6" />}
+            />
+            <Card 
+              title="التقارير المالية" 
+              desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." 
+              cta="عرض التقارير" 
+              to="/dashboard/reports" 
+              badgeText={stats?.monthRevenue > 0 ? "يوجد أرباح" : ""}
+              hint={stats?.monthRevenue > 0 ? `إيرادات الشهر: ${stats.monthRevenue} د.أ` : "0 د.أ إيرادات هذا الشهر"}
+              icon={<Download className="h-6 w-6" />}
+            />
+            <Card 
+              title="العقود الرقمية" 
+              desc="قوالب وعقود توقيع إلكتروني لضمان حقوقك." 
+              cta="إدارة العقود" 
+              to="/dashboard/contracts"
+              icon={<Link2 className="h-6 w-6" />}
+            />
+            <Card 
+              title="رسائل واتساب" 
+              desc="قوالب جاهزة (ترحيب، عربون، تذكير) ترسليها بنقرة." 
+              cta="إدارة القوالب" 
+              to="/dashboard/whatsapp-templates" 
+              badgeText={!hasCliq ? "ميزة مدفوعة 🔒" : `${templatesCount} قوالب`}
+              hint={!hasCliq ? "وفري 4 ساعات أسبوعياً من المراسلات" : "جاهزة للاستخدام"}
+              icon={<MessageCircle className="h-6 w-6" />}
+            />
+            <Card 
+              title="الاشتراك" 
+              desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." 
+              cta="إدارة الاشتراك" 
+              to="/dashboard/subscription" 
+              badgeText={sub?.status === 'active' ? "نشط" : "مجاني"}
+              icon={<LogOut className="h-6 w-6" />}
+            />
+            <Card 
+              title="الإشعارات" 
+              desc="جميع التنبيهات والتنقل السريع للإجراءات المطلوبة." 
+              cta="عرض الإشعارات" 
+              to="/notifications" 
+              icon={<Bell className="h-6 w-6" />}
+            />
+            <Card 
+              title="برنامج الإحالة" 
+              desc="ادعُ زميلة واربحا شهراً مجانياً للطرفين." 
+              cta="رابط الإحالة" 
+              to="/dashboard/referrals" 
+              icon={<CheckCircleIcon className="h-6 w-6" />}
+            />
+            <Card 
+              title="ملفي العام" 
+              desc="عرض صفحتك تماماً كما يراها عملاؤك." 
+              cta="فتح الملف" 
+              to={profile?.username ? `/photographers/${profile.username}` : undefined} 
+              external={!!profile?.username} 
+              disabled={!profile?.username} 
+              hint={profile?.username ? "شاركي هذا الرابط مع عملائك" : ""}
+              icon={<Star className="h-6 w-6" />}
+            />
           </motion.div>
         )}
       </section>
