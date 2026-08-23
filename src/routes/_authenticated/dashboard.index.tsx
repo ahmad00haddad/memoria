@@ -267,20 +267,25 @@ function DashboardSkeleton() {
 }
 
 function Card({ title, desc, cta, to, external, disabled, icon, badge }: { title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; badge?: boolean }) {
-  const sharedClassName = `group flex min-h-[190px] flex-col justify-between rounded-sm border border-border bg-card p-6 shadow-soft transition ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-0.5 hover:border-gold/40 hover:bg-secondary/20 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
+  const sharedClassName = `group flex min-h-[190px] flex-col justify-center items-center text-center rounded-sm border border-border bg-card p-6 shadow-soft transition-all duration-500 overflow-hidden relative ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-1 hover:border-gold/40 hover:bg-secondary/20 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
+  
   const content = (
     <>
-      <div>
+      <div className="flex flex-col items-center transition-transform duration-500 group-hover:-translate-y-6">
         <h3 className="font-serif text-xl mb-1 flex items-center gap-2">
           {title}
           {badge && <span className="h-2 w-2 rounded-full bg-gold shadow-[0_0_8px_rgba(201,162,39,0.8)] animate-pulse" />}
         </h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
       </div>
-      <div className="mt-6 inline-flex items-center gap-2 text-sm text-gold">
-        {icon}
-        <span className="border-b border-current pb-0.5">{disabled ? "أكملي اسم المستخدم أولاً" : cta}</span>
-        {!disabled && <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />}
+      
+      {/* Hidden by default, reveals on hover */}
+      <div className="absolute bottom-6 left-0 right-0 px-6 flex flex-col items-center text-center opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75">
+        <p className="text-sm text-muted-foreground leading-relaxed mb-4">{desc}</p>
+        <div className="inline-flex items-center gap-2 text-sm text-gold">
+          {icon}
+          <span className="border-b border-current pb-0.5">{disabled ? "أكملي اسم المستخدم أولاً" : cta}</span>
+          {!disabled && <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />}
+        </div>
       </div>
     </>
   );
