@@ -12,7 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
@@ -178,6 +178,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const router = useRouter();
 
   useEffect(() => {
