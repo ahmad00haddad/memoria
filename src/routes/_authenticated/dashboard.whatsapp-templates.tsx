@@ -6,6 +6,7 @@ import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { PremiumLock, useSubscriptionLock } from "@/components/ui/PremiumLock";
 import { toast } from "sonner";
 import { Plus, Trash2, Save, RefreshCw, MessageCircle, Info } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -34,6 +35,8 @@ const VARIABLES = [
 ];
 
 function TemplatesPage() {
+  const { isLocked, lockLoading } = useSubscriptionLock();
+
   const nav = useNavigate();
   const [uid, setUid] = useState<string>("");
   const [items, setItems] = useState<any[]>([]);

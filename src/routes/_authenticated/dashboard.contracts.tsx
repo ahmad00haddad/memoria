@@ -7,6 +7,7 @@ import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { PremiumLock, useSubscriptionLock } from "@/components/ui/PremiumLock";
 import { toast } from "sonner";
 import { ScrollText, Plus, Copy } from "lucide-react";
 
@@ -59,6 +60,8 @@ const DEFAULT_TEMPLATE = `بسم الله الرحمن الرحيم
 بتوقيع العميل أدناه يُعدّ موافقًا على جميع البنود أعلاه وله صلاحية الإلزام القانوني الكامل.`;
 
 function Contracts() {
+  const { isLocked, lockLoading } = useSubscriptionLock();
+
   const nav = useNavigate();
   const [uid, setUid] = useState("");
   const [templates, setTemplates] = useState<any[]>([]);

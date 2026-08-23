@@ -7,6 +7,7 @@ import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { PremiumLock, useSubscriptionLock } from "@/components/ui/PremiumLock";
 import { useServerFn } from "@tanstack/react-start";
 import { DollarSign, TrendingUp, Wallet, Clock, CheckCircle2, Download } from "lucide-react";
 import { getReportStats, type ReportStats } from "@/lib/reports.functions";
@@ -14,6 +15,8 @@ import { getReportStats, type ReportStats } from "@/lib/reports.functions";
 export const Route = createFileRoute("/_authenticated/dashboard/reports")({ component: ReportsPage });
 
 function ReportsPage() {
+  const { isLocked, lockLoading } = useSubscriptionLock();
+
   const nav = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<ReportStats | null>(null);
