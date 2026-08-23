@@ -13,6 +13,24 @@ import {
   Inbox, Search, CheckCircle2, XCircle, Calendar, User, DollarSign, ChevronLeft,
 } from "lucide-react";
 
+
+function getBookingTemperature(created_at: string) {
+  if (!created_at) return null;
+  const hours = (Date.now() - new Date(created_at).getTime()) / (1000 * 60 * 60);
+  if (hours < 2) return { label: 'عميل ساخن 🔥', color: 'text-rose-500 bg-rose-500/10 border-rose-500/20' };
+  if (hours < 24) return { label: 'عميل دافئ 🟡', color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' };
+  return { label: 'عميل بارد ❄️', color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' };
+}
+
+function getCountdown(event_date: string, status: string) {
+  if (status === 'completed' || status === 'canceled') return null;
+  const daysDiff = Math.ceil((new Date(event_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  if (daysDiff < 0) return { label: 'متأخر!', color: 'text-rose-500' };
+  if (daysDiff === 0) return { label: 'اليوم!', color: 'text-emerald-500 animate-pulse' };
+  if (daysDiff <= 3) return { label: `باقي ${daysDiff} أيام!`, color: 'text-amber-500' };
+  return { label: `بعد ${daysDiff} يوم`, color: 'text-muted-foreground' };
+}
+
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/")({ component: BookingsList });
 
 const STATUS_LABELS: Record<string, string> = {
@@ -202,7 +220,11 @@ function BookingsList() {
                     if (offset.x < -60 || velocity.x < -400) handleCancel(booking.id);
                     if (offset.x > 60 || velocity.x > 400) handleConfirm(booking.id);
                   }}
-                  className="relative bg-card border border-border rounded-sm p-4 cursor-grab active:cursor-grabbing transition-all duration-300 hover:shadow-md hover:border-border/80 group"
+                  className={`relative border rounded-sm p-4 cursor-grab active:cursor-grabbing transition-all duration-300 hover:shadow-md hover:border-border/80 group ${
+                      booking.status === 'completed' ? 'bg-emerald-500/5 border-emerald-500/20' : 
+                      booking.status === 'canceled' ? 'bg-red-500/5 border-red-500/20' : 
+                      'bg-card border-border'
+                    }`}
                   whileDrag={{ boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}
                 >
                   <div className="flex items-center justify-between mb-3">
