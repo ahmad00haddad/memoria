@@ -1138,6 +1138,7 @@ export type Database = {
       }
       get_booking_by_token: { Args: { _token: string }; Returns: Json }
       get_photographer_busy_dates: { Args: { _pid: string }; Returns: string[] }
+      get_public_profile_data: { Args: { p_id: string }; Returns: Json }
       get_referrer_id: { Args: { _code: string }; Returns: string }
       has_booking_conflict: {
         Args: {
