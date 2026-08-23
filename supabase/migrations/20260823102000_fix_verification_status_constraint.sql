@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_verification_status_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_verification_status_check CHECK (verification_status IN ('unverified', 'pending_review', 'verified', 'rejected'));
