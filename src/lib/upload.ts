@@ -343,27 +343,29 @@ export async function uploadProfilePhoto(
 
 /**
  * رفع صورة معرض الأعمال (portfolio).
- * يستخدم bucket "portfolio" المخصّص (10MB، عام).
+ * يُخزَّن داخل bucket "avatars" العام تحت مجلد <uid>/portfolio/
+ * (سياسات avatars تسمح للمالك بالكتابة والقراءة عامة — ولا يوجد bucket
+ * منفصل باسم portfolio في المشروع، وهو ما كان يسبب خطأ "مجلد التخزين غير موجود").
  */
 export async function uploadPortfolioPhoto(
   file: File,
   userId: string,
 ): Promise<UploadResult> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${userId}/${Date.now()}.${ext}`;
+  const path = `${userId}/portfolio/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
   const result = await uploadFile(file, {
-    bucket: "portfolio",
+    bucket: "avatars",
     path,
     maxMb: 10,
     allowedTypes: "image",
     upsert: false,
   });
   if (result.ok) {
-    const { data } = supabase.storage.from("portfolio").getPublicUrl(path);
+    const { data } = supabase.storage.from("avatars").getPublicUrl(result.path);
     return { ...result, publicUrl: data.publicUrl };
   }
   return result;
 }
+
 
 /**
  * رفع إثبات دفع (عربون / اشتراك).
