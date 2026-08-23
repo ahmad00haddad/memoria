@@ -51,6 +51,13 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+      // Validate photographer subscription status
+      const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
+      if (!subActive) {
+        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
+      }
+
+
     // Server-side authoritative price recompute.
     const ruleIds = data.items.map((i) => i.rule_id);
     const { data: rules, error: rulesErr } = await supabaseAdmin
