@@ -60,7 +60,7 @@ export const checkUploadHealth = createServerFn({ method: "GET" })
       issues.push(`عدد سياسات التخزين منخفض (${policyCount}). قد لا تكون الـ buckets مضبوطة.`);
     }
 
-    const requiredBuckets = ["avatars", "deposit-proofs", "payment-proofs", "delivery-photos", "portfolio"];
+    const requiredBuckets = ["avatars", "deposit-proofs", "payment-proofs", "delivery-photos"];
     const existingBuckets = buckets.map((b: any) => b.id);
     for (const req of requiredBuckets) {
       if (!existingBuckets.includes(req)) {

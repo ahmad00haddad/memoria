@@ -1100,6 +1100,7 @@ export type Database = {
         Returns: undefined
       }
       approve_review: { Args: { _review_id: string }; Returns: undefined }
+      booking_token_exists: { Args: { _token: string }; Returns: boolean }
       cancel_booking: {
         Args: { _booking_id: string; _reason: string }
         Returns: Json

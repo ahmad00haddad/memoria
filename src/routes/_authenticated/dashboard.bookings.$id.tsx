@@ -593,7 +593,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
         }
 
         const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const ext = f.name.split(".").pop()?.toLowerCase() || "jpg";
+        const ext = f.type === "image/png" ? "png" : (f.type === "image/jpeg" ? "jpg" : (f.name.split(".").pop()?.toLowerCase() || "jpg"));
         const isImage = f.type.startsWith("image/");
 
         if (watermarkOn && watermarkText.trim() && isImage) {
