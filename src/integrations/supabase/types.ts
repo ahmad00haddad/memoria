@@ -118,6 +118,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           delivered_at: string | null
+          delivery_link: string | null
           delivery_days_promised: number | null
           delivery_due_at: string | null
           deposit_amount: number
@@ -174,6 +175,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           delivered_at?: string | null
+          delivery_link?: string | null
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number
@@ -230,6 +232,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           delivered_at?: string | null
+          delivery_link?: string | null
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
           deposit_amount?: number

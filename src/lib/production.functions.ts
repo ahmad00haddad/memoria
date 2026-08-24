@@ -343,3 +343,47 @@ export const saveBookingSelectionLink = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+// ----- حفظ رابط التسليم الخارجي -----
+export const saveDeliveryLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string; link: string }) => {
+    if (!d || typeof d.booking_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.booking_id)) {
+      throw new Error("invalid booking_id");
+    }
+    if (!d.link || typeof d.link !== "string") throw new Error("الرابط مطلوب");
+    if (d.link.length > 2000) throw new Error("الرابط طويل جداً");
+    try { new URL(d.link); } catch { throw new Error("صيغة الرابط غير صحيحة"); }
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+
+    const { data: bk, error: fetchErr } = await supabase
+      .from("bookings")
+      .select("id, photographer_id, client_user_id, client_tracking_token")
+      .eq("id", data.booking_id)
+      .maybeSingle();
+    if (fetchErr) throw new Error(fetchErr.message);
+    if (!bk) throw new Error("الحجز غير موجود");
+    if (bk.photographer_id !== userId) throw new Error("غير مصرح");
+
+    const { error: updateErr } = await supabase
+      .from("bookings")
+      .update({ delivery_link: data.link, updated_at: new Date().toISOString() })
+      .eq("id", data.booking_id);
+    if (updateErr) throw new Error(updateErr.message);
+
+    // إشعار العميل برابط التسليم
+    if (bk.client_user_id) {
+      await supabase.from("notifications").insert({
+        user_id: bk.client_user_id,
+        title: "تم تسليم الصور",
+        body: "تم إضافة رابط تسليم الصور الخاص بك. اضغطي هنا للتحميل.",
+        type: "booking_update",
+        link: `/tracking/${bk.client_tracking_token}`
+      });
+    }
+
+    return { ok: true };
+  });

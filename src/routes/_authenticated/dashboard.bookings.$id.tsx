@@ -25,6 +25,7 @@ import {
   markFinalPaymentReceived,
   updateBookingStatus,
   saveBookingSelectionLink,
+  saveDeliveryLink,
 } from "@/lib/production.functions";
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 
@@ -85,6 +86,7 @@ function BookingDetail() {
   const markFinalPaidFn = useServerFn(markFinalPaymentReceived);
   const updateStatusFn = useServerFn(updateBookingStatus);
   const saveSelectionFn = useServerFn(saveBookingSelectionLink);
+  const saveDeliveryFn = useServerFn(saveDeliveryLink);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -135,6 +137,21 @@ function BookingDetail() {
   };
 
   // ✅ آمن: server fn تتحقق من الملكية + تُشعر العميل بالرابط
+  
+  const saveExternalDelivery = async (link: string) => {
+    if (actionLoading === "link") return;
+    setActionLoading("link");
+    try {
+      await saveDeliveryFn({ data: { booking_id: id, link } });
+      toast.success("تم حفظ رابط التسليم الخارجي وإشعار العميل");
+      load();
+    } catch (e: any) {
+      toast.error(e.message || "فشل حفظ الرابط");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const saveSelectionLink = async (link: string) => {
     if (actionLoading === "link") return;
     setActionLoading("link");
@@ -397,7 +414,7 @@ function BookingDetail() {
           )}
         </div>
 
-        <ProductionPanel b={b} onSetStage={setStage} onSaveLink={saveSelectionLink} />
+        <ProductionPanel b={b} onSetStage={setStage} onSaveLink={saveSelectionLink} onSaveDeliveryLink={saveExternalDelivery} />
 
         <GalleryPanel bookingId={id} clientToken={b.client_tracking_token} b={b} />
         <ShotList bookingId={id} service={b.service} />
@@ -452,8 +469,9 @@ const STAGES: { key: string; label: string; icon: any }[] = [
   { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
 ];
 
-function ProductionPanel({ b, onSetStage, onSaveLink }: { b: any; onSetStage: (s: string) => void; onSaveLink: (l: string) => void }) {
+function ProductionPanel({ b, onSetStage, onSaveLink, onSaveDeliveryLink }: { b: any; onSetStage: (s: string) => void; onSaveLink: (l: string) => void; onSaveDeliveryLink: (l: string) => void }) {
   const [link, setLink] = useState(b.selection_link ?? "");
+    const [dLink, setDLink] = useState(b.delivery_link ?? "");
   const current = b.production_stage || "awaiting";
   const idx = STAGES.findIndex((s) => s.key === current);
   const progress = ((idx + 1) / STAGES.length) * 100;
