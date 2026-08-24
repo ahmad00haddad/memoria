@@ -302,7 +302,7 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
         </div>
       )}
 
-      <div className="flex flex-col items-center transition-transform duration-500 group-hover:-translate-y-6 z-10 w-full">
+      <div className="flex flex-col items-center transition-transform duration-500 group-hover:-translate-y-14 z-10 w-full">
         <div className="mb-4 text-muted-foreground/60 transition-all duration-500 group-hover:scale-110 group-hover:text-gold/80 flex justify-center">
           {icon || <div className="w-12 h-12 rounded-full bg-secondary/40 border border-border/50 flex items-center justify-center group-hover:border-gold/30 transition-colors active:scale-95 transition-transform duration-200" />}
         </div>
@@ -312,7 +312,7 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
         </h3>
       </div>
       
-      <div className="absolute bottom-4 left-0 right-0 px-4 flex flex-col items-center text-center opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75 z-10 pointer-events-none group-hover:pointer-events-auto">
+      <div className="absolute bottom-3 left-0 right-0 px-4 flex flex-col items-center text-center opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75 z-10 pointer-events-none group-hover:pointer-events-auto">
         <p className="text-[13px] text-muted-foreground leading-relaxed mb-3 line-clamp-2">{desc}</p>
         
         <div className="flex flex-col gap-1 w-full items-center">
