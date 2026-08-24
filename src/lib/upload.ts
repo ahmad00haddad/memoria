@@ -72,6 +72,9 @@ function validateFileType(file: File, allowedTypes: AllowedFileType): string | n
     const typeLabel = allowedTypes === "image_or_pdf"
       ? "صور (JPG / PNG / WebP) أو PDF"
       : "صور (JPG / PNG / WebP)";
+    if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name)) {
+      return "صور iPhone بصيغة HEIC غير مدعومة. من إعدادات الجوال: الكاميرا ← الصِيَغ ← اختاري «الأكثر توافقاً»، أو حوّلي الصورة إلى JPG وأعيدي المحاولة.";
+    }
     return `نوع الملف "${file.type || "غير معروف"}" غير مدعوم. يُسمح بـ: ${typeLabel}`;
   }
   return null;
@@ -341,7 +344,7 @@ export async function uploadProfilePhoto(
     upsert: true,
   });
   if (result.ok) {
-    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    const { data } = supabase.storage.from("avatars").getPublicUrl(result.path);
     return { ...result, publicUrl: data.publicUrl };
   }
   return result;
