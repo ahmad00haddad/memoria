@@ -208,6 +208,12 @@ export async function uploadFile(
     }
   }
 
+  // إن غيّر الضغط نوع الصورة (HEIC → JPEG مثلاً) نُصحّح امتداد المسار
+  let uploadPath = path;
+  if (finalFile.type && finalFile.type !== file.type) {
+    uploadPath = path.replace(/\.[^./]+$/, "") + (finalFile.type === "image/png" ? ".png" : ".jpg");
+  }
+
   // 2. تحقّق من الحجم (using finalFile)
   const maxBytes = maxMb * 1024 * 1024;
   if (finalFile.size > maxBytes) {
@@ -237,7 +243,7 @@ export async function uploadFile(
   try {
     const { error: uploadErr, data } = await supabase.storage
       .from(bucket)
-      .upload(path, finalFile, {
+      .upload(uploadPath, finalFile, {
         upsert,
         contentType: finalFile.type || "application/octet-stream",
         cacheControl: "3600",
@@ -250,19 +256,19 @@ export async function uploadFile(
       if (isConflict && !upsert) {
         const { error: retryErr, data: retryData } = await supabase.storage
           .from(bucket)
-          .upload(path, finalFile, { upsert: true, contentType: finalFile.type, cacheControl: "3600" });
+          .upload(uploadPath, finalFile, { upsert: true, contentType: finalFile.type, cacheControl: "3600" });
         if (retryErr) {
           const { userMessage, errorType, details } = parseStorageError(retryErr);
           return { ok: false, error: retryErr.message, userMessage, errorType, details };
         }
-        return { ok: true, path: retryData?.path || path };
+        return { ok: true, path: retryData?.path || uploadPath };
       }
 
       const { userMessage, errorType, details } = parseStorageError(uploadErr);
       return { ok: false, error: uploadErr.message, userMessage, errorType, details };
     }
 
-    return { ok: true, path: data?.path || path };
+    return { ok: true, path: data?.path || uploadPath };
   } catch (e: any) {
     const { userMessage, errorType, details } = parseStorageError(e);
     return { ok: false, error: String(e?.message || e), userMessage, errorType, details };
