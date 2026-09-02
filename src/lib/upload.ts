@@ -33,8 +33,10 @@ export type UploadConfig = {
   maxMb?: number;
   allowedTypes?: AllowedFileType;
   upsert?: boolean;
-  /** أقصى عرض/ارتفاع للصور (بكسل). افتراضي: 4096 */
+  /** أقصى عرض/ارتفاع للصور (بكسل). افتراضي: 2048 (توفير مساحة التخزين) */
   maxDimension?: number;
+  /** الحجم المستهدف بعد الضغط (ميغابايت). افتراضي: 0.3 */
+  targetSizeMb?: number;
 };
 
 export type UploadResult = {
