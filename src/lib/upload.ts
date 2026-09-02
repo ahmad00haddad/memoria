@@ -189,7 +189,10 @@ export async function uploadFile(
   file: File,
   config: UploadConfig,
 ): Promise<UploadResult> {
-  const { bucket, path, maxMb = 10, allowedTypes = "image", upsert = false, maxDimension = 4096 } = config;
+  const {
+    bucket, path, maxMb = 10, allowedTypes = "image", upsert = false,
+    maxDimension = 2048, targetSizeMb = 0.3,
+  } = config;
 
   // 1. تحقّق من النوع
   const typeError = validateFileType(file, allowedTypes);
@@ -202,10 +205,11 @@ export async function uploadFile(
   if (file.type.startsWith('image/') && file.type !== 'image/gif' && file.type !== 'image/svg+xml') {
     try {
       const options = {
-        maxSizeMB: 1,
+        maxSizeMB: targetSizeMb,
         maxWidthOrHeight: maxDimension,
         useWebWorker: true,
-        fileType: file.type === 'image/png' ? 'image/png' : 'image/jpeg',
+        // JPEG دائماً للصور غير الشفافة — أصغر بكثير من PNG
+        fileType: 'image/jpeg',
       };
       finalFile = await imageCompression(file, options);
     } catch (e) {
