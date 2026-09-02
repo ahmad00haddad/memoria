@@ -33,8 +33,10 @@ export type UploadConfig = {
   maxMb?: number;
   allowedTypes?: AllowedFileType;
   upsert?: boolean;
-  /** أقصى عرض/ارتفاع للصور (بكسل). افتراضي: 4096 */
+  /** أقصى عرض/ارتفاع للصور (بكسل). افتراضي: 2048 (توفير مساحة التخزين) */
   maxDimension?: number;
+  /** الحجم المستهدف بعد الضغط (ميغابايت). افتراضي: 0.3 */
+  targetSizeMb?: number;
 };
 
 export type UploadResult = {
@@ -187,7 +189,10 @@ export async function uploadFile(
   file: File,
   config: UploadConfig,
 ): Promise<UploadResult> {
-  const { bucket, path, maxMb = 10, allowedTypes = "image", upsert = false, maxDimension = 4096 } = config;
+  const {
+    bucket, path, maxMb = 10, allowedTypes = "image", upsert = false,
+    maxDimension = 2048, targetSizeMb = 0.3,
+  } = config;
 
   // 1. تحقّق من النوع
   const typeError = validateFileType(file, allowedTypes);
@@ -200,10 +205,11 @@ export async function uploadFile(
   if (file.type.startsWith('image/') && file.type !== 'image/gif' && file.type !== 'image/svg+xml') {
     try {
       const options = {
-        maxSizeMB: 1,
+        maxSizeMB: targetSizeMb,
         maxWidthOrHeight: maxDimension,
         useWebWorker: true,
-        fileType: file.type === 'image/png' ? 'image/png' : 'image/jpeg',
+        // JPEG دائماً للصور غير الشفافة — أصغر بكثير من PNG
+        fileType: 'image/jpeg',
       };
       finalFile = await imageCompression(file, options);
     } catch (e) {
@@ -334,14 +340,16 @@ export async function uploadProfilePhoto(
   userId: string,
   type: "avatar" | "cover",
 ): Promise<UploadResult> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${userId}/${type}.${ext}`;
+  const path = `${userId}/${type}.jpg`;
   const result = await uploadFile(file, {
     bucket: "avatars",
     path,
     maxMb: 5,
     allowedTypes: "image",
     upsert: true,
+    // توفير التخزين: الأفاتار 512px، صورة الغلاف 1280px
+    maxDimension: type === "avatar" ? 512 : 1280,
+    targetSizeMb: type === "avatar" ? 0.1 : 0.25,
   });
   if (result.ok) {
     const { data } = supabase.storage.from("avatars").getPublicUrl(result.path);
@@ -353,8 +361,7 @@ export async function uploadProfilePhoto(
 /**
  * رفع صورة معرض الأعمال (portfolio).
  * يُخزَّن داخل bucket "avatars" العام تحت مجلد <uid>/portfolio/
- * (سياسات avatars تسمح للمالك بالكتابة والقراءة عامة — ولا يوجد bucket
- * منفصل باسم portfolio في المشروع، وهو ما كان يسبب خطأ "مجلد التخزين غير موجود").
+ * مضغوطة إلى 1600px / ~300KB لتخفيف استهلاك التخزين.
  */
 export async function uploadPortfolioPhoto(
   file: File,
@@ -367,6 +374,8 @@ export async function uploadPortfolioPhoto(
     maxMb: 10,
     allowedTypes: "image",
     upsert: false,
+    maxDimension: 1600,
+    targetSizeMb: 0.3,
   });
   if (result.ok) {
     const { data } = supabase.storage.from("avatars").getPublicUrl(result.path);
@@ -394,21 +403,6 @@ export async function uploadPaymentProof(
   });
 }
 
-/**
- * رفع صورة معرض التسليم (gallery photo).
- * يستخدم bucket "delivery-photos" (20MB، خاص — signed URLs).
- */
-export async function uploadGalleryPhoto(
-  file: File,
-  opts: { photographerId: string; bookingId: string; galleryId: string },
-): Promise<UploadResult> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${opts.photographerId}/${opts.bookingId}/${Date.now()}.${ext}`;
-  return uploadFile(file, {
-    bucket: "delivery-photos",
-    path,
-    maxMb: 20,
-    allowedTypes: "image",
-    upsert: false,
-  });
-}
+// ملاحظة: تسليم الصور النهائية لم يعد يمر عبر تخزين المنصّة (توفير للتكلفة).
+// المصوّرة تضع رابط تسليم خارجي (Drive / WeTransfer / Dropbox) على الحجز،
+// ويظهر للعميل في صفحة التتبّع. معرض المعاينة يبقى للصور المختارة فقط.

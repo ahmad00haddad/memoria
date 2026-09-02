@@ -170,7 +170,7 @@ function TrackingPage() {
 
   // Polling refresh — keeps gallery/messages live without realtime RLS gymnastics
   useEffect(() => {
-    const id = setInterval(() => { if (!busyRef.current) load(); }, 30000);
+    const id = setInterval(() => { if (!busyRef.current) load(); }, 120000);
     return () => clearInterval(id);
   }, []);
 
@@ -411,6 +411,22 @@ function TrackingPage() {
             يُظهر المرحلة الحالية بوضوح تام للعميل
         ══════════════════════════════════════════ */}
         <BookingTimeline status={b.status} />
+
+        {/* رابط تسليم الصور الخارجي (Drive / WeTransfer / Dropbox) */}
+        {b.delivery_link && (
+          <div className="rounded-sm border border-emerald-200 bg-emerald-50 p-5 mb-6 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+            <h2 className="font-serif text-lg mb-1">صورك جاهزة للتحميل</h2>
+            <p className="text-sm text-muted-foreground mb-3">أرسلت لكِ المصوّرة رابط تحميل الصور بجودتها الكاملة.</p>
+            <a
+              href={b.delivery_link}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block bg-charcoal text-ivory px-5 py-2 rounded-sm text-sm"
+            >
+              تحميل الصور
+            </a>
+          </div>
+        )}
 
         {/* Timeline — تفاصيل المراحل */}
         <div className="rounded-sm border border-border bg-card p-5 mb-6">
@@ -933,7 +949,7 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
   };
   useEffect(() => {
     load();
-    const id = setInterval(load, 8000);
+    const id = setInterval(load, 45000);
     return () => clearInterval(id);
     /* eslint-disable-next-line */
   }, [token]);
