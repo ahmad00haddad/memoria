@@ -403,21 +403,6 @@ export async function uploadPaymentProof(
   });
 }
 
-/**
- * رفع صورة معرض التسليم (gallery photo).
- * يستخدم bucket "delivery-photos" (20MB، خاص — signed URLs).
- */
-export async function uploadGalleryPhoto(
-  file: File,
-  opts: { photographerId: string; bookingId: string; galleryId: string },
-): Promise<UploadResult> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${opts.photographerId}/${opts.bookingId}/${Date.now()}.${ext}`;
-  return uploadFile(file, {
-    bucket: "delivery-photos",
-    path,
-    maxMb: 20,
-    allowedTypes: "image",
-    upsert: false,
-  });
-}
+// ملاحظة: تسليم الصور النهائية لم يعد يمر عبر تخزين المنصّة (توفير للتكلفة).
+// المصوّرة تضع رابط تسليم خارجي (Drive / WeTransfer / Dropbox) على الحجز،
+// ويظهر للعميل في صفحة التتبّع. معرض المعاينة يبقى للصور المختارة فقط.
