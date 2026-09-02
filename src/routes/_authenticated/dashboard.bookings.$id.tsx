@@ -576,8 +576,8 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
     const files = Array.from(e.target.files ?? []);
     if (!files.length || !gallery) return;
     
-    if (files.length > 50) {
-      toast.error("لا يمكن رفع أكثر من 50 صورة دفعة واحدة لتجنب بطء المتصفح.");
+    if (files.length > 30) {
+      toast.error("معرض المعاينة يقبل حتى 30 صورة في المرة. للتسليم الكامل استخدمي رابط التسليم الخارجي (Drive / WeTransfer).");
       return;
     }
     const invalidTypes = files.filter(f => !f.type.startsWith("image/"));
@@ -600,8 +600,8 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
         if (rawFile.type.startsWith('image/') && rawFile.type !== 'image/gif' && rawFile.type !== 'image/svg+xml') {
           try {
             f = await imageCompression(rawFile, {
-              maxSizeMB: 2,
-              maxWidthOrHeight: 4096,
+              maxSizeMB: 0.5,
+              maxWidthOrHeight: 2048,
               useWebWorker: true,
               fileType: rawFile.type === 'image/png' ? 'image/png' : 'image/jpeg',
             });
