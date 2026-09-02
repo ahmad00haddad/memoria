@@ -340,14 +340,16 @@ export async function uploadProfilePhoto(
   userId: string,
   type: "avatar" | "cover",
 ): Promise<UploadResult> {
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${userId}/${type}.${ext}`;
+  const path = `${userId}/${type}.jpg`;
   const result = await uploadFile(file, {
     bucket: "avatars",
     path,
     maxMb: 5,
     allowedTypes: "image",
     upsert: true,
+    // توفير التخزين: الأفاتار 512px، صورة الغلاف 1280px
+    maxDimension: type === "avatar" ? 512 : 1280,
+    targetSizeMb: type === "avatar" ? 0.1 : 0.25,
   });
   if (result.ok) {
     const { data } = supabase.storage.from("avatars").getPublicUrl(result.path);
@@ -359,8 +361,7 @@ export async function uploadProfilePhoto(
 /**
  * رفع صورة معرض الأعمال (portfolio).
  * يُخزَّن داخل bucket "avatars" العام تحت مجلد <uid>/portfolio/
- * (سياسات avatars تسمح للمالك بالكتابة والقراءة عامة — ولا يوجد bucket
- * منفصل باسم portfolio في المشروع، وهو ما كان يسبب خطأ "مجلد التخزين غير موجود").
+ * مضغوطة إلى 1600px / ~300KB لتخفيف استهلاك التخزين.
  */
 export async function uploadPortfolioPhoto(
   file: File,
@@ -373,6 +374,8 @@ export async function uploadPortfolioPhoto(
     maxMb: 10,
     allowedTypes: "image",
     upsert: false,
+    maxDimension: 1600,
+    targetSizeMb: 0.3,
   });
   if (result.ok) {
     const { data } = supabase.storage.from("avatars").getPublicUrl(result.path);
