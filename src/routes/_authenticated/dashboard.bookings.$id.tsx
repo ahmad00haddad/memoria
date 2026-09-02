@@ -499,6 +499,20 @@ function ProductionPanel({ b, onSetStage, onSaveLink, onSaveDeliveryLink }: { b:
           <a href={b.selection_link} target="_blank" rel="noreferrer" className="text-xs text-gold underline mt-1 inline-block">فتح المعرض الحالي</a>
         )}
       </div>
+
+      <div className="mt-5 pt-5 border-t border-border">
+        <label className="text-xs text-muted-foreground">رابط تسليم الصور النهائية (Google Drive / WeTransfer / Dropbox)</label>
+        <div className="flex gap-2 mt-1">
+          <input value={dLink} onChange={(e) => setDLink(e.target.value)} placeholder="https://drive.google.com/…" className="flex-1 border border-border rounded-sm px-3 py-2 bg-background text-sm" />
+          <button onClick={() => onSaveDeliveryLink(dLink)} className="bg-charcoal text-ivory px-4 py-2 rounded-sm text-sm active:scale-95 transition-transform duration-200">حفظ وإرسال</button>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5">
+          يظهر للعميلة في صفحة التتبّع كزر «تحميل الصور». استخدمي هذا للتسليم الكامل (مجاناً من حسابك) بدل رفع آلاف الصور على المنصّة — معرض المعاينة هنا يبقى للصور المختارة فقط.
+        </p>
+        {b.delivery_link && (
+          <a href={b.delivery_link} target="_blank" rel="noreferrer" className="text-xs text-gold underline mt-1 inline-block">فتح رابط التسليم الحالي</a>
+        )}
+      </div>
     </div>
   );
 }
