@@ -35,8 +35,9 @@ export function MobileBottomNav() {
       return count ?? 0;
     },
     enabled: !!userId,
-    refetchInterval: 30000, // جلب الإشعارات كل 30 ثانية بدلاً من كل تغيير مسار
-    staleTime: 10000,
+    // توفير الاستهلاك: تحديث كل 5 دقائق بدل كل 30 ثانية
+    refetchInterval: 5 * 60_000,
+    staleTime: 5 * 60_000,
   });
 
   return (
