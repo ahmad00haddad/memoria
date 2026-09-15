@@ -120,7 +120,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       // GA: يُحمَّل فقط عند وجود VITE_GA_MEASUREMENT_ID صالح (يبدأ بـ G-) لتفادي نداءات placeholder
-      ...(import.meta.env.VITE_GA_MEASUREMENT_ID && (import.meta.env.VITE_GA_MEASUREMENT_ID as string).startsWith('G-')
+      ...(import.meta.env.VITE_GA_MEASUREMENT_ID && ((import.meta.env.VITE_GA_MEASUREMENT_ID as string).startsWith('G-') && import.meta.env.VITE_GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX')
         ? [
             {
               src: `https://www.googletagmanager.com/gtag/js?id=${import.meta.env.VITE_GA_MEASUREMENT_ID}`,

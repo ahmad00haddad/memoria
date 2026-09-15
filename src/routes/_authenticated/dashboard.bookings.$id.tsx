@@ -398,7 +398,7 @@ function BookingDetail() {
               )}
               <div className="flex gap-2 pt-2">
                 <button onClick={copyContractLink} className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200"><Copy className="h-4 w-4" /> نسخ رابط العقد</button>
-                <Link to="/contracts/$token" params={{ token: contract.sign_token }} className="border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">عرض العقد</Link>
+                <Link to="/contracts/$token" params={{ token: String(contract.sign_token) }} className="border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">عرض العقد</Link>
               </div>
             </div>
           ) : (
