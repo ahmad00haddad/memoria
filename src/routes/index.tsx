@@ -22,8 +22,8 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Memoria · ميموريا" },
       { name: "twitter:description", content: "احجزي مصوّرة مناسباتك بثقة." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/83dd160b-9aba-4bde-a5a9-99257e81d3c0/id-preview-13a5526b--7bd5f253-4c5b-448c-8e90-d0c390e715d9.lovable.app-1778482404342.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/83dd160b-9aba-4bde-a5a9-99257e81d3c0/id-preview-13a5526b--7bd5f253-4c5b-448c-8e90-d0c390e715d9.lovable.app-1778482404342.png" },
+      { property: "og:image", content: "https://memoria-jo.lovable.app/og-default.png" },
+      { name: "twitter:image", content: "https://memoria-jo.lovable.app/og-default.png" },
     ],
     links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/" }],
   }),
@@ -121,6 +121,8 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
 
 function Landing() {
   const [featured, setFeatured] = useState<any[]>([]);
+  const [featuredStatus, setFeaturedStatus] = useState<"loading" | "ok" | "error">("loading");
+  const [featuredReload, setFeaturedReload] = useState(0);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [showRoleGate, setShowRoleGate] = useState(false);
   const { loading: authLoading, authed, isPhotographer, userId } = useAuthState();
@@ -128,15 +130,27 @@ function Landing() {
   useEffect(() => {
     let active = true;
 
+    setFeaturedStatus("loading");
     supabase
       .from("profiles")
       .select("username,display_name,city,cover_url,avatar_url")
       .eq("is_published", true)
       .eq("is_featured", true)
       .limit(4)
-      .then(({ data }) => {
-        if (active) setFeatured(data ?? []);
-      });
+      .then(
+        ({ data, error }) => {
+          if (!active) return;
+          if (error) {
+            setFeaturedStatus("error");
+            return;
+          }
+          setFeatured(data ?? []);
+          setFeaturedStatus("ok");
+        },
+        () => {
+          if (active) setFeaturedStatus("error");
+        },
+      );
 
     const loadTrialState = async () => {
       if (!active || !userId || !isPhotographer) {
