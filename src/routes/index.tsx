@@ -121,6 +121,8 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
 
 function Landing() {
   const [featured, setFeatured] = useState<any[]>([]);
+  const [featuredStatus, setFeaturedStatus] = useState<"loading" | "ok" | "error">("loading");
+  const [featuredReload, setFeaturedReload] = useState(0);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [showRoleGate, setShowRoleGate] = useState(false);
   const { loading: authLoading, authed, isPhotographer, userId } = useAuthState();
@@ -128,15 +130,27 @@ function Landing() {
   useEffect(() => {
     let active = true;
 
+    setFeaturedStatus("loading");
     supabase
       .from("profiles")
       .select("username,display_name,city,cover_url,avatar_url")
       .eq("is_published", true)
       .eq("is_featured", true)
       .limit(4)
-      .then(({ data }) => {
-        if (active) setFeatured(data ?? []);
-      });
+      .then(
+        ({ data, error }) => {
+          if (!active) return;
+          if (error) {
+            setFeaturedStatus("error");
+            return;
+          }
+          setFeatured(data ?? []);
+          setFeaturedStatus("ok");
+        },
+        () => {
+          if (active) setFeaturedStatus("error");
+        },
+      );
 
     const loadTrialState = async () => {
       if (!active || !userId || !isPhotographer) {
