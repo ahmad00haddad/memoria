@@ -184,7 +184,7 @@ function Landing() {
     return () => {
       active = false;
     };
-  }, [isPhotographer, userId]);
+  }, [isPhotographer, userId, featuredReload]);
 
   const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | "guest" | null>(null);
 
