@@ -184,7 +184,7 @@ function Landing() {
     return () => {
       active = false;
     };
-  }, [isPhotographer, userId]);
+  }, [isPhotographer, userId, featuredReload]);
 
   const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | "guest" | null>(null);
 
@@ -432,7 +432,7 @@ function Landing() {
         </ScrollReveal>
       )}
 
-      {featured.length > 0 && (visitorRole !== "photographer" && !isPhotographer) && (
+      {(featuredStatus !== "ok" || featured.length > 0) && (visitorRole !== "photographer" && !isPhotographer) && (
         <ScrollReveal delay={0.1}>
         <motion.section
           className="container-editorial py-16"
@@ -445,6 +445,35 @@ function Landing() {
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">⭐ المميّزون</div>
             <h2 className="font-serif text-3xl sm:text-4xl">مصوّرون بأعلى التقييمات</h2>
           </div>
+          {featuredStatus === "loading" && (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="rounded-sm overflow-hidden border border-border bg-card">
+                  <div className="aspect-[4/3] animate-pulse bg-muted" />
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 w-2/3 animate-pulse rounded-sm bg-muted" />
+                    <div className="h-3 w-1/3 animate-pulse rounded-sm bg-muted" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {featuredStatus === "error" && (
+            <div className="mx-auto max-w-md rounded-sm border border-border bg-card p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                تعذّر تحميل قائمة المصوّرات الآن. تحقّقي من الاتصال وحاولي مجدداً.
+              </p>
+              <button
+                onClick={() => setFeaturedReload((n) => n + 1)}
+                className="mt-4 inline-flex items-center justify-center rounded-sm bg-charcoal px-5 py-2.5 text-sm font-medium text-ivory transition hover:opacity-90"
+              >
+                إعادة المحاولة
+              </button>
+            </div>
+          )}
+
+          {featuredStatus === "ok" && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {featured.map((p) => (
               <motion.div key={p.username} variants={fadeUp} whileHover={cardHover}>
@@ -461,6 +490,7 @@ function Landing() {
               </motion.div>
             ))}
           </div>
+          )}
         </motion.section>
         </ScrollReveal>
       )}
