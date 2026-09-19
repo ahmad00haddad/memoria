@@ -490,6 +490,7 @@ function Landing() {
               </motion.div>
             ))}
           </div>
+          )}
         </motion.section>
         </ScrollReveal>
       )}
