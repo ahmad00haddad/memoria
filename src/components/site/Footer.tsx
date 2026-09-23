@@ -48,6 +48,17 @@ export function Footer() {
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
           <span>© {new Date().getFullYear()} Memoria · ميموريا. صُمِّم بعناية في عمّان.</span>
         </div>
+        <div className="mt-1.5 opacity-50 hover:opacity-80 transition-opacity duration-300">
+          <span>تصميم وتطوير: </span>
+          <a
+            href="https://haddad-dev.lovable.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gold transition-colors duration-200 underline underline-offset-2"
+          >
+            أحمد حداد
+          </a>
+        </div>
       </div>
     </footer>
   );
