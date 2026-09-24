@@ -8,7 +8,20 @@ import { getContractByToken, signContract } from "@/lib/contracts.functions";
 import { toast } from "sonner";
 import { CheckCircle2, ScrollText, Printer } from "lucide-react";
 
-export const Route = createFileRoute("/contracts/$token")({ component: SignPage });
+export const Route = createFileRoute("/contracts/$token")({
+  head: () => ({
+    meta: [
+      { title: "توقيع عقد التصوير — ميموريا" },
+      { name: "description", content: "راجعي عقد جلسة التصوير ووقّعيه إلكترونياً بأمان." },
+      { property: "og:title", content: "توقيع عقد التصوير — ميموريا" },
+      { property: "og:description", content: "راجعي عقد جلسة التصوير ووقّعيه إلكترونياً بأمان." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: SignPage,
+});
 
 function SignPage() {
   const { token } = Route.useParams();

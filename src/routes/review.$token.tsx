@@ -10,7 +10,20 @@ import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/review/$token")({ component: ReviewPage });
+export const Route = createFileRoute("/review/$token")({
+  head: () => ({
+    meta: [
+      { title: "قيّمي تجربتك — ميموريا" },
+      { name: "description", content: "شاركي رأيك في جلسة التصوير وساعدي غيرك على الاختيار." },
+      { property: "og:title", content: "قيّمي تجربتك — ميموريا" },
+      { property: "og:description", content: "شاركي رأيك في جلسة التصوير وساعدي غيرك على الاختيار." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: ReviewPage,
+});
 
 function ReviewPage() {
   const { token } = Route.useParams();

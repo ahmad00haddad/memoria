@@ -24,6 +24,17 @@ import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/track/$token")({
+  head: () => ({
+    meta: [
+      { title: "متابعة حجزك — ميموريا" },
+      { name: "description", content: "تابعي حالة حجز التصوير، الدفعات، والصور خطوة بخطوة." },
+      { property: "og:title", content: "متابعة حجزك — ميموريا" },
+      { property: "og:description", content: "تابعي حالة حجز التصوير، الدفعات، والصور خطوة بخطوة." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: TrackingPage,
   errorComponent: ClientError,
 });
