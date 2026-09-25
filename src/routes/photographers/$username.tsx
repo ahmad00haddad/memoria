@@ -131,15 +131,22 @@ function PhotographerPage() {
   const fetchDeposit = useServerFn(getPublicDepositInfo);
   const fetchProfileData = useServerFn(getPhotographerProfileData);
 
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
   useEffect(() => {
+    setLoading(true);
+    setLoadFailed(false);
     (async () => {
+     try {
       const normalizedUsername = username.trim().toLowerCase();
-      const { data: prof } = await supabase
+      const { data: prof, error: profErr } = await supabase
         .from("profiles")
         .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,tagline,booking_notes,fixed_deposit")
         .eq("username", normalizedUsername)
         .eq("is_published", true)
         .maybeSingle();
+      if (profErr) throw profErr;
 
       const mergedProfile = (prof as Profile | null) ?? null;
       setProfile(mergedProfile);
@@ -168,9 +175,14 @@ function PhotographerPage() {
           setDeposit(dep);
         } catch {}
       }
+     } catch (e) {
+      console.error("[photographer] load failed", e);
+      setLoadFailed(true);
+     } finally {
       setLoading(false);
+     }
     })();
-  }, [username]);
+  }, [username, reloadKey]);
 
   // Inject JSON-LD structured data when profile + reviews are loaded (helps Google).
   useEffect(() => {
@@ -219,6 +231,12 @@ function PhotographerPage() {
   }, []);
 
   if (loading) return <FallbackPage>جاري التحميل…</FallbackPage>;
+  if (loadFailed) return (
+    <FallbackPage>
+      تعذّر تحميل صفحة المصوّرة. تحقّقي من الاتصال وحاولي مجدداً.{" "}
+      <button onClick={() => setReloadKey((k) => k + 1)} className="underline text-gold">إعادة المحاولة</button>
+    </FallbackPage>
+  );
   if (!profile) return <FallbackPage>لا يوجد مصوّر بهذا الاسم. <Link to="/search" className="underline">عُد للبحث</Link></FallbackPage>;
 
   // اليوم يُحجَب فقط لو كان في عدم التوفر (Google/يدوي). الحجوزات الفردية لا تحجب اليوم كاملاً
