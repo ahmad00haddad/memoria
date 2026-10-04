@@ -47,8 +47,10 @@ export function startTour() {
 }
 
 export function useTourState() {
-  const [state, setState] = useState<TourState>(getTourState());
+  // نبدأ بحالة الخادم ثم نقرأ التخزين بعد التركيب لتفادي اختلاف الـ hydration
+  const [state, setState] = useState<TourState>({ status: "idle", step: 0, startedAt: null, completedAt: null, userId: null });
   useEffect(() => {
+    setState(getTourState());
     const onStorage = () => setState(getTourState());
     window.addEventListener("tour-state-change", onStorage);
     return () => window.removeEventListener("tour-state-change", onStorage);
@@ -108,12 +110,19 @@ const STEPS: Step[] = [
   },
 ];
 
-const HIDDEN_PREFIXES = ["/dashboard", "/admin", "/onboarding", "/login", "/reset-password", "/forgot-password", "/notifications", "/app"];
+const HIDDEN_PREFIXES = ["/dashboard", "/admin", "/onboarding", "/login", "/photographers/join", "/for-photographers", "/reset-password", "/forgot-password", "/notifications", "/app"];
 
 export function ClientTour() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const nav = useNavigate();
   const state = useTourState();
+  // لا نعرض الجولة فوق شاشة اختيار الدور في الرئيسية
+  const [gateOpen, setGateOpen] = useState(false);
+  useEffect(() => {
+    const on = (e: Event) => setGateOpen(!!(e as CustomEvent).detail);
+    window.addEventListener("memoria-role-gate", on);
+    return () => window.removeEventListener("memoria-role-gate", on);
+  }, []);
 
   // Smart launch logic
   useEffect(() => {
@@ -140,7 +149,7 @@ export function ClientTour() {
   };
 
   const hidden = HIDDEN_PREFIXES.some((p) => pathname.startsWith(p));
-  if (state.status !== "active" || hidden) return null;
+  if (state.status !== "active" || hidden || gateOpen) return null;
 
   const s = STEPS[state.step];
   if (!s) return null;

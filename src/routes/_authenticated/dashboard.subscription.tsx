@@ -1,4 +1,5 @@
 import { Lightbulb } from "lucide-react";
+import { CopyButton } from "@/components/ui/copy-button";
 import { motion } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
@@ -44,6 +45,7 @@ function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [sub, setSub] = useState<Sub | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [payEarly, setPayEarly] = useState(false);
   const [userId, setUserId] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [reference, setReference] = useState("");
@@ -178,6 +180,10 @@ function SubscriptionPage() {
   }
 
   const isActive = effectiveStatus === "active" || effectiveStatus === "trial";
+  const endsAt = effectiveStatus === "trial" ? trialEnds : periodEnds;
+  const daysLeft = endsAt ? Math.max(0, Math.ceil((endsAt.getTime() - Date.now()) / 86400000)) : 0;
+  // الدفع يظهر عند الانتهاء أو قرب الانتهاء، وإلا يبقى خلف زر "ادفعي مبكراً"
+  const showPayment = effectiveStatus === "expired" || effectiveStatus === "canceled" || (isActive && daysLeft <= 7) || payEarly;
 
   return (
     <div className="min-h-screen bg-background">
@@ -192,8 +198,15 @@ function SubscriptionPage() {
         {/* Status card */}
         <StatusCard sub={sub} effectiveStatus={effectiveStatus || "expired"} isActive={!!isActive} trialDaysLeft={trialDaysLeft} periodEnds={periodEnds} />
 
+        {isActive && !showPayment && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+            <span>سيصلك تذكير قبل الانتهاء بـ ٧ أيام و٣ أيام. لا شيء مطلوب منكِ الآن.</span>
+            <button onClick={() => setPayEarly(true)} className="rounded-full border border-border px-4 py-1.5 text-xs hover:bg-secondary">ادفعي مبكراً</button>
+          </div>
+        )}
+
         {/* Payment methods */}
-        {effectiveStatus === "expired" && (
+        {showPayment && effectiveStatus !== "pending_review" && (
           <div className="mt-10">
             <h2 className="font-serif text-2xl mb-1">الدفع — {PRICE_USD}$ شهريًا</h2>
             <p className="text-sm text-muted-foreground mb-6">اختاري طريقة الدفع المناسبة لكِ.</p>
@@ -215,13 +228,7 @@ function SubscriptionPage() {
                     <div className="font-mono text-lg">{ADMIN_CLIQ_ALIAS}</div>
                     <div className="text-xs text-muted-foreground mt-1">{ADMIN_CLIQ_NAME}</div>
                   </div>
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(ADMIN_CLIQ_ALIAS); toast.success("تم النسخ"); }}
-                    className="p-2 hover:bg-card rounded-sm"
-                    aria-label="نسخ"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
+                  <CopyButton value={ADMIN_CLIQ_ALIAS} label="نسخ" />
                 </div>
 
                 <input
@@ -244,9 +251,10 @@ function SubscriptionPage() {
                       if (f) handleProofUpload(f);
                     }}
                   />
-                  <span className={`flex items-center justify-center gap-2 w-full bg-charcoal text-ivory py-3 rounded-sm cursor-pointer hover:opacity-90 ${uploading ? "opacity-60" : ""}`}>
+                  <span className={`flex items-center justify-center gap-2 w-full bg-charcoal text-ivory py-3 rounded-full cursor-pointer hover:opacity-90 active:scale-[0.98] transition-transform dark:bg-gold dark:text-charcoal ${uploading ? "opacity-60" : ""}`}>
                     <Upload className="h-4 w-4" />
-                    {uploading ? "جاري الرفع…" : "رفع إثبات التحويل"}
+                    {uploading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" /> : null}
+                    {uploading ? "نرفع الإثبات…" : "رفع إثبات التحويل"}
                   </span>
                 </label>
                 <p className="text-[11px] text-muted-foreground mt-3 text-center">
@@ -335,10 +343,21 @@ function StatusCard({ sub, effectiveStatus, isActive, trialDaysLeft, periodEnds 
             </div>
           )}
           {effectiveStatus === "active" && periodEnds && (
-            <div className="text-sm">يتجدّد في {periodEnds.toLocaleDateString("ar-JO")}</div>
+            <div className="text-sm">فعّال حتى {periodEnds.toLocaleDateString("ar-JO", { day: "numeric", month: "long" })}</div>
           )}
+          {(effectiveStatus === "active" || effectiveStatus === "trial") && (() => {
+            const end = effectiveStatus === "trial" ? new Date(sub.trial_ends_at) : periodEnds;
+            if (!end) return null;
+            const left = Math.max(0, (end.getTime() - Date.now()) / 86400000);
+            const pct = Math.max(4, Math.min(100, (left / 30) * 100));
+            return (
+              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-background/60">
+                <div className={`h-full rounded-full transition-all duration-700 ${left <= 3 ? "bg-destructive" : left <= 7 ? "bg-amber-500" : "bg-emerald-500"}`} style={{ width: `${pct}%` }} />
+              </div>
+            );
+          })()}
           {effectiveStatus === "pending_review" && (
-            <div className="text-sm">تم استلام إثبات الدفع. سيُفعَّل اشتراكك خلال 24 ساعة.</div>
+            <div className="text-sm">وصلنا إثبات الدفع، والمراجعة تتم عادةً خلال ساعات. ملفك يبقى ظاهراً خلال المراجعة.</div>
           )}
           {effectiveStatus === "expired" && (
             <div className="text-sm">انتهى اشتراكك. ادفعي لاستعادة الوصول الكامل.</div>

@@ -1,4 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { motion } from "framer-motion";
+import { emailTypoSuggestion } from "@/lib/form-hints";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -42,7 +44,17 @@ function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [unconfirmed, setUnconfirmed] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+  const [shake, setShake] = useState(0);
   const navigate = useNavigate();
+  const emailFix = emailTypoSuggestion(email);
+
+  // تذكّر آخر بريد دخلت به المصوّرة على هذا الجهاز
+  useEffect(() => {
+    try { const last = localStorage.getItem("memoria_last_email"); if (last) setEmail(last); } catch { /* ignore */ }
+  }, []);
   const search = Route.useSearch() as any;
   const redirectPath = search?.redirect || "/dashboard";
 
@@ -69,30 +81,31 @@ function LoginPage() {
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const email = String(fd.get("email") ?? "").trim();
     const password = String(fd.get("password") ?? "");
-    if (!email || !password) {
-      setErr("الرجاء إدخال البريد الإلكتروني وكلمة المرور.");
+    if (!email.trim() || !password) {
+      setErr("أدخلي البريد الإلكتروني وكلمة المرور.");
+      setShake((n) => n + 1);
       return;
     }
     setErr(null);
     setSuccess(null);
+    setUnconfirmed(false);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {
         const m = error.message.toLowerCase();
         let friendly = "تعذّر تسجيل الدخول. تحقّقي من البريد وكلمة المرور.";
         if (m.includes("invalid login")) friendly = "البريد أو كلمة المرور غير صحيحة.";
-        else if (m.includes("not confirmed") || m.includes("email")) friendly = "لم يتم تأكيد البريد بعد. افتحي رابط التفعيل في بريدك.";
-        else if (m.includes("rate") || m.includes("limit")) friendly = "محاولات كثيرة، الرجاء المحاولة بعد قليل.";
+        else if (m.includes("not confirmed")) { friendly = "لم يُفعَّل بريدك بعد. افتحي رابط التفعيل في بريدك."; setUnconfirmed(true); }
+        else if (m.includes("rate") || m.includes("limit")) friendly = "محاولات كثيرة، حاولي بعد قليل.";
         setErr(friendly);
-        toast.error("تعذّر تسجيل الدخول");
+        setShake((n) => n + 1);
         return;
       }
 
-      setSuccess("تم تسجيل الدخول بنجاح، يتم تحويلك الآن.");
-      toast.success("تم تسجيل الدخول بنجاح");
+      try { localStorage.setItem("memoria_last_email", email.trim()); } catch { /* ignore */ }
+      setSuccess("أهلاً بعودتك — ننقلك الآن.");
       navigate({ to: redirectPath, replace: true });
     } catch (error: any) {
       const message = error?.message || "حدث خلل غير متوقع أثناء تسجيل الدخول.";
@@ -111,17 +124,72 @@ function LoginPage() {
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">بوابة المصوّرين</div>
           <h1 className="font-serif text-4xl">تسجيل الدخول</h1>
         </div>
-        <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-sm p-6 shadow-soft">
-          <Field label="البريد الإلكتروني" name="email" type="email" autoComplete="email" required />
+        <motion.form
+          key={shake}
+          animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : undefined}
+          transition={{ duration: 0.35 }}
+          onSubmit={submit}
+          className="space-y-4 bg-card border border-border rounded-2xl p-6 shadow-soft"
+        >
+          <label className="block">
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">البريد الإلكتروني</span>
+            <input
+              name="email"
+              type="email"
+              dir="ltr"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60"
+            />
+            {emailFix && (
+              <button type="button" onClick={() => setEmail(emailFix)} className="mt-1 text-xs text-gold hover:underline">
+                هل تقصدين <span dir="ltr">{emailFix}</span>؟
+              </button>
+            )}
+          </label>
           <Field label="كلمة المرور" name="password" type="password" autoComplete="current-password" required />
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">سيبقى تسجيل دخولك محفوظًا على هذا المتصفح.</span>
+            <span className="text-muted-foreground">يبقى دخولك محفوظاً على هذا الجهاز.</span>
             <Link to="/forgot-password" className="text-gold underline">نسيتِ كلمة المرور؟</Link>
           </div>
           {success && <p className="text-sm text-emerald-600">{success}</p>}
-          {err && <p className="text-sm text-destructive">{err}</p>}
-          <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
-            {loading ? "جاري الدخول…" : "دخول"}
+          {err && (
+            <div className="text-sm text-destructive">
+              {err}
+              {unconfirmed && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const { error } = await supabase.auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: `${window.location.origin}/dashboard` } });
+                    if (error) toast.error("تعذّر إعادة الإرسال الآن");
+                    else toast.success("أعدنا إرسال رابط التفعيل");
+                  }}
+                  className="ms-2 text-gold underline"
+                >
+                  إعادة إرسال الرابط
+                </button>
+              )}
+            </div>
+          )}
+          <button disabled={loading} className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory py-3 rounded-full hover:opacity-90 disabled:opacity-60 active:scale-[0.99] transition-transform dark:bg-gold dark:text-charcoal">
+            {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
+            {loading ? "ندخلك…" : "دخول"}
+          </button>
+          <button
+            type="button"
+            disabled={loading || linkSent}
+            onClick={async () => {
+              if (!email.trim()) { setErr("أدخلي بريدك أولاً لنرسل لكِ رابط الدخول."); setShake((n) => n + 1); return; }
+              setErr(null);
+              const { error } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}${redirectPath}` } });
+              if (error) { setErr("تعذّر إرسال الرابط. تأكّدي أن البريد مسجّل لدينا."); return; }
+              setLinkSent(true);
+            }}
+            className="w-full text-xs text-muted-foreground hover:text-foreground disabled:opacity-70"
+          >
+            {linkSent ? "أرسلنا رابط دخول إلى بريدك — افتحيه من هذا الجهاز" : "ادخلي برابط على بريدك بدل كلمة المرور"}
           </button>
 
           <div className="relative my-4">
@@ -149,7 +217,7 @@ function LoginPage() {
               });
               if (error) {
                 setLoading(false);
-                setErr("تعذّر تسجيل الدخول عبر Google. حاول مجدداً.");
+                setErr("تعذّر تسجيل الدخول عبر Google. حاولي مجدداً.");
               }
             }}
             className="w-full border border-border py-3 rounded-sm hover:bg-secondary disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
@@ -163,12 +231,12 @@ function LoginPage() {
             <span>تسجيل الدخول بواسطة Google</span>
           </button>
           <p className="text-sm text-center text-muted-foreground">
-            مصوّر جديد؟ <Link to="/photographers/join" className="text-gold underline">أنشئ حسابًا</Link>
+            مصوّرة جديدة؟ <Link to="/photographers/join" className="text-gold underline">أنشئي حسابك</Link>
           </p>
           <p className="text-xs text-center text-muted-foreground">
-            عميل؟ لا تحتاج حساب — <Link to="/search" className="underline">ابحث عن مصوّر مباشرة</Link>.
+            عروس؟ لا تحتاجين حساباً — <Link to="/search" className="underline">ابحثي عن مصوّرة مباشرة</Link>.
           </p>
-        </form>
+        </motion.form>
       </div>
       <Footer />
     </div>
@@ -177,6 +245,7 @@ function LoginPage() {
 
 function Field({ label, name, type, autoComplete, required }: { label: string; name: string; type: string; autoComplete?: string; required?: boolean }) {
   const [show, setShow] = useState(false);
+  const [caps, setCaps] = useState(false);
   const isPassword = type === "password";
   
   return (
@@ -187,18 +256,21 @@ function Field({ label, name, type, autoComplete, required }: { label: string; n
         type={isPassword && show ? "text" : type}
         autoComplete={autoComplete}
         required={required}
-        className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60 pr-10"
+        onKeyUp={(e) => setCaps(e.getModifierState?.("CapsLock") ?? false)}
+        className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60 pr-3 pl-10" dir="ltr"
       />
       {isPassword && (
         <button
           type="button"
           onClick={() => setShow(!show)}
           className="absolute left-3 top-[32px] text-muted-foreground hover:text-foreground transition-colors"
+          aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
           tabIndex={-1}
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       )}
+      {isPassword && caps && <span className="mt-1 block text-xs text-amber-700 dark:text-amber-400">زر الأحرف الكبيرة (Caps Lock) مفعّل</span>}
     </label>
   );
 }

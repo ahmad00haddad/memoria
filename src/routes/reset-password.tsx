@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { passwordStrength } from "@/lib/form-hints";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -51,7 +52,7 @@ function ResetPasswordPage() {
       <Header />
       <div className="container-editorial py-16 max-w-md">
         <div className="text-center mb-8">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">حساب جديد آمن</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">استعادة الوصول</div>
           <h1 className="font-serif text-4xl">إعادة تعيين كلمة المرور</h1>
         </div>
         {!ready ? (
@@ -62,13 +63,24 @@ function ResetPasswordPage() {
           <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-sm p-6 shadow-soft">
             <label className="block">
               <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">كلمة المرور الجديدة</span>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8}
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} autoComplete="new-password"
                 className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60" />
+              {password && (
+                <span className="mt-2 block">
+                  <span className="flex gap-1" aria-hidden>
+                    {[0, 1, 2].map((i) => (
+                      <span key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < passwordStrength(password).score ? (passwordStrength(password).score === 1 ? "bg-destructive" : passwordStrength(password).score === 2 ? "bg-amber-500" : "bg-emerald-500") : "bg-secondary"}`} />
+                    ))}
+                  </span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{passwordStrength(password).hint}</span>
+                </span>
+              )}
             </label>
             <label className="block">
               <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">تأكيد كلمة المرور</span>
-              <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={8}
-                className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60" />
+              <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={8} autoComplete="new-password"
+                className={`mt-1 w-full rounded-sm border bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60 ${confirm && confirm !== password ? "border-destructive" : "border-input"}`} />
+              {confirm && <span className={`mt-1 block text-xs ${confirm === password ? "text-emerald-600" : "text-destructive"}`}>{confirm === password ? "متطابقتان ✓" : "لا تطابق كلمة المرور"}</span>}
             </label>
             <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
               {loading ? "جاري الحفظ…" : "تحديث كلمة المرور"}

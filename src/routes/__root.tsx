@@ -18,8 +18,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
+import { PhotographerCommandPalette } from "@/components/CommandPalette";
 import { SmoothScroll } from "@/components/SmoothScroll";
-import { LazyMotion, domAnimation, motion, AnimatePresence } from "framer-motion";
+import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { ClientTour } from "@/components/ClientTour";
@@ -269,6 +270,7 @@ function RootComponent() {
       <ThemeProvider>
         <ConfirmProvider>
           <LazyMotion features={domAnimation}>
+           <MotionConfig reducedMotion="user">
             <SmoothScroll />
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-sm focus:shadow-sm">
               تخطي إلى المحتوى الرئيسي
@@ -286,9 +288,11 @@ function RootComponent() {
               </motion.div>
             </AnimatePresence>
             <MobileTabBar />
+            <PhotographerCommandPalette />
             <PwaInstallPrompt />
             <ClientTour />
             <Toaster position="top-center" richColors closeButton />
+           </MotionConfig>
           </LazyMotion>
         </ConfirmProvider>
       </ThemeProvider>

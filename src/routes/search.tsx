@@ -53,6 +53,28 @@ function SearchPage() {
   const [availableThisWeek, setAvailableThisWeek] = useState(false);
   const [isTypoCorrected, setIsTypoCorrected] = useState(false);
   const [originalQuery, setOriginalQuery] = useState("");
+  const [skipTypo, setSkipTypo] = useState(false);
+  const [favsOnly, setFavsOnly] = useState(false);
+  const [favs, setFavs] = useState<string[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [lastSearch, setLastSearch] = useState<{ city?: string; maxPrice?: string; date?: string } | null>(null);
+
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const c = sp.get("city"); const d = sp.get("date");
+      if (c) setCity(c);
+      if (d && d >= new Date().toISOString().slice(0, 10)) setDate(d);
+    } catch { /* ignore */ }
+    try {
+      setFavs(JSON.parse(localStorage.getItem("memoria_favs") || "[]"));
+      const ls = JSON.parse(localStorage.getItem("memoria_last_search") || "null");
+      if (ls && (ls.city || ls.maxPrice || ls.date)) setLastSearch(ls);
+    } catch { /* ignore */ }
+    const onFav = () => { try { setFavs(JSON.parse(localStorage.getItem("memoria_favs") || "[]")); } catch { /* ignore */ } };
+    window.addEventListener("memoria-favs-change", onFav);
+    return () => window.removeEventListener("memoria-favs-change", onFav);
+  }, []);
   const navigate = useNavigate();
 
   const runSearch = useServerFn(searchPhotographers);
@@ -73,6 +95,7 @@ function SearchPage() {
   }, [q]);
 
   const correctedQ = useMemo(() => {
+    if (skipTypo) { setIsTypoCorrected(false); return debouncedQ; }
     const fixed = typoCorrect(debouncedQ);
     if (fixed !== debouncedQ && debouncedQ.length > 2) {
       setIsTypoCorrected(true);
@@ -81,7 +104,14 @@ function SearchPage() {
     }
     if (fixed === debouncedQ) setIsTypoCorrected(false);
     return debouncedQ;
-  }, [debouncedQ]);
+  }, [debouncedQ, skipTypo]);
+  useEffect(() => { setSkipTypo(false); }, [q]);
+
+  // تذكّر آخر بحث (المدينة والميزانية والتاريخ) لاقتراحه في الزيارة القادمة
+  useEffect(() => {
+    if (!city && !maxPrice && !date) return;
+    try { localStorage.setItem("memoria_last_search", JSON.stringify({ city, maxPrice, date })); } catch { /* ignore */ }
+  }, [city, maxPrice, date]);
 
   const resultsQ = useQuery({
     queryKey: ["search", correctedQ, city, minPrice, maxPrice, date, sort],
@@ -103,11 +133,12 @@ function SearchPage() {
 
   const displayResults = results
     .filter((r) => (minRating > 0 ? r.avg_rating >= minRating : true))
-    .filter((r) => (verifiedOnly ? r.verification_status === "verified" : true));
+    .filter((r) => (verifiedOnly ? r.verification_status === "verified" : true))
+    .filter((r) => (favsOnly ? favs.includes(r.username) : true));
 
   const hasFilters = useMemo(
-    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0 || verifiedOnly),
-    [city, minPrice, maxPrice, date, debouncedQ, minRating, verifiedOnly],
+    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0 || verifiedOnly || favsOnly),
+    [city, minPrice, maxPrice, date, debouncedQ, minRating, verifiedOnly, favsOnly],
   );
 
   const clearAll = () => {
@@ -120,7 +151,19 @@ function SearchPage() {
     setSort("featured");
     setMinRating(0);
     setVerifiedOnly(false);
+    setFavsOnly(false);
   };
+
+  // شرائح الفلاتر النشطة — كل شريحة تُزال بنقرة
+  const activeChips = [
+    city && { k: "city", label: city, clear: () => setCity("") },
+    date && { k: "date", label: new Date(date).toLocaleDateString("ar-JO", { day: "numeric", month: "long" }), clear: () => setDate("") },
+    (minPrice || maxPrice) && { k: "price", label: minPrice && maxPrice ? `${minPrice}–${maxPrice} د.أ` : minPrice ? `من ${minPrice} د.أ` : `حتى ${maxPrice} د.أ`, clear: () => { setMinPrice(""); setMaxPrice(""); } },
+    minRating > 0 && { k: "rating", label: `${minRating}+ نجوم`, clear: () => setMinRating(0) },
+    verifiedOnly && { k: "verified", label: "موثّقة", clear: () => setVerifiedOnly(false) },
+    favsOnly && { k: "favs", label: "مفضّلتي", clear: () => setFavsOnly(false) },
+  ].filter(Boolean) as { k: string; label: string; clear: () => void }[];
+  const drawerFilterCount = [date, minPrice || maxPrice, sort !== "featured"].filter(Boolean).length;
 
   // Idea 6: Scroll-to-Top Button
   const [showScroll, setShowScroll] = useState(false);
@@ -186,9 +229,10 @@ function SearchPage() {
               
               {/* Mobile filter drawer trigger inside search row */}
               <div className="sm:hidden">
-                <Drawer.Root>
+                <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
                   <Drawer.Trigger asChild>
-                    <button type="button" className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 text-foreground touch-card">
+                    <button type="button" aria-label="الفلاتر" className="relative flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 text-foreground touch-card">
+                      {drawerFilterCount > 0 && <span className="absolute -top-1 -end-1 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-bold text-charcoal">{drawerFilterCount}</span>}
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
                     </button>
                   </Drawer.Trigger>
@@ -197,9 +241,9 @@ function SearchPage() {
                     <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-background border-t border-border pb-safe">
                       <div className="mx-auto w-12 h-1.5 rounded-full bg-border mt-3 mb-4" />
                       <div className="px-4 pb-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                        <h2 className="text-base font-semibold mb-2">الفلاتر المتقدمة</h2>
+                        <h2 className="text-base font-semibold mb-2">الفلاتر</h2>
                         <div className="space-y-2">
-                          <label className="text-xs text-muted-foreground">التاريخ</label>
+                          <label className="text-xs text-muted-foreground">تاريخ العرس — نعرض المتاحات فيه فقط</label>
                           <input
                             type="date"
                             value={date}
@@ -235,10 +279,18 @@ function SearchPage() {
                           <label className="text-xs text-muted-foreground">الترتيب</label>
                           <select value={sort} onChange={(e) => setSort(e.target.value as any)} className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm">
                             <option value="featured">الأبرز</option>
+                            <option value="rating">الأعلى تقييماً</option>
                             <option value="price_asc">الأقل سعراً</option>
                             <option value="price_desc">الأعلى سعراً</option>
-                            <option value="newest">الأحدث</option>
                           </select>
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          {drawerFilterCount > 0 && (
+                            <button type="button" onClick={() => { setDate(""); setMinPrice(""); setMaxPrice(""); setSort("featured"); }} className="rounded-full border border-border px-4 py-3 text-sm">مسح</button>
+                          )}
+                          <button type="button" onClick={() => setDrawerOpen(false)} className="flex-1 rounded-full bg-charcoal py-3 text-sm font-medium text-ivory dark:bg-gold dark:text-charcoal">
+                            {resultsQ.isFetching ? "نبحث…" : `عرض ${displayResults.length} مصوّرة`}
+                          </button>
                         </div>
                       </div>
                     </Drawer.Content>
@@ -305,7 +357,7 @@ function SearchPage() {
             <div className="flex gap-2 w-max items-center">
               <button
                 type="button"
-                onClick={() => { setVerifiedOnly(true); setCity(""); setMinRating(0); }}
+                onClick={() => { hapticVibrate("light"); setVerifiedOnly((v) => !v); }}
                 className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
                   verifiedOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"
                 }`}
@@ -315,7 +367,7 @@ function SearchPage() {
               </button>
               <button
                 type="button"
-                onClick={() => { setMinRating(4.5); setCity(""); setVerifiedOnly(false); }}
+                onClick={() => { hapticVibrate("light"); setMinRating((r) => (r === 4.5 ? 0 : 4.5)); }}
                 className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
                   minRating === 4.5 ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"
                 }`}
@@ -323,6 +375,16 @@ function SearchPage() {
                 <Star className="h-3.5 w-3.5" />
                 أعلى تقييم
               </button>
+              {favs.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => { hapticVibrate("light"); setFavsOnly((v) => !v); }}
+                  className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${favsOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
+                >
+                  <Heart className="h-3.5 w-3.5" />
+                  مفضّلتي ({favs.length})
+                </button>
+              )}
               <div className="w-px h-5 bg-border mx-1" />
               <button
                 type="button"
@@ -405,6 +467,15 @@ function SearchPage() {
                   >
                     <BadgeCheck className="h-3 w-3" /> موثّقة فقط
                   </button>
+                  {favs.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setFavsOnly((v) => !v)}
+                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${favsOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                    >
+                      <Heart className="h-3 w-3" /> مفضّلتي ({favs.length})
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -412,10 +483,52 @@ function SearchPage() {
         </form>
 
         {/* Results */}
+        {activeChips.length > 0 ? (
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {resultsQ.isFetching ? "نبحث…" : `${displayResults.length} نتيجة`}
+            </span>
+            <AnimatePresence initial={false}>
+              {activeChips.map((c) => (
+                <motion.button
+                  key={c.k}
+                  layout
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  type="button"
+                  onClick={() => { hapticVibrate("light"); c.clear(); }}
+                  className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/5 px-3 py-1 text-xs text-foreground hover:border-gold"
+                >
+                  {c.label} <X className="h-3 w-3 text-muted-foreground" />
+                </motion.button>
+              ))}
+            </AnimatePresence>
+          </div>
+        ) : lastSearch ? (
+          <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span>آخر بحث:</span>
+            <button
+              type="button"
+              onClick={() => { if (lastSearch.city) setCity(lastSearch.city); if (lastSearch.maxPrice) setMaxPrice(lastSearch.maxPrice); if (lastSearch.date && lastSearch.date >= new Date().toISOString().slice(0, 10)) setDate(lastSearch.date); }}
+              className="rounded-full border border-dashed border-border px-3 py-1 hover:border-gold/50 hover:text-foreground"
+            >
+              {[lastSearch.city, lastSearch.maxPrice && `حتى ${lastSearch.maxPrice} د.أ`, lastSearch.date && new Date(lastSearch.date).toLocaleDateString("ar-JO", { day: "numeric", month: "short" })].filter(Boolean).join(" · ")}
+            </button>
+          </div>
+        ) : null}
+        {!date && displayResults.length > 0 && (
+          <p className="mb-4 text-xs text-muted-foreground">
+            لديكِ تاريخ للعرس؟{" "}
+            <button type="button" onClick={() => setDrawerOpen(true)} className="sm:hidden text-gold hover:underline">أضيفيه</button>
+            <span className="hidden sm:inline">أضيفيه في خانة التاريخ</span>
+            {" "}لنعرض المتاحات فيه فقط.
+          </p>
+        )}
         {isTypoCorrected && (
           <div className="col-span-full mb-4 px-4 py-2 bg-secondary/30 rounded-md text-sm">
             تم التصحيح الإملائي إلى <strong>{correctedQ}</strong> بدلاً من <span className="line-through text-muted-foreground">{originalQuery}</span>. 
-            <button onClick={() => { setIsTypoCorrected(false); /* bypass logic here */ }} className="text-gold hover:underline ms-2">ابحث عن "{originalQuery}" بدلاً من ذلك</button>
+            <button onClick={() => setSkipTypo(true)} className="text-gold hover:underline ms-2">ابحثي عن «{originalQuery}» كما كتبتِها</button>
           </div>
         )}
         
@@ -524,7 +637,8 @@ function SearchPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="fixed bottom-24 sm:bottom-8 right-4 sm:right-8 z-50 h-12 w-12 rounded-full bg-white/70 backdrop-blur-md border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center text-charcoal hover:bg-white/90 transition-colors"
+            aria-label="العودة للأعلى"
+            className="fixed bottom-24 sm:bottom-8 right-4 sm:right-8 z-50 h-12 w-12 rounded-full bg-background/80 backdrop-blur-md border border-border shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center text-foreground hover:bg-background transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
           </motion.button>
@@ -562,6 +676,8 @@ function BentoPhotographerCard({ p, idx, compareList, setCompareList }: { p: Sea
         setIsFav(true);
       }
       localStorage.setItem("memoria_favs", JSON.stringify(newFavs));
+      hapticVibrate(newFavs.length > favs.length ? "success" : "light");
+      window.dispatchEvent(new Event("memoria-favs-change"));
     } catch {}
   };
 
@@ -603,6 +719,7 @@ function BentoPhotographerCard({ p, idx, compareList, setCompareList }: { p: Sea
           
           <button
             onClick={toggleFav}
+            aria-label={isFav ? "إزالة من المفضّلة" : "إضافة للمفضّلة"}
             className="absolute top-3 end-3 z-20 h-9 w-9 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-background/80 transition shadow-sm"
           >
             <motion.div

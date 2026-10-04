@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { emailTypoSuggestion } from "@/lib/form-hints";
 import { useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -49,9 +50,10 @@ function ForgotPasswordPage() {
           <div className="bg-card border border-border rounded-sm p-6 shadow-soft text-center">
             <CheckCircle2 className="h-10 w-10 text-emerald-600 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              أرسلنا رابط إعادة تعيين كلمة المرور إلى <strong>{email}</strong>.
+              أرسلنا رابط إعادة تعيين كلمة المرور إلى <strong dir="ltr">{email}</strong>.
               افتحي الرابط من بريدك لإكمال العملية.
             </p>
+            <p className="text-xs text-muted-foreground mb-4">لم يصل خلال دقيقة؟ تحقّقي من مجلد الرسائل غير المرغوبة، أو <button onClick={() => setSent(false)} className="text-gold underline">أعيدي الإرسال</button>.</p>
             <Link to="/login" className="inline-block bg-charcoal text-ivory px-6 py-2.5 rounded-sm hover:opacity-90">العودة لتسجيل الدخول</Link>
           </div>
         ) : (
@@ -67,15 +69,21 @@ function ForgotPasswordPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                dir="ltr"
                 className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60"
               />
+              {emailTypoSuggestion(email) && (
+                <button type="button" onClick={() => setEmail(emailTypoSuggestion(email)!)} className="mt-1 text-xs text-gold hover:underline">
+                  هل تقصدين <span dir="ltr">{emailTypoSuggestion(email)}</span>؟
+                </button>
+              )}
             </label>
             <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
               <Mail className="h-4 w-4" />
               {loading ? "جاري الإرسال…" : "إرسال رابط الاستعادة"}
             </button>
             <p className="text-sm text-center text-muted-foreground">
-              تذكّرت كلمة المرور؟ <Link to="/login" className="text-gold underline">تسجيل الدخول</Link>
+              تذكّرتِ كلمة المرور؟ <Link to="/login" className="text-gold underline">تسجيل الدخول</Link>
             </p>
           </form>
         )}

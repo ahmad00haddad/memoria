@@ -1,11 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
+import { uploadProfilePhoto } from "@/lib/upload";
+import { hapticVibrate } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { PageLoader } from "@/components/ui/loading";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { toast } from "sonner";
-import { CheckCircle2, ArrowLeft, ArrowRight, Camera, DollarSign, Wallet, Eye, Sparkles, Loader2 } from "lucide-react";
+import { CheckCircle2, ArrowLeft, ArrowRight, Camera, DollarSign, Wallet, Eye, Sparkles, Loader2, Upload, Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   component: Onboarding,
@@ -32,6 +36,13 @@ type Form = {
   pkg_type: "hourly" | "full_day" | "addon";
 };
 
+const CITIES = ["عمّان", "إربد", "الزرقاء", "العقبة", "السلط", "مادبا"];
+const PKG_TEMPLATES = [
+  { label: "تغطية ٤ ساعات", price: "150", type: "hourly" as const },
+  { label: "يوم زفاف كامل", price: "250", type: "full_day" as const },
+  { label: "جلسة خطوبة", price: "100", type: "hourly" as const },
+];
+
 const STEPS = [
   { icon: Sparkles, title: "مرحباً بكِ في Memoria", desc: "٤ خطوات قصيرة تستغرق أقل من ٥ دقائق — بعدها ملفك جاهز لاستقبال أول حجز." },
   { icon: Camera, title: "معلوماتك الأساسية", desc: "الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بكِ." },
@@ -46,6 +57,11 @@ function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [uid, setUid] = useState("");
   const [step, setStep] = useState(0);
+  const [dir, setDir] = useState(1);
+  const [fieldErr, setFieldErr] = useState<string | null>(null);
+  const [shake, setShake] = useState(0);
+  const [avatarBusy, setAvatarBusy] = useState(false);
+  const avatarRef = useRef<HTMLInputElement>(null);
   const [f, setF] = useState<Form>({
     display_name: "", username: "", city: "", bio: "", avatar_url: "",
     cliq_alias: "", whatsapp: "",
@@ -83,7 +99,15 @@ function Onboarding() {
     })();
   }, [nav]);
 
-  const upd = <K extends keyof Form>(k: K, v: Form[K]) => setF((s) => ({ ...s, [k]: v }));
+  const upd = <K extends keyof Form>(k: K, v: Form[K]) => { setFieldErr(null); setF((s) => ({ ...s, [k]: v })); };
+
+  const onAvatar = async (file: File) => {
+    setAvatarBusy(true);
+    const res = await uploadProfilePhoto(file, uid, "avatar");
+    setAvatarBusy(false);
+    if (!res.ok) { toast.error(res.userMessage); return; }
+    upd("avatar_url", res.publicUrl || res.path);
+  };
 
   const persistStep = async (nextStep: number) => {
     await supabase.from("profiles").update({ onboarding_step: nextStep } as any).eq("id", uid);
@@ -157,17 +181,19 @@ function Onboarding() {
   const next = async () => {
     if (saving) return;
     const err = validateStep();
-    if (err) { toast.error(err); return; }
+    if (err) { setFieldErr(err); setShake((n) => n + 1); hapticVibrate("error"); return; }
     setSaving(true);
     const ok = await saveStepData();
     if (!ok) { setSaving(false); return; }
     const nextStep = step + 1;
     await persistStep(nextStep);
     setSaving(false);
+    setDir(1);
     setStep(nextStep);
   };
 
-  const back = () => setStep((s) => Math.max(0, s - 1));
+  const back = () => { setDir(-1); setFieldErr(null); setStep((s) => Math.max(0, s - 1)); };
+  const goTo = (i: number) => { setDir(i > step ? 1 : -1); setFieldErr(null); setStep(i); };
 
   const finish = async () => {
     if (saving) return;
@@ -190,8 +216,10 @@ function Onboarding() {
     } as any).eq("id", uid);
     setSaving(false);
     if (error) { toast.error(error.message || "تعذّر إكمال الإعداد"); return; }
-    toast.success("تم إطلاق ملفك بنجاح 🎉");
-    nav({ to: "/dashboard" });
+    hapticVibrate("success");
+    try { confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 }, colors: ["#c9a96e", "#f4ead5", "#2b2520"] }); } catch { /* ignore */ }
+    toast.success("ملفك منشور الآن — العرائس يستطعن رؤيته وحجز موعد");
+    setTimeout(() => nav({ to: "/dashboard" }), 900);
   };
 
   const skip = async () => {
@@ -228,11 +256,32 @@ function Onboarding() {
 
         <div className="mb-6 flex items-center gap-2">
           {STEPS.map((_, i) => (
-            <span key={i} className={`h-1.5 flex-1 rounded-full transition ${i <= step ? "bg-gold" : "bg-secondary"}`} />
+            <span key={i} className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
+              <motion.span
+                className="absolute inset-y-0 start-0 rounded-full bg-gold"
+                initial={false}
+                animate={{ width: i < step ? "100%" : i === step ? "50%" : "0%" }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              />
+            </span>
           ))}
         </div>
 
-        <div className="rounded-sm border border-border bg-card p-6 sm:p-8 shadow-soft">
+        <motion.div
+          key={shake}
+          animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : undefined}
+          transition={{ duration: 0.35 }}
+          onKeyDown={(e) => { if (e.key === "Enter" && !(e.target as HTMLElement).matches("textarea") && !isLast) { e.preventDefault(); next(); } }}
+          className="overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-soft"
+        >
+        <AnimatePresence mode="wait" initial={false} custom={dir}>
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: dir > 0 ? -24 : 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: dir > 0 ? 24 : -24 }}
+          transition={{ duration: 0.22 }}
+        >
           <div className="flex items-start gap-4 mb-6">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-gold/15 shrink-0">
               <Icon className="h-6 w-6 text-gold" />
@@ -273,19 +322,44 @@ function Onboarding() {
               </Field>
               <Field label="المدينة *">
                 <input value={f.city} onChange={(e) => upd("city", e.target.value)} className={inputCx} placeholder="عمّان / إربد / الزرقاء…" />
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {CITIES.map((c) => (
+                    <button key={c} type="button" onClick={() => upd("city", c)} className={`rounded-full border px-3 py-1 text-xs transition-colors ${f.city === c ? "border-gold bg-gold/10 text-foreground" : "border-border text-muted-foreground hover:border-gold/40"}`}>{c}</button>
+                  ))}
+                </div>
               </Field>
               <Field label="نبذة قصيرة (اختياري)">
                 <textarea value={f.bio} onChange={(e) => upd("bio", e.target.value)} className={inputCx + " min-h-[90px]"} placeholder="أسلوبك، خبرتك، نوع الجلسات التي تفضّلينها…" />
               </Field>
-              <Field label="رابط صورتك الشخصية (اختياري)">
-                <input value={f.avatar_url} onChange={(e) => upd("avatar_url", e.target.value)} className={inputCx} placeholder="https://…" dir="ltr" />
-                <p className="text-xs text-muted-foreground mt-1">يمكنك رفع صورة أعلى جودة لاحقاً من الملف الشخصي.</p>
-              </Field>
+              <div>
+                <div className="text-xs font-medium mb-1.5">صورتك الشخصية (اختياري)</div>
+                <button type="button" onClick={() => avatarRef.current?.click()} className="flex items-center gap-3 rounded-xl border border-dashed border-border p-3 text-sm hover:border-gold/50 transition-colors w-full text-start">
+                  <span className="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary">
+                    {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
+                    {avatarBusy && <span className="absolute inset-0 grid place-items-center bg-black/40"><Loader2 className="h-5 w-5 animate-spin text-white" /></span>}
+                  </span>
+                  <span>
+                    <span className="block font-medium">{f.avatar_url ? "تغيير الصورة" : "اختاري صورة"}</span>
+                    <span className="block text-xs text-muted-foreground">الملفات بصورة شخصية تُفتح أكثر</span>
+                  </span>
+                </button>
+                <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) onAvatar(file); e.target.value = ""; }} />
+              </div>
             </div>
           )}
 
           {step === 2 && (
             <div className="space-y-4">
+              {!f.pkg_label && (
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="w-full text-xs text-muted-foreground">ابدئي من مثال وعدّليه:</span>
+                  {PKG_TEMPLATES.map((t) => (
+                    <button key={t.label} type="button" onClick={() => { upd("pkg_label", t.label); upd("pkg_price", t.price); upd("pkg_type", t.type); }} className="rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-xs text-gold hover:bg-gold/15">
+                      {t.label} · {t.price} د.أ
+                    </button>
+                  ))}
+                </div>
+              )}
               <Field label="اسم الباقة *">
                 <input value={f.pkg_label} onChange={(e) => upd("pkg_label", e.target.value)} className={inputCx} placeholder="مثال: باقة الساعة الواحدة / يوم كامل" />
               </Field>
@@ -307,6 +381,9 @@ function Onboarding() {
               <Field label="السعر (د.أ) *">
                 <input type="number" min={0} value={f.pkg_price} onChange={(e) => upd("pkg_price", e.target.value)} className={inputCx} placeholder="100" dir="ltr" />
               </Field>
+              {Number(f.pkg_price) > 0 && (
+                <p className="text-xs text-muted-foreground tabular-nums">العربون الافتراضي ٢٥٪ = {Math.round(Number(f.pkg_price) * 0.25)} د.أ — تغيّرينه لاحقاً من ملفك.</p>
+              )}
               <p className="text-xs text-muted-foreground">يمكنك إضافة المزيد من الباقات لاحقاً من صفحة الأسعار.</p>
             </div>
           )}
@@ -326,17 +403,28 @@ function Onboarding() {
           {step === 4 && (
             <div className="space-y-4 text-sm">
               <div className="rounded-sm border border-border bg-background p-4 space-y-2">
-                <Row k="الاسم" v={f.display_name} />
-                <Row k="اسم المستخدم" v={"@" + f.username} />
-                <Row k="المدينة" v={f.city} />
-                <Row k="أول باقة" v={`${f.pkg_label} — ${f.pkg_price} د.أ`} />
-                <Row k="CliQ / واتساب" v={[f.cliq_alias, f.whatsapp].filter(Boolean).join(" · ") || "—"} />
+                <Row k="الاسم" v={f.display_name} onEdit={() => goTo(1)} />
+                <Row k="اسم المستخدم" v={"@" + f.username} onEdit={() => goTo(1)} />
+                <Row k="المدينة" v={f.city} onEdit={() => goTo(1)} />
+                <Row k="أول باقة" v={`${f.pkg_label} — ${f.pkg_price} د.أ`} onEdit={() => goTo(2)} />
+                <Row k="CliQ / واتساب" v={[f.cliq_alias, f.whatsapp].filter(Boolean).join(" · ") || "—"} onEdit={() => goTo(3)} />
               </div>
               <div className="rounded-sm border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40 p-4 text-emerald-800 dark:text-emerald-300 text-sm">
                 عند الضغط على "نشر ملفي" سيصبح ملفك مرئياً للعملاء ويمكنهم بدء الحجز مباشرة.
               </div>
             </div>
           )}
+
+        </motion.div>
+        </AnimatePresence>
+
+          <AnimatePresence>
+            {fieldErr && (
+              <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mt-4 text-sm text-destructive" role="alert">
+                {fieldErr}
+              </motion.p>
+            )}
+          </AnimatePresence>
 
           <div className="mt-8 flex items-center justify-between gap-3">
             <button
@@ -366,14 +454,14 @@ function Onboarding() {
               </button>
             )}
           </div>
-        </div>
+        </motion.div>
       </section>
       <Footer />
     </div>
   );
 }
 
-const inputCx = "w-full h-10 px-3 rounded-sm border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+const inputCx = "w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -384,11 +472,18 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Row({ k, v }: { k: string; v: string }) {
+function Row({ k, v, onEdit }: { k: string; v: string; onEdit?: () => void }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
+    <div className="group flex items-baseline justify-between gap-3">
       <span className="text-xs text-muted-foreground">{k}</span>
-      <span className="text-sm font-medium text-end">{v || "—"}</span>
+      <span className="flex items-center gap-2 text-sm font-medium text-end">
+        {v || "—"}
+        {onEdit && (
+          <button type="button" onClick={onEdit} aria-label={`تعديل ${k}`} className="text-muted-foreground opacity-60 hover:text-gold group-hover:opacity-100">
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </span>
     </div>
   );
 }

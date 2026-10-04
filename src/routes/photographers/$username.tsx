@@ -268,11 +268,6 @@ function PhotographerPage() {
       
       {/* إخفاء الهيدر التقليدي في الموبايل واستبداله بزر رجوع بسيط */}
       <div className="hidden sm:block">
-              <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
-        <button onClick={() => document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' })} className="w-full bg-charcoal text-gold py-3.5 rounded-full font-bold shadow-2xl flex items-center justify-center gap-2 border border-gold/30 backdrop-blur-md hover:bg-charcoal/90 transition-all active:scale-95">
-          احجزي هذه المصورة 📸
-        </button>
-      </div>
       <Header />
       </div>
 
@@ -529,32 +524,8 @@ function PhotographerPage() {
 
       <Footer />
 
-      {/* Sticky mobile booking CTA — only shows on small screens */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-        <div className="flex items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">احجزي مع</div>
-            <div className="font-serif text-sm truncate">{profile.display_name}</div>
-          </div>
-          {profile.whatsapp && (
-            <a
-              href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي..")}`}
-              target="_blank"
-              rel="noreferrer"
-              className="h-10 w-10 grid place-items-center rounded-sm border border-border"
-              aria-label="واتساب"
-            >
-              <MessageCircle className="h-4 w-4 text-green-600" />
-            </a>
-          )}
-          <button
-            onClick={() => scrollTo("book")}
-            className="bg-charcoal text-ivory px-5 py-2.5 rounded-sm text-sm font-medium"
-          >
-            احجزي الآن
-          </button>
-        </div>
-      </div>
+      {/* شريط حجز ثابت على الموبايل — يختفي عندما يكون نموذج الحجز ظاهراً */}
+      <StickyBookBar name={profile.display_name} whatsapp={profile.whatsapp} onBook={() => scrollTo("book")} />
     </div>
   );
 }
@@ -1257,14 +1228,48 @@ function Field({ label, v, on, type = "text" }: { label: string; v: string; on: 
 function FallbackPage({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
-            <div className="fixed bottom-4 left-4 right-4 z-40 sm:hidden">
-        <button onClick={() => document.getElementById('book')?.scrollIntoView({ behavior: 'smooth' })} className="w-full bg-charcoal text-gold py-3.5 rounded-full font-bold shadow-2xl flex items-center justify-center gap-2 border border-gold/30 backdrop-blur-md hover:bg-charcoal/90 transition-all active:scale-95">
-          احجزي هذه المصورة 📸
-        </button>
-      </div>
       <Header />
       <div className="container-editorial py-24 text-center text-muted-foreground">{children}</div>
       <Footer />
+    </div>
+  );
+}
+
+
+function StickyBookBar({ name, whatsapp, onBook }: { name: string; whatsapp?: string | null; onBook: () => void }) {
+  const [hidden, setHidden] = useState(false);
+  useEffect(() => {
+    const el = document.getElementById("book");
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setHidden(e.isIntersecting), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div
+      aria-hidden={hidden}
+      className={`sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur-sm px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.08)] transition-transform duration-300 ${hidden ? "translate-y-full" : "translate-y-0"}`}
+    >
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] text-muted-foreground">احجزي مع</div>
+          <div className="font-serif text-sm truncate">{name}</div>
+        </div>
+        {whatsapp && (
+          <a
+            href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("مرحباً! شاهدت أعمالك على ميموريا وأود الاستفسار عن باقات التصوير لحفل زفافي.")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="h-11 w-11 grid place-items-center rounded-full border border-border"
+            aria-label="واتساب"
+          >
+            <MessageCircle className="h-4 w-4 text-green-600" />
+          </a>
+        )}
+        <button onClick={onBook} className="rounded-full bg-charcoal px-6 py-3 text-sm font-medium text-ivory transition-transform active:scale-95 dark:bg-gold dark:text-charcoal">
+          احجزي موعدك
+        </button>
+      </div>
     </div>
   );
 }

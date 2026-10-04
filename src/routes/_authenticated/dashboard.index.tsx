@@ -34,6 +34,12 @@ import { NotificationPermission } from "@/components/NotificationPermission";
 import { staggerContainer, fadeUp } from "@/lib/animations";
 import { useCountUp } from "@/hooks/use-count-up";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
+import { CopyButton } from "@/components/ui/copy-button";
+import { TodayFocus } from "@/components/dashboard/TodayFocus";
+import { ToolIndex, Sparkline, type Tool } from "@/components/dashboard/ToolIndex";
+import { computeFocusItems } from "@/components/dashboard/focus";
+import { openCommandPalette } from "@/components/CommandPalette";
+import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: Dashboard,
@@ -46,6 +52,10 @@ function NumStat({
   suffix = "",
   fractionDigits = 0,
   fallback,
+  sub,
+  subTone,
+  extra,
+  compact,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -53,6 +63,10 @@ function NumStat({
   suffix?: string;
   fractionDigits?: number;
   fallback?: string;
+  sub?: string;
+  subTone?: "up" | "down";
+  extra?: React.ReactNode;
+  compact?: boolean;
 }) {
   const animated = useCountUp(Number.isFinite(value) ? value : 0);
   const display = fallback !== undefined && value === 0
@@ -61,10 +75,20 @@ function NumStat({
   return (
     <motion.div
       variants={fadeUp}
-      className="min-w-[150px] rounded-2xl bg-card/60 p-5 ring-1 ring-border/70 transition-colors hover:ring-gold/40"
+      initial={compact ? "hidden" : undefined}
+      animate={compact ? "visible" : undefined}
+      className={`min-w-0 rounded-2xl bg-card/60 ring-1 ring-border/70 transition-colors hover:ring-gold/40 ${compact ? "p-4" : "p-6"}`}
     >
       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 [&_svg]:h-4 [&_svg]:w-4">{icon}<span>{label}</span></div>
-      <div className="font-serif text-4xl leading-none tabular-nums tracking-tight">{display}</div>
+      <div className="flex items-end justify-between gap-3">
+        <div className={`font-serif leading-none tabular-nums tracking-tight ${compact ? "text-3xl" : "text-4xl"}`}>{display}</div>
+        {extra}
+      </div>
+      {sub && (
+        <div className={`mt-3 text-xs truncate ${subTone === "down" ? "text-amber-700 dark:text-amber-400" : subTone === "up" ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground"}`}>
+          {sub}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -384,6 +408,15 @@ function CircularProgress({ value }: { value: number }) {
   );
 }
 
+const LAST_VISIT_KEY = "memoria:dashboard-last-visit";
+
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "صباح الخير";
+  if (h < 18) return "نهارك سعيد";
+  return "مساء الخير";
+}
+
 function Dashboard() {
   const [profile, setProfile] = useState<any>(cachedDashboard?.profile ?? null);
   const [sub, setSub] = useState<any>(cachedDashboard?.sub ?? null);
@@ -391,10 +424,19 @@ function Dashboard() {
   const [pricingCount, setPricingCount] = useState(cachedDashboard?.pricingCount ?? 0);
   const [hasCliq, setHasCliq] = useState(cachedDashboard?.hasCliq ?? false);
   const [templatesCount, setTemplatesCount] = useState(cachedDashboard?.templatesCount ?? 0);
-  const [stats, setStats] = useState(cachedDashboard?.stats ?? { confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, upcoming30: 0, pendingDepositsAmount: 0, deliveriesDueSoon: 0 });
+  const [stats, setStats] = useState(cachedDashboard?.stats ?? { confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, lastMonthRevenue: 0, revenueSeries: [], upcoming30: 0, pendingDepositsAmount: 0, pendingDepositNames: [], deliveriesDueSoon: 0, focus: [], newBookings: 0, newReviews: 0 });
   const [qsDismissed, setQsDismissed] = useState(false);
   const [showAllCards, setShowAllCards] = useState(false);
+  const [showMoreStats, setShowMoreStats] = useState(false);
   const navigate = useNavigate();
+  // وقت الزيارة السابقة — يُقرأ مرة واحدة عند الفتح ثم يُحدَّث للزيارة القادمة
+  const lastVisitRef = useRef<number | null>(null);
+  if (lastVisitRef.current === null && typeof window !== "undefined") {
+    try { lastVisitRef.current = Number(localStorage.getItem(LAST_VISIT_KEY)) || 0; } catch { lastVisitRef.current = 0; }
+  }
+  useEffect(() => {
+    try { localStorage.setItem(LAST_VISIT_KEY, String(Date.now())); } catch { /* ignore */ }
+  }, []);
 
   const loadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -412,8 +454,8 @@ function Dashboard() {
       supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
       supabase.from("photographer_private").select("ical_token,cliq_alias,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
       supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
-      supabase.from("bookings").select("status,total_price,deposit_amount,event_date,delivery_due_at,production_stage").eq("photographer_id", session.user.id).is("deleted_at", null),
-      supabase.from("reviews").select("rating").eq("photographer_id", session.user.id),
+      supabase.from("bookings").select("id,client_name,status,created_at,total_price,deposit_amount,event_date,delivery_due_at,production_stage,deposit_proof_url,deposit_sent_at,final_paid_at").eq("photographer_id", session.user.id).is("deleted_at", null),
+      supabase.from("reviews").select("rating,created_at").eq("photographer_id", session.user.id),
       supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       supabase.from("whatsapp_templates").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
     ]);
@@ -421,20 +463,34 @@ function Dashboard() {
       navigate({ to: "/onboarding" });
       return;
     }
-    const all = bks ?? [];
-    const confirmed = all.filter((b: any) => b.status === "confirmed").length;
-    const pending = all.filter((b: any) => b.status === "pending_deposit" || b.status === "quote").length;
-    const completed = all.filter((b: any) => b.status === "completed").length;
-    const revenue = all.filter((b: any) => b.status === "confirmed" || b.status === "completed").reduce((sum: number, b: any) => sum + Number(b.total_price ?? 0), 0);
+    const all = (bks ?? []) as any[];
+    const earning = all.filter((b) => b.status === "confirmed" || b.status === "completed");
+    const confirmed = all.filter((b) => b.status === "confirmed").length;
+    const pending = all.filter((b) => b.status === "pending_deposit" || b.status === "quote").length;
+    const completed = all.filter((b) => b.status === "completed").length;
+    const revenue = earning.reduce((sum, b) => sum + Number(b.total_price ?? 0), 0);
     const now = Date.now();
-    const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0);
-    const monthRevenue = all.filter((b: any) => (b.status === "confirmed" || b.status === "completed") && b.event_date && new Date(b.event_date).getTime() >= startOfMonth.getTime()).reduce((sum: number, b: any) => sum + Number(b.total_price ?? 0), 0);
-    const upcoming30 = all.filter((b: any) => b.status === "confirmed" && b.event_date && new Date(b.event_date).getTime() >= now && new Date(b.event_date).getTime() <= now + 30 * 86400000).length;
-    const pendingDepositsAmount = all.filter((b: any) => b.status === "pending_deposit").reduce((sum: number, b: any) => sum + Number(b.deposit_amount ?? 0), 0);
-    const deliveriesDueSoon = all.filter((b: any) => b.delivery_due_at && b.production_stage !== "delivered" && new Date(b.delivery_due_at).getTime() <= now + 7 * 86400000).length;
+    // إيرادات آخر ٦ أشهر حسب تاريخ المناسبة (للمنحنى والمقارنة الشهرية)
+    const monthKey = (d: Date) => d.getFullYear() * 12 + d.getMonth();
+    const thisMonth = monthKey(new Date());
+    const revenueSeries = Array.from({ length: 6 }, (_, i) => {
+      const key = thisMonth - 5 + i;
+      return earning.filter((b) => b.event_date && monthKey(new Date(b.event_date)) === key).reduce((sum, b) => sum + Number(b.total_price ?? 0), 0);
+    });
+    const monthRevenue = revenueSeries[5];
+    const lastMonthRevenue = revenueSeries[4];
+    const upcoming30 = all.filter((b) => b.status === "confirmed" && b.event_date && new Date(b.event_date).getTime() >= now && new Date(b.event_date).getTime() <= now + 30 * 86400000).length;
+    const pendingDeposits = all.filter((b) => b.status === "pending_deposit");
+    const pendingDepositsAmount = pendingDeposits.reduce((sum, b) => sum + Number(b.deposit_amount ?? 0), 0);
+    const pendingDepositNames = pendingDeposits.map((b) => b.client_name).filter(Boolean).slice(0, 3);
+    const deliveriesDueSoon = all.filter((b) => b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "cancelled" && new Date(b.delivery_due_at).getTime() <= now + 7 * 86400000).length;
     const avg = (rvs && rvs.length) ? rvs.reduce((sum, r) => sum + r.rating, 0) / rvs.length : 0;
-    
-    const computedStats = { confirmed, pending, completed, revenue, avgRating: avg, reviews: rvs?.length ?? 0, monthRevenue, upcoming30, pendingDepositsAmount, deliveriesDueSoon };
+    const since = lastVisitRef.current || 0;
+    const newBookings = since ? all.filter((b) => new Date(b.created_at).getTime() > since).length : 0;
+    const newReviews = since ? (rvs ?? []).filter((r: any) => new Date(r.created_at).getTime() > since).length : 0;
+    const focus = computeFocusItems(all.filter((b) => b.status !== "cancelled"), s);
+
+    const computedStats = { confirmed, pending, completed, revenue, avgRating: avg, reviews: rvs?.length ?? 0, monthRevenue, lastMonthRevenue, revenueSeries, upcoming30, pendingDepositsAmount, pendingDepositNames, deliveriesDueSoon, focus, newBookings, newReviews };
     const loadedProfile = { ...(data ?? {}), ical_token: priv?.ical_token ?? null };
 
     cachedDashboard = {
@@ -466,7 +522,7 @@ function Dashboard() {
       if (session) {
         await supabase.from("profiles").update({ quickstart_dismissed_at: new Date().toISOString() } as any).eq("id", session.user.id);
       }
-      toast.success("تم إخفاء حالة الجاهزية");
+      toast.success("أخفينا قائمة الإعداد — تجدينها في الملف الشخصي");
     } catch { toast.error("تعذّر الحفظ، حاولي مجدداً"); }
   };
 
@@ -476,6 +532,36 @@ function Dashboard() {
   // مستخدمة جديدة: ملف ناقص + لا حجوزات بعد
   const isNewUser = onboardingNeeded && totalBookings === 0;
   const hasAnyStats = stats.confirmed > 0 || stats.pending > 0 || stats.revenue > 0 || stats.reviews > 0;
+  const publicUrl = profile?.username && typeof window !== "undefined" ? `${window.location.origin}/photographers/${profile.username}` : "";
+
+  const monthDelta = stats.lastMonthRevenue > 0
+    ? Math.round(((stats.monthRevenue - stats.lastMonthRevenue) / stats.lastMonthRevenue) * 100)
+    : null;
+  const whatsNewParts = [
+    stats.newBookings > 0 ? (stats.newBookings === 1 ? "طلب جديد" : `${stats.newBookings} طلبات جديدة`) : null,
+    stats.newReviews > 0 ? (stats.newReviews === 1 ? "تقييم جديد" : `${stats.newReviews} تقييمات جديدة`) : null,
+  ].filter(Boolean);
+
+  const subStatus = (() => {
+    if (!sub) return null;
+    const isPast = sub.current_period_end ? new Date(sub.current_period_end).getTime() < Date.now() : false;
+    return sub.status === "active" && isPast ? "expired" : sub.status;
+  })();
+
+  const tools: Tool[] = [
+    { key: "bookings", title: "الحجوزات", to: "/dashboard/bookings", icon: <Calendar />, badge: stats.pending > 0 ? `${stats.pending} جديد` : undefined, attention: stats.pending > 0, hint: `${totalBookings} حجزاً` },
+    { key: "production", title: "متابعة الإنتاج", to: "/dashboard/production", icon: <Sparkles />, badge: stats.deliveriesDueSoon > 0 ? `${stats.deliveriesDueSoon} قريب` : undefined, attention: stats.deliveriesDueSoon > 0, hint: "من التصوير إلى التسليم" },
+    { key: "calendar", title: "التقويم", to: "/dashboard/calendar", icon: <Calendar />, hint: stats.upcoming30 > 0 ? `${stats.upcoming30} مناسبات خلال ٣٠ يوماً` : "حجب الأيام والتوفّر" },
+    { key: "pricing", title: "الأسعار", to: "/dashboard/pricing", icon: <Package />, badge: pricingCount === 0 ? "فارغة" : undefined, attention: pricingCount === 0, hint: `${pricingCount} باقات` },
+    { key: "profile", title: "ملفي", to: "/dashboard/profile", icon: <Star />, badge: (!profile?.avatar_url || !profile?.cover_url) ? "ناقص" : undefined, attention: !profile?.avatar_url, hint: "الصور والنبذة وبيانات الدفع" },
+    { key: "reports", title: "التقارير", to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? `${stats.monthRevenue} د.أ هذا الشهر` : "الإيرادات وتصدير CSV" },
+    { key: "contracts", title: "العقود", to: "/dashboard/contracts", icon: <Link2 />, hint: "توقيع إلكتروني" },
+    { key: "whatsapp", title: "رسائل واتساب", to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: `${templatesCount} قوالب جاهزة` },
+    { key: "subscription", title: "الاشتراك", to: "/dashboard/subscription", icon: <LogOut />, badge: subStatus === "expired" ? "منتهي" : subStatus === "trial" ? "تجريبي" : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? "نشط" : "التجديد وإثبات الدفع" },
+    { key: "notifications", title: "الإشعارات", to: "/notifications", icon: <Bell />, hint: "كل التنبيهات" },
+    { key: "referrals", title: "الإحالة", to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: "١٤ يوماً مجاناً عن كل زميلة" },
+    { key: "public", title: "ملفي العام", to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ArrowLeft />, hint: "كما تراه العرائس" },
+  ];
 
   return (
     <PullToRefresh onRefresh={async () => { await loadData(); }}>
@@ -485,137 +571,70 @@ function Dashboard() {
         </div>
         <OnboardingWizard shouldShow={onboardingNeeded} />
 
-        <section className="container-editorial py-6 sm:py-12">
+        <section className="container-editorial py-6 sm:py-14 max-w-6xl">
         {/* Mobile Large Title */}
         <div className="sm:hidden mb-6 px-2 flex items-center justify-between">
-          <h1 className="font-serif text-3xl font-bold">لوحتي</h1>
-          <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">خروج</button>
-        </div>
-
-        <div className="hidden sm:flex items-end justify-between mb-8">
           <div>
-            <div className="eyebrow mb-2">لوحة المصوّر · {new Date().toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long" })}</div>
-            <h1 className="font-serif text-5xl">أهلاً، <span className="font-script text-gold">{profile?.display_name ?? "مصوّر"}</span></h1>
-            <div className="text-sm text-muted-foreground mt-1">
-              ملفك العام:{" "}
-              {profile?.username ? (
-                <Link to="/photographers/$username" params={{ username: profile.username }} className="text-gold underline">@{profile.username}</Link>
-              ) : (
-                <span>أكملي اسم المستخدم من الملف الشخصي</span>
-              )}
-            </div>
+            <div className="text-xs text-muted-foreground">{greeting()}</div>
+            <h1 className="font-serif text-3xl font-bold">لوحتي</h1>
           </div>
-          <button onClick={signOut} className="text-sm text-muted-foreground border-b border-current/30 pb-0.5 hover:text-foreground transition-colors">تسجيل الخروج</button>
+          <div className="flex items-center gap-2">
+            <button onClick={openCommandPalette} aria-label="بحث" className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-secondary active:scale-95 transition-transform"><Search className="h-4 w-4" /></button>
+            <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">خروج</button>
+          </div>
         </div>
 
-        <SubscriptionBanner sub={sub} />
-
-        {!hasAnyStats && profile?.is_published && (
-          <div className="mb-8 bg-gold/10 border border-gold/30 text-foreground rounded-2xl p-5 text-sm leading-relaxed flex items-start gap-3">
-            <span className="text-xl">🚀</span>
-            <div>
-              <strong>بداية موفّقة!</strong> ملفكِ جاهز ومنشور، لكن لم تصلكِ حجوزات بعد.
-              <br />
-              💡 <em>تلميح:</em> انسخي رابط ملفكِ (<Link to="/photographers/$username" params={{ username: profile.username }} className="underline font-semibold text-gold">@{profile.username}</Link>) وضعيه في بايو الإنستجرام لتبدأ العرائس بالحجز مباشرة!
-            </div>
-          </div>
-        )}
-
-        {/* ── إحصائيات: مخفية للمستخدمة الجديدة وتُعرض فقط بعد أول نشاط ── */}
-        {hasAnyStats && (
-          <>
-            {/* Stats — mobile horizontal scroll */}
-            <div className="md:hidden overflow-x-auto scrollbar-none pb-2 -mx-4 px-4 mb-8">
-              <div className="flex gap-3">
-                <NumStat icon={<Calendar className="h-5 w-5 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
-                <NumStat icon={<Clock className="h-5 w-5 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
-                <NumStat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="الإيرادات" value={stats.revenue} suffix=" د.أ" />
-                <NumStat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
+        <div className="hidden sm:flex items-end justify-between mb-10">
+          <div>
+            <div className="eyebrow mb-2">{new Date().toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long" })}</div>
+            <h1 className="font-serif text-5xl">{greeting()}، <span className="font-script text-gold">{profile?.display_name ?? "مصوّر"}</span></h1>
+            {profile?.username ? (
+              <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <Link to="/photographers/$username" params={{ username: profile.username }} className="text-gold hover:underline" dir="ltr">@{profile.username}</Link>
+                {publicUrl && <CopyButton value={publicUrl} label="نسخ رابط ملفي" />}
               </div>
-            </div>
-
-            {/* Stats — desktop grid */}
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <NumStat icon={<Calendar className="h-5 w-5 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
-              <NumStat icon={<Clock className="h-5 w-5 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
-              <NumStat icon={<DollarSign className="h-5 w-5 text-emerald-600" />} label="الإيرادات" value={stats.revenue} suffix=" د.أ" />
-              <NumStat icon={<Star className="h-5 w-5 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
-            </motion.div>
-
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <NumStat icon={<TrendingUp className="h-5 w-5 text-emerald-700" />} label="إيرادات هذا الشهر" value={stats.monthRevenue} suffix=" د.أ" />
-              <NumStat icon={<Calendar className="h-5 w-5 text-blue-600" />} label="حجوزات خلال 30 يوماً" value={stats.upcoming30} />
-              <NumStat icon={<DollarSign className="h-5 w-5 text-amber-600" />} label="عرابين معلّقة" value={stats.pendingDepositsAmount} suffix=" د.أ" />
-              <NumStat icon={<Send className="h-5 w-5 text-violet-600" />} label="تسليمات خلال 7 أيام" value={stats.deliveriesDueSoon} />
-            </motion.div>
-          </>
-        )}
-
-        {/* Quick Actions chips — mobile only (للمستخدمات النشطات فقط) */}
-        {!isNewUser && (
-          <div className="md:hidden overflow-x-auto scrollbar-none -mx-4 px-4 mb-6">
-            <div className="flex gap-2 w-max">
-              {([
-                { icon: <Calendar className="h-4 w-4" />, label: 'الحجوزات', to: '/dashboard/bookings' },
-                { icon: <ListChecks className="h-4 w-4" />, label: 'الإنتاج', to: '/dashboard/production' },
-                { icon: <MessageCircle className="h-4 w-4" />, label: 'قوالب', to: '/dashboard/whatsapp-templates' },
-                { icon: <TrendingUp className="h-4 w-4" />, label: 'التقارير', to: '/dashboard/reports' },
-              ] as const).map((chip) => (
-                <Link
-                  key={chip.to}
-                  to={chip.to}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-card border border-border text-sm whitespace-nowrap transition-all duration-300 hover:shadow-md hover:border-border/80 group"
-                >
-                  {chip.icon}
-                  {chip.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Welcome / QuickStart: Progressive Disclosure ── */}
-        {isNewUser ? (
-          // مستخدمة جديدة → شاشة "ابدئي هنا" مبسّطة
-          <NewUserWelcome profile={profile} pricingCount={pricingCount} hasCliq={hasCliq} />
-        ) : (
-          // مستخدمة نشطة → شريط حالة الجاهزية المضغوط (قابل للإخفاء)
-          <AnimatePresence initial={false}>
-            {!profile?.quickstart_dismissed_at && !qsDismissed && (
-              <motion.div key="qs" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0, scale: 0.98 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
-                <QuickStart profile={profile} pricingCount={pricingCount} bookingCount={totalBookings} hasCliq={hasCliq} templatesCount={templatesCount} onDismiss={dismissQuickStart} />
-              </motion.div>
+            ) : (
+              <div className="text-sm text-muted-foreground mt-1">أكملي اسم المستخدم من الملف الشخصي</div>
             )}
-          </AnimatePresence>
-        )}
+          </div>
+          <div className="flex items-center gap-5">
+            <button onClick={openCommandPalette} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:border-gold/40 hover:text-foreground transition-colors">
+              <Search className="h-4 w-4" /> ابحثي عن عروس أو صفحة
+              <kbd className="rounded border border-border bg-secondary px-1.5 text-[10px] font-sans" dir="ltr">Ctrl K</kbd>
+            </button>
+            <button onClick={signOut} className="text-sm text-muted-foreground border-b border-current/30 pb-0.5 hover:text-foreground transition-colors">تسجيل الخروج</button>
+          </div>
+        </div>
 
-        {/* ── بطاقات الأدوات ── */}
+        {/* بانر الاشتراك: فقط عندما يتطلّب إجراءً — الاقتراب من الانتهاء يظهر كمهمة اليوم */}
+        {(subStatus === "expired" || subStatus === "canceled" || subStatus === "pending_review" || (isNewUser && subStatus === "trial")) && <SubscriptionBanner sub={{ ...sub, status: subStatus }} />}
+
         {isNewUser ? (
-          // مستخدمة جديدة → ٣ بطاقات أساسية فقط + زر "عرض كل الأدوات"
-          <div>
+          <>
+            <NewUserWelcome profile={profile} pricingCount={pricingCount} hasCliq={hasCliq} />
             <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 md:grid-cols-3 mb-5">
-              <Card 
-                title="الحجوزات" 
-                desc="راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز." 
-                cta="عرض الحجوزات" 
-                to="/dashboard/bookings" 
-                hint={totalBookings > 0 ? `لديك ${totalBookings} حجوزات مسجلة` : "لا توجد حجوزات بعد"} 
+              <Card
+                title="الحجوزات"
+                desc="راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز."
+                cta="عرض الحجوزات"
+                to="/dashboard/bookings"
+                hint="لا توجد حجوزات بعد"
                 icon={<Calendar className="h-6 w-6" />}
               />
-              <Card 
-                title="الملف الشخصي" 
-                desc="الاسم، الصورة، الباقات، بيانات الدفع وإعدادات النشر." 
-                cta="تعديل الملف" 
-                to="/dashboard/profile" 
+              <Card
+                title="الملف الشخصي"
+                desc="الاسم، الصورة، الباقات، بيانات الدفع وإعدادات النشر."
+                cta="تعديل الملف"
+                to="/dashboard/profile"
                 urgent={!profile?.avatar_url || !profile?.username}
                 badgeText={!profile?.avatar_url || !profile?.username ? "مطلوب للنشر" : "جاهز"}
                 hint="الخطوة الأولى لبدء استقبال الطلبات"
                 icon={<Star className="h-6 w-6" />}
               />
-              <Card 
-                title="بطاقة الأسعار" 
-                desc="أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة." 
-                cta="إدارة الأسعار" 
+              <Card
+                title="بطاقة الأسعار"
+                desc="أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة."
+                cta="إدارة الأسعار"
                 to="/dashboard/pricing"
                 urgent={pricingCount === 0}
                 badgeText={pricingCount === 0 ? "ابدئي من هنا" : `${pricingCount} باقات`}
@@ -625,153 +644,106 @@ function Dashboard() {
             </motion.div>
             <AnimatePresence>
               {showAllCards && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 md:grid-cols-3 mb-5">
-                    <Card title="متابعة الإنتاج" desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." cta="افتح اللوحة" to="/dashboard/production" />
-                    <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
-                    <Card title="التقارير المالية" desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." cta="عرض التقارير" to="/dashboard/reports" />
-                    <Card title="العقود الرقمية" desc="قوالب وعقود توقيع إلكتروني." cta="إدارة العقود" to="/dashboard/contracts" />
-                    <Card title="رسائل واتساب" desc="قوالب جاهزة (ترحيب، عربون، تذكير، تسليم) ترسليها بنقرة." cta="إدارة القوالب" to="/dashboard/whatsapp-templates" icon={<MessageCircle className="h-4 w-4" />} />
-                    <Card title="الاشتراك" desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." cta="إدارة الاشتراك" to="/dashboard/subscription" />
-                    <Card title="الإشعارات" desc="جميع التنبيهات والتنقل السريع إلى العناصر المرتبطة بها." cta="عرض الإشعارات" to="/notifications" icon={<Bell className="h-4 w-4" />} />
-                    <Card title="برنامج الإحالة" desc="ادعُ زميلة واربحا شهراً مجانياً للطرفين." cta="رابط الإحالة" to="/dashboard/referrals" />
-                    <Card title="ملفي العام" desc="عرض ما يراه عملاؤك." cta="فتح الملف" to={profile?.username ? `/photographers/${profile.username}` : undefined} external={!!profile?.username} disabled={!profile?.username} />
-                  </motion.div>
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pt-2">
+                  <ToolIndex tools={tools.filter((t) => !["bookings", "profile", "pricing"].includes(t.key))} />
                 </motion.div>
               )}
             </AnimatePresence>
-            <div className="text-center mt-2">
+            <div className="text-center mt-4">
               <button
                 onClick={() => setShowAllCards((v) => !v)}
-                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-5 py-2 hover:bg-secondary transition-colors active:scale-95 transition-transform duration-200"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-5 py-2 hover:bg-secondary transition-colors active:scale-95 duration-200"
               >
-                {showAllCards ? "إخفاء الأدوات الإضافية" : "عرض كل الأدوات (" + 9 + ")"}
+                {showAllCards ? "إخفاء الأدوات الإضافية" : "عرض كل الأدوات (٩)"}
                 <ArrowLeft className={`h-3.5 w-3.5 transition-transform ${showAllCards ? "rotate-90" : "-rotate-90"}`} />
               </button>
             </div>
-          </div>
+          </>
         ) : (
-          // مستخدمة نشطة → كل البطاقات ظاهرة
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 md:grid-cols-2 lg:grid-cols-6">
-            <Card className="md:col-span-2 lg:col-span-3 lg:row-span-2" feature
-              figures={[
-                { value: stats?.pending ?? 0, label: "بانتظار العربون" },
-                { value: stats?.upcoming30 ?? 0, label: "مناسبات خلال ٣٠ يوماً" },
-              ]} 
-              title="الحجوزات" 
-              desc="جميع الطلبات والمؤكّدة والمنتهية." 
-              cta="عرض الحجوزات" 
-              to="/dashboard/bookings" 
-              badgeText={stats?.pending > 0 ? `${stats.pending} بانتظار الموافقة` : "لا طلبات جديدة"}
-              urgent={stats?.pending > 0}
-              icon={<Calendar className="h-6 w-6" />}
-            />
-              <Card className="lg:col-span-3" 
-              title="ملف المصوّرة" 
-              desc="المعلومات الأساسية وصورة الغلاف ومعرض الأعمال." 
-              cta="تعديل الملف" 
-              to="/dashboard/profile"
-              badgeText={(!profile?.avatar_url || !profile?.cover_url) ? "غير مكتمل" : "مكتمل ✅"}
-              hint="راجعي تفاصيل ملفك لتظهري بأفضل صورة"
-              icon={<Star className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-3" 
-              title="بطاقات الأسعار" 
-              desc="حددي الباقات الأساسية والإضافات لعملائك." 
-              cta="إدارة الباقات" 
-              to="/dashboard/pricing" 
-              badgeText={`${pricingCount} باقات نشطة`}
-              quickAction={{ label: "باقة جديدة", to: "/dashboard/pricing" }}
-              icon={<Package className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="التقويم والتوفر" 
-              desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." 
-              cta="فتح التقويم" 
-              to="/dashboard/calendar" 
-              hint={stats?.upcoming30 > 0 ? `${stats.upcoming30} مناسبات قادمة هذا الشهر` : "تقويمك متاح"}
-              icon={<Calendar className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="متابعة الإنتاج" 
-              desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." 
-              cta="افتح اللوحة" 
-              to="/dashboard/production" 
-              hint="نظمي سير عملك بسهولة"
-              icon={<Sparkles className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="التقارير المالية" 
-              desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." 
-              cta="عرض التقارير" 
-              to="/dashboard/reports" 
-              badgeText={stats?.monthRevenue > 0 ? "يوجد أرباح" : ""}
-              hint={stats?.monthRevenue > 0 ? `إيرادات الشهر: ${stats.monthRevenue} د.أ` : "0 د.أ إيرادات هذا الشهر"}
-              icon={<Download className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="العقود الرقمية" 
-              desc="قوالب وعقود توقيع إلكتروني لضمان حقوقك." 
-              cta="إدارة العقود" 
-              to="/dashboard/contracts"
-              icon={<Link2 className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="رسائل واتساب" 
-              desc="قوالب جاهزة (ترحيب، عربون، تذكير) ترسليها بنقرة." 
-              cta="إدارة القوالب" 
-              to="/dashboard/whatsapp-templates" 
-              badgeText={!hasCliq ? "ميزة مدفوعة 🔒" : `${templatesCount} قوالب`}
-              hint={!hasCliq ? "وفري 4 ساعات أسبوعياً من المراسلات" : "جاهزة للاستخدام"}
-              icon={<MessageCircle className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="الاشتراك" 
-              desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." 
-              cta="إدارة الاشتراك" 
-              to="/dashboard/subscription" 
-              badgeText={(() => {
-                  if (!sub) return "مجاني";
-                  const isPast = sub.current_period_end ? new Date(sub.current_period_end).getTime() < Date.now() : true;
-                  const effectiveStatus = sub.status === 'active' && isPast ? 'expired' : sub.status;
-                  if (effectiveStatus === 'active') return "نشط";
-                  if (effectiveStatus === 'trial') return "تجريبي";
-                  if (effectiveStatus === 'expired') return "منتهي";
-                  return "مجاني";
-                })()}
-              icon={<LogOut className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="الإشعارات" 
-              desc="جميع التنبيهات والتنقل السريع للإجراءات المطلوبة." 
-              cta="عرض الإشعارات" 
-              to="/notifications" 
-              icon={<Bell className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="برنامج الإحالة" 
-              desc="ادعُ زميلة واربحا شهراً مجانياً للطرفين." 
-              cta="رابط الإحالة" 
-              to="/dashboard/referrals" 
-              icon={<CheckCircleIcon className="h-6 w-6" />}
-            />
-            <Card className="lg:col-span-2" 
-              title="ملفي العام" 
-              desc="عرض صفحتك تماماً كما يراها عملاؤك." 
-              cta="فتح الملف" 
-              to={profile?.username ? `/photographers/${profile.username}` : undefined} 
-              external={!!profile?.username} 
-              disabled={!profile?.username} 
-              hint={profile?.username ? "شاركي هذا الرابط مع عملائك" : ""}
-              icon={<Star className="h-6 w-6" />}
-            />
-          </motion.div>
+          <>
+            <TodayFocus items={stats.focus ?? []} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
+
+            {!hasAnyStats && profile?.is_published && profile?.username && (
+              <div className="mb-10 rounded-2xl border border-gold/30 bg-gold/5 p-5 text-sm leading-relaxed flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <strong>ملفكِ منشور وجاهز.</strong> ضعي رابطه في بايو إنستجرام لتبدأ العرائس بالحجز مباشرة.
+                  <div className="mt-1 text-xs text-muted-foreground" dir="ltr">{publicUrl.replace(/^https?:\/\//, "")}</div>
+                </div>
+                {publicUrl && <CopyButton value={publicUrl} label="نسخ الرابط" className="self-start sm:self-auto px-4 py-2 text-sm" />}
+              </div>
+            )}
+
+            {/* ── ٣ أرقام أساسية فقط، والباقي عند الطلب ── */}
+            {hasAnyStats && (
+              <div className="mb-12">
+                <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <NumStat
+                    icon={<TrendingUp className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />}
+                    label="إيرادات هذا الشهر"
+                    value={stats.monthRevenue}
+                    suffix=" د.أ"
+                    sub={monthDelta === null ? undefined : `${monthDelta >= 0 ? "+" : ""}${monthDelta}٪ عن الشهر الماضي`}
+                    subTone={monthDelta !== null && monthDelta < 0 ? "down" : "up"}
+                    extra={<Sparkline values={stats.revenueSeries ?? []} />}
+                  />
+                  <NumStat
+                    icon={<DollarSign className="h-5 w-5 text-amber-600" />}
+                    label="عرابين معلّقة"
+                    value={stats.pendingDepositsAmount}
+                    suffix=" د.أ"
+                    sub={stats.pendingDepositNames?.length ? `من ${stats.pendingDepositNames.join("، ")}` : "لا عرابين معلّقة"}
+                  />
+                  <NumStat
+                    icon={<Send className="h-5 w-5 text-violet-600 dark:text-violet-400" />}
+                    label="تسليمات خلال ٧ أيام"
+                    value={stats.deliveriesDueSoon}
+                    sub={stats.deliveriesDueSoon > 0 ? "تابعيها في لوحة الإنتاج" : "لا تسليمات قريبة"}
+                  />
+                </motion.div>
+
+                <AnimatePresence initial={false}>
+                  {showMoreStats && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
+                        <NumStat compact icon={<Calendar className="h-4 w-4 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
+                        <NumStat compact icon={<Clock className="h-4 w-4 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
+                        <NumStat compact icon={<Calendar className="h-4 w-4 text-blue-600" />} label="مناسبات خلال ٣٠ يوماً" value={stats.upcoming30} />
+                        <NumStat compact icon={<Star className="h-4 w-4 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <button
+                  type="button"
+                  onClick={() => setShowMoreStats((v) => !v)}
+                  aria-expanded={showMoreStats}
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showMoreStats ? "أرقام أقل" : "كل الأرقام"}
+                  <ArrowLeft className={`h-3 w-3 transition-transform duration-300 ${showMoreStats ? "rotate-90" : "-rotate-90"}`} />
+                </button>
+              </div>
+            )}
+
+            <AnimatePresence initial={false}>
+              {!profile?.quickstart_dismissed_at && !qsDismissed && (
+                <motion.div key="qs" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0, scale: 0.98 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
+                  <QuickStart profile={profile} pricingCount={pricingCount} bookingCount={totalBookings} hasCliq={hasCliq} templatesCount={templatesCount} onDismiss={dismissQuickStart} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="mb-4 flex items-baseline justify-between">
+              <h2 className="font-serif text-2xl">أدواتك</h2>
+            </div>
+            <ToolIndex tools={tools} />
+          </>
         )}
       </section>
       <Footer />
@@ -779,5 +751,3 @@ function Dashboard() {
     </PullToRefresh>
   );
 }
-
-// force lovable sync
