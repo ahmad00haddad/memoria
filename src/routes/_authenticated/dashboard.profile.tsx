@@ -1,5 +1,4 @@
-import { Lightbulb } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
@@ -8,7 +7,7 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, X, Eye } from "lucide-react";
+import { Upload, X, Eye, Check, ChevronDown } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
 import { uploadProfilePhoto, uploadPortfolioPhoto } from "@/lib/upload";
@@ -93,6 +92,23 @@ function ProfilePage() {
   const tourState = useTourState();
 
   const [originalP, setOriginalP] = useState<any>(null);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const toggle = (id: string) => setOpenSections((s) => ({ ...s, [id]: !(s[id] ?? ["sec-photos", "sec-basics", "sec-contact"].includes(id)) }));
+  const [dragOver, setDragOver] = useState(false);
+  const [portfolioUploading, setPortfolioUploading] = useState(false);
+  const [usernameState, setUsernameState] = useState<"idle" | "checking" | "free" | "taken">("idle");
+
+  // التحقق من توفّر اسم المستخدم أثناء الكتابة
+  useEffect(() => {
+    const u = String(p?.username ?? "").trim();
+    if (!u || !originalP || u === originalP.username) { setUsernameState("idle"); return; }
+    setUsernameState("checking");
+    const t = setTimeout(async () => {
+      const { data } = await supabase.from("profiles").select("id").eq("username", u).neq("id", uid).maybeSingle();
+      setUsernameState(data ? "taken" : "free");
+    }, 450);
+    return () => clearTimeout(t);
+  }, [p?.username, originalP, uid]);
 
   useEffect(() => {
     (async () => {
@@ -128,7 +144,8 @@ function ProfilePage() {
     const res = await uploadProfilePhoto(f, uid, "avatar");
     if (res.ok) {
       const url = res.publicUrl || res.path;
-      setP({ ...p, avatar_url: url });
+      setP((cur: any) => ({ ...cur, avatar_url: url }));
+      setOriginalP((o: any) => ({ ...o, avatar_url: url }));
       const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", uid);
       if (error) return toast.error(error.message);
       toast.success("تم رفع الصورة وحفظها");
@@ -141,7 +158,8 @@ function ProfilePage() {
     const res = await uploadProfilePhoto(f, uid, "cover");
     if (res.ok) {
       const url = res.publicUrl || res.path;
-      setP({ ...p, cover_url: url });
+      setP((cur: any) => ({ ...cur, cover_url: url }));
+      setOriginalP((o: any) => ({ ...o, cover_url: url }));
       const { error } = await supabase.from("profiles").update({ cover_url: url }).eq("id", uid);
       if (error) return toast.error(error.message);
       toast.success("تم رفع الغلاف وحفظه");
@@ -151,6 +169,7 @@ function ProfilePage() {
   };
 
   const onPortfolio = async (files: FileList) => {
+    setPortfolioUploading(true);
     try {
       const urls: string[] = [];
       for (const f of Array.from(files)) {
@@ -160,24 +179,34 @@ function ProfilePage() {
       }
       if (urls.length > 0) {
         const newUrls = [...(p.portfolio_urls ?? []), ...urls];
-        setP({ ...p, portfolio_urls: newUrls });
+        setP((cur: any) => ({ ...cur, portfolio_urls: newUrls }));
+        setOriginalP((o: any) => ({ ...o, portfolio_urls: newUrls }));
         const { error } = await supabase.from("profiles").update({ portfolio_urls: newUrls }).eq("id", uid);
         if (error) return toast.error(error.message);
-        toast.success(`أُضيفت ${urls.length} صور وتم الحفظ`);
+        toast.success(urls.length === 1 ? "أُضيفت الصورة" : `أُضيفت ${urls.length} صور`);
       }
     } catch (e: any) { toast.error(e.message); }
+    finally { setPortfolioUploading(false); }
   };
 
-  const removePortfolio = async (i: number) => {
-    const arr = [...(p.portfolio_urls ?? [])];
-    arr.splice(i, 1);
-    setP({ ...p, portfolio_urls: arr });
+  const savePortfolio = async (arr: string[]) => {
+    setP((cur: any) => ({ ...cur, portfolio_urls: arr }));
+    setOriginalP((o: any) => ({ ...o, portfolio_urls: arr }));
     const { error } = await supabase.from("profiles").update({ portfolio_urls: arr }).eq("id", uid);
-    if (error) return toast.error(error.message);
-    toast.success("تم إزالة الصورة وحفظ التعديلات");
+    if (error) toast.error(error.message);
+    return !error;
+  };
+
+  // إزالة مع إمكانية التراجع
+  const removePortfolio = async (i: number) => {
+    const before = [...(p.portfolio_urls ?? [])];
+    const arr = before.filter((_, idx) => idx !== i);
+    if (!(await savePortfolio(arr))) return;
+    toast("أُزيلت الصورة", { action: { label: "تراجع", onClick: () => savePortfolio(before) } });
   };
 
   const save = async () => {
+    if (usernameState === "taken") return toast.error("اسم المستخدم محجوز — اختاري اسماً آخر");
     setSaving(true);
     const finalDepositPercent = Math.max(0, Math.min(100, numOr(p.deposit_percent, 25)));
     const finalFixedDeposit = p.fixed_deposit ? Math.max(0, Number(p.fixed_deposit)) : null;
@@ -213,162 +242,197 @@ function ProfilePage() {
     setSaving(false);
     if (error || pErr) return toast.error((error ?? pErr)!.message);
     setOriginalP(p);
-    toast.success("تم الحفظ");
+    toast.success(p.is_published && !originalP?.is_published ? "حُفظ ملفك وأصبح منشوراً للعرائس" : "حُفظت التغييرات");
   };
 
   if (loading) return <PageLoader />;
 
+  const isDirty = !!originalP && JSON.stringify(originalP) !== JSON.stringify(p);
+  const portfolioCount = (p.portfolio_urls ?? []).length;
+  const bioWords = String(p.bio ?? "").trim().split(/\s+/).filter(Boolean).length;
+  const depositPct = Math.max(0, Math.min(100, numOr(p.deposit_percent, 25)));
+  const checklist = [
+    { key: "photos", label: "صورة شخصية وغلاف", done: !!p.avatar_url && !!p.cover_url, section: "sec-photos" },
+    { key: "portfolio", label: "٥ صور أعمال على الأقل", done: portfolioCount >= 5, section: "sec-photos" },
+    { key: "basics", label: "الاسم واسم المستخدم والمدينة", done: !!p.display_name && !!p.username && !!p.city, section: "sec-basics" },
+    { key: "bio", label: "نبذة تعريفية", done: bioWords >= 15, section: "sec-basics" },
+    { key: "payment", label: "طريقة استلام العربون", done: !!(p.cliq_alias || p.bank_info), section: "sec-contact" },
+  ];
+  const doneCount = checklist.filter((c) => c.done).length;
+  const pct = Math.round((doneCount / checklist.length) * 100);
+  const jump = (id: string) => {
+    setOpenSections((s) => ({ ...s, [id]: true }));
+    requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12 max-w-6xl">
+      <section className="container-editorial py-12 pb-32 max-w-6xl">
         <BackToDashboard />
         <div className="flex items-center justify-between mt-2 mb-8 flex-wrap gap-4">
-          <h1 className="font-serif text-4xl">تعديل الملف الشخصي</h1>
+          <h1 className="font-serif text-4xl">ملفي</h1>
           {p?.username && (
             <Link
               to="/photographers/$username"
               params={{ username: p.username }}
               target="_blank"
-              className="inline-flex items-center gap-2 bg-secondary text-foreground hover:bg-gold hover:text-white px-4 py-2 rounded-sm text-sm transition active:scale-95 transition-transform duration-200"
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm hover:border-gold/50 hover:text-gold transition-colors"
             >
               <Eye className="h-4 w-4" />
-              معاينة ملفي العام
+              كما تراه العرائس
             </Link>
           )}
         </div>
-<div className="grid lg:grid-cols-[1fr_auto] gap-12 items-start"><div className="space-y-10 min-w-0">
-        
-        {!p?.cover_url && (
-          <div className="mb-8 bg-amber-50 border border-amber-200 text-amber-800 rounded-sm p-4 text-sm">
-            💡 <strong>تلميح:</strong> المصوّرات اللواتي يضعن صورة غلاف جذابة يحصلن على نقرات أكثر بنسبة 40% في صفحة البحث!
-          </div>
-        )}
+<div className="grid lg:grid-cols-[1fr_auto] gap-12 items-start"><div className="space-y-6 min-w-0">
 
-        {!p?.is_published && (
-          <div className="rounded-sm border border-gold/30 bg-gold/10 p-4 mb-8 text-sm leading-relaxed">
-            ملفك غير منشور حاليًا، لذلك لن يظهر للعملاء في البحث. بعد إكمال البيانات الأساسية والصور، فعّلي خيار <strong>نشر ملفي للعموم</strong> في أسفل الصفحة ثم احفظي التغييرات.
+        {/* ── النشر + نسبة الاكتمال في مكان واحد أعلى الصفحة ── */}
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <CompletionRing value={pct} />
+              <div>
+                <div className="font-medium">{pct === 100 ? "ملفك مكتمل" : `ملفك مكتمل ${pct}٪`}</div>
+                <div className="text-xs text-muted-foreground">{pct === 100 ? "جاهز ليظهر بأفضل صورة في البحث." : "الملفات المكتملة تظهر أعلى نتائج البحث."}</div>
+              </div>
+            </div>
+            <button
+              role="switch"
+              aria-checked={!!p.is_published}
+              onClick={() => setP({ ...p, is_published: !p.is_published })}
+              className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm transition-colors ${p.is_published ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" : "border-border"}`}
+            >
+              <span className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${p.is_published ? "bg-emerald-500" : "bg-secondary ring-1 ring-border"}`}>
+                <motion.span layout transition={{ type: "spring", stiffness: 600, damping: 35 }} className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow ${p.is_published ? "start-[18px]" : "start-0.5"}`} />
+              </span>
+              {p.is_published ? "منشور للعرائس" : "غير منشور"}
+            </button>
           </div>
-        )}
+          {pct < 100 && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {checklist.filter((c) => !c.done).map((c) => (
+                <button key={c.key} onClick={() => jump(c.section)} className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:border-gold/50 hover:text-foreground transition-colors">
+                  <span className="h-1.5 w-1.5 rounded-full bg-gold" /> {c.label}
+                </button>
+              ))}
+            </div>
+          )}
+          {!p.is_published && pct === 100 && (
+            <p className="mt-4 text-sm text-gold">كل شيء جاهز — فعّلي النشر واحفظي ليظهر ملفك في البحث.</p>
+          )}
+        </div>
 
-        <div className="space-y-8">
-          <Card title="الصور">
+        <Card id="sec-photos" title="الصور" done={!!p.avatar_url && !!p.cover_url && portfolioCount >= 5} open={openSections["sec-photos"] ?? true} onToggle={toggle}>
             <div className="grid sm:grid-cols-2 gap-4">
               <ImgPicker label="الصورة الشخصية" url={p.avatar_url} onPick={onAvatar} />
-              <ImgPicker label="صورة الغلاف" url={p.cover_url} onPick={onCover} aspect="aspect-[16/9]" />
+              <ImgPicker label="صورة الغلاف" url={p.cover_url} onPick={onCover} aspect="aspect-[16/9]" hint={!p.cover_url ? "الغلاف أول ما تراه العروس في ملفك" : undefined} />
             </div>
 
             <div className="mt-6">
-              <div className="text-sm mb-2">معرض الأعمال ({(p.portfolio_urls ?? []).length})</div>
-              <div className="mt-4">
-                  {!(p.portfolio_urls?.length > 0) && (
-                    <div className="w-full bg-charcoal text-ivory p-6 rounded-xl border border-border mb-4 flex flex-col items-center text-center shadow-2xl relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-gold/20 to-transparent pointer-events-none opacity-50" />
-                      <Lightbulb className="h-8 w-8 text-gold mb-3 animate-pulse" />
-                      <h3 className="font-serif font-bold text-lg mb-2">ملفك الشخصي غير مرئي للعرائس!</h3>
-                      <p className="text-xs text-ivory/80 leading-relaxed mb-4 max-w-sm">
-                        لا يكتمل سحر أعمالك إلا برؤيتها. العرائس يبحثن عن مصورة يمكنهن الوثوق بعدستها.
-                        <br/><span className="text-gold font-bold">ارفعي أول 5 صور لكِ الآن لتتصدري نتائج البحث! 📸</span>
-                      </p>
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map(i => (
-                          <div key={i} className="w-10 h-10 rounded-md bg-white/10 border border-white/20 animate-pulse" style={{ animationDelay: `${i * 150}ms` }} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                    {(p.portfolio_urls ?? []).map((u: string, i: number) => (
-                      <div key={i} className="relative aspect-square bg-secondary rounded-lg overflow-hidden active:scale-95 transition-transform duration-200 shadow-sm border border-border">
-                        <img src={u} className="w-full h-full object-cover" alt="" />
-                        <button onClick={() => removePortfolio(i)} className="absolute top-1 left-1 bg-black/60 text-white rounded-full p-1.5 hover:bg-red-500 transition-colors shadow-sm"><X className="h-3 w-3" /></button>
-                      </div>
-                    ))}
-                    <div 
-                      onClick={() => portfolioRef.current?.click()} 
-                      onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add("border-gold", "bg-gold/10", "shadow-elegant", "scale-105"); }}
-                      onDragLeave={(e) => e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-elegant", "scale-105")}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.classList.remove("border-gold", "bg-gold/10", "shadow-elegant", "scale-105");
-                        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) onPortfolio(e.dataTransfer.files);
-                      }}
-                      className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground hover:bg-secondary group active:scale-95 bg-background shadow-sm"
-                    >
-                      <Upload className="h-6 w-6 mb-2 transition-transform duration-300 group-hover:-translate-y-1 group-hover:text-gold" />
-                      <span className="text-[10px] uppercase text-center px-2 font-medium">إضافة صور</span>
-                    </div>
-                    <input ref={portfolioRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && onPortfolio(e.target.files)} />
-                  </div>
-                </div>
+              <div className="mb-1 flex items-baseline justify-between">
+                <span className="text-sm">معرض الأعمال</span>
+                <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{portfolioCount} {portfolioCount < 5 ? `· أضيفي ${5 - portfolioCount} لتظهري في البحث` : "صورة"}</span>
               </div>
-            </Card>
+              <p className="mb-3 text-xs text-muted-foreground">الصورة الأولى هي ما تراه العروس في نتائج البحث.</p>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                <AnimatePresence initial={false}>
+                  {(p.portfolio_urls ?? []).map((u: string, i: number) => (
+                    <motion.div
+                      key={u}
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="group relative aspect-square bg-secondary rounded-xl overflow-hidden border border-border"
+                    >
+                      <img src={u} className="w-full h-full object-cover" alt="" loading="lazy" />
+                      {i === 0 && <span className="absolute bottom-1.5 start-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">الغلاف في البحث</span>}
+                      <button onClick={() => removePortfolio(i)} aria-label="إزالة الصورة" className="absolute top-1.5 start-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-red-500 transition"><X className="h-3.5 w-3.5" /></button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                <div
+                  onClick={() => portfolioRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) onPortfolio(e.dataTransfer.files);
+                  }}
+                  className={`aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground group active:scale-95 ${dragOver ? "border-gold bg-gold/10 scale-105" : "border-border hover:bg-secondary"}`}
+                >
+                  {portfolioUploading ? (
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />
+                  ) : (
+                    <Upload className="h-6 w-6 mb-2 transition-transform duration-300 group-hover:-translate-y-1 group-hover:text-gold" />
+                  )}
+                  <span className="text-[11px] text-center px-2">{portfolioUploading ? "جاري الرفع…" : dragOver ? "أفلتي الصور هنا" : "إضافة صور"}</span>
+                </div>
+                <input ref={portfolioRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && onPortfolio(e.target.files)} />
+              </div>
+            </div>
+          </Card>
 
-          <Card title="المعلومات الأساسية">
+          <Card id="sec-basics" title="المعلومات الأساسية" done={!!p.display_name && !!p.username && !!p.city && bioWords >= 15} open={openSections["sec-basics"] ?? true} onToggle={toggle}>
             <Field label="الاسم المعروض" v={p.display_name} on={(v) => setP({ ...p, display_name: v })} />
-            <Field label="اسم المستخدم (للرابط)" v={p.username} on={(v) => setP({ ...p, username: v.toLowerCase().replace(/[^a-z0-9_]/g, "") })} />
-            <Field label="شعار قصير (Tagline) — مثال: PHOTOGRAPHY" v={p.tagline} on={(v) => setP({ ...p, tagline: v })} />
-            <Field label="المدينة" v={p.city} on={(v) => setP({ ...p, city: v })} />
-            <Field label="الموقع الأساسي (عمّان مثلاً)" v={p.base_location} on={(v) => setP({ ...p, base_location: v })} />
-            <Area label="نبذة قصيرة" v={p.bio} on={(v) => setP({ ...p, bio: v })} />
+            <label className="block">
+              <span className="text-sm text-muted-foreground">اسم المستخدم (يظهر في رابط ملفك)</span>
+              <div className="relative mt-1">
+                <input
+                  dir="ltr"
+                  value={p.username ?? ""}
+                  onChange={(e) => setP({ ...p, username: e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, "") })}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 pe-28"
+                />
+                <span className={`absolute end-3 top-1/2 -translate-y-1/2 text-xs ${usernameState === "taken" ? "text-destructive" : usernameState === "free" ? "text-emerald-600" : "text-muted-foreground"}`}>
+                  {usernameState === "checking" ? "نتحقّق…" : usernameState === "taken" ? "محجوز" : usernameState === "free" ? "متاح ✓" : ""}
+                </span>
+              </div>
+              {p.username && <span className="mt-1 block text-xs text-muted-foreground" dir="ltr">{typeof window !== "undefined" ? window.location.host : ""}/photographers/{p.username}</span>}
+            </label>
+            <Field label="شعار قصير — مثال: PHOTOGRAPHY" v={p.tagline} on={(v) => setP({ ...p, tagline: v })} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="المدينة" v={p.city} on={(v) => setP({ ...p, city: v })} />
+              <Field label="الموقع الأساسي (لحساب رسوم التنقّل)" v={p.base_location} on={(v) => setP({ ...p, base_location: v })} />
+            </div>
+            <Area
+              label="نبذة قصيرة"
+              v={p.bio}
+              on={(v) => setP({ ...p, bio: v })}
+              hint={bioWords === 0 ? "النبذات بين ٤٠ و٨٠ كلمة تحصل على حجوزات أكثر." : bioWords < 40 ? `${bioWords} كلمة — أضيفي قليلاً عن أسلوبك وما يميّزك.` : bioWords > 120 ? `${bioWords} كلمة — النبذة الأقصر تُقرأ أكثر.` : `${bioWords} كلمة — طول مناسب.`}
+            />
             <Area label="المعدّات" v={p.equipment} on={(v) => setP({ ...p, equipment: v })} />
           </Card>
 
-          <Card title="التواصل والدفع">
-            <Field label="رقم الهاتف" v={p.phone} on={(v) => setP({ ...p, phone: v })} />
-            <Field label="واتساب" v={p.whatsapp} on={(v) => setP({ ...p, whatsapp: v })} />
-            <Field label="إنستغرام (اسم المستخدم)" v={p.instagram} on={(v) => setP({ ...p, instagram: v })} />
-            <Field label="CliQ Alias لاستلام العربون" v={p.cliq_alias} on={(v) => setP({ ...p, cliq_alias: v })} />
+          <Card id="sec-contact" title="التواصل والدفع" done={!!(p.cliq_alias || p.bank_info) && !!(p.whatsapp || p.phone)} open={openSections["sec-contact"] ?? true} onToggle={toggle}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="رقم الهاتف" v={p.phone} on={(v) => setP({ ...p, phone: v })} hint="لا يظهر للعموم" ltr />
+              <Field label="واتساب" v={p.whatsapp} on={(v) => setP({ ...p, whatsapp: v })} hint="تصلك عليه طلبات الحجز — لا يظهر للعموم" ltr />
+            </div>
+            <Field label="إنستغرام (اسم المستخدم)" v={p.instagram} on={(v) => setP({ ...p, instagram: v })} ltr />
+            <Field label="CliQ Alias لاستلام العربون" v={p.cliq_alias} on={(v) => setP({ ...p, cliq_alias: v })} hint={!p.cliq_alias ? "بدون CliQ أو حساب بنكي لن تعرف العروس أين تحوّل العربون." : "يظهر للعروس فقط بعد طلب الحجز."} ltr />
             <Area label="معلومات الحساب البنكي (بنك / رقم حساب / IBAN)" v={p.bank_info} on={(v) => setP({ ...p, bank_info: v })} />
           </Card>
 
-          <Card title="إعدادات الجولة التعريفية">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">حالة الجولة:</span>
-                <span className="text-sm font-medium">
-                  {tourState.status === "active" ? "فعالة الآن" :
-                   tourState.status === "completed" ? "مكتملة" :
-                   tourState.status === "skipped" ? "تم تخطيها" : "لم تبدأ"}
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => { startTour(); toast.success("تم تشغيل الجولة التعريفية"); }}
-                  className="px-4 py-2 bg-charcoal text-ivory rounded-sm text-xs hover:opacity-90 active:scale-95 transition-transform duration-200"
-                >
-                  تشغيل الجولة
-                </button>
-                <button
-                  onClick={() => { resetTour(); toast.success("تم تصفير الجولة التعريفية"); }}
-                  className="px-4 py-2 border border-border rounded-sm text-xs hover:bg-secondary active:scale-95 transition-transform duration-200"
-                >
-                  تعطيل / تصفير
-                </button>
-              </div>
+          <Card id="sec-booking" title="إعدادات الحجز" open={openSections["sec-booking"] ?? false} onToggle={toggle}>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <NumField label="نسبة العربون (%)" value={p.deposit_percent} onChange={(v) => setP({ ...p, deposit_percent: v })} min={0} max={100} />
+              <NumField label="أو عربون ثابت (د.أ)" value={p.fixed_deposit} onChange={(v) => setP({ ...p, fixed_deposit: v })} min={0} placeholder="اختياري — يُلغي النسبة" />
             </div>
+            <p className="rounded-xl bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+              مثال: على باقة ٥٠٠ د.أ يكون العربون <strong className="text-foreground tabular-nums">{p.fixed_deposit ? Number(p.fixed_deposit) : Math.round(500 * depositPct / 100)} د.أ</strong>
+            </p>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <NumField label="تكلفة الكيلومتر الإضافي (د.أ)" value={p.travel_fee_per_km} onChange={(v) => setP({ ...p, travel_fee_per_km: v })} min={0} step={0.1} />
+              <NumField label="الكيلومترات المجانية" value={p.free_km} onChange={(v) => setP({ ...p, free_km: v })} min={0} />
+            </div>
+            <Area label="ملاحظات تظهر للعميلة قبل الحجز" v={p.booking_notes} on={(v) => setP({ ...p, booking_notes: v })} hint="مثال: تسليم الصور خلال أسبوعين، الفيديو خلال شهر." />
           </Card>
 
-          <Card title="إعدادات الحجز">
-            <div className="grid sm:grid-cols-2 gap-4 mt-4">
-              <div><label className="text-sm text-muted-foreground block mb-1">نسبة العربون (%)</label><input type="number" min="0" max="100" value={p.deposit_percent ?? ""} onChange={(e) => setP({ ...p, deposit_percent: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
-              <div><label className="text-sm text-muted-foreground block mb-1">عربون ثابت (يُلغي النسبة - د.أ)</label><input type="number" min="0" value={p.fixed_deposit || ""} onChange={(e) => setP({ ...p, fixed_deposit: e.target.value })} placeholder="اختياري" className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4 mt-4">
-              <div><label className="text-sm text-muted-foreground block mb-1">تكلفة الكيلومتر الإضافي (د.أ)</label><input type="number" min="0" step="0.1" value={p.travel_fee_per_km ?? ""} onChange={(e) => setP({ ...p, travel_fee_per_km: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
-              <div><label className="text-sm text-muted-foreground block mb-1">الكيلومترات المجانية (ضمن الباقة)</label><input type="number" min="0" value={p.free_km ?? ""} onChange={(e) => setP({ ...p, free_km: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
-            </div>
-            <Area label="ملاحظات مهمة تظهر للعميل (مثال: تسليم الصور خلال أسبوع، الفيديو خلال شهر…)" v={p.booking_notes} on={(v) => setP({ ...p, booking_notes: v })} />
-            <label className="flex items-center gap-2 text-sm mt-3">
-              <input type="checkbox" checked={!!p.is_published} onChange={(e) => setP({ ...p, is_published: e.target.checked })} />
-              نشر ملفي للعموم
-            </label>
-          </Card>
-
-          <Card title="سياسة استرداد العربون عند الإلغاء">
+          <Card id="sec-refund" title="سياسة استرداد العربون" open={openSections["sec-refund"] ?? false} onToggle={toggle}>
             <p className="text-xs text-muted-foreground -mt-2">
-              تُطبَّق هذه السياسة تلقائياً عند إلغاء حجز مؤكَّد العربون. لا تؤثّر على الحجوزات قبل تأكيد العربون.
+              تُطبَّق تلقائياً عند إلغاء حجز مؤكَّد العربون فقط.
             </p>
             <div className="grid sm:grid-cols-3 gap-2">
               {[
@@ -376,35 +440,32 @@ function ProfilePage() {
                 { v: "partial", l: "استرداد جزئي" },
                 { v: "none", l: "لا استرداد" },
               ].map((o) => (
-                <label key={o.v} className={`flex items-center gap-2 border rounded-sm px-3 py-2 text-sm cursor-pointer ${ (p.deposit_refund_policy || "full") === o.v ? "border-gold bg-gold/5" : "border-border"}`}>
+                <label key={o.v} className={`flex items-center gap-2 border rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${ (p.deposit_refund_policy || "full") === o.v ? "border-gold bg-gold/5" : "border-border hover:border-gold/30"}`}>
                   <input
                     type="radio" name="refundPolicy" value={o.v}
                     checked={(p.deposit_refund_policy || "full") === o.v}
                     onChange={() => setP({ ...p, deposit_refund_policy: o.v })}
+                    className="accent-[var(--gold)]"
                   />
                   {o.l}
                 </label>
               ))}
             </div>
             {(p.deposit_refund_policy === "partial") && (
-              <label className="block mt-2"><span className="text-sm text-muted-foreground">نسبة الاسترداد % (0-100)</span><input type="number" min="0" max="100" value={p.deposit_refund_percent || ""} onChange={(e) => setP({ ...p, deposit_refund_percent: e.target.value })} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>
+              <NumField label="نسبة الاسترداد %" value={p.deposit_refund_percent} onChange={(v) => setP({ ...p, deposit_refund_percent: v })} min={0} max={100} />
             )}
           </Card>
 
-          <button onClick={save} disabled={saving} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60 active:scale-95 transition-transform duration-200">
-            {saving ? "جاري الحفظ…" : "حفظ التغييرات"}
-          </button>
-
-          <Card title="حالة التحقق">
+          <Card id="sec-trust" title="التوثيق" done={p.verification_status === "verified"} open={openSections["sec-trust"] ?? false} onToggle={toggle}>
             <div className="flex items-center gap-3">
               {p.verification_status === "verified" && (
                 <span className="inline-flex items-center gap-1 text-emerald-600 text-sm font-medium">✓ موثّقة</span>
               )}
               {p.verification_status === "pending_review" && (
-                <span className="inline-flex items-center gap-1 text-amber-600 text-sm font-medium">⏳ قيد المراجعة</span>
+                <span className="inline-flex items-center gap-1 text-amber-600 text-sm font-medium">قيد المراجعة</span>
               )}
               {p.verification_status === "rejected" && (
-                <span className="inline-flex items-center gap-1 text-red-500 text-sm font-medium">✗ تم الرفض</span>
+                <span className="inline-flex items-center gap-1 text-red-500 text-sm font-medium">رُفض الطلب</span>
               )}
               {(!p.verification_status || p.verification_status === "unverified") && (
                 <>
@@ -413,24 +474,25 @@ function ProfilePage() {
                     onClick={async () => {
                       try {
                         await verifyFn();
-                        toast.success("تم إرسال طلب التحقق");
+                        toast.success("أُرسل طلب التوثيق");
                         setP({ ...p, verification_status: "pending_review" });
+                        setOriginalP((o: any) => ({ ...o, verification_status: "pending_review" }));
                       } catch (e: any) {
                         toast.error(e?.message || "تعذّر إرسال الطلب");
                       }
                     }}
-                    className="text-xs border border-gold/40 text-gold px-3 py-1.5 rounded-sm hover:bg-gold/10"
+                    className="text-xs border border-gold/40 text-gold px-3 py-1.5 rounded-full hover:bg-gold/10"
                   >
-                    طلب التحقق
+                    اطلبي التوثيق
                   </button>
                 </>
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-2">المصوّرات الموثّقات يحصلن على شارة ✓ تزيد ثقة العملاء.</p>
+            <p className="text-xs text-muted-foreground">المصوّرات الموثّقات يحصلن على شارة ✓ تزيد ثقة العرائس.</p>
           </Card>
 
-          <Card title="تفضيلات الإشعارات">
-            <div className="space-y-2">
+          <Card id="sec-notifs" title="الإشعارات والجولة التعريفية" open={openSections["sec-notifs"] ?? false} onToggle={toggle}>
+            <div className="divide-y divide-border">
               {[
                 { key: "booking_new", label: "طلب حجز جديد" },
                 { key: "booking_confirmed", label: "تأكيد حجز" },
@@ -440,22 +502,24 @@ function ProfilePage() {
                 { key: "review_new", label: "تقييم جديد" },
                 { key: "subscription_expiring", label: "اشتراك ينتهي قريباً" },
                 { key: "event_reminder", label: "تذكير قبل المناسبة" },
-                { key: "marketing", label: "إشعارات تسويقية" },
+                { key: "marketing", label: "عروض وأخبار ميموريا" },
               ].map((pref) => {
                 const prefs = p.notification_preferences ?? {};
                 const enabled = prefs[pref.key] !== false;
                 return (
-                  <label key={pref.key} className="flex items-center justify-between py-1.5 cursor-pointer">
+                  <label key={pref.key} className="flex items-center justify-between py-2.5 cursor-pointer">
                     <span className="text-sm">{pref.label}</span>
                     <input
                       type="checkbox"
                       checked={enabled}
+                      className="h-4 w-4 accent-[var(--gold)]"
                       onChange={async () => {
                         const newPrefs = { ...prefs, [pref.key]: !enabled };
                         setP({ ...p, notification_preferences: newPrefs });
+                        setOriginalP((o: any) => ({ ...o, notification_preferences: newPrefs }));
                         try {
                           await notifFn({ data: { preferences: newPrefs } });
-                          toast.success("تم تحديث التفضيلات");
+                          toast.success(`${pref.label}: ${!enabled ? "مفعّل" : "متوقّف"}`);
                         } catch (e: any) {
                           toast.error(e?.message || "تعذّر تحديث التفضيلات");
                         }
@@ -465,32 +529,165 @@ function ProfilePage() {
                 );
               })}
             </div>
+            <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4 text-sm">
+              <span className="text-muted-foreground">جولة العميلة التعريفية:</span>
+              <span className="font-medium">
+                {tourState.status === "active" ? "فعّالة" : tourState.status === "completed" ? "مكتملة" : tourState.status === "skipped" ? "متخطّاة" : "لم تبدأ"}
+              </span>
+              <button onClick={() => { startTour(); toast.success("شغّلنا الجولة التعريفية"); }} className="ms-auto rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">تشغيل</button>
+              <button onClick={() => { resetTour(); toast.success("صفّرنا الجولة"); }} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">تصفير</button>
+            </div>
           </Card>
-        </div>
       </div><LivePhonePreview p={p} /></div></section>
+
+      {/* شريط الحفظ يظهر فقط عند وجود تغييرات */}
+      <AnimatePresence>
+        {isDirty && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 34 }}
+            className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+4.5rem)] z-40 px-4 sm:bottom-6"
+          >
+            <div className="mx-auto flex max-w-xl items-center gap-3 rounded-full bg-charcoal py-2 ps-5 pe-2 text-ivory shadow-2xl dark:bg-card dark:text-foreground dark:ring-1 dark:ring-gold/30">
+              <span className="flex-1 text-sm">لديكِ تغييرات غير محفوظة</span>
+              <button onClick={() => setP(originalP)} className="rounded-full px-3 py-2 text-sm text-ivory/70 hover:text-ivory dark:text-muted-foreground dark:hover:text-foreground">تراجع</button>
+              <button onClick={save} disabled={saving || usernameState === "taken"} className="inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal disabled:opacity-60 active:scale-95 transition-transform">
+                {saving && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-charcoal/30 border-t-charcoal" />}
+                {saving ? "نحفظ…" : "حفظ"}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <Footer />
     </div>
   );
 }
 
-function Card({ title, children }: any) {
-  return <div className="rounded-sm border border-border bg-card p-6 shadow-soft space-y-4"><h2 className="font-serif text-xl">{title}</h2>{children}</div>;
+function CompletionRing({ value }: { value: number }) {
+  const r = 20, c = 2 * Math.PI * r;
+  return (
+    <div className="relative grid h-14 w-14 place-items-center">
+      <svg viewBox="0 0 48 48" className="h-14 w-14 -rotate-90">
+        <circle cx="24" cy="24" r={r} fill="none" stroke="currentColor" strokeWidth="4" className="text-secondary" />
+        <motion.circle
+          cx="24" cy="24" r={r} fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round"
+          className={value === 100 ? "text-emerald-500" : "text-gold"}
+          strokeDasharray={c}
+          initial={{ strokeDashoffset: c }}
+          animate={{ strokeDashoffset: c * (1 - value / 100) }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+        />
+      </svg>
+      <span className="absolute text-xs font-bold tabular-nums">{value}٪</span>
+    </div>
+  );
 }
-function Field({ label, v, on, type = "text" }: { label: string; v: any; on: (v: string) => void; type?: string }) {
-  return <label className="block"><span className="text-sm text-muted-foreground">{label}</span><input type={type} value={v ?? ""} onChange={(e) => on(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
+
+function Card({ id, title, done, open, onToggle, children }: { id: string; title: string; done?: boolean; open: boolean; onToggle: (id: string) => void; children: React.ReactNode }) {
+  return (
+    <div id={id} className="scroll-mt-24 rounded-2xl border border-border bg-card">
+      <button type="button" onClick={() => onToggle(id)} aria-expanded={open} className="flex w-full items-center gap-3 p-6 text-start">
+        <h2 className="font-serif text-xl flex-1">{title}</h2>
+        <AnimatePresence>
+          {done && (
+            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }} className="grid h-6 w-6 place-items-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400" title="مكتمل">
+              <Check className="h-3.5 w-3.5" />
+            </motion.span>
+          )}
+        </AnimatePresence>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-4 px-6 pb-6">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
-function Area({ label, v, on }: { label: string; v: any; on: (v: string) => void }) {
-  return <label className="block"><span className="text-sm text-muted-foreground">{label}</span><textarea value={v ?? ""} onChange={(e) => on(e.target.value)} rows={4} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
+function Field({ label, v, on, type = "text", hint, ltr }: { label: string; v: any; on: (v: string) => void; type?: string; hint?: string; ltr?: boolean }) {
+  return (
+    <label className="block">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <input type={type} dir={ltr ? "ltr" : undefined} value={v ?? ""} onChange={(e) => on(e.target.value)} className="w-full mt-1 rounded-xl border border-border bg-background px-3 py-2 focus:border-gold/60 focus:outline-none transition-colors" />
+      {hint && <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>}
+    </label>
+  );
 }
-function ImgPicker({ label, url, onPick, aspect = "aspect-square" }: any) {
+function NumField({ label, value, onChange, min, max, step, placeholder }: { label: string; value: any; onChange: (v: string) => void; min?: number; max?: number; step?: number; placeholder?: string }) {
+  const invalid = value !== "" && value != null && ((min !== undefined && Number(value) < min) || (max !== undefined && Number(value) > max));
+  return (
+    <label className="block">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <motion.input
+        type="number"
+        min={min} max={max} step={step}
+        value={value ?? ""}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        animate={invalid ? { x: [0, -4, 4, -3, 3, 0] } : { x: 0 }}
+        transition={{ duration: 0.3 }}
+        className={`w-full mt-1 rounded-xl border bg-background px-3 py-2 tabular-nums focus:outline-none transition-colors ${invalid ? "border-destructive" : "border-border focus:border-gold/60"}`}
+      />
+      {invalid && <span className="mt-1 block text-xs text-destructive">القيمة بين {min} و{max}</span>}
+    </label>
+  );
+}
+function Area({ label, v, on, hint }: { label: string; v: any; on: (v: string) => void; hint?: string }) {
+  return (
+    <label className="block">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <textarea value={v ?? ""} onChange={(e) => on(e.target.value)} rows={4} className="w-full mt-1 rounded-xl border border-border bg-background px-3 py-2 leading-relaxed focus:border-gold/60 focus:outline-none transition-colors" />
+      {hint && <span className="mt-1 block text-xs text-muted-foreground">{hint}</span>}
+    </label>
+  );
+}
+function ImgPicker({ label, url, onPick, aspect = "aspect-square", hint }: any) {
   const ref = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   return (
     <div>
       <div className="text-sm mb-2">{label}</div>
-      <button onClick={() => ref.current?.click()} className={`relative w-full ${aspect} bg-secondary rounded-sm overflow-hidden border border-border grid place-items-center`}>
-        {url ? <img src={url} className="w-full h-full object-cover" alt="" /> : <Upload className="h-6 w-6 text-muted-foreground" />}
+      <button
+        onClick={() => ref.current?.click()}
+        className={`group relative w-full ${aspect} bg-secondary rounded-xl overflow-hidden border border-border grid place-items-center hover:border-gold/50 transition-colors`}
+      >
+        {url ? (
+          <img src={url} onLoad={() => setLoaded(true)} className={`w-full h-full object-cover transition-all duration-700 ${loaded ? "blur-0" : "blur-md"}`} alt="" />
+        ) : (
+          <Upload className="h-6 w-6 text-muted-foreground" />
+        )}
+        <span className="absolute inset-0 grid place-items-center bg-black/40 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
+          {busy ? "جاري الرفع…" : url ? "تغيير الصورة" : "اختيار صورة"}
+        </span>
+        {busy && <span className="absolute inset-0 grid place-items-center bg-black/40"><span className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" /></span>}
       </button>
-      <input ref={ref} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])} />
+      {hint && <p className="mt-1.5 text-xs text-gold">{hint}</p>}
+      <input
+        ref={ref}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={async (e) => {
+          const f = e.target.files?.[0];
+          if (!f) return;
+          setBusy(true);
+          setLoaded(false);
+          try { await onPick(f); } finally { setBusy(false); e.target.value = ""; }
+        }}
+      />
     </div>
   );
 }
