@@ -3,12 +3,20 @@
 @import "tw-animate-css";
 @import "@fontsource-variable/playfair-display";
 @import "@fontsource-variable/cairo";
+/* Wedding-invitation type: Amiri (classic Naskh) for Arabic display,
+   Aref Ruqaa for calligraphic accents, Cormorant for Latin display. */
+@import "@fontsource/amiri/arabic-400.css";
+@import "@fontsource/amiri/arabic-700.css";
+@import "@fontsource/aref-ruqaa/arabic-400.css";
+@import "@fontsource/aref-ruqaa/arabic-700.css";
+@import "@fontsource-variable/cormorant-garamond";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-serif: "Playfair Display Variable", "Cairo Variable", serif;
+  --font-serif: "Cormorant Garamond Variable", "Amiri", "Playfair Display Variable", serif;
   --font-sans: "Cairo Variable", system-ui, sans-serif;
+  --font-script: "Aref Ruqaa", "Amiri", serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -45,9 +53,9 @@
 
   /* Modern Royalty palette */
   --ivory: oklch(0.985 0.008 85);          /* #F8F4EC ish */
-  --charcoal: oklch(0.205 0.012 260);      /* deep charcoal */
-  --gold: oklch(0.78 0.09 80);             /* champagne gold */
-  --gold-foreground: oklch(0.18 0.01 260);
+  --charcoal: oklch(0.22 0.012 55);        /* warm espresso charcoal */
+  --gold: oklch(0.67 0.085 72);            /* muted champagne, deep enough for text on ivory */
+  --gold-foreground: oklch(0.2 0.012 55);
 
   --background: var(--ivory);
   --foreground: var(--charcoal);
@@ -61,7 +69,7 @@
   --secondary: oklch(0.95 0.012 80);
   --secondary-foreground: var(--charcoal);
   --muted: oklch(0.94 0.01 80);
-  --muted-foreground: oklch(0.45 0.01 260);
+  --muted-foreground: oklch(0.47 0.015 60);
   --accent: var(--gold);
   --accent-foreground: var(--charcoal);
 
@@ -73,25 +81,26 @@
 
   --gradient-royal: linear-gradient(135deg, oklch(0.985 0.008 85) 0%, oklch(0.93 0.03 80) 100%);
   --gradient-gold: linear-gradient(135deg, oklch(0.82 0.08 80) 0%, oklch(0.7 0.1 70) 100%);
-  --shadow-elegant: 0 20px 50px -20px oklch(0.2 0.01 260 / 0.25);
-  --shadow-soft: 0 10px 30px -15px oklch(0.2 0.01 260 / 0.15);
+  --shadow-elegant: 0 30px 60px -30px oklch(0.3 0.03 55 / 0.35);
+  --shadow-soft: 0 12px 30px -18px oklch(0.3 0.03 55 / 0.22);
 }
 
 .dark {
-  --background: oklch(0.16 0.01 260);
+  --gold: oklch(0.78 0.075 78);
+  --background: oklch(0.17 0.01 55);
   --foreground: oklch(0.97 0.01 80);
-  --card: oklch(0.22 0.012 260);
+  --card: oklch(0.22 0.012 55);
   --card-foreground: oklch(0.97 0.01 80);
-  --popover: oklch(0.22 0.012 260);
+  --popover: oklch(0.22 0.012 55);
   --popover-foreground: oklch(0.97 0.01 80);
   --primary: var(--gold);
-  --primary-foreground: oklch(0.16 0.01 260);
-  --secondary: oklch(0.26 0.012 260);
+  --primary-foreground: oklch(0.17 0.01 55);
+  --secondary: oklch(0.26 0.012 55);
   --secondary-foreground: oklch(0.97 0.01 80);
-  --muted: oklch(0.26 0.012 260);
+  --muted: oklch(0.26 0.012 55);
   --muted-foreground: oklch(0.7 0.01 80);
   --accent: var(--gold);
-  --accent-foreground: oklch(0.16 0.01 260);
+  --accent-foreground: oklch(0.17 0.01 55);
   --border: oklch(1 0 0 / 0.1);
   --input: oklch(1 0 0 / 0.15);
   --ring: var(--gold);
@@ -132,9 +141,20 @@
     font-family: "Cairo Variable", system-ui, sans-serif;
   }
   [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] .font-serif {
-    font-family: "Cairo Variable", "Playfair Display Variable", serif;
+    font-family: "Amiri", "Cormorant Garamond Variable", serif;
     font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.25;
   }
+  /* Arabic has no true italic; browsers fake a slant. Use the calligraphic
+     face for emphasis instead (see .font-script). */
+  [dir="rtl"] .italic, [dir="rtl"] em { font-style: normal; }
+  [dir="rtl"] h1 .italic, [dir="rtl"] h2 .italic { font-family: var(--font-script); font-weight: 400; }
+
+  p { text-wrap: pretty; }
+  h1, h2, h3 { text-wrap: balance; }
+  html { scroll-behavior: smooth; }
+  ::selection { background: color-mix(in oklab, var(--gold) 35%, transparent); }
 }
 
 @utility container-editorial {
@@ -142,6 +162,20 @@
   max-width: 1200px;
   margin-inline: auto;
   padding-inline: 1.25rem;
+}
+
+@utility font-script {
+  font-family: var(--font-script);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* Small uppercase-feel label: letter-spaced Latin, normal-spaced Arabic. */
+@utility eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.28em;
+  color: var(--color-gold);
+  [dir="rtl"] & { letter-spacing: 0.04em; font-size: 0.8rem; }
 }
 
 @utility text-gold {
@@ -214,10 +248,9 @@
     inset: 0;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.045;
-    mix-blend-mode: overlay;
-    background-image: radial-gradient(rgba(255,255,255,0.9) 1px, transparent 1px);
-    background-size: 3px 3px;
+    opacity: 0.07;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
 
@@ -255,9 +288,9 @@
 .dark .skeleton {
   background: linear-gradient(
     90deg,
-    oklch(0.22 0.012 260 / 1)  0%,
-    oklch(0.28 0.015 260 / 1) 50%,
-    oklch(0.22 0.012 260 / 1)  100%
+    oklch(0.22 0.012 55 / 1)  0%,
+    oklch(0.28 0.015 55 / 1) 50%,
+    oklch(0.22 0.012 55 / 1)  100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.6s ease-in-out infinite;

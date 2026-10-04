@@ -220,212 +220,238 @@ function Landing() {
         <Header />
 
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="container-editorial grid gap-10 lg:grid-cols-2 items-center pt-10 lg:pt-20 pb-16">
+      {/* Hero — invitation-card composition: arch-framed portrait, calligraphic accent */}
+      <section className="relative overflow-hidden grain-overlay">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[70%] bg-[radial-gradient(60%_60%_at_70%_20%,color-mix(in_oklab,var(--gold)_14%,transparent),transparent_70%)]" />
+        <div className="container-editorial relative pt-10 lg:pt-16 pb-24 lg:pb-32">
           <motion.div
-            className="order-2 lg:order-1 space-y-7"
-            variants={staggerContainer}
+            variants={fadeUp}
             initial="hidden"
             animate="visible"
+            className="flex items-center gap-4 text-muted-foreground mb-10 lg:mb-14"
           >
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-card px-3 py-1 text-xs tracking-wide">
-              <motion.span
-                animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                className="text-gold"
-              >
-                ✦
-              </motion.span>
-              <Sparkles className="h-3.5 w-3.5 text-gold" />
-              منصّة الحجوزات الأكثر فخامة لمصوّري الأعراس في الأردن
-            </motion.div>
-            <motion.h1
-              variants={fadeUp}
-              className="font-serif text-5xl sm:text-7xl lg:text-8xl leading-[1.05] tracking-tight"
-            >
-              من النقرة الأولى
-              <br />
-              إلى <span className="text-gold italic">الذكرى الأبدية</span>.
-            </motion.h1>
-            <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-              {visitorRole === "photographer" || isPhotographer
-                ? "ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان."
-                : "احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون آمن."}
-            </motion.p>
-            <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
-              {(visitorRole === "client" || !visitorRole) && !isPhotographer && (
-                <Link
-                  to="/search"
-                  className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm shadow-elegant hover:opacity-90 transition"
-                >
-                  ابحثي عن مصوّرة
-                  <ArrowLeft className="h-4 w-4" />
-                </Link>
-              )}
-              {authLoading || authed ? (
-                <Link
-                  to="/dashboard"
-                  className={visitorRole === "client" ? "hidden" : "inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition bg-charcoal text-ivory"}
-                >
-                  لوحتي
-                </Link>
-              ) : (visitorRole === "photographer" || !visitorRole) ? (
-                <Link
-                  to="/photographers/join"
-                  className="inline-flex items-center gap-2 border border-charcoal/80 px-6 py-3 rounded-sm hover:bg-charcoal hover:text-ivory transition"
-                >
-                  انضمي مجاناً
-                </Link>
-              ) : null}
-            </motion.div>
-            {isPhotographer && trialDaysLeft !== null && (
-              <motion.div variants={fadeUp} className="rounded-sm border border-gold/30 bg-gold/10 px-4 py-3 text-sm text-foreground max-w-xl">
-                {trialDaysLeft > 0
-                  ? `متبقّي ${trialDaysLeft} يومًا من التجربة المجانية لحسابك.`
-                  : "انتهت التجربة المجانية، ويجب تفعيل الاشتراك للاستمرار في استقبال الحجوزات."}
-              </motion.div>
-            )}
-            <motion.div variants={fadeUp} className="flex items-center gap-4 pt-4 text-sm text-muted-foreground flex-wrap">
-              <div className="flex items-center gap-1"><Star className="h-4 w-4 fill-gold text-gold" /> تقييمات حقيقية من عملاء سابقات</div>
-              <div className="hidden sm:block">حجز فوري بدون واتساب</div>
-            </motion.div>
+            <span className="eyebrow">Memoria</span>
+            <span className="h-px flex-1 max-w-24 bg-gold/40" />
+            <span className="text-xs">عمّان · الأردن</span>
+            <span className="hidden sm:inline font-serif italic text-sm text-muted-foreground/70" dir="ltr">Wedding photography, booked beautifully</span>
           </motion.div>
 
-          <motion.div
-            className="order-1 lg:order-2 relative"
-            variants={scaleIn}
-            initial="hidden"
-            animate="visible"
-          >
-            <div className="absolute -inset-4 bg-gradient-royal rounded-sm -z-10" />
-            <div className="overflow-hidden rounded-sm group">
-              <img
-                src={heroImg}
-                alt="عروس في إطلالة سينمائية"
-                width={1080}
-                height={1600}
-                className="w-full h-[480px] sm:h-[560px] object-cover rounded-sm shadow-elegant will-change-transform transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-              />
-            </div>
+          <div className="grid gap-14 lg:grid-cols-12 items-end">
             <motion.div
-              animate={float}
-              className="absolute -bottom-6 -start-6 sm:-start-10 bg-card border border-border rounded-sm p-4 shadow-soft max-w-[260px]"
+              className="order-2 lg:order-1 lg:col-span-7 space-y-8"
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
             >
-              <div className="flex items-center justify-between mb-1">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">سعر فوري</div>
-                <span className="text-[9px] uppercase tracking-[0.15em] bg-gold/15 text-gold px-1.5 py-0.5 rounded-sm">مثال تقديري</span>
-              </div>
-              <div className="font-serif text-2xl text-muted-foreground/80">~٣٢٠ <span className="text-sm">د.أ</span></div>
-              <div className="text-xs text-muted-foreground">٤ ساعات تصوير + ٥٠ صورة معدّلة — الأسعار تختلف حسب المصوّر</div>
+              <motion.p variants={fadeUp} className="eyebrow">
+                منصّة الحجوزات الأكثر فخامة لمصوّري الأعراس في الأردن
+              </motion.p>
+              <motion.h1
+                variants={fadeUp}
+                className="font-serif text-[2.9rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]"
+              >
+                من النقرة الأولى
+                <span className="block font-script text-gold text-[3.4rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
+                  إلى الذكرى الأبدية
+                </span>
+              </motion.h1>
+              <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-md leading-loose">
+                {visitorRole === "photographer" || isPhotographer
+                  ? "ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان."
+                  : "احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون آمن."}
+              </motion.p>
+              <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-x-8 gap-y-4">
+                {visitorRole !== "photographer" && !isPhotographer && (
+                  <Link
+                    to="/search"
+                    className="group inline-flex items-center gap-3 bg-charcoal text-ivory ps-7 pe-5 py-3.5 rounded-full shadow-elegant transition-all duration-300 hover:gap-4 active:scale-[0.98] dark:bg-gold dark:text-charcoal"
+                  >
+                    ابحثي عن مصوّرة
+                    <span className="grid h-7 w-7 place-items-center rounded-full bg-ivory/10 dark:bg-charcoal/10">
+                      <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
+                    </span>
+                  </Link>
+                )}
+                {authLoading || authed ? (
+                  <Link
+                    to="/dashboard"
+                    className={visitorRole === "client" ? "hidden" : "inline-flex items-center gap-2 bg-charcoal text-ivory px-7 py-3.5 rounded-full transition hover:opacity-90 active:scale-[0.98] dark:bg-gold dark:text-charcoal"}
+                  >
+                    لوحتي
+                  </Link>
+                ) : visitorRole !== "client" ? (
+                  <Link
+                    to="/photographers/join"
+                    className="text-sm border-b border-current/40 pb-1 hover:border-gold hover:text-gold transition-colors"
+                  >
+                    مصوّرة؟ انضمي مجاناً
+                  </Link>
+                ) : null}
+              </motion.div>
+              {isPhotographer && trialDaysLeft !== null && (
+                <motion.div variants={fadeUp} className="border-s-2 border-gold ps-4 py-1 text-sm text-foreground max-w-md">
+                  {trialDaysLeft > 0
+                    ? `متبقّي ${trialDaysLeft} يومًا من التجربة المجانية لحسابك.`
+                    : "انتهت التجربة المجانية، ويجب تفعيل الاشتراك للاستمرار في استقبال الحجوزات."}
+                </motion.div>
+              )}
+              <motion.div variants={fadeUp} className="flex items-center gap-6 pt-2 text-sm text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 fill-gold text-gold" /> تقييمات حقيقية من عملاء سابقات</div>
+                <span className="hidden sm:block h-3 w-px bg-border" />
+                <div className="hidden sm:block">حجز فوري بدون واتساب</div>
+              </motion.div>
             </motion.div>
-          </motion.div>
+
+            <motion.div
+              className="order-1 lg:order-2 lg:col-span-5 relative mx-auto w-full max-w-[420px] lg:max-w-none"
+              variants={scaleIn}
+              initial="hidden"
+              animate="visible"
+            >
+              {/* thin offset arch outline behind the photo */}
+              <div aria-hidden className="absolute inset-0 translate-x-3 -translate-y-3 lg:translate-x-5 lg:-translate-y-5 rounded-t-full border border-gold/50" />
+              <div className="relative overflow-hidden rounded-t-full group shadow-elegant">
+                <img
+                  src={heroImg}
+                  alt="عروس في إطلالة سينمائية"
+                  width={598}
+                  height={1420}
+                  className="w-full aspect-[3/4.2] object-cover object-top will-change-transform transition-transform duration-[1600ms] ease-out group-hover:scale-[1.04]"
+                />
+                <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-charcoal/40 to-transparent" />
+              </div>
+              <span aria-hidden className="hidden lg:block absolute top-1/2 -end-14 -translate-y-1/2 rotate-90 origin-center whitespace-nowrap font-serif italic text-sm tracking-[0.3em] text-muted-foreground/60" dir="ltr">
+                est. 2026 — Amman
+              </span>
+              <motion.div
+                animate={float}
+                className="absolute -bottom-8 -start-4 sm:-start-12 bg-card/95 backdrop-blur border border-gold/25 rounded-2xl p-5 shadow-soft max-w-[250px]"
+              >
+                <div className="flex items-center justify-between mb-1.5 gap-3">
+                  <div className="text-xs text-muted-foreground">سعر فوري</div>
+                  <span className="text-[10px] text-gold border border-gold/30 px-1.5 py-0.5 rounded-sm">مثال تقديري</span>
+                </div>
+                <div className="font-serif text-3xl tabular-nums">~٣٢٠ <span className="text-sm text-muted-foreground">د.أ</span></div>
+                <div className="text-xs text-muted-foreground leading-relaxed mt-1">٤ ساعات تصوير + ٥٠ صورة معدّلة — الأسعار تختلف حسب المصوّر</div>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
+
+      <Flourish />
 
       {/* Role chooser */}
       {(!visitorRole || visitorRole === "guest" || isPhotographer) && (
         <ScrollReveal delay={0.05}>
         <motion.section
-          className="container-editorial py-16"
+          className="container-editorial py-20"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={viewportOnce}
         >
-          <div className="text-center mb-10">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">ابدأ من هنا</div>
-            <h2 className="font-serif text-3xl sm:text-4xl">من أنت؟</h2>
+          <div className="grid gap-10 lg:grid-cols-12 items-end mb-10">
+            <div className="lg:col-span-5">
+              <div className="eyebrow mb-3">ابدأ من هنا</div>
+              <h2 className="font-serif text-4xl sm:text-5xl">من أنت؟</h2>
+            </div>
+            <p className="lg:col-span-6 lg:col-start-7 text-muted-foreground leading-loose max-w-md">
+              مكان واحد يجمع العروس بمصوّرتها — من أول نظرة على المعرض حتى استلام الصور.
+            </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
-            <RoleCard
-              title="العروس وأهل الزفاف"
-              desc="ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فورًا."
-              cta="ابحثي عن مصوّرة"
-              href="/search"
-            />
-            {!authLoading && !isPhotographer ? (
+          <div className="grid gap-6 md:grid-cols-12">
+            <div className="md:col-span-5">
               <RoleCard
-                title="مصوّرة محترفة"
-                desc="أنشئي ملفكِ، حدّدي أسعاركِ واربطي تقويمكِ — ودعي النظام يدير حجوزاتكِ."
-                cta="انضمي إلى المنصة"
-                href="/photographers/join"
-                highlight
+                index="٠١"
+                title="العروس وأهل الزفاف"
+                desc="ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فورًا."
+                cta="ابحثي عن مصوّرة"
+                href="/search"
               />
-            ) : (
-              <RoleCard
-                title="حسابك جاهز"
-                desc="أنتِ مسجّلة بالفعل. انتقلي مباشرة إلى لوحة التحكم لإدارة الباقات والحجوزات والاشتراك."
-                cta="افتحي لوحة التحكم"
-                href="/dashboard"
-                highlight
-              />
-            )}
+            </div>
+            <div className="md:col-span-7 md:mt-12">
+              {!authLoading && !isPhotographer ? (
+                <RoleCard
+                  index="٠٢"
+                  title="مصوّرة محترفة"
+                  desc="أنشئي ملفكِ، حدّدي أسعاركِ واربطي تقويمكِ — ودعي النظام يدير حجوزاتكِ."
+                  cta="انضمي إلى المنصة"
+                  href="/photographers/join"
+                  highlight
+                />
+              ) : (
+                <RoleCard
+                  index="٠٢"
+                  title="حسابك جاهز"
+                  desc="أنتِ مسجّلة بالفعل. انتقلي مباشرة إلى لوحة التحكم لإدارة الباقات والحجوزات والاشتراك."
+                  cta="افتحي لوحة التحكم"
+                  href="/dashboard"
+                  highlight
+                />
+              )}
+            </div>
           </div>
         </motion.section>
         </ScrollReveal>
       )}
 
-      {/* How */}
+      {/* How — editorial numbered list with a sticky heading */}
       <ScrollReveal delay={0.1}>
       <motion.section
         id="how"
-        className="container-editorial py-16"
+        className="container-editorial py-20 lg:py-28"
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
         viewport={viewportOnce}
       >
-        <div className="text-center mb-12">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">سير العمل</div>
-          <h2 className="font-serif text-3xl sm:text-4xl">حلّ كامل لكل مشكلة</h2>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <Feature icon={MessageSquareOff} title="بدون واتساب" desc="جميع التفاصيل تُدخل عبر النموذج: الموقع، الوقت، نوع التصوير." />
-          <Feature icon={Calendar} title="تقويم ذكي" desc="مزامنة Google Calendar مع فاصل ساعتين بين الجلسات لمراعاة الازدحام." />
-          <Feature icon={Receipt} title="سعر فوري" desc="حاسبة ديناميكية تشمل الساعات، الإضافات، ورسوم التنقّل بالكيلومتر." />
-          <Feature icon={ShieldCheck} title="عربون آمن" desc="تأكيد الحجز برفع إثبات تحويل CliQ ومصادقة المصوّر." />
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <div className="lg:sticky lg:top-28">
+              <div className="eyebrow mb-3">سير العمل</div>
+              <h2 className="font-serif text-4xl sm:text-5xl mb-4">حلّ كامل<br /><span className="font-script text-gold">لكل مشكلة</span></h2>
+              <p className="text-muted-foreground leading-loose max-w-xs">كل ما كان يضيع في محادثات الواتساب، صار في مكانه الصحيح.</p>
+            </div>
+          </div>
+          <ol className="lg:col-span-7 lg:col-start-6 divide-y divide-border border-y border-border">
+            <Feature n="01" icon={MessageSquareOff} title="بدون واتساب" desc="جميع التفاصيل تُدخل عبر النموذج: الموقع، الوقت، نوع التصوير." />
+            <Feature n="02" icon={Calendar} title="تقويم ذكي" desc="مزامنة Google Calendar مع فاصل ساعتين بين الجلسات لمراعاة الازدحام." />
+            <Feature n="03" icon={Receipt} title="سعر فوري" desc="حاسبة ديناميكية تشمل الساعات، الإضافات، ورسوم التنقّل بالكيلومتر." />
+            <Feature n="04" icon={ShieldCheck} title="عربون آمن" desc="تأكيد الحجز برفع إثبات تحويل CliQ ومصادقة المصوّر." />
+          </ol>
         </div>
       </motion.section>
       </ScrollReveal>
 
-      {/* Testimonials */}
+      {/* Testimonials — one lead quote, two supporting, staggered */}
       {(visitorRole !== "photographer" && !isPhotographer) && (
         <ScrollReveal delay={0.1}>
         <motion.section
-          className="bg-charcoal text-ivory py-16 lg:py-24"
+          className="relative bg-charcoal text-ivory py-20 lg:py-28 overflow-hidden grain-overlay"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={viewportOnce}
         >
-          <div className="container-editorial">
-            <div className="text-center mb-12">
-              <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">تجارب حقيقية</div>
-              <h2 className="font-serif text-3xl sm:text-4xl text-ivory">آراء العرائس</h2>
-            </div>
-            <div className="grid gap-6 md:grid-cols-3">
-              <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
-                <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
-                </div>
-                <p className="text-sm leading-relaxed text-ivory/90 mb-6">"تجربة رائعة من البداية للنهاية. أسعار واضحة وبدون مفاجآت، والمصورة كانت لطيفة جداً وصورها خيالية. أنقذتني من ضياع الأوقات والبحث العشوائي."</p>
-                <div className="font-serif text-ivory">— سارة الأحمد</div>
-              </motion.div>
-              <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
-                <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
-                </div>
-                <p className="text-sm leading-relaxed text-ivory/90 mb-6">"أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير."</p>
-                <div className="font-serif text-ivory">— دانة وليد</div>
-              </motion.div>
-              <motion.div variants={fadeUp} className="bg-background/10 backdrop-blur-sm border border-ivory/10 rounded-sm p-6 shadow-soft">
-                <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((i) => <Star key={i} className="h-4 w-4 text-gold fill-gold" />)}
-                </div>
-                <p className="text-sm leading-relaxed text-ivory/90 mb-6">"ميزة التوفر الفوري خلتني أقدر أرتب أموري خلال ساعات، بدل ما أنتظر أيام عشان أسمع رد المصورات. الصور وصلتني أسرع من المتوقع، شكراً ميموريا!"</p>
-                <div className="font-serif text-ivory">— لين المجالي</div>
-              </motion.div>
+          <span aria-hidden className="pointer-events-none absolute -top-10 start-6 font-serif text-[16rem] leading-none text-gold/10 select-none">”</span>
+          <div className="container-editorial relative">
+            <div className="eyebrow mb-3">تجارب حقيقية</div>
+            <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-14">آراء العرائس</h2>
+            <div className="grid gap-12 lg:grid-cols-12">
+              <motion.figure variants={fadeUp} className="lg:col-span-7">
+                <blockquote className="font-serif text-2xl sm:text-3xl leading-[1.7] text-ivory">
+                  تجربة رائعة من البداية للنهاية. أسعار واضحة وبدون مفاجآت، والمصورة كانت لطيفة جداً وصورها خيالية. أنقذتني من ضياع الأوقات والبحث العشوائي.
+                </blockquote>
+                <figcaption className="mt-8 flex items-center gap-4">
+                  <span className="h-px w-10 bg-gold" />
+                  <span className="font-script text-2xl text-gold">سارة الأحمد</span>
+                </figcaption>
+              </motion.figure>
+              <div className="lg:col-span-4 lg:col-start-9 space-y-10 lg:pt-24">
+                <Quote name="دانة وليد" text="أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير." />
+                <Quote name="لين المجالي" text="ميزة التوفر الفوري خلتني أقدر أرتب أموري خلال ساعات، بدل ما أنتظر أيام عشان أسمع رد المصورات. الصور وصلتني أسرع من المتوقع، شكراً ميموريا." />
+              </div>
             </div>
           </div>
         </motion.section>
@@ -435,22 +461,27 @@ function Landing() {
       {(featuredStatus !== "ok" || featured.length > 0) && (visitorRole !== "photographer" && !isPhotographer) && (
         <ScrollReveal delay={0.1}>
         <motion.section
-          className="container-editorial py-16"
+          className="container-editorial py-20 lg:py-28"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={viewportOnce}
         >
-          <div className="text-center mb-10">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">⭐ المميّزون</div>
-            <h2 className="font-serif text-3xl sm:text-4xl">مصوّرون بأعلى التقييمات</h2>
+          <div className="flex items-end justify-between gap-6 mb-12 flex-wrap">
+            <div>
+              <div className="eyebrow mb-3">المميّزون</div>
+              <h2 className="font-serif text-4xl sm:text-5xl">مصوّرون بأعلى التقييمات</h2>
+            </div>
+            <Link to="/search" className="text-sm border-b border-current/40 pb-1 hover:text-gold hover:border-gold transition-colors">
+              كل المصوّرات
+            </Link>
           </div>
           {featuredStatus === "loading" && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="rounded-sm overflow-hidden border border-border bg-card">
-                  <div className="aspect-[4/3] animate-pulse bg-muted" />
-                  <div className="p-4 space-y-2">
+                <div key={i} className={i % 2 ? "lg:mt-16" : ""}>
+                  <div className="aspect-[3/4] animate-pulse bg-muted rounded-t-full" />
+                  <div className="pt-4 space-y-2">
                     <div className="h-4 w-2/3 animate-pulse rounded-sm bg-muted" />
                     <div className="h-3 w-1/3 animate-pulse rounded-sm bg-muted" />
                   </div>
@@ -460,13 +491,13 @@ function Landing() {
           )}
 
           {featuredStatus === "error" && (
-            <div className="mx-auto max-w-md rounded-sm border border-border bg-card p-8 text-center">
+            <div className="mx-auto max-w-md border-y border-border py-10 text-center">
               <p className="text-sm text-muted-foreground">
                 تعذّر تحميل قائمة المصوّرات الآن. تحقّقي من الاتصال وحاولي مجدداً.
               </p>
               <button
                 onClick={() => setFeaturedReload((n) => n + 1)}
-                className="mt-4 inline-flex items-center justify-center rounded-sm bg-charcoal px-5 py-2.5 text-sm font-medium text-ivory transition hover:opacity-90"
+                className="mt-4 inline-flex items-center justify-center rounded-full bg-charcoal px-6 py-2.5 text-sm font-medium text-ivory transition hover:opacity-90 active:scale-[0.98]"
               >
                 إعادة المحاولة
               </button>
@@ -474,16 +505,15 @@ function Landing() {
           )}
 
           {featuredStatus === "ok" && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featured.map((p) => (
-              <motion.div key={p.username} variants={fadeUp} whileHover={cardHover}>
-                <Link to="/photographers/$username" params={{ username: p.username }}
-                  className="group block rounded-sm overflow-hidden border border-border bg-card shadow-soft hover:shadow-elegant transition">
-                  <div className="aspect-[4/3] bg-gradient-royal overflow-hidden">
-                    {p.cover_url && <img src={p.cover_url} alt={p.display_name} className="h-full w-full object-cover group-hover:scale-105 transition duration-500" />}
+          <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            {featured.map((p, i) => (
+              <motion.div key={p.username} variants={fadeUp} className={i % 2 ? "lg:mt-16" : ""}>
+                <Link to="/photographers/$username" params={{ username: p.username }} className="group block">
+                  <div className="aspect-[3/4] bg-gradient-royal overflow-hidden rounded-t-full">
+                    {p.cover_url && <img src={p.cover_url} alt={p.display_name} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />}
                   </div>
-                  <div className="p-4">
-                    <div className="font-serif text-lg">{p.display_name}</div>
+                  <div className="pt-4 flex items-baseline justify-between gap-3">
+                    <div className="font-serif text-xl group-hover:text-gold transition-colors">{p.display_name}</div>
                     {p.city && <div className="text-xs text-muted-foreground">{p.city}</div>}
                   </div>
                 </Link>
@@ -501,21 +531,43 @@ function Landing() {
   );
 }
 
-function RoleCard({ title, desc, cta, href, highlight }: { title: string; desc: string; cta: string; href: string; highlight?: boolean }) {
+function Flourish() {
   return (
-    <motion.div variants={fadeUp} whileHover={cardHover}>
+    <div aria-hidden className="container-editorial flex items-center gap-4 text-gold/60">
+      <span className="h-px flex-1 bg-gradient-to-l from-gold/40 to-transparent" />
+      <svg width="44" height="14" viewBox="0 0 44 14" fill="none" stroke="currentColor" strokeWidth="1">
+        <path d="M1 7h12M31 7h12M22 1c-3 3-3 9 0 12M22 1c3 3 3 9 0 12M15 7a3 3 0 1 0 6 0M23 7a3 3 0 1 0 6 0" />
+      </svg>
+      <span className="h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent" />
+    </div>
+  );
+}
+
+function Quote({ name, text }: { name: string; text: string }) {
+  return (
+    <motion.figure variants={fadeUp} className="border-s border-ivory/15 ps-6">
+      <blockquote className="text-sm leading-loose text-ivory/80">{text}</blockquote>
+      <figcaption className="mt-4 font-script text-lg text-gold">{name}</figcaption>
+    </motion.figure>
+  );
+}
+
+function RoleCard({ index, title, desc, cta, href, highlight }: { index: string; title: string; desc: string; cta: string; href: string; highlight?: boolean }) {
+  return (
+    <motion.div variants={fadeUp} className="h-full">
       <Link
         to={href}
-        className={`group block rounded-sm border p-8 transition-all hover:shadow-elegant ${
-          highlight ? "bg-charcoal text-ivory border-charcoal" : "bg-card border-border"
+        className={`group relative flex h-full flex-col overflow-hidden rounded-2xl p-8 sm:p-10 transition-all duration-500 hover:shadow-elegant ${
+          highlight ? "bg-charcoal text-ivory grain-overlay" : "bg-card border border-border"
         }`}
       >
-        <div className={`text-xs uppercase tracking-[0.25em] mb-3 ${highlight ? "text-gold" : "text-muted-foreground"}`}>
+        <span aria-hidden className={`absolute -top-6 end-4 font-serif text-[8rem] leading-none select-none ${highlight ? "text-ivory/[0.06]" : "text-foreground/[0.05]"}`}>{index}</span>
+        <div className={`eyebrow mb-6 ${highlight ? "" : "!text-muted-foreground"}`}>
           {highlight ? "للمصوّرين" : "للعملاء"}
         </div>
-        <h3 className="font-serif text-2xl mb-2">{title}</h3>
-        <p className={`text-sm leading-relaxed mb-6 ${highlight ? "text-ivory/70" : "text-muted-foreground"}`}>{desc}</p>
-        <div className="inline-flex items-center gap-2 text-sm border-b border-current pb-0.5 group-hover:gap-3 transition-all">
+        <h3 className="font-serif text-3xl mb-3">{title}</h3>
+        <p className={`text-sm leading-loose mb-10 max-w-sm ${highlight ? "text-ivory/70" : "text-muted-foreground"}`}>{desc}</p>
+        <div className="mt-auto inline-flex items-center gap-2 text-sm self-start border-b border-current/40 pb-1 transition-all duration-300 group-hover:gap-3 group-hover:border-gold group-hover:text-gold">
           {cta} <ArrowLeft className="h-4 w-4" />
         </div>
       </Link>
@@ -523,18 +575,15 @@ function RoleCard({ title, desc, cta, href, highlight }: { title: string; desc: 
   );
 }
 
-function Feature({ icon: Icon, title, desc }: { icon: typeof Calendar; title: string; desc: string }) {
+function Feature({ n, icon: Icon, title, desc }: { n: string; icon: typeof Calendar; title: string; desc: string }) {
   return (
-    <motion.div
-      variants={fadeUp}
-      whileHover={cardHover}
-      className="rounded-sm border border-border bg-card p-6 shadow-soft hover:shadow-elegant transition-shadow"
-    >
-      <motion.div whileHover={{ rotate: 6, scale: 1.1 }} className="grid h-10 w-10 place-items-center rounded-sm bg-secondary mb-4">
-        <Icon className="h-5 w-5 text-gold" />
-      </motion.div>
-      <div className="font-serif text-lg mb-1">{title}</div>
-      <div className="text-sm text-muted-foreground leading-relaxed">{desc}</div>
-    </motion.div>
+    <motion.li variants={fadeUp} className="group grid grid-cols-[auto_1fr_auto] items-start gap-6 py-8">
+      <span className="font-serif text-4xl text-gold/70 tabular-nums leading-none pt-1 transition-colors group-hover:text-gold" dir="ltr">{n}</span>
+      <div>
+        <h3 className="font-serif text-2xl mb-2">{title}</h3>
+        <p className="text-muted-foreground leading-loose max-w-md">{desc}</p>
+      </div>
+      <Icon className="h-5 w-5 text-muted-foreground/50 mt-2 transition-colors group-hover:text-gold" strokeWidth={1.25} />
+    </motion.li>
   );
 }
