@@ -61,10 +61,10 @@ function NumStat({
   return (
     <motion.div
       variants={fadeUp}
-      className="rounded-sm border border-border bg-card p-4 hover:shadow-soft transition-shadow min-w-[140px]"
+      className="min-w-[150px] rounded-2xl bg-card/60 p-5 ring-1 ring-border/70 transition-colors hover:ring-gold/40"
     >
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">{icon}<span>{label}</span></div>
-      <div className="font-serif text-2xl tabular-nums">{display}</div>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 [&_svg]:h-4 [&_svg]:w-4">{icon}<span>{label}</span></div>
+      <div className="font-serif text-4xl leading-none tabular-nums tracking-tight">{display}</div>
     </motion.div>
   );
 }
@@ -87,12 +87,12 @@ function SubscriptionBanner({ sub }: { sub: any }) {
   const c = config[sub.status] ?? config.trial;
 
   return (
-    <div className={`mb-8 rounded-sm border p-4 flex items-center justify-between gap-4 ${c.bg}`}>
+    <div className={`mb-8 rounded-2xl border p-4 ps-5 flex items-center justify-between gap-4 ${c.bg}`}>
       <div className="flex items-center gap-3">
         {c.icon}
         <div className="text-sm font-medium">{c.text}</div>
       </div>
-      <Link to="/dashboard/subscription" className="bg-charcoal text-ivory text-xs px-4 py-2 rounded-sm hover:opacity-90 whitespace-nowrap active:scale-95 transition-transform duration-200">
+      <Link to="/dashboard/subscription" className="bg-charcoal text-ivory text-xs px-4 py-2 rounded-full hover:opacity-90 whitespace-nowrap active:scale-95 transition-transform duration-200 dark:bg-gold dark:text-charcoal">
         {c.cta}
       </Link>
     </div>
@@ -152,7 +152,7 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
         {steps.map((s, i) => {
           const isActive = i === activeIdx;
           return (
-            <div key={s.num} className={`relative rounded-sm border p-5 transition-all ${
+            <div key={s.num} className={`relative rounded-2xl border p-6 transition-all ${
               s.done
                 ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20"
                 : isActive
@@ -200,7 +200,7 @@ function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCou
   const allDone = doneCount === steps.length;
 
   return (
-    <div className="mb-8 rounded-sm border border-border bg-card p-4 sm:p-5">
+    <div className="mb-8 rounded-2xl ring-1 ring-border/70 bg-card p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <ListChecks className="h-4 w-4 text-gold" />
@@ -268,78 +268,57 @@ function DashboardSkeleton() {
   );
 }
 
-function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText, hint, urgent, quickAction }: { 
-  title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; badge?: boolean; badgeText?: string; hint?: string; urgent?: boolean; quickAction?: { label: string; to: string } 
+function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText, hint, urgent, quickAction, className = "", feature }: {
+  title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; badge?: boolean; badgeText?: string; hint?: string; urgent?: boolean; quickAction?: { label: string; to: string }; className?: string; feature?: boolean
 }) {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  // Text is always visible (hover-only text never shows on phones). Tiles read
+  // start-aligned like an index; feature tiles get more room and a darker face.
+  const tone = feature
+    ? "bg-charcoal text-ivory ring-charcoal grain-overlay"
+    : urgent
+      ? "bg-card ring-gold/60"
+      : "bg-card ring-border/70";
+  const sharedClassName = `group relative flex flex-col overflow-hidden rounded-2xl p-6 ring-1 transition-all duration-500 ${tone} ${feature ? "min-h-[260px]" : "min-h-[190px]"} ${disabled ? "cursor-not-allowed opacity-55" : "hover:-translate-y-0.5 hover:shadow-elegant hover:ring-gold/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"} ${className}`;
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
-
-  const sharedClassName = `group flex min-h-[200px] flex-col justify-center items-center text-center rounded-sm border ${urgent ? 'border-gold shadow-[0_0_15px_rgba(201,162,39,0.15)]' : 'border-border shadow-soft'} bg-card p-6 transition-all duration-500 overflow-hidden relative ${disabled ? "cursor-not-allowed opacity-60" : "hover:-translate-y-1 hover:border-gold/50 hover:shadow-elegant focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"}`;
-  
   const cardContent = (
-    <div 
-      className="w-full h-full flex flex-col items-center justify-center relative z-10"
-      onMouseEnter={() => !disabled && playSound('tick')}
-    >
-      {!disabled && (
-        <div 
-          className="pointer-events-none absolute -inset-px z-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 rounded-sm"
-          style={{
-            background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, rgba(201,162,39,0.08), transparent 40%)`
-          }}
-        />
-      )}
-
-      {badgeText && (
-        <div className="absolute top-0 right-0 z-20">
-          <span className={`text-[10px] font-bold px-2 py-1 rounded-sm ${urgent ? 'bg-gold text-charcoal animate-pulse' : 'bg-secondary text-muted-foreground'}`}>
+    <div className="relative z-10 flex h-full flex-1 flex-col" onMouseEnter={() => !disabled && playSound('tick')}>
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div className={`grid h-11 w-11 place-items-center rounded-xl transition-colors duration-500 [&_svg]:h-5 [&_svg]:w-5 ${feature ? "bg-ivory/10 text-gold" : "bg-secondary text-foreground/70 group-hover:text-gold"}`}>
+          {icon || <ArrowLeft />}
+        </div>
+        {badgeText && (
+          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] ${urgent ? "bg-gold/15 text-gold" : feature ? "bg-ivory/10 text-ivory/70" : "bg-secondary text-muted-foreground"}`}>
+            {(badge || urgent) && <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />}
             {badgeText}
           </span>
-        </div>
-      )}
-
-      <div className="flex flex-col items-center transition-transform duration-500 group-hover:-translate-y-14 z-10 w-full">
-        <div className="mb-4 text-muted-foreground/60 transition-all duration-500 group-hover:scale-110 group-hover:text-gold/80 flex justify-center">
-          {icon || <div className="w-12 h-12 rounded-full bg-secondary/40 border border-border/50 flex items-center justify-center group-hover:border-gold/30 transition-colors active:scale-95 transition-transform duration-200" />}
-        </div>
-        <h3 className="font-serif text-xl mb-1 flex items-center justify-center gap-2 relative w-full">
-          {(badge || urgent) && <span className="absolute -right-4 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-gold shadow-[0_0_8px_rgba(201,162,39,0.8)] animate-pulse" />}
-          {title}
-        </h3>
+        )}
       </div>
-      
-      <div className="absolute bottom-3 left-0 right-0 px-4 flex flex-col items-center text-center opacity-0 translate-y-8 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-75 z-10 pointer-events-none group-hover:pointer-events-auto">
-        <p className="text-[13px] text-muted-foreground leading-relaxed mb-3 line-clamp-2">{desc}</p>
-        
-        <div className="flex flex-col gap-1 w-full items-center">
-          <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
-            <span className="border-b border-transparent group-hover:border-current pb-0.5 transition-colors">{disabled ? "أكملي ملفك أولاً" : cta}</span>
-            {!disabled && <ArrowLeft className="h-4 w-4 transition-all duration-300 group-hover:-translate-x-2" />}
-          </div>
-          
-          {hint && <span className="text-[11px] text-muted-foreground/80 mt-1">{hint}</span>}
-          
-          {quickAction && !disabled && (
-            <Link 
-              to={quickAction.to} 
-              className="mt-1 text-[11px] border border-border hover:border-gold/50 hover:bg-gold/5 hover:text-gold px-2 py-1 rounded-sm transition-colors flex items-center gap-1"
-              onClick={(e: any) => { e.stopPropagation(); playSound('tick'); }}
-            >
-              <Plus className="h-3 w-3" /> {quickAction.label}
-            </Link>
-          )}
-        </div>
+
+      <h3 className={`font-serif mb-1.5 ${feature ? "text-3xl" : "text-xl"}`}>{title}</h3>
+      <p className={`text-sm leading-relaxed ${feature ? "text-ivory/70 max-w-sm" : "text-muted-foreground"}`}>{desc}</p>
+      {hint && <p className={`mt-2 text-xs ${feature ? "text-gold" : "text-muted-foreground/80"}`}>{hint}</p>}
+
+      <div className="mt-auto pt-6 flex items-center justify-between gap-3">
+        <span className={`inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 group-hover:gap-3 ${feature ? "text-ivory" : "text-foreground group-hover:text-gold"}`}>
+          {disabled ? "أكملي ملفك أولاً" : cta}
+          {!disabled && <ArrowLeft className="h-4 w-4" />}
+        </span>
+        {quickAction && !disabled && (
+          <Link
+            to={quickAction.to}
+            className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] ring-1 transition-colors ${feature ? "ring-ivory/20 hover:ring-gold hover:text-gold" : "ring-border hover:ring-gold/50 hover:text-gold"}`}
+            onClick={(e: any) => { e.stopPropagation(); playSound('tick'); }}
+          >
+            <Plus className="h-3 w-3" /> {quickAction.label}
+          </Link>
+        )}
       </div>
     </div>
   );
 
-  if (!to || disabled) return <div className={sharedClassName} onMouseMove={handleMouseMove}>{cardContent}</div>;
-  if (external) return <a href={to} className={sharedClassName} onMouseMove={handleMouseMove} onClick={() => playSound('tick')}>{cardContent}</a>;
-  return <Link to={to} className={sharedClassName} onMouseMove={handleMouseMove} onClick={() => playSound('tick')}>{cardContent}</Link>;
+  if (!to || disabled) return <div className={sharedClassName}>{cardContent}</div>;
+  if (external) return <a href={to} className={sharedClassName} onClick={() => playSound('tick')}>{cardContent}</a>;
+  return <Link to={to} className={sharedClassName} onClick={() => playSound('tick')}>{cardContent}</Link>;
 }
 
 
@@ -503,8 +482,8 @@ function Dashboard() {
 
         <div className="hidden sm:flex items-end justify-between mb-8">
           <div>
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">لوحة المصوّر</div>
-            <h1 className="font-serif text-4xl">أهلاً، {profile?.display_name ?? "مصوّر"}</h1>
+            <div className="eyebrow mb-2">لوحة المصوّر · {new Date().toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long" })}</div>
+            <h1 className="font-serif text-5xl">أهلاً، <span className="font-script text-gold">{profile?.display_name ?? "مصوّر"}</span></h1>
             <div className="text-sm text-muted-foreground mt-1">
               ملفك العام:{" "}
               {profile?.username ? (
@@ -514,13 +493,13 @@ function Dashboard() {
               )}
             </div>
           </div>
-          <button onClick={signOut} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">تسجيل الخروج</button>
+          <button onClick={signOut} className="text-sm text-muted-foreground border-b border-current/30 pb-0.5 hover:text-foreground transition-colors">تسجيل الخروج</button>
         </div>
 
         <SubscriptionBanner sub={sub} />
 
         {!hasAnyStats && profile?.is_published && (
-          <div className="mb-8 bg-gold/10 border border-gold/30 text-foreground rounded-sm p-4 text-sm flex items-start gap-3">
+          <div className="mb-8 bg-gold/10 border border-gold/30 text-foreground rounded-2xl p-5 text-sm leading-relaxed flex items-start gap-3">
             <span className="text-xl">🚀</span>
             <div>
               <strong>بداية موفّقة!</strong> ملفكِ جاهز ومنشور، لكن لم تصلكِ حجوزات بعد.
@@ -602,7 +581,7 @@ function Dashboard() {
         {isNewUser ? (
           // مستخدمة جديدة → ٣ بطاقات أساسية فقط + زر "عرض كل الأدوات"
           <div>
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3 mb-4">
+            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 md:grid-cols-3 mb-5">
               <Card 
                 title="الحجوزات" 
                 desc="راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز." 
@@ -641,7 +620,7 @@ function Dashboard() {
                   transition={{ duration: 0.3 }}
                   className="overflow-hidden"
                 >
-                  <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3 mb-4">
+                  <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 md:grid-cols-3 mb-5">
                     <Card title="متابعة الإنتاج" desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." cta="افتح اللوحة" to="/dashboard/production" />
                     <Card title="التقويم والتوفر" desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." cta="فتح التقويم" to="/dashboard/calendar" />
                     <Card title="التقارير المالية" desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." cta="عرض التقارير" to="/dashboard/reports" />
@@ -667,26 +646,8 @@ function Dashboard() {
           </div>
         ) : (
           // مستخدمة نشطة → كل البطاقات ظاهرة
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-6 md:grid-cols-3">
-              <Card 
-              title="ملف المصوّرة" 
-              desc="المعلومات الأساسية وصورة الغلاف ومعرض الأعمال." 
-              cta="تعديل الملف" 
-              to="/dashboard/profile"
-              badgeText={(!profile?.avatar_url || !profile?.cover_url) ? "غير مكتمل" : "مكتمل ✅"}
-              hint="راجعي تفاصيل ملفك لتظهري بأفضل صورة"
-              icon={<Star className="h-6 w-6" />}
-            />
-            <Card 
-              title="بطاقات الأسعار" 
-              desc="حددي الباقات الأساسية والإضافات لعملائك." 
-              cta="إدارة الباقات" 
-              to="/dashboard/pricing" 
-              badgeText={`${pricingCount} باقات نشطة`}
-              quickAction={{ label: "باقة جديدة", to: "/dashboard/pricing" }}
-              icon={<Package className="h-6 w-6" />}
-            />
-            <Card 
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 md:grid-cols-2 lg:grid-cols-6">
+            <Card className="md:col-span-2 lg:col-span-3 lg:row-span-2" feature 
               title="الحجوزات" 
               desc="جميع الطلبات والمؤكّدة والمنتهية." 
               cta="عرض الحجوزات" 
@@ -695,7 +656,25 @@ function Dashboard() {
               urgent={stats?.pending > 0}
               icon={<Calendar className="h-6 w-6" />}
             />
-            <Card 
+              <Card className="lg:col-span-3" 
+              title="ملف المصوّرة" 
+              desc="المعلومات الأساسية وصورة الغلاف ومعرض الأعمال." 
+              cta="تعديل الملف" 
+              to="/dashboard/profile"
+              badgeText={(!profile?.avatar_url || !profile?.cover_url) ? "غير مكتمل" : "مكتمل ✅"}
+              hint="راجعي تفاصيل ملفك لتظهري بأفضل صورة"
+              icon={<Star className="h-6 w-6" />}
+            />
+            <Card className="lg:col-span-3" 
+              title="بطاقات الأسعار" 
+              desc="حددي الباقات الأساسية والإضافات لعملائك." 
+              cta="إدارة الباقات" 
+              to="/dashboard/pricing" 
+              badgeText={`${pricingCount} باقات نشطة`}
+              quickAction={{ label: "باقة جديدة", to: "/dashboard/pricing" }}
+              icon={<Package className="h-6 w-6" />}
+            />
+            <Card className="lg:col-span-2" 
               title="التقويم والتوفر" 
               desc="حجب أيام معيّنة ومراجعة الحجوزات القادمة." 
               cta="فتح التقويم" 
@@ -703,7 +682,7 @@ function Dashboard() {
               hint={stats?.upcoming30 > 0 ? `${stats.upcoming30} مناسبات قادمة هذا الشهر` : "تقويمك متاح"}
               icon={<Calendar className="h-6 w-6" />}
             />
-            <Card 
+            <Card className="lg:col-span-2" 
               title="متابعة الإنتاج" 
               desc="لوحة كانبان من التصوير إلى التحرير إلى التسليم." 
               cta="افتح اللوحة" 
@@ -711,7 +690,7 @@ function Dashboard() {
               hint="نظمي سير عملك بسهولة"
               icon={<Sparkles className="h-6 w-6" />}
             />
-            <Card 
+            <Card className="lg:col-span-2" 
               title="التقارير المالية" 
               desc="إيرادات شهرية، حسب الخدمة والحالة، وتصدير CSV." 
               cta="عرض التقارير" 
@@ -720,14 +699,14 @@ function Dashboard() {
               hint={stats?.monthRevenue > 0 ? `إيرادات الشهر: ${stats.monthRevenue} د.أ` : "0 د.أ إيرادات هذا الشهر"}
               icon={<Download className="h-6 w-6" />}
             />
-            <Card 
+            <Card className="lg:col-span-2" 
               title="العقود الرقمية" 
               desc="قوالب وعقود توقيع إلكتروني لضمان حقوقك." 
               cta="إدارة العقود" 
               to="/dashboard/contracts"
               icon={<Link2 className="h-6 w-6" />}
             />
-            <Card 
+            <Card className="lg:col-span-2" 
               title="رسائل واتساب" 
               desc="قوالب جاهزة (ترحيب، عربون، تذكير) ترسليها بنقرة." 
               cta="إدارة القوالب" 
@@ -736,7 +715,7 @@ function Dashboard() {
               hint={!hasCliq ? "وفري 4 ساعات أسبوعياً من المراسلات" : "جاهزة للاستخدام"}
               icon={<MessageCircle className="h-6 w-6" />}
             />
-            <Card 
+            <Card className="lg:col-span-2" 
               title="الاشتراك" 
               desc="حالة اشتراكك وتجديده ورفع إثبات الدفع." 
               cta="إدارة الاشتراك" 
@@ -752,21 +731,21 @@ function Dashboard() {
                 })()}
               icon={<LogOut className="h-6 w-6" />}
             />
-            <Card 
+            <Card className="lg:col-span-2" 
               title="الإشعارات" 
               desc="جميع التنبيهات والتنقل السريع للإجراءات المطلوبة." 
               cta="عرض الإشعارات" 
               to="/notifications" 
               icon={<Bell className="h-6 w-6" />}
             />
-            <Card 
+            <Card className="lg:col-span-2" 
               title="برنامج الإحالة" 
               desc="ادعُ زميلة واربحا شهراً مجانياً للطرفين." 
               cta="رابط الإحالة" 
               to="/dashboard/referrals" 
               icon={<CheckCircleIcon className="h-6 w-6" />}
             />
-            <Card 
+            <Card className="lg:col-span-2" 
               title="ملفي العام" 
               desc="عرض صفحتك تماماً كما يراها عملاؤك." 
               cta="فتح الملف" 

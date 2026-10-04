@@ -1,7 +1,7 @@
 // Memoria Service Worker — PWA caching + offline support
-// Version: 4.0 (restore Arabic typeface)
+// Version: 5.0 (wedding redesign; never cache cross-origin/API responses)
 
-const CACHE_NAME = "memoria-v4";
+const CACHE_NAME = "memoria-v5";
 const OFFLINE_PAGE = "/offline.html";
 
 // الملفات الأساسية التي تُحفظ دائماً في الـ cache (App Shell)
@@ -64,11 +64,12 @@ self.addEventListener("fetch", (event) => {
   // تجاهل Chrome extensions وغيرها
   if (url.protocol !== "https:" && url.hostname !== "localhost") return;
 
-  // 1) API calls — Network First مع fallback للـ cache
-  if (CACHE_STRATEGIES.api.test(request.url)) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
+  // Only our own origin. Supabase REST/auth responses carry private data and
+  // tokens and must never be written to Cache Storage.
+  if (url.origin !== self.location.origin) return;
+
+  // 1) API / server functions — always network, never cached
+  if (CACHE_STRATEGIES.api.test(request.url) || url.pathname.startsWith("/_serverFn")) return;
 
   // 2) POST requests — دائماً Network (لا نُخزّن mutations)
   if (request.method !== "GET") return;
