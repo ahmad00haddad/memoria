@@ -1,5 +1,8 @@
 import { Lightbulb } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRef } from "react";
+import { CopyButton } from "@/components/ui/copy-button";
+import { MessageCircle, Clock, CheckCircle2, ChevronDown } from "lucide-react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
@@ -59,6 +62,16 @@ const DEFAULT_TEMPLATE = `بسم الله الرحمن الرحيم
 ثامناً — التوقيع
 بتوقيع العميل أدناه يُعدّ موافقًا على جميع البنود أعلاه وله صلاحية الإلزام القانوني الكامل.`;
 
+const PLACEHOLDERS = ["[اسم العميل]", "[التاريخ]", "[الموقع]", "[البداية]", "[النهاية]", "[المجموع]", "[العربون]", "[رسوم الساعة الإضافية]", "[مستوى الخصوصية]"];
+
+function normalizeWa(phone?: string | null) {
+  if (!phone) return "";
+  let p = phone.replace(/[^\d]/g, "");
+  if (p.startsWith("00")) p = p.slice(2);
+  if (p.startsWith("0")) p = "962" + p.slice(1);
+  return p;
+}
+
 function Contracts() {
   const { isLocked, lockLoading } = useSubscriptionLock();
 
@@ -70,6 +83,16 @@ function Contracts() {
   const [body, setBody] = useState(DEFAULT_TEMPLATE);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "pending" | "signed">("all");
+  const [editorOpen, setEditorOpen] = useState(false);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const insertPlaceholder = (ph: string) => {
+    const el = bodyRef.current;
+    const start = el?.selectionStart ?? body.length;
+    const end = el?.selectionEnd ?? body.length;
+    setBody(body.slice(0, start) + ph + body.slice(end));
+    requestAnimationFrame(() => { el?.focus(); el?.setSelectionRange(start + ph.length, start + ph.length); });
+  };
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -77,7 +100,7 @@ function Contracts() {
     setUid(session.user.id);
     const [{ data: t }, { data: c }] = await Promise.all([
       supabase.from("contract_templates").select("*").eq("photographer_id", session.user.id).order("created_at", { ascending: false }),
-      supabase.from("contracts").select("*, bookings(client_name,event_date)").eq("photographer_id", session.user.id).order("created_at", { ascending: false }),
+      supabase.from("contracts").select("*, bookings(client_name,event_date,client_phone)").eq("photographer_id", session.user.id).order("created_at", { ascending: false }),
     ]);
     setTemplates(t ?? []); setContracts(c ?? []);
   };
@@ -97,13 +120,30 @@ function Contracts() {
     if (!name.trim() || !body.trim()) return toast.error("الاسم والمحتوى مطلوبان");
     const { error } = await supabase.from("contract_templates").insert({ photographer_id: uid, name, body });
     if (error) return toast.error(error.message);
-    toast.success("تم الحفظ"); setName(""); load();
+    toast.success(`حُفظ قالب «${name.trim()}» — يظهر الآن في صفحة كل حجز`); setName(""); setEditorOpen(false); load();
   };
 
-  const copyLink = (token: string) => {
-    const url = `${window.location.origin}/contracts/${token}`;
-    navigator.clipboard.writeText(url); toast.success("تم نسخ رابط التوقيع");
+  // حذف القالب مع مهلة تراجع
+  const removeTemplate = (t: any) => {
+    setTemplates((l) => l.filter((x) => x.id !== t.id));
+    let settled = false;
+    const commit = async () => {
+      if (settled) return;
+      settled = true;
+      const { error } = await supabase.from("contract_templates").delete().eq("id", t.id);
+      if (error) { toast.error(error.message); load(); }
+    };
+    toast(`حُذف قالب «${t.name}»`, {
+      duration: 5000,
+      action: { label: "تراجع", onClick: () => { settled = true; load(); } },
+      onAutoClose: commit,
+      onDismiss: commit,
+    });
   };
+
+  const pendingCount = contracts.filter((c) => c.status !== "signed").length;
+  const shown = contracts.filter((c) => filter === "all" || (filter === "signed" ? c.status === "signed" : c.status !== "signed"));
+  const missingCancel = body.trim().length > 0 && !/إلغاء|الإلغاء/.test(body);
 
   if (loading) return <PageLoader />;
   if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
@@ -130,56 +170,112 @@ function Contracts() {
           </div>
         )}
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="border border-border rounded-sm p-6 bg-card">
-            <h2 className="font-serif text-2xl mb-4 flex items-center gap-2"><Plus className="h-5 w-5" /> قالب جديد</h2>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم القالب (مثال: عقد عرس قياسي)"
-              className="w-full border border-input rounded-sm px-3 py-2 mb-3 bg-background" />
-            <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={14}
-              className="w-full border border-input rounded-sm px-3 py-2 bg-background text-sm leading-loose" />
-            <button onClick={saveTemplate} className="mt-3 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">حفظ القالب</button>
+        {/* ── العقود المُنشأة أولاً: هذا ما تحتاج المصوّرة متابعته ── */}
+        <div className="rounded-2xl border border-border bg-card p-6 mb-8">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-serif text-2xl flex items-center gap-2"><ScrollText className="h-5 w-5 text-gold" /> العقود</h2>
+            {contracts.length > 0 && (
+              <div className="flex gap-1 rounded-full bg-secondary p-1 text-xs">
+                {([["all", "الكل"], ["pending", `بانتظار التوقيع (${pendingCount})`], ["signed", "موقّعة"]] as const).map(([k, l]) => (
+                  <button key={k} onClick={() => setFilter(k)} className={`relative rounded-full px-3 py-1 transition-colors ${filter === k ? "text-foreground" : "text-muted-foreground"}`}>
+                    {filter === k && <motion.span layoutId="contracts-filter" className="absolute inset-0 rounded-full bg-card shadow-sm" />}
+                    <span className="relative">{l}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-
-          <div className="space-y-6">
-            <div className="border border-border rounded-sm p-6 bg-card">
-              <h2 className="font-serif text-2xl mb-4">قوالبي ({templates.length})</h2>
-              {templates.length === 0 ? <p className="text-sm text-muted-foreground">لا قوالب بعد</p> : (
-                <ul className="space-y-2">
-                  {templates.map((t) => (
-                    <li key={t.id} className="flex items-center justify-between border border-border rounded-sm p-3">
-                      <span className="font-medium">{t.name}</span>
-                      <button onClick={async () => { const { error } = await supabase.from("contract_templates").delete().eq("id", t.id); if (error) return toast.error(error.message); load(); }}
-                        className="text-xs text-destructive">حذف</button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="border border-border rounded-sm p-6 bg-card">
-              <h2 className="font-serif text-2xl mb-4 flex items-center gap-2"><ScrollText className="h-5 w-5" /> العقود المُنشأة</h2>
-              {contracts.length === 0 ? <p className="text-sm text-muted-foreground">لم تُنشئ أي عقد بعد. أنشئ عقدًا من صفحة الحجز.</p> : (
-                <ul className="space-y-3">
-                  {contracts.map((c) => (
-                    <li key={c.id} className="border border-border rounded-sm p-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">{c.bookings?.client_name} — {c.bookings?.event_date}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {c.status === "signed" ? `وُقّع في ${new Date(c.signed_at).toLocaleString("ar")}` : "في انتظار التوقيع"}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <button onClick={() => copyLink(c.sign_token)} className="text-xs border border-border px-3 py-1 rounded-sm hover:bg-secondary inline-flex items-center gap-1 active:scale-95 transition-transform duration-200"><Copy className="h-3 w-3" /> رابط</button>
-                          <Link to="/contracts/$token" params={{ token: c.sign_token }} className="text-xs border border-border px-3 py-1 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">عرض</Link>
-                        </div>
+          {contracts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">لا عقود بعد. يُنشأ العقد تلقائياً عند تأكيد عربون أي حجز، أو من صفحة الحجز يدوياً.</p>
+          ) : shown.length === 0 ? (
+            <p className="text-sm text-muted-foreground">لا عقود في هذا القسم.</p>
+          ) : (
+            <ul className="divide-y divide-border">
+              {shown.map((c) => {
+                const waitingDays = c.status !== "signed" ? Math.floor((Date.now() - new Date(c.created_at).getTime()) / 86400000) : 0;
+                const url = typeof window !== "undefined" ? `${window.location.origin}/contracts/${c.sign_token}` : "";
+                return (
+                  <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <div className="min-w-0">
+                      <div className="font-medium">{c.bookings?.client_name ?? "—"}</div>
+                      <div className="mt-0.5 flex items-center gap-1.5 text-xs">
+                        {c.status === "signed" ? (
+                          <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" /> وُقّع {new Date(c.signed_at).toLocaleDateString("ar-JO", { day: "numeric", month: "short" })}</span>
+                        ) : (
+                          <span className={`inline-flex items-center gap-1 ${waitingDays >= 3 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}`}>
+                            <Clock className="h-3.5 w-3.5" /> بانتظار التوقيع {waitingDays > 0 ? `منذ ${waitingDays} ${waitingDays === 1 ? "يوم" : "أيام"}` : "منذ اليوم"}
+                          </span>
+                        )}
+                        {c.bookings?.event_date && <span className="text-muted-foreground">· الحفل {new Date(c.bookings.event_date).toLocaleDateString("ar-JO", { day: "numeric", month: "short" })}</span>}
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {c.status !== "signed" && c.bookings?.client_phone && (
+                        <a
+                          href={`https://wa.me/${normalizeWa(c.bookings.client_phone)}?text=${encodeURIComponent(`مرحباً ${c.bookings.client_name} 🤍\nيرجى مراجعة عقد التصوير وتوقيعه من هنا:\n${url}`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1 text-xs hover:border-emerald-400 hover:text-emerald-700"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" /> تذكير
+                        </a>
+                      )}
+                      <CopyButton value={url} label="الرابط" />
+                      <Link to="/contracts/$token" params={{ token: c.sign_token }} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">عرض</Link>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+
+        {/* ── القوالب ── */}
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-serif text-2xl">قوالبي <span className="text-base text-muted-foreground tabular-nums">({templates.length})</span></h2>
+            <button onClick={() => setEditorOpen((v) => !v)} className="inline-flex items-center gap-1.5 rounded-full bg-charcoal px-4 py-2 text-sm text-ivory active:scale-95 transition-transform dark:bg-gold dark:text-charcoal">
+              <Plus className="h-4 w-4" /> قالب جديد
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${editorOpen ? "rotate-180" : ""}`} />
+            </button>
           </div>
+          {templates.length === 0 ? (
+            <p className="text-sm text-muted-foreground">لا قوالب بعد — العقد القياسي يُستخدم تلقائياً حتى تضيفي قالبك.</p>
+          ) : (
+            <ul className="flex flex-wrap gap-2">
+              <AnimatePresence initial={false}>
+                {templates.map((t) => (
+                  <motion.li key={t.id} layout initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-sm">
+                    {t.name}
+                    <button onClick={() => removeTemplate(t)} aria-label={`حذف ${t.name}`} className="text-muted-foreground hover:text-destructive">×</button>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </ul>
+          )}
+
+          <AnimatePresence initial={false}>
+            {editorOpen && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                <div className="mt-6 border-t border-border pt-6">
+                  <input value={name} onChange={(e) => setName(e.target.value)} placeholder="اسم القالب (مثال: عقد عرس قياسي)"
+                    className="w-full rounded-xl border border-input px-3 py-2 mb-3 bg-background" />
+                  <textarea ref={bodyRef} value={body} onChange={(e) => setBody(e.target.value)} rows={14}
+                    className="w-full rounded-xl border border-input px-3 py-2 bg-background text-sm leading-loose" />
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <span className="w-full text-xs text-muted-foreground">انقري لإضافة حقل يُملأ تلقائياً من بيانات الحجز:</span>
+                    {PLACEHOLDERS.map((ph) => (
+                      <button key={ph} type="button" onClick={() => insertPlaceholder(ph)} className="rounded-full border border-gold/30 bg-gold/5 px-2.5 py-1 text-[11px] text-gold hover:bg-gold/15 active:scale-95">
+                        {ph.slice(1, -1)}
+                      </button>
+                    ))}
+                  </div>
+                  {missingCancel && <p className="mt-3 text-xs text-amber-700 dark:text-amber-400">القالب لا يحتوي بنداً للإلغاء — يُفضّل إضافته لحماية حقّك.</p>}
+                  <button onClick={saveTemplate} disabled={!name.trim()} className="mt-4 rounded-full bg-charcoal px-5 py-2 text-ivory hover:opacity-90 disabled:opacity-50 active:scale-95 transition-transform dark:bg-gold dark:text-charcoal">حفظ القالب</button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
       <Footer />
