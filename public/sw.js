@@ -1,7 +1,7 @@
 // Memoria Service Worker — PWA caching + offline support
-// Version: 3.0 (font refresh)
+// Version: 4.0 (restore Arabic typeface)
 
-const CACHE_NAME = "memoria-v3";
+const CACHE_NAME = "memoria-v4";
 const OFFLINE_PAGE = "/offline.html";
 
 // الملفات الأساسية التي تُحفظ دائماً في الـ cache (App Shell)
