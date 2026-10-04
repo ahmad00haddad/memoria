@@ -1,5 +1,5 @@
 import { Lightbulb } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
@@ -8,11 +8,13 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Copy, Check } from "lucide-react";
+import { hapticVibrate } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard/pricing")({ component: PricingMgr });
 
 type Rule = {
+  _key?: string;
   id?: string; service: "photography" | "cinematic_video"; package: "hourly" | "full_day" | "addon";
   label: string; price: number; per_photo_price?: number | null; description?: string | null;
 };
@@ -23,6 +25,13 @@ function PricingMgr() {
   const [rules, setRules] = useState<Rule[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string>("[]");
+  const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+  const [deposit, setDeposit] = useState<{ percent: number; fixed: number | null }>({ percent: 25, fixed: null });
+  const keyOf = (r: Rule) => r.id ?? r._key ?? "";
+  const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "" })));
+  const withKeys = (rs: Rule[]) => rs.map((r) => ({ ...r, _key: r.id ?? Math.random().toString(36).slice(2) }));
 
   useEffect(() => {
     (async () => {
@@ -30,9 +39,14 @@ function PricingMgr() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return nav({ to: "/login" });
         setUid(session.user.id);
-        const { data, error } = await supabase.from("pricing_rules").select("*").eq("photographer_id", session.user.id);
+        const [{ data, error }, { data: prof }] = await Promise.all([
+          supabase.from("pricing_rules").select("*").eq("photographer_id", session.user.id).order("price"),
+          supabase.from("profiles").select("deposit_percent,fixed_deposit").eq("id", session.user.id).maybeSingle(),
+        ]);
         if (error) throw error;
-        setRules((data ?? []) as Rule[]);
+        setRules(withKeys((data ?? []) as Rule[]));
+        setSaved(snapshot((data ?? []) as Rule[]));
+        if (prof) setDeposit({ percent: Number((prof as any).deposit_percent ?? 25), fixed: (prof as any).fixed_deposit ? Number((prof as any).fixed_deposit) : null });
       } catch (error: any) {
         setLoadError(error?.message || "تعذّر تحميل الأسعار الآن.");
       } finally {
@@ -48,32 +62,55 @@ function PricingMgr() {
       { service: "photography", package: "full_day", label: "الباقة الذهبية (يوم كامل)", price: 250, per_photo_price: 0, description: "تغطية كاملة من الصالون للقاعة، ألبوم مطبوع 10 صفحات" },
       { service: "cinematic_video", package: "full_day", label: "باقة VIP (تصوير + فيديو)", price: 400, per_photo_price: 0, description: "تغطية فريقين، تصوير فيديو سينمائي، ألبوم حراري فاخر" }
     ];
-    setRules([...rules, ...templates]);
-    toast.success("تم إضافة باقات السوق بنجاح! يمكنك تعديل أسعارها الآن وحفظها.");
+    setRules([...rules, ...withKeys(templates)]);
+    toast.success("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي.");
   };
 
-  const add = () => setRules([...rules, { service: "photography", package: "hourly", label: "", price: 0 }]);
+  const add = () => setRules([...rules, ...withKeys([{ service: "photography", package: "hourly", label: "", price: 0 }])]);
+  const duplicate = (i: number) => {
+    const { id, _key, ...rest } = rules[i];
+    const copy = withKeys([{ ...rest, label: `${rest.label} (نسخة)` }]);
+    const a = [...rules];
+    a.splice(i + 1, 0, ...copy);
+    setRules(a);
+  };
   const upd = (i: number, k: keyof Rule, v: any) => { const a = [...rules]; (a[i] as any)[k] = v; setRules(a); };
-  const del = async (i: number) => {
+  // حذف مع مهلة تراجع؛ الحذف من قاعدة البيانات بعد انتهاء المهلة فقط
+  const del = (i: number) => {
     const r = rules[i];
-    if (r.id) {
-      const { error } = await supabase.from("pricing_rules").delete().eq("id", r.id);
+    const before = rules;
+    setRules(rules.filter((_, idx) => idx !== i));
+    if (!r.id) return;
+    let settled = false;
+    const commit = async () => {
+      if (settled) return;
+      settled = true;
+      const { error } = await supabase.from("pricing_rules").delete().eq("id", r.id!);
       if (error) {
+        setRules((cur) => (cur.some((x) => x.id === r.id) ? cur : [...cur, r]));
         toast.error(error.code === "23503"
           ? "لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّلي اسمها أو سعرها بدلاً من ذلك."
           : error.message);
         return;
       }
-    }
-    setRules(rules.filter((_, idx) => idx !== i));
+      setSaved((sv) => JSON.stringify(JSON.parse(sv).filter((x: any) => x.id !== r.id)));
+    };
+    toast(`حُذفت «${r.label || "الباقة"}»`, {
+      duration: 5000,
+      action: { label: "تراجع", onClick: () => { settled = true; setRules(before); } },
+      onAutoClose: commit,
+      onDismiss: commit,
+    });
   };
   const save = async () => {
     const filled = rules.filter((r) => r.label?.trim() || Number(r.price) > 0);
     const bad = filled.find((r) => !r.label?.trim() || !(Number(r.price) > 0));
-    if (bad) return toast.error("كل باقة تحتاج اسماً وسعراً أكبر من صفر.");
+    if (bad) { hapticVibrate("error"); return toast.error("كل باقة تحتاج اسماً وسعراً أكبر من صفر."); }
+    setSaving(true);
     for (const r of filled) {
+      const { _key, ...clean } = r;
       const payload = {
-        ...r,
+        ...clean,
         label: r.label.trim(),
         photographer_id: uid,
         price: Number(r.price),
@@ -82,11 +119,16 @@ function PricingMgr() {
       const { error } = r.id
         ? await supabase.from("pricing_rules").update(payload).eq("id", r.id)
         : await supabase.from("pricing_rules").insert(payload);
-      if (error) return toast.error(`تعذّر حفظ "${payload.label}": ${error.message}`);
+      if (error) { setSaving(false); return toast.error(`تعذّر حفظ "${payload.label}": ${error.message}`); }
     }
-    toast.success("تم حفظ الأسعار");
-    const { data } = await supabase.from("pricing_rules").select("*").eq("photographer_id", uid);
-    setRules((data ?? []) as Rule[]);
+    const { data } = await supabase.from("pricing_rules").select("*").eq("photographer_id", uid).order("price");
+    setRules(withKeys((data ?? []) as Rule[]));
+    setSaved(snapshot((data ?? []) as Rule[]));
+    setSaving(false);
+    setJustSaved(true);
+    hapticVibrate("success");
+    setTimeout(() => setJustSaved(false), 1800);
+    toast.success("حُفظت الباقات — تظهر الآن في ملفك العام");
   };
 
   if (loading) return <PageLoader />;
@@ -113,7 +155,10 @@ function PricingMgr() {
       <section className="container-editorial py-12 max-w-4xl">
         <BackToDashboard />
         <h1 className="font-serif text-4xl mt-2 mb-2">إدارة الأسعار</h1>
-        <p className="text-sm text-muted-foreground mb-6">حدّدي باقات التصوير <div className="mt-2 text-sm text-muted-foreground flex items-center gap-2 bg-secondary/30 p-2 rounded-md border border-border/50"><Lightbulb className="h-4 w-4 text-[var(--gold)]" /> 💡 تلميح: توفير 3 باقات (أساسية، متوسطة، فاخرة) يزيد من احتمالية الحجز بنسبة 40% حسب إحصائيات ميموريا.</div> والفيديو والإضافات. تظهر فورًا للعملاء على ملفك العام.</p>
+        <p className="text-sm text-muted-foreground mb-3">باقات التصوير والفيديو والإضافات كما تظهر للعرائس في ملفك العام.</p>
+        {rules.length > 0 && rules.length < 3 && (
+          <p className="mb-6 flex items-center gap-2 text-xs text-muted-foreground"><Lightbulb className="h-3.5 w-3.5 text-gold" /> ثلاث باقات (أساسية، متوسطة، فاخرة) تسهّل على العروس الاختيار.</p>
+        )}
 
         {rules.length === 0 && (
             <div className="rounded-sm border border-gold/40 bg-gold/5 p-6 shadow-soft mb-6 relative overflow-hidden">
@@ -157,8 +202,21 @@ function PricingMgr() {
         )}
 
         <div className="grid gap-5 md:grid-cols-2">
-          {rules.map((r, i) => (
-            <div key={i} className="group relative rounded-2xl bg-card p-6 ring-1 ring-border/70 transition-all hover:ring-gold/40">
+          <AnimatePresence initial={false}>
+          {rules.map((r, i) => {
+            const price = Number(r.price) || 0;
+            const dep = deposit.fixed ?? Math.round((price * deposit.percent) / 100);
+            const odd = price > 0 && (price < 30 || price > 5000);
+            return (
+            <motion.div
+              key={keyOf(r)}
+              layout
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative rounded-2xl bg-card p-6 ring-1 ring-border/70 transition-shadow hover:ring-gold/40"
+            >
               <div className="flex items-start justify-between gap-3 mb-5">
                 <div className="flex gap-2">
                   <select aria-label="نوع الخدمة" value={r.service} onChange={(e) => upd(i, "service", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
@@ -171,9 +229,14 @@ function PricingMgr() {
                     <option value="addon">إضافة</option>
                   </select>
                 </div>
-                <button onClick={() => del(i)} aria-label="حذف الباقة" className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <div className="flex gap-1">
+                  <button onClick={() => duplicate(i)} aria-label="نسخ الباقة" title="نسخ الباقة" className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                    <Copy className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => del(i)} aria-label="حذف الباقة" title="حذف الباقة" className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
 
               <label className="block text-xs text-muted-foreground mb-1">اسم الباقة</label>
@@ -182,7 +245,12 @@ function PricingMgr() {
               <div className="grid grid-cols-2 gap-4 mb-5">
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">السعر (د.أ)</label>
-                  <input type="number" min="0" inputMode="decimal" placeholder="0" value={r.price} onChange={(e) => upd(i, "price", e.target.value)} className="w-full bg-transparent font-serif text-3xl tabular-nums border-b border-border pb-1 outline-none transition-colors focus:border-gold" />
+                  <input type="number" min="0" inputMode="decimal" placeholder="0" value={r.price} onChange={(e) => upd(i, "price", e.target.value)} className={`w-full bg-transparent font-serif text-3xl tabular-nums border-b pb-1 outline-none transition-colors focus:border-gold ${odd ? "border-amber-500" : "border-border"}`} />
+                  {odd ? (
+                    <span className="mt-1 block text-[11px] text-amber-700 dark:text-amber-400">هل السعر صحيح؟</span>
+                  ) : r.package !== "addon" && price > 0 ? (
+                    <span className="mt-1 block text-[11px] text-muted-foreground tabular-nums">العربون {dep} د.أ</span>
+                  ) : null}
                 </div>
                 <div>
                   <label className="block text-xs text-muted-foreground mb-1">سعر الصورة الإضافية</label>
@@ -192,8 +260,10 @@ function PricingMgr() {
 
               <label className="block text-xs text-muted-foreground mb-1">ماذا تشمل الباقة؟</label>
               <textarea rows={2} placeholder="مثال: تغطية ٤ ساعات، ١٠٠ صورة معدّلة، تسليم خلال أسبوعين" value={r.description ?? ""} onChange={(e) => upd(i, "description", e.target.value)} className="w-full resize-none rounded-xl bg-secondary/60 px-3 py-2.5 text-sm leading-relaxed outline-none ring-1 ring-transparent transition focus:ring-gold/50" />
-            </div>
-          ))}
+            </motion.div>
+            );
+          })}
+          </AnimatePresence>
 
           <button onClick={add} className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-gold/60 hover:text-gold">
             <span className="grid h-12 w-12 place-items-center rounded-full bg-secondary"><Plus className="h-5 w-5" /></span>
@@ -201,9 +271,23 @@ function PricingMgr() {
           </button>
         </div>
 
-        <div className="sticky bottom-20 sm:bottom-6 z-20 mt-8 flex justify-end">
-          <button onClick={save} className="rounded-full bg-charcoal px-8 py-3 text-ivory shadow-elegant transition hover:opacity-90 active:scale-[0.98] dark:bg-gold dark:text-charcoal">حفظ كل الباقات</button>
-        </div>
+        <AnimatePresence>
+          {(snapshot(rules) !== saved || justSaved) && (
+            <motion.div
+              initial={{ y: 60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 60, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 34 }}
+              className="sticky bottom-20 sm:bottom-6 z-20 mt-8 flex justify-end"
+            >
+              <button onClick={save} disabled={saving || justSaved} className="inline-flex items-center gap-2 rounded-full bg-charcoal px-8 py-3 text-ivory shadow-elegant transition hover:opacity-90 active:scale-[0.98] disabled:opacity-80 dark:bg-gold dark:text-charcoal">
+                {saving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-ivory/30 border-t-ivory dark:border-charcoal/30 dark:border-t-charcoal" />}
+                {justSaved && <Check className="h-4 w-4" />}
+                {saving ? "نحفظ…" : justSaved ? "حُفظت" : "حفظ التغييرات"}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
       <Footer />
     </div>
