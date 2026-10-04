@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Check } from "lucide-react";
+import { emailTypoSuggestion, passwordStrength } from "@/lib/form-hints";
 import { motion } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -61,8 +62,36 @@ function JoinPage() {
   }, [navigate]);
 
   const [autofillHint, setAutofillHint] = useState(false);
+  const [usernameTouched, setUsernameTouched] = useState(false);
+  const [uState, setUState] = useState<"idle" | "checking" | "free" | "taken" | "invalid">("idle");
+  const [shake, setShake] = useState(0);
+  const [resent, setResent] = useState(false);
+
+  // اقتراح اسم مستخدم من الاسم (إن كان بالإنجليزية) حتى تعدّله المصوّرة
+  useEffect(() => {
+    if (usernameTouched) return;
+    const slug = form.display_name.toLowerCase().trim().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "").slice(0, 24);
+    if (slug.length >= 3) setForm((f) => ({ ...f, username: slug }));
+  }, [form.display_name, usernameTouched]);
+
+  // التحقق من توفّر اسم المستخدم أثناء الكتابة
+  useEffect(() => {
+    const u = form.username.trim().toLowerCase();
+    if (!u) { setUState("idle"); return; }
+    if (!/^[a-z0-9_]{3,}$/.test(u)) { setUState("invalid"); return; }
+    setUState("checking");
+    const t = setTimeout(async () => {
+      const { data } = await supabase.from("profiles").select("id").eq("username", u).maybeSingle();
+      setUState(data ? "taken" : "free");
+    }, 450);
+    return () => clearTimeout(t);
+  }, [form.username]);
+
+  const emailFix = emailTypoSuggestion(form.email);
+  const strength = passwordStrength(form.password);
 
   const upd = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const fail = (m: string) => { setErr(m); setShake((n) => n + 1); };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,19 +99,19 @@ function JoinPage() {
     const hadArabic = /[^\u0000-\u007F]/.test(form.username);
     const username = form.username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
     if (username.length < 3) {
-      return setErr(hadArabic
+      return fail(hadArabic
         ? "اسم المستخدم يجب أن يكون بالإنجليزية فقط (a-z, 0-9, _)."
         : "اسم المستخدم يجب أن يكون 3 أحرف على الأقل.");
     }
     const reserved = new Set(["admin", "dashboard", "login", "logout", "auth", "api", "search", "guide", "track", "review", "contracts", "notifications", "photographers", "settings", "profile", "support"]);
     if (reserved.has(username)) {
-      return setErr("اسم المستخدم محجوز، الرجاء اختيار اسم آخر.");
+      return fail("اسم المستخدم محجوز، الرجاء اختيار اسم آخر.");
     }
     if (!form.display_name.trim()) {
-      return setErr("الرجاء إدخال الاسم الكامل أو اسم الاستوديو.");
+      return fail("الرجاء إدخال الاسم الكامل أو اسم الاستوديو.");
     }
     if (form.password.length < 8) {
-      return setErr("كلمة المرور يجب أن تكون 8 أحرف على الأقل.");
+      return fail("كلمة المرور يجب أن تكون 8 أحرف على الأقل.");
     }
     setLoading(true);
     // Ensure username is unique before creating the auth account.
@@ -93,7 +122,7 @@ function JoinPage() {
       .maybeSingle();
     if (existing) {
       setLoading(false);
-      return setErr("اسم المستخدم مستخدم بالفعل، الرجاء اختيار اسم آخر.");
+      return fail("اسم المستخدم مستخدم بالفعل، الرجاء اختيار اسم آخر.");
     }
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: form.email,
@@ -112,15 +141,15 @@ function JoinPage() {
     if (error) {
       const m = error.message.toLowerCase();
       if (m.includes("already registered") || m.includes("user already")) {
-        return setErr("هذا البريد مسجّل بالفعل. سجّلي الدخول بدلاً من إنشاء حساب جديد.");
+        return fail("هذا البريد مسجّل بالفعل. سجّلي الدخول بدلاً من إنشاء حساب جديد.");
       }
       if (m.includes("password")) {
-        return setErr("كلمة المرور ضعيفة، استخدمي 8 أحرف على الأقل مع أرقام ورموز.");
+        return fail("كلمة المرور ضعيفة، استخدمي 8 أحرف على الأقل مع أرقام ورموز.");
       }
       if (m.includes("rate") || m.includes("limit")) {
-        return setErr("محاولات كثيرة، الرجاء المحاولة بعد قليل.");
+        return fail("محاولات كثيرة، الرجاء المحاولة بعد قليل.");
       }
-      return setErr(error.message);
+      return fail(error.message);
     }
     // Record referral via secure server function (idempotent, no-op if no session yet).
     if (refCode && signUpData.user) {
@@ -139,44 +168,92 @@ function JoinPage() {
       <Header />
       <div className="container-editorial py-16 max-w-lg">
         {confirmSent ? (
-          <div className="bg-card border border-border rounded-sm p-6 shadow-soft text-center">
+          <div className="bg-card border border-border rounded-2xl p-6 shadow-soft text-center">
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">تحقّقي من بريدك</div>
             <h1 className="font-serif text-3xl mb-3">رابط تفعيل في طريقه إليكِ</h1>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              أرسلنا رابط تفعيل إلى <strong>{confirmSent}</strong>.
-              افتحي الرابط لإكمال إنشاء حسابكِ ثم سجّلي الدخول.
+            <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+              أرسلنا رابط تفعيل إلى <strong dir="ltr">{confirmSent}</strong>.
+              افتحي الرابط لإكمال إنشاء حسابكِ.
             </p>
-            <Link to="/login" className="inline-block bg-charcoal text-ivory px-6 py-2.5 rounded-sm hover:opacity-90">الذهاب لتسجيل الدخول</Link>
+            <p className="text-xs text-muted-foreground mb-5">لم يصل خلال دقيقة؟ تحقّقي من مجلد الرسائل غير المرغوبة.</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {/@gmail\.com$/i.test(confirmSent) && (
+                <a href="https://mail.google.com" target="_blank" rel="noreferrer" className="inline-block bg-charcoal text-ivory px-6 py-2.5 rounded-full hover:opacity-90 dark:bg-gold dark:text-charcoal">افتحي Gmail</a>
+              )}
+              <button
+                type="button"
+                disabled={resent}
+                onClick={async () => {
+                  const { error } = await supabase.auth.resend({ type: "signup", email: confirmSent, options: { emailRedirectTo: `${window.location.origin}/dashboard` } });
+                  if (error) return setErr("تعذّر إعادة الإرسال الآن، حاولي بعد دقيقة.");
+                  setResent(true);
+                }}
+                className="inline-flex items-center gap-1.5 border border-border px-5 py-2.5 rounded-full text-sm hover:bg-secondary disabled:opacity-60"
+              >
+                {resent ? <><Check className="h-4 w-4" /> أُعيد الإرسال</> : "إعادة إرسال الرابط"}
+              </button>
+              <Link to="/login" className="inline-block border border-border px-5 py-2.5 rounded-full text-sm hover:bg-secondary">تسجيل الدخول</Link>
+            </div>
+            {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
           </div>
         ) : (<>
         <div className="text-center mb-8">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">بوابة المصوّرين</div>
-          <h1 className="font-serif text-4xl">انضم إلى المنصة</h1>
-          <p className="text-sm text-muted-foreground mt-2">أنشئ ملفك خلال دقيقة وابدأ باستقبال الحجوزات.</p>
+          <h1 className="font-serif text-4xl">انضمي إلى ميموريا</h1>
+          <p className="text-sm text-muted-foreground mt-2">أنشئي ملفك خلال دقيقة — ١٤ يوماً مجاناً بدون بطاقة.</p>
         </div>
-        <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-sm p-6 shadow-soft">
+        <motion.form
+          key={shake}
+          animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : undefined}
+          transition={{ duration: 0.35 }}
+          onSubmit={submit}
+          className="space-y-4 bg-card border border-border rounded-2xl p-6 shadow-soft"
+        >
           {refCode && (
             <div className="text-xs bg-gold/10 border border-gold/30 px-3 py-2 rounded-sm text-gold">
               تمّ تطبيق رمز إحالة: <strong>{refCode}</strong> — شهر مجاني للطرفين عند تفعيل الاشتراك.
             </div>
           )}
           <Field label="الاسم الكامل / اسم الاستوديو" value={form.display_name} onChange={upd("display_name")} required />
-          <Field label="اسم المستخدم (بالإنجليزية)" value={form.username} onChange={upd("username")} required placeholder="مثال: studio_amman" />
+          <div>
+            <Field label="اسم المستخدم (بالإنجليزية)" value={form.username} onChange={(v) => { setUsernameTouched(true); upd("username")(v.toLowerCase()); }} required placeholder="مثال: studio_amman" ltr />
+            <div className="mt-1 flex items-center justify-between text-xs">
+              <span className="text-muted-foreground" dir="ltr">{form.username ? `memoria/photographers/${form.username}` : ""}</span>
+              <span className={uState === "free" ? "text-emerald-600" : uState === "taken" || uState === "invalid" ? "text-destructive" : "text-muted-foreground"}>
+                {uState === "checking" ? "نتحقّق…" : uState === "free" ? "متاح ✓" : uState === "taken" ? "محجوز" : uState === "invalid" ? "أحرف إنجليزية وأرقام و _ فقط" : ""}
+              </span>
+            </div>
+          </div>
           {autofillHint && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="text-xs text-sky-800 bg-sky-50 p-2 rounded-sm border border-sky-200">
               💡 <strong>يبدو أنكِ جديدة!</strong> قمنا بتجهيز إيميلك لكِ اختصاراً لوقتك.
             </motion.div>
           )}
-          <Field label="البريد الإلكتروني" type="email" value={form.email} onChange={upd("email")} required />
-          <Field label="كلمة المرور" type="password" value={form.password} onChange={upd("password")} required />
-          {form.password && form.password.length > 0 && form.password.length < 8 && (
-            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-amber-600 bg-amber-50 p-2 rounded-sm border border-amber-200">
-              💡 <strong>تلميح:</strong> سرّكِ في أمان! اكتبي كلمة مرور لا تقل عن 8 حروف لتأمين حسابكِ، وتأكدي من تذكرها جيداً.
-            </motion.div>
-          )}
+          <div>
+            <Field label="البريد الإلكتروني" type="email" value={form.email} onChange={upd("email")} required ltr />
+            {emailFix && (
+              <button type="button" onClick={() => setForm((f) => ({ ...f, email: emailFix }))} className="mt-1 text-xs text-gold hover:underline">
+                هل تقصدين <span dir="ltr">{emailFix}</span>؟
+              </button>
+            )}
+          </div>
+          <div>
+            <Field label="كلمة المرور" type="password" value={form.password} onChange={upd("password")} required />
+            {form.password && (
+              <div className="mt-2">
+                <div className="flex gap-1" aria-hidden>
+                  {[0, 1, 2].map((i) => (
+                    <span key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < strength.score ? (strength.score === 1 ? "bg-destructive" : strength.score === 2 ? "bg-amber-500" : "bg-emerald-500") : "bg-secondary"}`} />
+                  ))}
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">{strength.hint}</p>
+              </div>
+            )}
+          </div>
           {err && <p className="text-sm text-destructive">{err}</p>}
-          <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
-            {loading ? "جاري الإنشاء…" : "إنشاء حسابي"}
+          <button disabled={loading || uState === "taken"} className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory py-3 rounded-full hover:opacity-90 disabled:opacity-60 active:scale-[0.99] transition-transform dark:bg-gold dark:text-charcoal">
+            {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
+            {loading ? "ننشئ حسابك…" : "إنشاء حسابي"}
           </button>
 
           <div className="relative my-4">
@@ -211,7 +288,7 @@ function JoinPage() {
           <p className="text-sm text-center text-muted-foreground">
             لديك حساب؟ <Link to="/login" className="text-gold underline">تسجيل الدخول</Link>
           </p>
-        </form>
+        </motion.form>
         </>)}
       </div>
       <Footer />
@@ -219,7 +296,7 @@ function JoinPage() {
   );
 }
 
-function Field({ label, type = "text", value, onChange, required, placeholder }: { label: string; type?: string; value: string; onChange: (v: string) => void; required?: boolean; placeholder?: string }) {
+function Field({ label, type = "text", value, onChange, required, placeholder, ltr }: { label: string; type?: string; value: string; onChange: (v: string) => void; required?: boolean; placeholder?: string; ltr?: boolean }) {
   const [show, setShow] = useState(false);
   const isPwd = type === "password";
 
@@ -228,6 +305,7 @@ function Field({ label, type = "text", value, onChange, required, placeholder }:
       <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
       <input
         type={isPwd ? (show ? "text" : "password") : type}
+        dir={ltr ? "ltr" : undefined}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
@@ -238,6 +316,7 @@ function Field({ label, type = "text", value, onChange, required, placeholder }:
       {isPwd && (
         <button 
           type="button" 
+          aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
           onClick={() => setShow(!show)}
           className="absolute end-3 top-8 text-muted-foreground hover:text-foreground"
         >

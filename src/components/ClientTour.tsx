@@ -110,7 +110,7 @@ const STEPS: Step[] = [
   },
 ];
 
-const HIDDEN_PREFIXES = ["/dashboard", "/admin", "/onboarding", "/login", "/reset-password", "/forgot-password", "/notifications", "/app"];
+const HIDDEN_PREFIXES = ["/dashboard", "/admin", "/onboarding", "/login", "/photographers/join", "/for-photographers", "/reset-password", "/forgot-password", "/notifications", "/app"];
 
 export function ClientTour() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
