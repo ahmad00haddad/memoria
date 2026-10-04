@@ -128,6 +128,8 @@
   }
 
   h1, h2, h3, .font-serif { font-family: var(--font-serif); letter-spacing: -0.02em; }
+  /* Cormorant defaults to old-style figures (0 reads as "o"); use lining. */
+  h1, h2, h3, .font-serif { font-feature-settings: "lnum" 1; }
 
   /* Hide Lovable Badge */
   #lovable-badge, div[id^="lovable-"], .lovable-badge {

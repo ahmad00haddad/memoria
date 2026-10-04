@@ -268,13 +268,14 @@ function DashboardSkeleton() {
   );
 }
 
-function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText, hint, urgent, quickAction, className = "", feature }: {
-  title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; badge?: boolean; badgeText?: string; hint?: string; urgent?: boolean; quickAction?: { label: string; to: string }; className?: string; feature?: boolean
+function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText, hint, urgent, quickAction, className = "", feature, figures }: {
+  title: string; desc: string; cta: string; to?: string; external?: boolean; disabled?: boolean; icon?: any; badge?: boolean; badgeText?: string; hint?: string; urgent?: boolean; quickAction?: { label: string; to: string }; className?: string; feature?: boolean;
+  figures?: { value: number | string; label: string }[]
 }) {
   // Text is always visible (hover-only text never shows on phones). Tiles read
   // start-aligned like an index; feature tiles get more room and a darker face.
   const tone = feature
-    ? "bg-charcoal text-ivory ring-charcoal grain-overlay"
+    ? "bg-charcoal text-ivory ring-charcoal grain-overlay dark:bg-[linear-gradient(160deg,color-mix(in_oklab,var(--gold)_16%,var(--card)),var(--card)_70%)] dark:text-foreground dark:ring-gold/30"
     : urgent
       ? "bg-card ring-gold/60"
       : "bg-card ring-border/70";
@@ -295,11 +296,22 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
       </div>
 
       <h3 className={`font-serif mb-1.5 ${feature ? "text-3xl" : "text-xl"}`}>{title}</h3>
-      <p className={`text-sm leading-relaxed ${feature ? "text-ivory/70 max-w-sm" : "text-muted-foreground"}`}>{desc}</p>
+      <p className={`text-sm leading-relaxed ${feature ? "text-ivory/70 max-w-sm dark:text-muted-foreground" : "text-muted-foreground"}`}>{desc}</p>
       {hint && <p className={`mt-2 text-xs ${feature ? "text-gold" : "text-muted-foreground/80"}`}>{hint}</p>}
 
+      {figures && figures.length > 0 && (
+        <div className="mt-8 grid grid-cols-2 gap-6 border-t border-current/10 pt-6">
+          {figures.map((f) => (
+            <div key={f.label}>
+              <div className="font-serif text-5xl leading-none tabular-nums">{f.value}</div>
+              <div className={`mt-2 text-xs ${feature ? "text-ivory/60 dark:text-muted-foreground" : "text-muted-foreground"}`}>{f.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="mt-auto pt-6 flex items-center justify-between gap-3">
-        <span className={`inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 group-hover:gap-3 ${feature ? "text-ivory" : "text-foreground group-hover:text-gold"}`}>
+        <span className={`inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 group-hover:gap-3 ${feature ? "text-ivory dark:text-gold" : "text-foreground group-hover:text-gold"}`}>
           {disabled ? "أكملي ملفك أولاً" : cta}
           {!disabled && <ArrowLeft className="h-4 w-4" />}
         </span>
@@ -647,7 +659,11 @@ function Dashboard() {
         ) : (
           // مستخدمة نشطة → كل البطاقات ظاهرة
           <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 md:grid-cols-2 lg:grid-cols-6">
-            <Card className="md:col-span-2 lg:col-span-3 lg:row-span-2" feature 
+            <Card className="md:col-span-2 lg:col-span-3 lg:row-span-2" feature
+              figures={[
+                { value: stats?.pending ?? 0, label: "بانتظار العربون" },
+                { value: stats?.upcoming30 ?? 0, label: "مناسبات خلال ٣٠ يوماً" },
+              ]} 
               title="الحجوزات" 
               desc="جميع الطلبات والمؤكّدة والمنتهية." 
               cta="عرض الحجوزات" 

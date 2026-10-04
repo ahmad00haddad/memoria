@@ -156,30 +156,53 @@ function PricingMgr() {
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="grid gap-5 md:grid-cols-2">
           {rules.map((r, i) => (
-            <div key={i} className="rounded-sm border border-border bg-card p-4 grid gap-3 sm:grid-cols-[1fr_1fr_1fr_120px_120px_auto]">
-              <select value={r.service} onChange={(e) => upd(i, "service", e.target.value)} className="border border-border rounded-sm px-2 py-2 bg-background text-sm">
-                <option value="photography">تصوير فوتوغرافي</option>
-                <option value="cinematic_video">فيديو سينمائي</option>
-              </select>
-              <select value={r.package} onChange={(e) => upd(i, "package", e.target.value)} className="border border-border rounded-sm px-2 py-2 bg-background text-sm">
-                <option value="hourly">بالساعة</option>
-                <option value="full_day">يوم كامل</option>
-                <option value="addon">إضافة</option>
-              </select>
-              <input placeholder="مثال: 4 ساعات" value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm" />
-              <input type="number" min="0" placeholder="السعر" value={r.price} onChange={(e) => upd(i, "price", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm" />
-              <input type="number" min="0" placeholder="سعر الصورة الإضافية" value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm" />
-              <button onClick={() => del(i)} className="text-destructive p-2 hover:bg-destructive/10 rounded-sm"><Trash2 className="h-4 w-4" /></button>
-              <input placeholder="وصف اختياري" value={r.description ?? ""} onChange={(e) => upd(i, "description", e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background text-sm sm:col-span-6" />
+            <div key={i} className="group relative rounded-2xl bg-card p-6 ring-1 ring-border/70 transition-all hover:ring-gold/40">
+              <div className="flex items-start justify-between gap-3 mb-5">
+                <div className="flex gap-2">
+                  <select aria-label="نوع الخدمة" value={r.service} onChange={(e) => upd(i, "service", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
+                    <option value="photography">تصوير فوتوغرافي</option>
+                    <option value="cinematic_video">فيديو سينمائي</option>
+                  </select>
+                  <select aria-label="نوع الباقة" value={r.package} onChange={(e) => upd(i, "package", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
+                    <option value="hourly">بالساعة</option>
+                    <option value="full_day">يوم كامل</option>
+                    <option value="addon">إضافة</option>
+                  </select>
+                </div>
+                <button onClick={() => del(i)} aria-label="حذف الباقة" className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+
+              <label className="block text-xs text-muted-foreground mb-1">اسم الباقة</label>
+              <input placeholder="مثال: باقة ٤ ساعات" value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="w-full bg-transparent font-serif text-2xl border-b border-border pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
+
+              <div className="grid grid-cols-2 gap-4 mb-5">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">السعر (د.أ)</label>
+                  <input type="number" min="0" inputMode="decimal" placeholder="0" value={r.price} onChange={(e) => upd(i, "price", e.target.value)} className="w-full bg-transparent font-serif text-3xl tabular-nums border-b border-border pb-1 outline-none transition-colors focus:border-gold" />
+                </div>
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-1">سعر الصورة الإضافية</label>
+                  <input type="number" min="0" inputMode="decimal" placeholder="اختياري" value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="w-full bg-transparent font-serif text-3xl tabular-nums border-b border-border pb-1 outline-none transition-colors focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/50" />
+                </div>
+              </div>
+
+              <label className="block text-xs text-muted-foreground mb-1">ماذا تشمل الباقة؟</label>
+              <textarea rows={2} placeholder="مثال: تغطية ٤ ساعات، ١٠٠ صورة معدّلة، تسليم خلال أسبوعين" value={r.description ?? ""} onChange={(e) => upd(i, "description", e.target.value)} className="w-full resize-none rounded-xl bg-secondary/60 px-3 py-2.5 text-sm leading-relaxed outline-none ring-1 ring-transparent transition focus:ring-gold/50" />
             </div>
           ))}
+
+          <button onClick={add} className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-gold/60 hover:text-gold">
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-secondary"><Plus className="h-5 w-5" /></span>
+            <span className="text-sm">إضافة باقة جديدة</span>
+          </button>
         </div>
 
-        <div className="flex gap-3 mt-6">
-          <button onClick={add} className="inline-flex items-center gap-2 border border-border px-4 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200"><Plus className="h-4 w-4" /> إضافة باقة</button>
-          <button onClick={save} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">حفظ الجميع</button>
+        <div className="sticky bottom-20 sm:bottom-6 z-20 mt-8 flex justify-end">
+          <button onClick={save} className="rounded-full bg-charcoal px-8 py-3 text-ivory shadow-elegant transition hover:opacity-90 active:scale-[0.98] dark:bg-gold dark:text-charcoal">حفظ كل الباقات</button>
         </div>
       </section>
       <Footer />
