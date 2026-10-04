@@ -1,7 +1,7 @@
 // Memoria Service Worker — PWA caching + offline support
-// Version: 2.0 (Phase 5 — Performance)
+// Version: 3.0 (font refresh)
 
-const CACHE_NAME = "memoria-v2";
+const CACHE_NAME = "memoria-v3";
 const OFFLINE_PAGE = "/offline.html";
 
 // الملفات الأساسية التي تُحفظ دائماً في الـ cache (App Shell)
@@ -21,7 +21,7 @@ const CACHE_STRATEGIES = {
   // صور المعرض — Cache First (سريع + offline) مع تحديث في الخلفية
   images: /\.(jpg|jpeg|png|webp|gif|svg|ico)(\?.*)?$/i,
   // ملفات static — Cache First (لا تتغيّر كثيراً)
-  static: /\.(css|js|woff|woff2|ttf|eot)(\?.*)?$/i,
+  static: /\.(css|js|woff|woff2|ttf|otf|eot)(\?.*)?$/i,
   // API calls — Network First (بيانات حديثة مطلوبة)
   api: /\/(api|rest\/v1|auth\/v1)\//,
 };

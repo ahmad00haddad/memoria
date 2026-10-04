@@ -5,7 +5,7 @@
 
 @font-face {
   font-family: "Khattaten";
-  src: url("/__l5e/assets-v1/1c5bbc7f-45ad-4bc5-8719-bda821b1b152/Khattaten-Regular.otf") format("opentype");
+  src: url("/__l5e/assets-v1/1c5bbc7f-45ad-4bc5-8719-bda821b1b152/Khattaten-Regular.otf?v=2") format("opentype");
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -107,7 +107,7 @@
 @layer base {
   * { border-color: var(--color-border); }
 
-  html { font-family: var(--font-sans); }
+  html, body, button, input, textarea, select { font-family: var(--font-sans); }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -135,8 +135,10 @@
   }
 
   /* RTL refinements */
-  [dir="rtl"] { font-family: "Khattaten", system-ui, sans-serif; }
-  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 {
+  [dir="rtl"], [dir="rtl"] button, [dir="rtl"] input, [dir="rtl"] textarea, [dir="rtl"] select {
+    font-family: "Khattaten", system-ui, sans-serif;
+  }
+  [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] .font-serif {
     font-family: "Khattaten", "Playfair Display Variable", serif;
     font-weight: 400;
   }
