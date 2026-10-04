@@ -1,5 +1,5 @@
 -- Add new columns to photographer_profiles
-ALTER TABLE "public"."photographer_profiles" 
+ALTER TABLE "public"."profiles" 
 ADD COLUMN IF NOT EXISTS "audio_url" text,
 ADD COLUMN IF NOT EXISTS "income_goal" numeric DEFAULT 1000,
 ADD COLUMN IF NOT EXISTS "completeness_score" numeric DEFAULT 0;

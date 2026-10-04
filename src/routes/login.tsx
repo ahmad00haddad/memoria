@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { toast } from "sonner";
 
 import { AlertTriangle, RefreshCcw, Home, Eye, EyeOff } from "lucide-react";

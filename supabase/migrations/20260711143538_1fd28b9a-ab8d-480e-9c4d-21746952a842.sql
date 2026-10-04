@@ -3,6 +3,7 @@
 GRANT EXECUTE ON FUNCTION public.is_subscription_active(uuid) TO anon, authenticated;
 
 -- Create the search_photographers RPC used by the public search page
+DROP FUNCTION IF EXISTS public.search_photographers(text, text, numeric, numeric, date, text, integer);
 CREATE OR REPLACE FUNCTION public.search_photographers(
   _query text DEFAULT NULL,
   _city text DEFAULT NULL,

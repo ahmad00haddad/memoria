@@ -193,7 +193,13 @@ CREATE POLICY "portfolio_public_read" ON storage.objects
 
 
 -- 6) تفعيل RLS على storage.objects (مطلوب إذا لم يكن مفعّلاً)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- Supabase enables RLS on storage.objects by default and the migration role
+-- does not own the table, so only run ALTER when RLS is actually off.
+DO $$
+BEGIN
+  IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'storage.objects'::regclass) THEN
+    ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+  END IF;
+END $$;
 
 -- إضافة تعليق توضيحي
-COMMENT ON TABLE storage.objects IS 'ملفات Supabase Storage — تحكّم بالوصول عبر سياسات RLS أعلاه';

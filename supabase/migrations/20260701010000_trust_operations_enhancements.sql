@@ -146,7 +146,7 @@ BEGIN
 
   -- أنشئ العقد.
   INSERT INTO public.contracts (
-    booking_id, photographer_id, client_name, body, signing_token
+    booking_id, photographer_id, client_name, body, sign_token
   ) VALUES (
     v_bk.id, v_bk.photographer_id, v_bk.client_name, v_body,
     encode(gen_random_bytes(32), 'hex')

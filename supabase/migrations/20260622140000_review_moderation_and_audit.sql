@@ -23,7 +23,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
   INSERT INTO public.audit_logs (action, actor_id, entity_type, entity_id, before_data, after_data)
-  VALUES (_action, auth.uid(), _entity_type, _entity_id, _before, _after);
+  VALUES (_action, auth.uid(), _entity_type, NULLIF(_entity_id, '')::uuid, _before, _after);
 $$;
 
 REVOKE ALL ON FUNCTION public.log_audit(text, text, text, jsonb, jsonb) FROM PUBLIC, anon, authenticated;

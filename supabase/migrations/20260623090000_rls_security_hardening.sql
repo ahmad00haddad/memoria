@@ -43,18 +43,18 @@ CREATE POLICY "photographer read own contracts"
   USING (auth.uid() = photographer_id);
 
 -- Policy 2: Public (anon) reads a single contract only by knowing
---           the exact signing_token. This is the token embedded in
+--           the exact sign_token. This is the token embedded in
 --           the client's signing link — unguessable, UUID-level entropy.
 CREATE POLICY "client read by signing token"
   ON public.contracts FOR SELECT
   TO anon, authenticated
   USING (
-    signing_token IS NOT NULL
+    sign_token IS NOT NULL
     AND EXISTS (
       SELECT 1
       FROM public.contracts c2
       WHERE c2.id = contracts.id
-        AND c2.signing_token = current_setting('request.jwt.claims', true)::jsonb->>'sub'
+        AND c2.sign_token = current_setting('request.jwt.claims', true)::jsonb->>'sub'
       -- Note: actual token matching is done at application level via the
       -- /contracts/:token route. This policy ensures the row is readable
       -- if the user's session matches OR falls through to the app-level check.

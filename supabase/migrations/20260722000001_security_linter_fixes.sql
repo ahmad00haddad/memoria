@@ -38,15 +38,23 @@ ALTER TABLE IF EXISTS public.whatsapp_templates ENABLE ROW LEVEL SECURITY;
 
 -- 3. سحب الصلاحيات (REVOKE) من دوال الـ SECURITY DEFINER لتجنب استدعائها مباشرة
 -- الدالة: log_audit (يجب أن تُستدعى من دوال أخرى أو service_role)
-REVOKE EXECUTE ON FUNCTION public.log_audit(text, json, json, text, text) FROM PUBLIC, anon, authenticated;
-
--- الدوال الإدارية:
-REVOKE EXECUTE ON FUNCTION public.admin_renew_subscription(integer, uuid) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.admin_set_published(uuid, boolean) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.delete_photographer_cascade(uuid) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.restore_photographer(uuid) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.approve_review(uuid) FROM PUBLIC, anon, authenticated;
-REVOKE EXECUTE ON FUNCTION public.reject_review(uuid) FROM PUBLIC, anon, authenticated;
+-- Revoke from every overload by name: the signatures previously listed here
+-- did not match the real functions, which made the migration fail.
+DO $$
+DECLARE
+  f regprocedure;
+BEGIN
+  FOR f IN
+    SELECT p.oid::regprocedure
+    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname IN ('log_audit', 'admin_renew_subscription', 'admin_set_published',
+                        'delete_photographer_cascade', 'restore_photographer',
+                        'approve_review', 'reject_review')
+  LOOP
+    EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC, anon, authenticated', f);
+  END LOOP;
+END $$;
 
 -- دوال حيوية أخرى (يجب أن تُحمى إذا كانت SECURITY DEFINER):
 -- (بعض الدوال مثل client_* يجب أن تبقى متاحة لـ anon لأن العميل غير مسجل)
