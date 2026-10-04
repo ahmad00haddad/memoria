@@ -1,6 +1,8 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { motion, AnimatePresence } from "framer-motion";
+import { hapticVibrate } from "@/lib/utils";
 import { PageLoader } from "@/components/ui/loading";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -34,6 +36,23 @@ function SignPage() {
   const [signature, setSignature] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [readPct, setReadPct] = useState(0);
+  const articleRef = useRef<HTMLElement>(null);
+  const signRef = useRef<HTMLDivElement>(null);
+
+  // شريط تقدّم القراءة — يعرف أين وصلت العروس في العقد
+  useEffect(() => {
+    const onScroll = () => {
+      const el = articleRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      const total = r.height - window.innerHeight * 0.6;
+      setReadPct(Math.max(0, Math.min(100, ((-r.top + window.innerHeight * 0.2) / Math.max(1, total)) * 100)));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [data]);
 
   useEffect(() => {
     fetchFn({ data: { token } }).then((r) => {
@@ -49,7 +68,8 @@ function SignPage() {
 
   const onSign = async () => {
     if (!agreed || !signature.trim() || !name.trim()) {
-      toast.error("يرجى تعبئة الاسم والتوقيع والموافقة"); return;
+      hapticVibrate("error");
+      toast.error(!name.trim() ? "اكتبي اسمك الكامل" : !signature.trim() ? "اكتبي توقيعك" : "أكّدي الموافقة على البنود"); return;
     }
     if (signature.trim().length < 3) {
       toast.error("التوقيع قصير جداً. يرجى كتابة 3 حروف على الأقل."); return;
@@ -57,7 +77,8 @@ function SignPage() {
     setSubmitting(true);
     try {
       await signFn({ data: { token, signature, client_name: name } });
-      toast.success("تم توقيع العقد بنجاح");
+      hapticVibrate("success");
+      toast.success("وُقّع العقد — وصلت نسخة للمصوّرة");
       router.invalidate();
       const r = await fetchFn({ data: { token } });
       setData(r);
@@ -81,12 +102,25 @@ function SignPage() {
       <section className="container-editorial py-12 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">عقد تصوير</div>
         <h1 className="font-serif text-4xl mb-2 flex items-center gap-3"><ScrollText className="h-7 w-7 text-gold" /> {photographer?.display_name}</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          تاريخ الحفل: {booking?.event_date} · من {booking?.start_time} إلى {booking?.end_time} ·
-          المجموع: {booking?.total_price} د.أ · العربون: {booking?.deposit_amount} د.أ
-        </p>
+        <div className="mb-6 flex flex-wrap gap-2 text-xs">
+          {booking?.event_date && <span className="rounded-full bg-secondary px-3 py-1">الحفل {new Date(booking.event_date).toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long" })}</span>}
+          {booking?.start_time && <span className="rounded-full bg-secondary px-3 py-1 tabular-nums">{String(booking.start_time).slice(0, 5)}–{String(booking.end_time ?? "").slice(0, 5)}</span>}
+          {booking?.total_price != null && <span className="rounded-full bg-secondary px-3 py-1 tabular-nums">المجموع {booking.total_price} د.أ</span>}
+          {booking?.deposit_amount != null && <span className="rounded-full bg-secondary px-3 py-1 tabular-nums">العربون {booking.deposit_amount} د.أ</span>}
+        </div>
 
-        <article className="border border-border rounded-sm p-6 bg-card whitespace-pre-wrap leading-loose text-sm">
+        {!signed && (
+          <div className="no-print sticky top-[calc(env(safe-area-inset-top,0px)+4rem)] z-20 -mx-4 mb-3 flex items-center gap-3 bg-background/90 px-4 py-2 backdrop-blur">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-secondary">
+              <div className="h-full rounded-full bg-gold transition-[width] duration-200" style={{ width: `${readPct}%` }} />
+            </div>
+            <button onClick={() => signRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })} className="shrink-0 rounded-full border border-border px-3 py-1 text-xs hover:border-gold/50">
+              {readPct >= 95 ? "إلى التوقيع" : "تخطّي إلى التوقيع"}
+            </button>
+          </div>
+        )}
+
+        <article ref={articleRef} className="border border-border rounded-2xl p-6 bg-card whitespace-pre-wrap leading-loose text-sm">
           {contract.body}
         </article>
 
@@ -103,19 +137,24 @@ function SignPage() {
             </button>
           </div>
         ) : (
-          <div className="mt-8 space-y-4 border border-border rounded-sm p-6">
+          <div ref={signRef} className="mt-8 space-y-4 border border-border rounded-2xl p-6 scroll-mt-28">
             <h2 className="font-serif text-2xl">التوقيع الإلكتروني</h2>
+            <p className="text-xs text-muted-foreground">يُحفظ التوقيع مع التاريخ والوقت، وله نفس إلزام التوقيع الورقي.</p>
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم الكامل"
               className="w-full border border-input rounded-sm px-3 py-2 bg-background" />
-            <input value={signature} onChange={(e) => setSignature(e.target.value)} placeholder="اكتب توقيعك هنا"
-              className="w-full border border-input rounded-sm px-3 py-2 bg-background font-serif italic text-xl" />
+            <div className="relative">
+              <input value={signature} onChange={(e) => setSignature(e.target.value)} placeholder="اكتبي توقيعك هنا"
+                className="w-full border border-input rounded-xl px-3 pt-2 pb-6 bg-background font-script text-3xl text-gold" />
+              <span className="pointer-events-none absolute inset-x-4 bottom-3 border-b border-dashed border-border" />
+            </div>
             <label className="flex items-start gap-2 text-sm">
               <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1" />
               <span>أقرّ بأنني قرأت وفهمت جميع بنود العقد وأوافق عليها.</span>
             </label>
             <button onClick={onSign} disabled={submitting}
-              className="w-full bg-gradient-gold text-charcoal font-semibold py-3 rounded-sm hover:opacity-90 disabled:opacity-50">
-              {submitting ? "جارٍ التوقيع…" : "توقيع العقد"}
+              className={`w-full inline-flex items-center justify-center gap-2 bg-gradient-gold text-charcoal font-semibold py-3 rounded-full hover:opacity-90 disabled:opacity-50 active:scale-[0.99] transition ${agreed && signature.trim().length >= 3 && name.trim() ? "" : "opacity-70"}`}>
+              {submitting && <span className="h-4 w-4 animate-spin rounded-full border-2 border-charcoal/30 border-t-charcoal" />}
+              {submitting ? "نوقّع…" : "توقيع العقد"}
             </button>
           </div>
         )}
