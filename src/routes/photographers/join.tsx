@@ -211,7 +211,7 @@ function JoinPage() {
         >
           {refCode && (
             <div className="text-xs bg-gold/10 border border-gold/30 px-3 py-2 rounded-sm text-gold">
-              تمّ تطبيق رمز إحالة: <strong>{refCode}</strong> — شهر مجاني للطرفين عند تفعيل الاشتراك.
+              تمّ تطبيق رمز إحالة: <strong>{refCode}</strong> — دعتكِ زميلة، وتجربتكِ المجانية ١٤ يوماً تبدأ الآن.
             </div>
           )}
           <Field label="الاسم الكامل / اسم الاستوديو" value={form.display_name} onChange={upd("display_name")} required />

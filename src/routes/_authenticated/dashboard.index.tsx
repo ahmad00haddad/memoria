@@ -559,7 +559,7 @@ function Dashboard() {
     { key: "whatsapp", title: "رسائل واتساب", to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: `${templatesCount} قوالب جاهزة` },
     { key: "subscription", title: "الاشتراك", to: "/dashboard/subscription", icon: <LogOut />, badge: subStatus === "expired" ? "منتهي" : subStatus === "trial" ? "تجريبي" : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? "نشط" : "التجديد وإثبات الدفع" },
     { key: "notifications", title: "الإشعارات", to: "/notifications", icon: <Bell />, hint: "كل التنبيهات" },
-    { key: "referrals", title: "الإحالة", to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: "شهر مجاني لكِ ولزميلتك" },
+    { key: "referrals", title: "الإحالة", to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: "١٤ يوماً مجاناً عن كل زميلة" },
     { key: "public", title: "ملفي العام", to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ArrowLeft />, hint: "كما تراه العرائس" },
   ];
 
