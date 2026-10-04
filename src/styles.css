@@ -2,13 +2,20 @@
 @source "../src";
 @import "tw-animate-css";
 @import "@fontsource-variable/playfair-display";
-@import "@fontsource-variable/cairo";
+
+@font-face {
+  font-family: "Khattaten";
+  src: url("/__l5e/assets-v1/1c5bbc7f-45ad-4bc5-8719-bda821b1b152/Khattaten-Regular.otf") format("opentype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-serif: "Playfair Display Variable", "Cairo Variable", serif;
-  --font-sans: "Cairo Variable", "Inter", system-ui, sans-serif;
+  --font-serif: "Playfair Display Variable", "Khattaten", serif;
+  --font-sans: "Khattaten", system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -128,10 +135,10 @@
   }
 
   /* RTL refinements */
-  [dir="rtl"] { font-family: "Cairo Variable", system-ui, sans-serif; }
+  [dir="rtl"] { font-family: "Khattaten", system-ui, sans-serif; }
   [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 {
-    font-family: "Cairo Variable", "Playfair Display Variable", serif;
-    font-weight: 700;
+    font-family: "Khattaten", "Playfair Display Variable", serif;
+    font-weight: 400;
   }
 }
 
