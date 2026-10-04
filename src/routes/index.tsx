@@ -1,4 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { listPublishedCities } from "@/lib/search.functions";
 import { ArrowLeft, Calendar, Camera, MessageSquareOff, Receipt, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -187,6 +189,28 @@ function Landing() {
   }, [isPhotographer, userId, featuredReload]);
 
   const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | "guest" | null>(null);
+  const [heroDate, setHeroDate] = useState("");
+  const [heroCity, setHeroCity] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+  const runCities = useServerFn(listPublishedCities);
+  useEffect(() => { runCities({}).then((c: any) => setCities(c ?? [])).catch(() => {}); /* eslint-disable-next-line */ }, []);
+  const [resume, setResume] = useState<{ label: string; city?: string; date?: string } | null>(null);
+  useEffect(() => {
+    try {
+      const ls = JSON.parse(localStorage.getItem("memoria_last_search") || "null");
+      if (ls && (ls.city || ls.date)) {
+        const date = ls.date && ls.date >= new Date().toISOString().slice(0, 10) ? ls.date : undefined;
+        const label = [ls.city, date && new Date(date).toLocaleDateString("ar-JO", { day: "numeric", month: "long" })].filter(Boolean).join(" · ");
+        if (label) setResume({ label, city: ls.city || undefined, date });
+      }
+    } catch { /* ignore */ }
+  }, []);
+  const goSearch = (city?: string, date?: string) => {
+    const search: Record<string, string> = {};
+    if (city) search.city = city;
+    if (date) search.date = date;
+    navigate({ to: "/search", search: search as any });
+  };
 
   // ── Role gate: أظهر شاشة الاختيار عند أول زيارة لغير المسجّلين ──
   useEffect(() => {
@@ -198,6 +222,10 @@ function Landing() {
       }
     } catch {}
   }, [authLoading, authed]);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("memoria-role-gate", { detail: showRoleGate }));
+  }, [showRoleGate]);
 
   const handleRoleSelect = (role: "client" | "photographer" | "guest") => {
     try { localStorage.setItem(VISITOR_ROLE_KEY, role); } catch {}
@@ -260,18 +288,36 @@ function Landing() {
                   ? "ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان."
                   : "احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون آمن."}
               </motion.p>
+              {visitorRole !== "photographer" && !isPhotographer && (
+                <motion.form
+                  variants={fadeUp}
+                  onSubmit={(e) => { e.preventDefault(); goSearch(heroCity, heroDate); }}
+                  className="flex max-w-xl flex-col gap-2 rounded-2xl border border-border bg-card/90 p-2 shadow-soft backdrop-blur sm:flex-row sm:items-center sm:rounded-full"
+                >
+                  <label className="flex flex-1 items-center gap-2 rounded-full px-4 py-2 focus-within:bg-secondary/60">
+                    <span className="text-xs text-muted-foreground shrink-0">المدينة</span>
+                    <select value={heroCity} onChange={(e) => setHeroCity(e.target.value)} className="w-full bg-transparent text-sm outline-none">
+                      <option value="">كل المدن</option>
+                      {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </label>
+                  <span className="hidden h-6 w-px bg-border sm:block" />
+                  <label className="flex flex-1 items-center gap-2 rounded-full px-4 py-2 focus-within:bg-secondary/60">
+                    <span className="text-xs text-muted-foreground shrink-0">تاريخ العرس</span>
+                    <input type="date" value={heroDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setHeroDate(e.target.value)} className="w-full bg-transparent text-sm outline-none" />
+                  </label>
+                  <button type="submit" className="group inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm text-ivory transition-all hover:gap-3 active:scale-[0.98] dark:bg-gold dark:text-charcoal">
+                    {heroDate ? "المتاحات" : "ابحثي"} <ArrowLeft className="h-4 w-4" />
+                  </button>
+                </motion.form>
+              )}
+              {resume && visitorRole !== "photographer" && !isPhotographer && (
+                <motion.div variants={fadeUp} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>تابعي بحثك:</span>
+                  <button onClick={() => goSearch(resume.city, resume.date)} className="rounded-full border border-dashed border-border px-3 py-1 hover:border-gold/50 hover:text-foreground">{resume.label}</button>
+                </motion.div>
+              )}
               <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-x-8 gap-y-4">
-                {visitorRole !== "photographer" && !isPhotographer && (
-                  <Link
-                    to="/search"
-                    className="group inline-flex items-center gap-3 bg-charcoal text-ivory ps-7 pe-5 py-3.5 rounded-full shadow-elegant transition-all duration-300 hover:gap-4 active:scale-[0.98] dark:bg-gold dark:text-charcoal"
-                  >
-                    ابحثي عن مصوّرة
-                    <span className="grid h-7 w-7 place-items-center rounded-full bg-ivory/10 dark:bg-charcoal/10">
-                      <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
-                    </span>
-                  </Link>
-                )}
                 {authLoading || authed ? (
                   <Link
                     to="/dashboard"

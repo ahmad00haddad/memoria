@@ -61,6 +61,12 @@ function SearchPage() {
 
   useEffect(() => {
     try {
+      const sp = new URLSearchParams(window.location.search);
+      const c = sp.get("city"); const d = sp.get("date");
+      if (c) setCity(c);
+      if (d && d >= new Date().toISOString().slice(0, 10)) setDate(d);
+    } catch { /* ignore */ }
+    try {
       setFavs(JSON.parse(localStorage.getItem("memoria_favs") || "[]"));
       const ls = JSON.parse(localStorage.getItem("memoria_last_search") || "null");
       if (ls && (ls.city || ls.maxPrice || ls.date)) setLastSearch(ls);

@@ -116,6 +116,13 @@ export function ClientTour() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const nav = useNavigate();
   const state = useTourState();
+  // لا نعرض الجولة فوق شاشة اختيار الدور في الرئيسية
+  const [gateOpen, setGateOpen] = useState(false);
+  useEffect(() => {
+    const on = (e: Event) => setGateOpen(!!(e as CustomEvent).detail);
+    window.addEventListener("memoria-role-gate", on);
+    return () => window.removeEventListener("memoria-role-gate", on);
+  }, []);
 
   // Smart launch logic
   useEffect(() => {
@@ -142,7 +149,7 @@ export function ClientTour() {
   };
 
   const hidden = HIDDEN_PREFIXES.some((p) => pathname.startsWith(p));
-  if (state.status !== "active" || hidden) return null;
+  if (state.status !== "active" || hidden || gateOpen) return null;
 
   const s = STEPS[state.step];
   if (!s) return null;
