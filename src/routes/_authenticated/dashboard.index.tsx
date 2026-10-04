@@ -38,6 +38,8 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { TodayFocus } from "@/components/dashboard/TodayFocus";
 import { ToolIndex, Sparkline, type Tool } from "@/components/dashboard/ToolIndex";
 import { computeFocusItems } from "@/components/dashboard/focus";
+import { openCommandPalette } from "@/components/CommandPalette";
+import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: Dashboard,
@@ -576,7 +578,10 @@ function Dashboard() {
             <div className="text-xs text-muted-foreground">{greeting()}</div>
             <h1 className="font-serif text-3xl font-bold">لوحتي</h1>
           </div>
-          <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">خروج</button>
+          <div className="flex items-center gap-2">
+            <button onClick={openCommandPalette} aria-label="بحث" className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-secondary active:scale-95 transition-transform"><Search className="h-4 w-4" /></button>
+            <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">خروج</button>
+          </div>
         </div>
 
         <div className="hidden sm:flex items-end justify-between mb-10">
@@ -592,7 +597,13 @@ function Dashboard() {
               <div className="text-sm text-muted-foreground mt-1">أكملي اسم المستخدم من الملف الشخصي</div>
             )}
           </div>
-          <button onClick={signOut} className="text-sm text-muted-foreground border-b border-current/30 pb-0.5 hover:text-foreground transition-colors">تسجيل الخروج</button>
+          <div className="flex items-center gap-5">
+            <button onClick={openCommandPalette} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:border-gold/40 hover:text-foreground transition-colors">
+              <Search className="h-4 w-4" /> ابحثي عن عروس أو صفحة
+              <kbd className="rounded border border-border bg-secondary px-1.5 text-[10px] font-sans" dir="ltr">Ctrl K</kbd>
+            </button>
+            <button onClick={signOut} className="text-sm text-muted-foreground border-b border-current/30 pb-0.5 hover:text-foreground transition-colors">تسجيل الخروج</button>
+          </div>
         </div>
 
         {/* بانر الاشتراك: فقط عندما يتطلّب إجراءً — الاقتراب من الانتهاء يظهر كمهمة اليوم */}

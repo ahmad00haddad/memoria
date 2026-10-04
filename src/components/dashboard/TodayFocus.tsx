@@ -89,7 +89,7 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
             aria-expanded={open}
             className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
-            {open ? "إخفاء" : `و${rest.length === 1 ? "مهمة أخرى" : ` ${rest.length} مهام أخرى`}`}
+            {open ? "إخفاء" : rest.length === 1 ? "مهمة أخرى" : `${rest.length} مهام أخرى`}
             <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
           </button>
           <AnimatePresence initial={false}>

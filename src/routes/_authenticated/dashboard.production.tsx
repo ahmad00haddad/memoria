@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate, ErrorComponentProps } from "@tansta
 import { PageLoader } from "@/components/ui/loading";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
@@ -16,6 +16,8 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { useServerFn } from "@tanstack/react-start";
 import { logMove } from "@/lib/log-move";
 import { updateProductionStage } from "@/lib/production.functions";
+import { hapticVibrate } from "@/lib/utils";
+import { daysFromToday, relativeDay } from "@/components/dashboard/focus";
 
 function ProductionError({ error, reset }: ErrorComponentProps) {
   const errorMessage = error instanceof Error ? error.message : String(error);
@@ -59,6 +61,19 @@ const STAGES: { key: string; label: string; icon: any; color: string }[] = [
   { key: "delivered", label: "تم التسليم", icon: <CheckCircle2 className="h-4 w-4 text-muted-foreground" />, color: "bg-card border border-border text-muted-foreground opacity-80" },
 ];
 
+
+// وصف كل عمود عندما يكون فارغاً — يشرح معنى المرحلة بدل "لا حجوزات"
+const STAGE_EMPTY: Record<string, string> = {
+  awaiting: "الحجوزات المؤكّدة التي لم يحن موعد تصويرها بعد.",
+  shooting: "حجوزات يوم تصويرها اليوم أو انتهى للتو.",
+  selecting: "صُوّرت وتنتظر أن تختار العميلة صورها من الرابط.",
+  editing: "صور مختارة قيد التحرير.",
+  ready: "انتهى التحرير وتنتظر الإرسال للعميلة.",
+  delivered: "حجوزات سُلّمت صورها.",
+};
+
+const UNDO_MS = 5000;
+
 function ProductionBoard() {
   const nav = useNavigate();
   const logMoveFn = useServerFn(logMove);
@@ -69,33 +84,45 @@ function ProductionBoard() {
   const [activeStage, setActiveStage] = useState<string>("awaiting");
   const [err, setErr] = useState<string | null>(null);
   const [movingId, setMovingId] = useState<string | null>(null);
-  // منع النقر السريع لنقل نفس البطاقة مجدداً خلال نافذة الـ Undo
+  // منع تحريك نفس البطاقة مجدداً خلال نافذة التراجع — يظهر كعدّاد دائري على البطاقة
   const [undoLockUntil, setUndoLockUntil] = useState<Record<string, number>>({});
-  const [confirmDialog, setConfirmDialog] = useState<{ open: boolean; b?: any; dir?: 1|-1; next?: any; idx?: number }>({ open: false });
-
+  const [now, setNow] = useState(Date.now());
+  const [deliverDialog, setDeliverDialog] = useState<{ open: boolean; b?: any; next?: any; idx?: number }>({ open: false });
   const [wiggleId, setWiggleId] = useState<string | null>(null);
-  const [tourStep, setTourStep] = useState<number>(() => {
-    return localStorage.getItem('memoria-production-tour-seen') ? -1 : 0;
+  const [tipSeen, setTipSeen] = useState<boolean>(() => {
+    try { return !!localStorage.getItem("memoria-production-tour-seen"); } catch { return true; }
   });
+
+  useEffect(() => {
+    const active = Object.values(undoLockUntil).some((t) => t > Date.now());
+    if (!active) return;
+    setNow(Date.now());
+    const t = setInterval(() => {
+      const n = Date.now();
+      setNow(n);
+      if (!Object.values(undoLockUntil).some((u) => u > n)) clearInterval(t);
+    }, 200);
+    return () => clearInterval(t);
+  }, [undoLockUntil]);
 
   const load = async (id: string, isRetry = false) => {
     try {
-      if (isRetry) toast.loading("جاري إعادة المحاولة...", { id: "load-retry" });
+      if (isRetry) toast.loading("نعيد المحاولة…", { id: "load-retry" });
       const { data, error } = await supabase.from("bookings")
-        .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at,delivered_at")
+        .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at,delivered_at,final_paid_at")
         .eq("photographer_id", id).is("deleted_at", null).in("status", ["confirmed", "completed"]).order("event_date", { ascending: true });
-      
+
       if (error) throw new Error(error.message);
-      
+
       setBookings(data ?? []);
-      if (isRetry) toast.success("تم التحديث بنجاح!", { id: "load-retry" });
+      if (isRetry) toast.success("تم التحديث", { id: "load-retry" });
       setErr(null);
     } catch (e: any) {
-      toast.error("فشل تحميل البيانات. قد يكون الإنترنت ضعيفاً.", {
+      toast.error("تعذّر تحميل البيانات — تحقّقي من الاتصال.", {
         id: "load-retry",
-        action: { label: "حاول مرة أخرى", onClick: () => load(id, true) }
+        action: { label: "أعيدي المحاولة", onClick: () => load(id, true) }
       });
-      setErr("تعذّر تحميل لوحة الإنتاج. يرجى التحقق من اتصالك بالإنترنت.");
+      setErr("تعذّر تحميل لوحة الإنتاج. تحقّقي من اتصالك بالإنترنت.");
       console.error("[production] fetch error:", e?.message);
     }
   };
@@ -105,16 +132,16 @@ function ProductionBoard() {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) throw sessionError;
-        
+
         if (!session) {
-          toast.info("انتهت جلستك لأسباب أمنية. سجّلي الدخول للعودة إلى لوحة الإنتاج.");
+          toast.info("انتهت جلستك. سجّلي الدخول للعودة إلى لوحة الإنتاج.");
           return nav({ to: "/login", search: { redirect: window.location.pathname } });
         }
         setUid(session.user.id);
         await load(session.user.id);
       } catch (e: any) {
-        toast.error("تعذّر التحقق من هويتك. الرجاء تحديث الصفحة.");
-        setErr("مشكلة في التحقق من الجلسة (Session).");
+        toast.error("تعذّر التحقق من هويتك. حدّثي الصفحة.");
+        setErr("مشكلة في التحقق من الجلسة.");
       } finally {
         setLoading(false);
       }
@@ -184,67 +211,83 @@ function ProductionBoard() {
     }
   };
 
+
   const move = async (id: string, dir: 1 | -1) => {
     const b = bookings.find((x) => x.id === id);
     if (!b) return;
-    if (movingId) {
-      // Snap-back / Wiggle animation on spam click
-      setWiggleId(id);
-      setTimeout(() => setWiggleId(null), 300);
-      return;
-    }
+    const wiggle = () => { setWiggleId(id); hapticVibrate("error"); setTimeout(() => setWiggleId(null), 350); };
+    if (movingId) return wiggle();
 
-    // قفل نافذة الـ Undo — نمنع تحريك نفس البطاقة لمدة 5 ثوانٍ بعد آخر نقل
-    const lockedUntil = undoLockUntil[id] ?? 0;
-    if (lockedUntil > Date.now()) {
-      const secs = Math.ceil((lockedUntil - Date.now()) / 1000);
-      toast.message(`انتظري ${secs} ثانية — يمكنك التراجع عن آخر نقلة قبل تحريك هذا الحجز مجدداً.`);
-      setWiggleId(id);
-      setTimeout(() => setWiggleId(null), 300);
-      return;
-    }
+    // خلال نافذة التراجع: العدّاد الدائري على البطاقة يكفي كتنبيه
+    if ((undoLockUntil[id] ?? 0) > Date.now()) return wiggle();
 
-    // منع السفر عبر الزمن: الحجز مكتمل لا يمكن تحريكه
     if (b.status === "completed") {
-      toast.error("هذا الحجز مغلق (مكتمل) ولا يمكن تعديل مرحلته.");
+      toast.error("هذا الحجز مكتمل ولا يمكن تعديل مرحلته.");
       return;
     }
-    
+
     const idx = STAGES.findIndex((s) => s.key === (b.production_stage || "awaiting"));
     const targetIdx = idx + dir;
-    if (targetIdx < 0 || targetIdx > STAGES.length - 1) return; // خارج النطاق
+    if (targetIdx < 0 || targetIdx > STAGES.length - 1) return;
     const next = STAGES[targetIdx];
-    
-    // تحقق: لا تنقل إلى "اختيار الصور" بدون رابط معرض
+
     if (next.key === "selecting" && dir === 1 && !b.selection_link) {
-      toast.error("لا يمكن الانتقال إلى «اختيار الصور» بدون رابط معرض. أضيفي الرابط من صفحة الحجز أولاً.", {
+      wiggle();
+      toast.error("أضيفي رابط اختيار الصور أولاً حتى تعرف العميلة من أين تختار.", {
         action: { label: "فتح الحجز", onClick: () => nav({ to: "/dashboard/bookings/$id", params: { id: b.id } }) }
       });
       return;
     }
-    
+
     if (b.production_stage === "editing" && next.key === "selecting" && dir === -1) {
-      toast.warning("تنبيه: إرجاع الحجز لمرحلة اختيار الصور سيُصفِّر وقت بدء التحرير، ولن تُحسب مدة التحرير السابقة.", { duration: 6000 });
+      toast.warning("إرجاع الحجز لاختيار الصور يصفّر عدّاد أيام التحرير.", { duration: 6000 });
     }
 
-    setConfirmDialog({ open: true, b, dir, next, idx });
+    // التسليم وحده يحتاج تأكيداً لأنه يُرسل للعميلة ويغلق البطاقة؛ باقي النقلات لها زر تراجع
+    if (next.key === "delivered") {
+      setDeliverDialog({ open: true, b, next, idx });
+      return;
+    }
+    hapticVibrate("light");
+    executeMove(b, dir, next, idx);
   };
+
+  const byStage = (key: string) =>
+    bookings
+      .filter((b) => (b.production_stage || "awaiting") === key)
+      // الأقرب موعد تسليم أولاً، ثم الأقرب تاريخ تصوير
+      .sort((a, b) => {
+        const da = a.delivery_due_at ? +new Date(a.delivery_due_at) : Infinity;
+        const db = b.delivery_due_at ? +new Date(b.delivery_due_at) : Infinity;
+        return da - db || +new Date(a.event_date) - +new Date(b.event_date);
+      });
+
+  const editingCount = byStage("editing").length;
+  const overdueCount = bookings.filter((b) => b.production_stage !== "delivered" && b.delivery_due_at && daysFromToday(b.delivery_due_at) < 0).length;
+
+  const renderCard = (b: any, sIdx: number, compact: boolean) => (
+    <StageCard
+      key={b.id}
+      b={b}
+      sIdx={sIdx}
+      compact={compact}
+      moving={movingId === b.id}
+      wiggle={wiggleId === b.id}
+      lockLeft={Math.min(UNDO_MS, Math.max(0, (undoLockUntil[b.id] ?? 0) - now))}
+      onMove={(dir) => move(b.id, dir)}
+    />
+  );
 
   if (loading) return (
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12">
         <BackToDashboard />
-        <h1 className="font-serif text-4xl mt-2 mb-2">لوحة متابعة الإنتاج</h1>
-        <p className="text-sm text-muted-foreground mb-6 max-w-2xl text-charcoal/70 dark:text-ivory/70">جاري تحميل حجوزاتك بأمان...</p>
-
-        {/* Desktop Skeleton */}
+        <h1 className="font-serif text-4xl mt-2 mb-6">متابعة الإنتاج</h1>
         <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6 mb-8">
           {STAGES.map((s) => (
-            <div key={s.key} className={`rounded-sm border ${s.color} p-3 min-h-[200px]`}>
-              <div className="flex items-center gap-2 text-sm font-semibold mb-3">
-                {s.icon}<span>{s.label}</span>
-              </div>
+            <div key={s.key} className={`rounded-2xl border ${s.color} p-3 min-h-[200px]`}>
+              <div className="flex items-center gap-2 text-sm font-semibold mb-3">{s.icon}<span>{s.label}</span></div>
               <div className="space-y-2">
                 <SkeletonCard lines={2} className="border-border/50" />
                 <SkeletonCard lines={2} className="border-border/50 opacity-70" />
@@ -252,11 +295,9 @@ function ProductionBoard() {
             </div>
           ))}
         </div>
-
-        {/* Mobile Skeleton */}
         <div className="lg:hidden space-y-4 mb-8">
-           <SkeletonCard aspectRatio="16/9" lines={3} className="border-border/50" />
-           <SkeletonCard aspectRatio="16/9" lines={3} className="border-border/50 opacity-70" />
+          <SkeletonCard aspectRatio="16/9" lines={3} className="border-border/50" />
+          <SkeletonCard aspectRatio="16/9" lines={3} className="border-border/50 opacity-70" />
         </div>
       </section>
       <Footer />
@@ -268,6 +309,7 @@ function ProductionBoard() {
       <section className="container-editorial py-24 text-center">
         <BackToDashboard />
         <p className="text-destructive mt-8">{err}</p>
+        {uid && <button onClick={() => load(uid, true)} className="mt-4 rounded-full border border-border px-5 py-2 text-sm hover:bg-secondary">أعيدي المحاولة</button>}
       </section>
       <Footer />
     </div>
@@ -278,235 +320,124 @@ function ProductionBoard() {
       <Header />
       <section className="container-editorial py-12">
         <BackToDashboard />
-        <h1 className="font-serif text-4xl mt-2 mb-2">لوحة متابعة الإنتاج</h1>
-        <p className="text-sm text-muted-foreground mb-6 max-w-2xl">تابعي كل حجز من يوم التصوير حتى التسليم. حرّكي الحجز بين المراحل بأزرار التالي/السابق.</p>
+        <div className="mt-2 mb-6 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="font-serif text-4xl mb-1">متابعة الإنتاج</h1>
+            <p className="text-sm text-muted-foreground">مرتّبة حسب أقرب موعد تسليم. كل نقلة لها زر تراجع لمدة ٥ ثوانٍ.</p>
+          </div>
+          {overdueCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 text-xs text-destructive">
+              <AlertTriangle className="h-3.5 w-3.5" /> {overdueCount} {overdueCount === 1 ? "تسليم متأخر" : "تسليمات متأخرة"}
+            </span>
+          )}
+        </div>
 
         {bookings.length === 0 ? (
           <EmptyState
             icon={Inbox}
-            title="🎉 لا توجد حجوزات قيد المعالجة!"
-            description="عند تأكيد حجوزات جديدة، ستظهر هنا لمتابعة مراحل تجهيزها خطوة بخطوة. استمتعي بفنجان قهوة ☕ ريثما يصلك حجز جديد."
+            title="لا أعمال قيد الإنتاج"
+            description="عند تأكيد عربون أي حجز يظهر هنا تلقائياً لتتابعي مراحله حتى التسليم."
           />
         ) : (
           <>
-            <AnimatePresence mode="wait">
-              {tourStep >= 0 && tourStep < 4 && bookings.length > 0 && (
+            <AnimatePresence>
+              {!tipSeen && (
                 <motion.div
-                  key="tour-card"
-                  initial={{ opacity: 0, y: -10 }}
+                  initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="mb-6 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 p-4 rounded-md shadow-sm relative overflow-hidden"
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-6 flex items-start gap-3 rounded-2xl border border-gold/30 bg-gold/5 p-4 text-sm"
                 >
-                  <div className="absolute top-0 right-0 w-1 h-full bg-blue-500" />
-                  <div className="flex gap-3">
-                    <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-1">
-                        {tourStep === 0 && "هنا الحجوزات الجديدة"}
-                        {tourStep === 1 && "استخدمي هذه الأزرار للنقل"}
-                        {tourStep === 2 && "تتبع وقت التعديل"}
-                        {tourStep === 3 && "الوجهة النهائية"}
-                      </h4>
-                      <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
-                        {tourStep === 0 && "سوف تظهر حجوزاتك الجديدة دائماً في عمود «بانتظار الجلسة» لتبدئي العمل عليها."}
-                        {tourStep === 1 && "يمكنك نقل أي حجز عبر المراحل المختلفة باستخدام زري «التالي» و «السابق» الموجودين أسفل كل بطاقة."}
-                        {tourStep === 2 && "عند نقل الحجز لمرحلة «قيد التحرير»، سيبدأ عداد يحسب عدد أيام التعديل تلقائياً."}
-                        {tourStep === 3 && "بمجرد تسليم الحجز للعميل، انقرِ على زر التسليم، وسيتم إغلاق الحجز ولا يمكن تعديله مجدداً."}
-                      </p>
-                      <div className="flex justify-between items-center">
-                        <div className="flex gap-1.5" dir="ltr">
-                          {[0, 1, 2, 3].map((step) => (
-                            <div key={step} className={`h-1.5 rounded-full transition-all ${step === tourStep ? "w-4 bg-blue-600 dark:bg-blue-400" : "w-1.5 bg-blue-200 dark:bg-blue-800/50"}`} />
-                          ))}
-                        </div>
-                        <button 
-                          onClick={async () => {
-                            if (tourStep < 3) {
-                              setTourStep(tourStep + 1);
-                            } else {
-                              setTourStep(-1);
-                              localStorage.setItem("memoria-production-tour-seen", "true");
-                              try { await supabase.from("profiles").update({ onboarding_completed_at: new Date().toISOString() }).eq("id", uid); } catch(e) {}
-                            }
-                          }}
-                          className="text-xs bg-blue-600 text-white px-4 py-1.5 rounded-sm hover:bg-blue-700 transition"
-                        >
-                          {tourStep === 3 ? "فهمت، لننطلق!" : "التالي"}
-                        </button>
-                      </div>
-                    </div>
+                  <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                  <div className="flex-1 space-y-1">
+                    <p>حرّكي كل حجز بزر <strong>التالي</strong> عند انتهاء مرحلته. العميلة ترى المرحلة في صفحة التتبّع وتصلها رسالة عند التحرير والتسليم.</p>
+                    <p className="text-xs text-muted-foreground">عند الانتقال إلى «قيد التحرير» يبدأ عدّاد أيام التحرير تلقائياً.</p>
                   </div>
+                  <button
+                    onClick={() => { setTipSeen(true); try { localStorage.setItem("memoria-production-tour-seen", "true"); } catch { /* ignore */ } }}
+                    className="shrink-0 rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary"
+                  >
+                    فهمت
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {editingCount > 3 && (
+              <div className="mb-4 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
+                <Info className="h-3.5 w-3.5" /> لديكِ {editingCount} حجوزات قيد التحرير في وقت واحد — قد يؤخّر ذلك مواعيد التسليم.
+              </div>
+            )}
+
             {/* Mobile stage selector */}
-            <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto">
+            <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto scrollbar-none">
               <div className="flex gap-2 min-w-max pb-2">
                 {STAGES.map((s) => {
-                  const count = bookings.filter((b) => (b.production_stage || "awaiting") === s.key).length;
+                  const count = byStage(s.key).length;
                   const isActive = activeStage === s.key;
                   return (
                     <button
                       key={s.key}
                       onClick={() => setActiveStage(s.key)}
-                      className={`shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-sm border text-xs whitespace-nowrap transition ${isActive ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                      className={`relative shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-full border text-xs whitespace-nowrap transition-colors ${isActive ? "border-transparent text-ivory dark:text-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
-                      {s.icon}
-                      <span>{s.label}</span>
-                      <span className={`px-1.5 py-0.5 rounded-sm text-[10px] ${isActive ? "bg-ivory/20" : "bg-secondary"}`}>{count}</span>
+                      {isActive && <motion.span layoutId="prod-stage-pill" className="absolute inset-0 rounded-full bg-charcoal dark:bg-gold" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+                      <span className="relative inline-flex items-center gap-2">
+                        {s.label}
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span key={count} initial={{ y: -6, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 6, opacity: 0 }} className="tabular-nums opacity-70">{count}</motion.span>
+                        </AnimatePresence>
+                      </span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {movingId && <div className="fixed inset-0 z-40 bg-background/20 pointer-events-none" />}
-            
-            <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6">
-              {STAGES.map((s, sIdx) => {
-                const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
-                return (
-                  <div key={s.key} className={`rounded-sm border ${s.color} p-3 min-h-[200px]`}>
-                    <div className="flex items-center gap-2 text-sm font-semibold mb-3">
-                      {s.icon}<span>{s.label}</span>
-                      <span className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-sm">{items.length}</span>
+            <LayoutGroup>
+              <div className="hidden lg:grid gap-3 lg:grid-cols-3 xl:grid-cols-6">
+                {STAGES.map((s, sIdx) => {
+                  const items = byStage(s.key);
+                  return (
+                    <div key={s.key} className={`rounded-2xl border ${s.color} p-3 min-h-[220px]`}>
+                      <div className="flex items-center gap-2 text-sm font-semibold mb-3">
+                        {s.icon}<span>{s.label}</span>
+                        <AnimatePresence mode="popLayout" initial={false}>
+                          <motion.span key={items.length} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.6, opacity: 0 }} className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-full tabular-nums">{items.length}</motion.span>
+                        </AnimatePresence>
+                      </div>
+                      <div className="space-y-2">
+                        <AnimatePresence mode="popLayout">
+                          {items.map((b) => renderCard(b, sIdx, true))}
+                        </AnimatePresence>
+                        {items.length === 0 && (
+                          <p className="px-1 py-6 text-center text-[11px] leading-relaxed text-muted-foreground">{STAGE_EMPTY[s.key]}</p>
+                        )}
+                      </div>
                     </div>
-                    <motion.div className="space-y-2" layout>
-                      <AnimatePresence mode="popLayout">
-                      {items.map((b) => {
-                        const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
-                        return (
-                          <motion.div
-                            key={b.id}
-                            layout
-                            aria-busy={movingId === b.id}
-                            initial={{ opacity: 0, scale: 0.95, y: 8 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                            className={`bg-card text-foreground rounded-sm border ${due !== null && due < 0 && s.key !== "delivered" ? "border-red-500/50" : "border-border"} p-3 text-xs space-y-1.5`}
-                          >
-                            <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="cursor-pointer">
-                              <span className="font-medium text-sm hover:text-gold block">{b.client_name}</span>
-                            </Link>
-                            <div className="text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
-                            
-                            <div className="flex items-center justify-between text-[10px] pt-1">
-                              <span className="text-muted-foreground">المرحلة {sIdx + 1} من {STAGES.length}</span>
-                              {due !== null && s.key !== "delivered" && (
-                                <span className={due < 0 ? "text-destructive" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
-                                  {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
-                                </span>
-                              )}
-                            </div>
-                            <div className="h-1 w-full bg-secondary rounded-full overflow-hidden active:scale-95 transition-transform duration-200">
-                              <div className="h-full bg-gold transition-all" style={{ width: `${((sIdx + 1) / STAGES.length) * 100}%` }} />
-                            </div>
-
-                            <div className="flex gap-1.5 pt-2 border-t border-border mt-1.5">
-                              {sIdx > 0 && sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,-1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 border border-border rounded-sm hover:bg-secondary text-[10px] disabled:opacity-50 active:scale-95 transition-transform duration-200" title="أرجعي الحجز إلى المرحلة السابقة">
-                                  {movingId===b.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <ChevronRight className="h-3 w-3"/>} السابق
-                                </motion.button>
-                              )}
-                              {sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{scale:0.96}} onClick={()=>move(b.id,1)} disabled={movingId===b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-1.5 bg-charcoal text-ivory rounded-sm hover:opacity-90 text-[10px] disabled:opacity-50 active:scale-95 transition-transform duration-200" title="انقلي الحجز إلى المرحلة التالية">
-                                  التالي {movingId===b.id ? <Loader2 className="h-3 w-3 animate-spin"/> : <ChevronLeft className="h-3 w-3"/>}
-                                </motion.button>
-                              )}
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                      </AnimatePresence>
-                      {items.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground opacity-60">
-                          <Inbox className="h-6 w-6 mb-2" />
-                          <p className="text-[11px]">لا حجوزات هنا</p>
-                        </div>
-                      )}
-                    </motion.div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            </LayoutGroup>
 
             {/* Mobile single-column view */}
             <div className="lg:hidden">
               {(() => {
-                const sIdx = STAGES.findIndex((x) => x.key === activeStage);
-                const s = STAGES[Math.max(0, sIdx)];
-                const items = bookings.filter((b) => (b.production_stage || "awaiting") === s.key);
+                const sIdx = Math.max(0, STAGES.findIndex((x) => x.key === activeStage));
+                const s = STAGES[sIdx];
+                const items = byStage(s.key);
                 return (
-                  <div className={`rounded-sm border ${s.color} p-3`}>
-                    <div className="flex items-center gap-2 text-sm font-semibold mb-3">
-                      {s.icon}<span>{s.label}</span>
-                      <span className="ms-auto text-xs bg-background/70 px-2 py-0.5 rounded-sm">{items.length}</span>
-                    </div>
-                    <motion.div className="space-y-2" layout>
-                      <AnimatePresence mode="popLayout">
-                      {items.map((b) => {
-                        const due = b.delivery_due_at ? Math.ceil((new Date(b.delivery_due_at).getTime() - Date.now()) / 86400000) : null;
-                        return (
-                          <motion.div
-                            key={b.id}
-                            layout
-                            aria-busy={movingId === b.id}
-                            initial={{ opacity: 0, y: 8 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -8 }}
-                            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                            className={`bg-card text-foreground rounded-sm border ${due !== null && due < 0 && s.key !== "delivered" ? "border-red-500/50" : "border-border"} p-4 text-sm space-y-2`}
-                          >
-                            <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className="cursor-pointer">
-                              <span className="font-medium text-base hover:text-gold block">{b.client_name}</span>
-                            </Link>
-                            <div className="text-xs text-muted-foreground">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}</div>
-                            
-                            <div className="flex items-center justify-between text-xs pt-1">
-                              <span className="text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-sm active:scale-95 transition-transform duration-200">المرحلة {sIdx + 1} من {STAGES.length}</span>
-                              {due !== null && s.key !== "delivered" && (
-                                <span className={due < 0 ? "text-destructive font-medium" : due <= 7 ? "text-amber-700 dark:text-amber-400" : "text-muted-foreground"}>
-                                  {due < 0 ? `متأخّر ${Math.abs(due)} يوم` : `${due} يوم للتسليم`}
-                                </span>
-                              )}
-                            </div>
-                            <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden active:scale-95 transition-transform duration-200">
-                              <div className="h-full bg-gold transition-all" style={{ width: `${((sIdx + 1) / STAGES.length) * 100}%` }} />
-                            </div>
-
-                            <div className="flex gap-2 pt-2 border-t border-border">
-                              {sIdx > 0 && sIdx < STAGES.length - 1 && (
-                                <motion.button whileTap={{ scale: 0.96 }} onClick={() => move(b.id, -1)} disabled={movingId === b.id} className="flex-1 inline-flex items-center justify-center gap-1 py-2 border border-border rounded-sm hover:bg-secondary text-xs disabled:opacity-50 active:scale-95 transition-transform duration-200" title="أرجعي الحجز إلى المرحلة السابقة">
-                                  {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4" />} السابق
-                                </motion.button>
-                              )}
-                              {b.status === "completed" || b.production_stage === "delivered" ? null : (
-                                <motion.button
-                                  animate={wiggleId === b.id ? { x: [-5, 5, -5, 5, 0] } : {}}
-                                  transition={{ duration: 0.3 }}
-                                  disabled={movingId !== null || sIdx >= STAGES.length - 1}
-                                  onClick={() => move(b.id, 1)}
-                                  className="p-1.5 rounded-full hover:bg-secondary transition disabled:opacity-30 disabled:cursor-not-allowed text-primary active:scale-95 transition-transform duration-200"
-                                  title="نقل للمرحلة التالية"
-                                >
-                                  {movingId === b.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronLeft className="h-4 w-4" />}
-                                </motion.button>
-                              )}
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                      </AnimatePresence>
-                      {items.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground opacity-60 bg-background/30 rounded-sm border border-dashed border-border mt-4">
-                          <Inbox className="h-10 w-10 mb-3" />
-                          <p className="text-sm font-medium">العمود فارغ</p>
-                          <p className="text-xs mt-1 text-center px-4">لا توجد أي حجوزات في مرحلة "{s.label}" حالياً.</p>
-                        </div>
-                      )}
-                    </motion.div>
+                  <div className="space-y-3">
+                    <AnimatePresence mode="popLayout">
+                      {items.map((b) => renderCard(b, sIdx, false))}
+                    </AnimatePresence>
+                    {items.length === 0 && (
+                      <div className="rounded-2xl border border-dashed border-border py-12 text-center">
+                        <Inbox className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
+                        <p className="font-medium">لا حجوزات في «{s.label}»</p>
+                        <p className="mx-auto mt-1 max-w-xs text-xs text-muted-foreground">{STAGE_EMPTY[s.key]}</p>
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -514,35 +445,33 @@ function ProductionBoard() {
           </>
         )}
       </section>
-      
-      {/* Confirmation Dialog for All Stages */}
-      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false })}>
-        <AlertDialogContent>
+
+      {/* التسليم فقط يحتاج تأكيداً — مع شرح ما سيحدث */}
+      <AlertDialog open={deliverDialog.open} onOpenChange={(open) => !open && setDeliverDialog({ open: false })}>
+        <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {confirmDialog.next?.key === "delivered" 
-                ? "تأكيد تسليم الحجز" 
-                : confirmDialog.dir === 1 
-                  ? `نقل الحجز إلى: ${confirmDialog.next?.label}` 
-                  : `إرجاع الحجز إلى: ${confirmDialog.next?.label}`}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirmDialog.next?.key === "delivered"
-                ? "هل أنت متأكدة من إكمال وتسليم هذا الحجز؟ نقل الحجز لمرحلة \"تم التسليم\" سيغلق بطاقة الحجز نهائياً ولن تستطيعي التراجع لتعديله لاحقاً."
-                : `سيتم تغيير حالة الحجز "${confirmDialog.b?.client_name}" إلى مرحلة "${confirmDialog.next?.label}".`}
+            <AlertDialogTitle>تسليم صور {deliverDialog.b?.client_name}</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>عند التأكيد:</p>
+                <ul className="list-disc space-y-1 ps-5">
+                  <li>تصل للعميلة رسالة بأن صورها جاهزة مع رابط التحميل.</li>
+                  <li>يُطلب منها تقييم تجربتها معكِ.</li>
+                  {!deliverDialog.b?.final_paid_at && <li>تبقى صور المعرض بعلامة مائية حتى تسجّلي الدفعة النهائية.</li>}
+                </ul>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>تراجع</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel>ليس الآن</AlertDialogCancel>
+            <AlertDialogAction
               onClick={() => {
-                const { b, dir, next, idx } = confirmDialog;
-                if (b && dir && next && idx !== undefined) executeMove(b, dir, next, idx);
-                setConfirmDialog({ open: false });
+                const { b, next, idx } = deliverDialog;
+                if (b && next && idx !== undefined) { hapticVibrate("success"); executeMove(b, 1, next, idx); }
+                setDeliverDialog({ open: false });
               }}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-transform duration-200"
             >
-              {confirmDialog.next?.key === "delivered" ? "نعم، أكّدي التسليم" : "تأكيد النقل"}
+              سلّمي الصور
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -550,5 +479,86 @@ function ProductionBoard() {
 
       <Footer />
     </div>
+  );
+}
+
+function StageCard({ b, sIdx, compact, moving, wiggle, lockLeft, onMove }: {
+  b: any; sIdx: number; compact: boolean; moving: boolean; wiggle: boolean; lockLeft: number; onMove: (dir: 1 | -1) => void;
+}) {
+  const s = STAGES[sIdx];
+  const due = b.delivery_due_at ? daysFromToday(b.delivery_due_at) : null;
+  const overdue = due !== null && due < 0 && s.key !== "delivered";
+  const editingDays = s.key === "editing" && b.editing_started_at ? Math.max(0, -daysFromToday(b.editing_started_at)) : null;
+  const next = STAGES[sIdx + 1];
+  const canMove = b.status !== "completed" && s.key !== "delivered";
+  const locked = lockLeft > 0;
+  const R = 7, C = 2 * Math.PI * R;
+
+  return (
+    <motion.div
+      layout
+      layoutId={`prod-${b.id}`}
+      aria-busy={moving}
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={wiggle ? { opacity: 1, scale: 1, x: [-5, 5, -4, 4, 0] } : { opacity: 1, scale: 1, x: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      className={`relative rounded-xl border bg-card text-foreground ${overdue ? "border-amber-500/60" : "border-border"} ${compact ? "p-3 text-xs" : "p-4 text-sm"} space-y-2`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <Link to="/dashboard/bookings/$id" params={{ id: b.id }} className={`font-medium hover:text-gold ${compact ? "text-sm" : "text-base"}`}>
+          {b.client_name}
+        </Link>
+        {locked && (
+          <span className="relative grid h-5 w-5 shrink-0 place-items-center" title="يمكنك التراجع عن آخر نقلة">
+            <svg viewBox="0 0 20 20" className="h-5 w-5 -rotate-90">
+              <circle cx="10" cy="10" r={R} fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary" />
+              <circle cx="10" cy="10" r={R} fill="none" stroke="currentColor" strokeWidth="2" className="text-gold" strokeDasharray={C} strokeDashoffset={C * (1 - lockLeft / UNDO_MS)} />
+            </svg>
+          </span>
+        )}
+      </div>
+      <div className="text-muted-foreground">
+        {new Date(b.event_date).toLocaleDateString("ar-JO", { day: "numeric", month: "short" })}
+        {b.start_time && ` · ${b.start_time.slice(0, 5)}`}
+      </div>
+
+      <div className="flex flex-wrap gap-1.5 text-[11px]">
+        {due !== null && s.key !== "delivered" && (
+          <span className={`rounded-full px-2 py-0.5 ${overdue ? "bg-amber-500/15 text-amber-800 dark:text-amber-300" : due <= 7 ? "bg-secondary text-foreground" : "bg-secondary text-muted-foreground"}`}>
+            {overdue ? `متأخر ${Math.abs(due)} ${Math.abs(due) === 1 ? "يوماً" : "أيام"}` : `التسليم ${relativeDay(due)}`}
+          </span>
+        )}
+        {editingDays !== null && <span className="rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">{editingDays} يوم تحرير</span>}
+        {s.key === "ready" && !b.final_paid_at && <span className="rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">الدفعة الأخيرة لم تصل</span>}
+      </div>
+
+      {canMove && (
+        <div className="flex gap-1.5 border-t border-border pt-2">
+          {sIdx > 0 && (
+            <motion.button
+              whileTap={{ scale: 0.94 }}
+              onClick={() => onMove(-1)}
+              disabled={moving}
+              aria-label="المرحلة السابقة"
+              title={`أرجعي إلى ${STAGES[sIdx - 1].label}`}
+              className="grid place-items-center rounded-lg border border-border px-2.5 py-1.5 hover:bg-secondary disabled:opacity-50"
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </motion.button>
+          )}
+          {next && (
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={() => onMove(1)}
+              disabled={moving}
+              className={`flex-1 inline-flex items-center justify-center gap-1 rounded-lg py-1.5 disabled:opacity-60 ${next.key === "delivered" ? "bg-gold text-charcoal" : "bg-charcoal text-ivory dark:bg-secondary dark:text-foreground"} ${compact ? "text-[11px]" : "text-xs"}`}
+            >
+              {moving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <>{next.label} <ChevronLeft className="h-3.5 w-3.5" /></>}
+            </motion.button>
+          )}
+        </div>
+      )}
+    </motion.div>
   );
 }
