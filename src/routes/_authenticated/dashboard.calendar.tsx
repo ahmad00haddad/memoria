@@ -16,6 +16,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { ar } from "date-fns/locale";
 import { format } from "date-fns";
+import { MonthGrid } from "@/components/dashboard/MonthGrid";
+import { hapticVibrate } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard/calendar")({ component: CalendarPage });
 
@@ -32,7 +35,7 @@ function CalendarPage() {
   const nav = useNavigate();
   const [uid, setUid] = useState("");
   const [unavail, setUnavail] = useState<{ id: string; date: string; reason: string | null }[]>(cachedCalendarData?.unavail ?? []);
-  const [bookings, setBookings] = useState<{ event_date: string; start_time: string; end_time: string; status: string; client_name: string }[]>(cachedCalendarData?.bookings ?? []);
+  const [bookings, setBookings] = useState<{ id?: string; event_date: string; start_time: string; end_time: string; status: string; client_name: string }[]>(cachedCalendarData?.bookings ?? []);
   const [date, setDate] = useState("");
   const [reason, setReason] = useState("");
   const [weekday, setWeekday] = useState<string>("5"); // 5 = الجمعة
@@ -51,7 +54,7 @@ function CalendarPage() {
   const load = async (id: string) => {
     const [{ data: u }, { data: b }, { data: p }] = await Promise.all([
       supabase.from("photographer_unavailability").select("*").eq("photographer_id", id).order("date"),
-      supabase.from("bookings").select("event_date,start_time,end_time,status,client_name").eq("photographer_id", id).is("deleted_at", null).order("event_date"),
+      supabase.from("bookings").select("id,event_date,start_time,end_time,status,client_name").eq("photographer_id", id).is("deleted_at", null).order("event_date"),
       supabase.from("photographer_private").select("external_ical_url,external_ical_synced_at,external_ical_auto_sync,ical_token").eq("user_id", id).maybeSingle(),
     ]);
     const unavailList = (u ?? []) as any;
@@ -101,8 +104,29 @@ function CalendarPage() {
     load(uid);
   };
   const unblock = async (id: string) => {
+    const row = unavail.find((u) => u.id === id);
+    setUnavail((l) => l.filter((u) => u.id !== id));
     const { error } = await supabase.from("photographer_unavailability").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { load(uid); return toast.error(error.message); }
+    if (row) {
+      toast(`فُتح يوم ${new Date(row.date).toLocaleDateString("ar-JO", { day: "numeric", month: "long" })}`, {
+        action: { label: "تراجع", onClick: async () => { await supabase.from("photographer_unavailability").insert({ photographer_id: uid, date: row.date, reason: row.reason }); load(uid); } },
+      });
+    }
+    load(uid);
+  };
+
+  // نقرة على يوم في التقويم: حجب أو فتح، مع تراجع
+  const toggleDay = async (d: string, blockedId?: string) => {
+    hapticVibrate("light");
+    if (blockedId) return unblock(blockedId);
+    const tmp = { id: `tmp-${d}`, date: d, reason: null };
+    setUnavail((l) => [...l, tmp]);
+    const { data, error } = await supabase.from("photographer_unavailability").insert({ photographer_id: uid, date: d, reason: null }).select("id").maybeSingle();
+    if (error) { setUnavail((l) => l.filter((u) => u.id !== tmp.id)); return toast.error(error.message); }
+    toast(`حُجب يوم ${new Date(d).toLocaleDateString("ar-JO", { day: "numeric", month: "long" })} — لن يظهر للعرائس`, {
+      action: { label: "تراجع", onClick: async () => { if (data?.id) await supabase.from("photographer_unavailability").delete().eq("id", data.id); load(uid); } },
+    });
     load(uid);
   };
 
@@ -172,12 +196,32 @@ function CalendarPage() {
       <Header />
       <section className="container-editorial py-12 max-w-3xl">
         <BackToDashboard />
-        <h1 className="font-serif text-4xl mt-2 mb-8">التقويم وإدارة التوفر</h1>
+        <div className="mt-2 mb-6 flex flex-wrap items-end justify-between gap-3">
+          <h1 className="font-serif text-4xl">التقويم</h1>
+          {lastSync && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+              <RefreshCw className={`h-3 w-3 ${syncing ? "animate-spin" : ""}`} /> آخر مزامنة مع Google {new Date(lastSync).toLocaleString("ar-JO", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
+            </span>
+          )}
+        </div>
 
-        <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
-          <h2 className="font-serif text-xl mb-3">حجب يوم</h2>
+        <div className="mb-8">
+          <MonthGrid
+            bookings={bookings}
+            blocked={unavail}
+            onToggle={toggleDay}
+            onOpenBooking={(b) => b.id && nav({ to: "/dashboard/bookings/$id", params: { id: b.id } })}
+          />
+        </div>
+
+        <details className="group rounded-2xl border border-border bg-card mb-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-serif text-lg">
+            حجب يوم مع سبب
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="px-5 pb-5">
           <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-            استخدمي هذا القسم لإغلاق الأيام غير المتاحة عليكِ، مثل السفر أو الحجوزات الخارجية. الأيام المحجوبة ستمنع العميل من اختيارها أثناء الطلب.
+            للسفر أو ارتباط خارجي. السبب لكِ فقط ولا يظهر للعرائس.
           </p>
           <div className="flex flex-wrap gap-3 items-end">
             <Popover>
@@ -198,18 +242,17 @@ function CalendarPage() {
               </PopoverContent>
             </Popover>
             <input placeholder="السبب (اختياري)" value={reason} onChange={(e) => setReason(e.target.value)} className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[200px]" />
-            <button onClick={block} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">حجب</button>
+            <button onClick={block} disabled={!date} className="bg-charcoal text-ivory px-6 py-2 rounded-full hover:opacity-90 disabled:opacity-50 active:scale-95 transition-transform duration-200">حجب</button>
           </div>
-          {unavail.length >= 7 && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 bg-sky-50 text-sky-800 border border-sky-200 rounded-sm p-3 text-sm flex items-start gap-2">
-              <span className="text-lg">🌴</span>
-              <p>💡 <strong>تلميح الإجازة:</strong> يبدو أنكِ قمتِ بحجب أيام عديدة! هذا ممتاز لمنع الحجوزات أثناء إجازتكِ. لن تظهر هذه الأيام للعرائس في نموذج الحجز أبداً.</p>
-            </motion.div>
-          )}
-        </div>
+          </div>
+        </details>
 
-        <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
-          <h2 className="font-serif text-2xl mb-2">مزامنة التقويم مع Google / Apple</h2>
+        <details className="group rounded-2xl border border-border bg-card mb-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-serif text-lg">
+            <span>مزامنة مع Google / Apple {autoSync && <span className="ms-2 rounded-full bg-emerald-100 px-2 py-0.5 font-sans text-[11px] text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">تلقائية</span>}</span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="px-5 pb-5">
           <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
             اختاري الطريقة الأنسب لكِ. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.
           </p>
@@ -294,10 +337,15 @@ function CalendarPage() {
             </div>
             {!icalUrl && <p className="text-xs text-destructive mt-2">احفظي رابط iCal أولاً في الخيار ٢ لتفعيل المزامنة التلقائية.</p>}
           </div>
-        </div>
+          </div>
+        </details>
 
-        <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
-          <h2 className="font-serif text-xl mb-3">حجب يوم أسبوعي متكرر</h2>
+        <details className="group rounded-2xl border border-border bg-card mb-8">
+          <summary className="flex cursor-pointer list-none items-center justify-between p-5 font-serif text-lg">
+            عطلة أسبوعية متكرّرة
+            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="px-5 pb-5">
           <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
             مثال: حجب كل أيام الجمعة كعطلة رسمية دائمة لكِ، بحيث لا يستطيع العملاء اختيارها.
           </p>
@@ -323,15 +371,16 @@ function CalendarPage() {
               <input value={recurringReason} onChange={(e) => setRecurringReason(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
             </div>
           </div>
-          <button onClick={blockRecurring} className="mt-4 bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">حجب جميع الأيام</button>
-        </div>
+          <button onClick={blockRecurring} className="mt-4 bg-charcoal text-ivory px-6 py-2 rounded-full hover:opacity-90 active:scale-95 transition-transform duration-200">حجب كل أيام {["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"][Number(weekday)]}</button>
+          </div>
+        </details>
 
-        <h2 className="font-serif text-xl mb-3">الأيام المحجوبة</h2>
+        <h2 className="font-serif text-xl mb-3">الأيام المحجوبة القادمة</h2>
         <div className="rounded-sm border border-border bg-card overflow-hidden mb-8">
-          {unavail.length === 0 ? <p className="p-4 text-sm text-muted-foreground">لا توجد أيام محجوبة حاليًا.</p> : unavail.map((u) => (
+          {unavail.filter((u) => u.date >= format(new Date(), "yyyy-MM-dd")).length === 0 ? <p className="p-4 text-sm text-muted-foreground">لا أيام محجوبة. انقري على أي يوم في التقويم لحجبه.</p> : unavail.filter((u) => u.date >= format(new Date(), "yyyy-MM-dd")).map((u) => (
             <div key={u.id} className="flex items-center justify-between p-3 border-b border-border last:border-0">
               <div><div className="text-sm">{new Date(u.date).toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>{u.reason && <div className="text-xs text-muted-foreground">{u.reason}</div>}</div>
-              <button onClick={() => unblock(u.id)} className="text-destructive p-2"><X className="h-4 w-4" /></button>
+              <button onClick={() => unblock(u.id)} aria-label="فتح اليوم" className="rounded-full p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"><X className="h-4 w-4" /></button>
             </div>
           ))}
         </div>
@@ -346,7 +395,7 @@ function CalendarPage() {
                   <div className="text-sm">{new Date(b.event_date).toLocaleDateString("ar-JO")} · {b.start_time?.slice(0,5)}–{b.end_time?.slice(0,5)}</div>
                   <div className="text-xs text-muted-foreground">{b.client_name}</div>
                 </div>
-                <span className="text-xs px-2 py-1 bg-secondary rounded-sm active:scale-95 transition-transform duration-200">{b.status}</span>
+                <span className="text-xs px-2 py-1 bg-secondary rounded-full">{({ quote: "عرض سعر", pending_deposit: "بانتظار العربون", confirmed: "مؤكّد", completed: "مكتمل", cancelled: "ملغى" } as Record<string, string>)[b.status] ?? b.status}</span>
               </div>
             ))}
         </div>
