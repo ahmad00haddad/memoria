@@ -139,20 +139,18 @@ function LoginPage() {
             onClick={async () => {
               setErr(null);
               setLoading(true);
+              // The browser leaves for Google here; Supabase sends it back to
+              // /dashboard with the session. Navigating ourselves would cancel it.
               const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                  redirectTo: window.location.origin,
+                  redirectTo: `${window.location.origin}/dashboard`,
                 }
               });
               if (error) {
                 setLoading(false);
                 setErr("تعذّر تسجيل الدخول عبر Google. حاول مجدداً.");
-                return;
               }
-              
-              setLoading(false);
-              navigate({ to: "/dashboard", replace: true });
             }}
             className="w-full border border-border py-3 rounded-sm hover:bg-secondary disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
           >
