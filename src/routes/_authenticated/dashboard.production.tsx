@@ -18,6 +18,7 @@ import { logMove } from "@/lib/log-move";
 import { updateProductionStage } from "@/lib/production.functions";
 
 function ProductionError({ error, reset }: ErrorComponentProps) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -28,7 +29,7 @@ function ProductionError({ error, reset }: ErrorComponentProps) {
         <div className="space-y-2 max-w-md">
           <h1 className="font-serif text-3xl">عذراً! يبدو أن هناك سلكاً قد انقطع 🔌</h1>
           <p className="text-muted-foreground">حدث خطأ غير متوقع أثناء تحميل لوحة الإنتاج. لا تقلقي، بياناتك بأمان.</p>
-          <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-sm mt-4 text-left font-mono" dir="ltr">{error.message}</p>
+          <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-sm mt-4 text-left font-mono" dir="ltr">{errorMessage}</p>
         </div>
         <div className="flex gap-4">
           <button onClick={reset} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 transition active:scale-95 transition-transform duration-200">
