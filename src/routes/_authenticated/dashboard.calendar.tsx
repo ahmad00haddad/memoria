@@ -101,7 +101,8 @@ function CalendarPage() {
     load(uid);
   };
   const unblock = async (id: string) => {
-    await supabase.from("photographer_unavailability").delete().eq("id", id);
+    const { error } = await supabase.from("photographer_unavailability").delete().eq("id", id);
+    if (error) return toast.error(error.message);
     load(uid);
   };
 

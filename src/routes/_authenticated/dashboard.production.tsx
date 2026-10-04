@@ -83,7 +83,7 @@ function ProductionBoard() {
       if (isRetry) toast.loading("جاري إعادة المحاولة...", { id: "load-retry" });
       const { data, error } = await supabase.from("bookings")
         .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at,delivered_at")
-        .eq("photographer_id", id).is("deleted_at", null).neq("status", "cancelled").order("event_date", { ascending: true });
+        .eq("photographer_id", id).is("deleted_at", null).in("status", ["confirmed", "completed"]).order("event_date", { ascending: true });
       
       if (error) throw new Error(error.message);
       

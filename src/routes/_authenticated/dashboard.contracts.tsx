@@ -148,7 +148,7 @@ function Contracts() {
                   {templates.map((t) => (
                     <li key={t.id} className="flex items-center justify-between border border-border rounded-sm p-3">
                       <span className="font-medium">{t.name}</span>
-                      <button onClick={async () => { await supabase.from("contract_templates").delete().eq("id", t.id); load(); }}
+                      <button onClick={async () => { const { error } = await supabase.from("contract_templates").delete().eq("id", t.id); if (error) return toast.error(error.message); load(); }}
                         className="text-xs text-destructive">حذف</button>
                     </li>
                   ))}

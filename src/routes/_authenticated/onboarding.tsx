@@ -267,7 +267,7 @@ function Onboarding() {
               </Field>
               <Field label="اسم المستخدم * (يظهر في رابط ملفك)">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">memoria.jo/photographers/</span>
+                  <span className="text-muted-foreground text-sm">{typeof window !== "undefined" ? window.location.host : ""}/photographers/</span>
                   <input value={f.username} onChange={(e) => upd("username", e.target.value)} className={inputCx} placeholder="sara_photo" dir="ltr" />
                 </div>
               </Field>

@@ -45,6 +45,9 @@ export const updateProductionStage = createServerFn({ method: "POST" })
 
     // حراسة خادمية للتسلسل والحالة (لا نعتمد على واجهة العميل)
     if (bk.status === "cancelled") throw new Error("لا يمكن تغيير مرحلة حجز ملغي");
+    if (bk.status !== "confirmed" && bk.status !== "completed") {
+      throw new Error("أكّدي الحجز (استلام العربون) قبل بدء مراحل الإنتاج.");
+    }
     if (bk.status === "completed" && bk.production_stage !== "delivered") {
       throw new Error("هذا الحجز مغلق ولا يمكن تغيير مرحلته");
     }
@@ -213,13 +216,16 @@ export const markFinalPaymentReceived = createServerFn({ method: "POST" })
 
     const { data: bk, error: fetchErr } = await supabase
       .from("bookings")
-      .select("id, photographer_id, total_price, deposit_amount, final_paid_at")
+      .select("id, photographer_id, status, total_price, deposit_amount, final_paid_at")
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
     if (!bk) throw new Error("الحجز غير موجود");
     if (bk.photographer_id !== userId) throw new Error("غير مصرح");
     if (bk.final_paid_at) throw new Error("تم تسجيل الدفعة النهائية مسبقاً");
+    if (bk.status !== "confirmed" && bk.status !== "completed") {
+      throw new Error("لا يمكن تسجيل الدفعة النهائية لحجز غير مؤكد أو ملغي.");
+    }
 
     const amount = data.amount ?? Math.max(0, Number(bk.total_price ?? 0) - Number(bk.deposit_amount ?? 0));
     const now = new Date().toISOString();
@@ -273,6 +279,17 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
     if (fetchErr) throw new Error(fetchErr.message);
     if (!bk) throw new Error("الحجز غير موجود");
     if (bk.photographer_id !== userId) throw new Error("غير مصرح");
+
+    // Only forward moves that make sense: a cancelled or unpaid booking
+    // cannot jump to "completed", and a confirmed one cannot go back to quote.
+    const ALLOWED: Record<string, string[]> = {
+      quote: ["pending_deposit"],
+      pending_deposit: ["quote"],
+      confirmed: ["completed"],
+    };
+    if (bk.status !== data.status && !(ALLOWED[bk.status] ?? []).includes(data.status)) {
+      throw new Error("لا يمكن نقل الحجز إلى هذه الحالة من حالته الحالية.");
+    }
 
     const now = new Date().toISOString();
     const { error: updateErr } = await supabase
