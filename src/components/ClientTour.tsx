@@ -47,8 +47,10 @@ export function startTour() {
 }
 
 export function useTourState() {
-  const [state, setState] = useState<TourState>(getTourState());
+  // نبدأ بحالة الخادم ثم نقرأ التخزين بعد التركيب لتفادي اختلاف الـ hydration
+  const [state, setState] = useState<TourState>({ status: "idle", step: 0, startedAt: null, completedAt: null, userId: null });
   useEffect(() => {
+    setState(getTourState());
     const onStorage = () => setState(getTourState());
     window.addEventListener("tour-state-change", onStorage);
     return () => window.removeEventListener("tour-state-change", onStorage);

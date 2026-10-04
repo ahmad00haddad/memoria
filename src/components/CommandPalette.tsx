@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Calendar, CalendarDays, FileText, Home, Link2, ListChecks, MessageCircle, Package, Bell, Star, TrendingUp, User, Gift, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthState } from "@/hooks/use-auth-state";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from "@/components/ui/command";
 
 export const OPEN_COMMAND_EVENT = "memoria:open-command";
@@ -30,6 +31,12 @@ const PAGES = [
 const STATUS: Record<string, string> = {
   quote: "عرض سعر", pending_deposit: "بانتظار العربون", confirmed: "مؤكّد", completed: "مكتمل", cancelled: "ملغى",
 };
+
+/** تُركّب اللوحة للمصوّرات المسجّلات فقط، في كل الصفحات. */
+export function PhotographerCommandPalette() {
+  const { authed, isPhotographer } = useAuthState();
+  return authed && isPhotographer ? <CommandPalette /> : null;
+}
 
 /**
  * لوحة أوامر (Ctrl/⌘ + K): بحث في الحجوزات والصفحات والإجراءات من أي مكان في لوحة المصوّرة.

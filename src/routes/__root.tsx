@@ -18,6 +18,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
+import { PhotographerCommandPalette } from "@/components/CommandPalette";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
@@ -287,6 +288,7 @@ function RootComponent() {
               </motion.div>
             </AnimatePresence>
             <MobileTabBar />
+            <PhotographerCommandPalette />
             <PwaInstallPrompt />
             <ClientTour />
             <Toaster position="top-center" richColors closeButton />

@@ -2,7 +2,6 @@ import { createFileRoute, Outlet, redirect, ErrorComponentProps } from "@tanstac
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { CommandPalette } from "@/components/CommandPalette";
 
 export const Route = createFileRoute("/_authenticated")({
   // Before loading the route, verify auth state on the client/server
@@ -55,10 +54,5 @@ function GlobalAuthError({ error, reset }: ErrorComponentProps) {
 }
 
 function AuthenticatedLayout() {
-  return (
-    <>
-      <Outlet />
-      <CommandPalette />
-    </>
-  );
+  return <Outlet />;
 }
