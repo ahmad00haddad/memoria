@@ -56,20 +56,33 @@ function PricingMgr() {
   const upd = (i: number, k: keyof Rule, v: any) => { const a = [...rules]; (a[i] as any)[k] = v; setRules(a); };
   const del = async (i: number) => {
     const r = rules[i];
-    if (r.id) await supabase.from("pricing_rules").delete().eq("id", r.id);
+    if (r.id) {
+      const { error } = await supabase.from("pricing_rules").delete().eq("id", r.id);
+      if (error) {
+        toast.error(error.code === "23503"
+          ? "لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّلي اسمها أو سعرها بدلاً من ذلك."
+          : error.message);
+        return;
+      }
+    }
     setRules(rules.filter((_, idx) => idx !== i));
   };
   const save = async () => {
-    for (const r of rules) {
-      if (!r.label) continue;
-      const payload = { 
-        ...r, 
-        photographer_id: uid, 
-        price: Math.max(0, Number(r.price)), 
-        per_photo_price: r.per_photo_price ? Math.max(0, Number(r.per_photo_price)) : 0 
+    const filled = rules.filter((r) => r.label?.trim() || Number(r.price) > 0);
+    const bad = filled.find((r) => !r.label?.trim() || !(Number(r.price) > 0));
+    if (bad) return toast.error("كل باقة تحتاج اسماً وسعراً أكبر من صفر.");
+    for (const r of filled) {
+      const payload = {
+        ...r,
+        label: r.label.trim(),
+        photographer_id: uid,
+        price: Number(r.price),
+        per_photo_price: r.per_photo_price ? Math.max(0, Number(r.per_photo_price)) : 0
       };
-      if (r.id) await supabase.from("pricing_rules").update(payload).eq("id", r.id);
-      else await supabase.from("pricing_rules").insert(payload);
+      const { error } = r.id
+        ? await supabase.from("pricing_rules").update(payload).eq("id", r.id)
+        : await supabase.from("pricing_rules").insert(payload);
+      if (error) return toast.error(`تعذّر حفظ "${payload.label}": ${error.message}`);
     }
     toast.success("تم حفظ الأسعار");
     const { data } = await supabase.from("pricing_rules").select("*").eq("photographer_id", uid);

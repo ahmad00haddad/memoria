@@ -15,6 +15,9 @@ import { uploadProfilePhoto, uploadPortfolioPhoto } from "@/lib/upload";
 import { requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 import { startTour, useTourState, resetTour } from "@/components/ClientTour";
 
+// Empty input means "use the default"; 0 is a real value and must be kept.
+const numOr = (v: unknown, def: number) => (v === "" || v == null ? def : Number(v));
+
 export const Route = createFileRoute("/_authenticated/dashboard/profile")({ component: ProfilePage });
 
 
@@ -126,7 +129,8 @@ function ProfilePage() {
     if (res.ok) {
       const url = res.publicUrl || res.path;
       setP({ ...p, avatar_url: url });
-      await supabase.from("profiles").update({ avatar_url: url }).eq("id", uid);
+      const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", uid);
+      if (error) return toast.error(error.message);
       toast.success("تم رفع الصورة وحفظها");
     } else {
       toast.error(res.userMessage);
@@ -138,7 +142,8 @@ function ProfilePage() {
     if (res.ok) {
       const url = res.publicUrl || res.path;
       setP({ ...p, cover_url: url });
-      await supabase.from("profiles").update({ cover_url: url }).eq("id", uid);
+      const { error } = await supabase.from("profiles").update({ cover_url: url }).eq("id", uid);
+      if (error) return toast.error(error.message);
       toast.success("تم رفع الغلاف وحفظه");
     } else {
       toast.error(res.userMessage);
@@ -156,7 +161,8 @@ function ProfilePage() {
       if (urls.length > 0) {
         const newUrls = [...(p.portfolio_urls ?? []), ...urls];
         setP({ ...p, portfolio_urls: newUrls });
-        await supabase.from("profiles").update({ portfolio_urls: newUrls }).eq("id", uid);
+        const { error } = await supabase.from("profiles").update({ portfolio_urls: newUrls }).eq("id", uid);
+        if (error) return toast.error(error.message);
         toast.success(`أُضيفت ${urls.length} صور وتم الحفظ`);
       }
     } catch (e: any) { toast.error(e.message); }
@@ -166,20 +172,21 @@ function ProfilePage() {
     const arr = [...(p.portfolio_urls ?? [])];
     arr.splice(i, 1);
     setP({ ...p, portfolio_urls: arr });
-    await supabase.from("profiles").update({ portfolio_urls: arr }).eq("id", uid);
+    const { error } = await supabase.from("profiles").update({ portfolio_urls: arr }).eq("id", uid);
+    if (error) return toast.error(error.message);
     toast.success("تم إزالة الصورة وحفظ التعديلات");
   };
 
   const save = async () => {
     setSaving(true);
-    const finalDepositPercent = Math.max(0, Math.min(100, Number(p.deposit_percent || 25)));
+    const finalDepositPercent = Math.max(0, Math.min(100, numOr(p.deposit_percent, 25)));
     const finalFixedDeposit = p.fixed_deposit ? Math.max(0, Number(p.fixed_deposit)) : null;
 
     const { error } = await supabase.from("profiles").update({
       display_name: p.display_name, username: p.username, bio: p.bio, city: p.city,
       base_location: p.base_location, instagram: p.instagram,
       equipment: p.equipment, deposit_percent: finalDepositPercent,
-      travel_fee_per_km: Math.max(0, Number(p.travel_fee_per_km || 0.5)), free_km: Math.max(0, Number(p.free_km || 20)),
+      travel_fee_per_km: Math.max(0, numOr(p.travel_fee_per_km, 0.5)), free_km: Math.max(0, numOr(p.free_km, 20)),
       avatar_url: p.avatar_url, cover_url: p.cover_url, portfolio_urls: p.portfolio_urls ?? [],
       is_published: !!p.is_published,
       tagline: p.tagline ?? null,
@@ -345,12 +352,12 @@ function ProfilePage() {
 
           <Card title="إعدادات الحجز">
             <div className="grid sm:grid-cols-2 gap-4 mt-4">
-              <div><label className="text-sm text-muted-foreground block mb-1">نسبة العربون (%)</label><input type="number" min="0" max="100" value={p.deposit_percent || ""} onChange={(e) => setP({ ...p, deposit_percent: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
+              <div><label className="text-sm text-muted-foreground block mb-1">نسبة العربون (%)</label><input type="number" min="0" max="100" value={p.deposit_percent ?? ""} onChange={(e) => setP({ ...p, deposit_percent: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
               <div><label className="text-sm text-muted-foreground block mb-1">عربون ثابت (يُلغي النسبة - د.أ)</label><input type="number" min="0" value={p.fixed_deposit || ""} onChange={(e) => setP({ ...p, fixed_deposit: e.target.value })} placeholder="اختياري" className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
             </div>
             <div className="grid sm:grid-cols-2 gap-4 mt-4">
-              <div><label className="text-sm text-muted-foreground block mb-1">تكلفة الكيلومتر الإضافي (د.أ)</label><input type="number" min="0" step="0.1" value={p.travel_fee_per_km || ""} onChange={(e) => setP({ ...p, travel_fee_per_km: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
-              <div><label className="text-sm text-muted-foreground block mb-1">الكيلومترات المجانية (ضمن الباقة)</label><input type="number" min="0" value={p.free_km || ""} onChange={(e) => setP({ ...p, free_km: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
+              <div><label className="text-sm text-muted-foreground block mb-1">تكلفة الكيلومتر الإضافي (د.أ)</label><input type="number" min="0" step="0.1" value={p.travel_fee_per_km ?? ""} onChange={(e) => setP({ ...p, travel_fee_per_km: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
+              <div><label className="text-sm text-muted-foreground block mb-1">الكيلومترات المجانية (ضمن الباقة)</label><input type="number" min="0" value={p.free_km ?? ""} onChange={(e) => setP({ ...p, free_km: e.target.value })} className="w-full border border-border rounded-sm px-3 py-2 bg-background" /></div>
             </div>
             <Area label="ملاحظات مهمة تظهر للعميل (مثال: تسليم الصور خلال أسبوع، الفيديو خلال شهر…)" v={p.booking_notes} on={(v) => setP({ ...p, booking_notes: v })} />
             <label className="flex items-center gap-2 text-sm mt-3">

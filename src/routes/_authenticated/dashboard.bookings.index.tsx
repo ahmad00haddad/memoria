@@ -8,6 +8,9 @@ import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { confirmBookingAfterDeposit } from "@/lib/booking.functions";
+import { cancelBooking } from "@/lib/cancellation.functions";
 import { ListSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
@@ -63,6 +66,8 @@ let cachedBookingsList: any[] | null = null;
 
 function BookingsList() {
   const nav = useNavigate();
+  const confirmFn = useServerFn(confirmBookingAfterDeposit);
+  const cancelFn = useServerFn(cancelBooking);
   const [list, setList] = useState<any[]>(cachedBookingsList ?? []);
   const [loading, setLoading] = useState(!cachedBookingsList);
   const [filter, setFilter] = useState<string>("all");
@@ -92,24 +97,21 @@ function BookingsList() {
     })();
   }, [nav]);
 
+  // Same server functions as the booking detail page, so swipe actions get
+  // the deposit checks, refund policy, audit log and client notifications.
   const handleConfirm = async (id: string) => {
-    const { error } = await supabase
-      .from("bookings")
-      .update({ status: "confirmed" })
-      .eq("id", id);
-    if (error) { toast.error("تعذّر تأكيد الحجز"); return; }
+    try { await confirmFn({ data: { booking_id: id } }); }
+    catch (e: any) { toast.error(e?.message || "تعذّر تأكيد الحجز"); return; }
     setList((prev) => prev.map((b) => b.id === id ? { ...b, status: "confirmed" } : b));
     toast.success("تم تأكيد الحجز ✓");
   };
 
   const handleCancel = async (id: string) => {
-    const { error } = await supabase
-      .from("bookings")
-      .update({ status: "cancelled" })
-      .eq("id", id);
-    if (error) { toast.error("تعذّر إلغاء الحجز"); return; }
+    if (!window.confirm("إلغاء هذا الحجز؟ سيتم تطبيق سياسة استرداد العربون وإبلاغ العميل.")) return;
+    try { await cancelFn({ data: { booking_id: id, reason: null } }); }
+    catch (e: any) { toast.error(e?.message || "تعذّر إلغاء الحجز"); return; }
     setList((prev) => prev.map((b) => b.id === id ? { ...b, status: "cancelled" } : b));
-    toast.error("تم إلغاء الحجز");
+    toast.success("تم إلغاء الحجز");
   };
 
   const displayed = list

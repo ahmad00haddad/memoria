@@ -145,8 +145,8 @@ function SubscriptionPage() {
         cliq_reference: reference || null,
       });
       if (insErr) throw insErr;
-      // Mark subscription as pending review (Optimistic Update)
-      await supabase.from("subscriptions").update({ status: "pending_review" }).eq("photographer_id", userId);
+      // Photographers cannot write subscriptions (RLS); the pending payment
+      // row is what marks the subscription as under review.
       setSub((prev) => prev ? { ...prev, status: "pending_review" } : null);
       toast.success("تم رفع الإثبات. سيتم تفعيل اشتراكك خلال 24 ساعة.");
       setReference("");
@@ -171,6 +171,9 @@ function SubscriptionPage() {
       effectiveStatus = "expired";
     } else if (effectiveStatus === "active" && periodEnds && periodEnds.getTime() < Date.now()) {
       effectiveStatus = "expired";
+    }
+    if (effectiveStatus !== "active" && payments.some((p: any) => p.status === "pending")) {
+      effectiveStatus = "pending_review";
     }
   }
 

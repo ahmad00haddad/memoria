@@ -180,7 +180,7 @@ function Onboarding() {
     if (!pkgCount) {
       setSaving(false);
       toast.error("أضيفي باقة سعرية واحدة على الأقل قبل نشر ملفك");
-      setStep(1);
+      setStep(2);
       return;
     }
     const { error } = await supabase.from("profiles").update({
