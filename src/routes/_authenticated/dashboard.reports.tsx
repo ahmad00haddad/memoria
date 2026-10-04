@@ -13,6 +13,7 @@ import { PremiumLock, useSubscriptionLock } from "@/components/ui/PremiumLock";
 import { useServerFn } from "@tanstack/react-start";
 import { DollarSign, TrendingUp, Wallet, Clock, CheckCircle2, Download } from "lucide-react";
 import { getReportStats, type ReportStats } from "@/lib/reports.functions";
+import { computeReportStats } from "@/lib/report-stats";
 
 export const Route = createFileRoute("/_authenticated/dashboard/reports")({ component: ReportsPage });
 
@@ -65,8 +66,22 @@ function ReportsPage() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return nav({ to: "/login" });
-        const data = await statsFn({ data: { range } });
+        // نحاول حسابات الخادم أولاً؛ إذا فشل أو أعاد شكلاً غير متوقّع نحسب في المتصفح
+        // من نفس الحجوزات (محمية بـ RLS) حتى لا تتعطّل الصفحة.
+        let data: any = null;
+        try { data = await statsFn({ data: { range } }); } catch (e: any) { console.warn("[reports] server stats failed, using local", e?.message); }
+        if (!data || !Array.isArray(data.monthly) || !Array.isArray(data.funnel) || !Array.isArray(data.services)) {
+          const { data: bks, error } = await supabase
+            .from("bookings")
+            .select("id, client_name, event_date, service, status, total_price, deposit_amount, deposit_confirmed_at, delivered_at, created_at, cancelled_at")
+            .eq("photographer_id", session.user.id)
+            .is("deleted_at", null)
+            .order("event_date", { ascending: false });
+          if (error) throw error;
+          data = computeReportStats((bks ?? []) as any, range);
+        }
         setStats(data as ReportStats);
+        setErr(null);
       } catch (e: any) {
         setErr("تعذّر تحميل التقارير. تحقّق من اتصالك وحاول مجدداً.");
         console.error("[reports] fetch error:", e?.message);
