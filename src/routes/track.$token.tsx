@@ -19,6 +19,8 @@ import { Lightbox } from "@/components/Lightbox";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { CopyButton } from "@/components/ui/copy-button";
+import { ChevronDown, Paperclip } from "lucide-react";
 
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -62,44 +64,6 @@ function ClientError({ error, reset }: any) {
 
 type Booking = any;
 
-const BOOKING_STEPS = [
-  { key: "pending_deposit", label: "في انتظار العربون" },
-  { key: "confirmed",       label: "تم التأكيد" },
-  { key: "shooting",        label: "يوم التصوير" },
-  { key: "completed",       label: "اكتمل الحجز" },
-];
-
-function BookingTimeline({ status }: { status: string }) {
-  const currentIdx = BOOKING_STEPS.findIndex((s) => s.key === status);
-  return (
-    <div className="my-6">
-      <h3 className="text-sm font-medium text-muted-foreground mb-4">مراحل الحجز</h3>
-      <div className="relative">
-        <div className="absolute top-3 start-3 end-3 h-px bg-border" />
-        <div className="flex justify-between relative">
-          {BOOKING_STEPS.map((step, i) => {
-            const done = i < currentIdx;
-            const active = i === currentIdx;
-            const future = i > currentIdx;
-            return (
-              <div key={step.key} className="flex flex-col items-center gap-2">
-                <div className={`h-6 w-6 rounded-full flex items-center justify-center z-10 ${
-                  done ? "bg-[var(--gold)] text-white" : active ? "bg-[var(--gold)] text-white ring-4 ring-[var(--gold)]/20" : "bg-background border-2 border-border"
-                }`}>
-                  {done ? (<CheckCircle2 className="h-3.5 w-3.5" />) : active ? (<div className="h-2 w-2 rounded-full bg-white animate-pulse" />) : (<div className="h-2 w-2 rounded-full bg-border" />)}
-                </div>
-                <span className={`text-[10px] text-center max-w-[60px] leading-tight ${
-                  active ? "text-[var(--gold)] font-medium" : future ? "text-muted-foreground" : "text-foreground"
-                }`}>{step.label}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function TrackingPage() {
   const { token } = useParams({ from: "/track/$token" });
   const confirm = useConfirm();
@@ -121,6 +85,7 @@ function TrackingPage() {
   const isExpired = b?.status === 'pending_deposit' && (b as any)?.created_at && new Date((b as any).created_at).getTime() < Date.now() - 48 * 3600 * 1000;
 
   const [reference, setReference] = useState("");
+  const [pickedFile, setPickedFile] = useState<File | null>(null);
   const [note, setNote] = useState("");
   const [newNote, setNewNote] = useState("");
 
@@ -277,7 +242,7 @@ function TrackingPage() {
       // 2. Update booking
       await sendDeposit({ data: { token, proof_path: path, reference: reference || null, note: note || null } });
       toast.success("تم إرسال الإيصال بنجاح. سنقوم بتأكيد الحجز قريباً.", { id: "upload-receipt" });
-      setReference(""); setNote("");
+      setReference(""); setNote(""); setPickedFile(null);
       if (fileRef.current) fileRef.current.value = "";
       load();
     } catch (e: any) {
@@ -401,31 +366,63 @@ function TrackingPage() {
         </h1>
         <p className="text-muted-foreground text-sm mb-4">حجز مع {ph.display_name} (@{ph.username})</p>
 
-        <div className="rounded-sm border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30 p-3 mb-6 flex gap-3 text-amber-900 dark:text-amber-200">
-          <Clock className="h-5 w-5 shrink-0 mt-0.5" />
-          <div className="text-sm leading-relaxed">
-            <strong>تنبيه الخصوصية:</strong> هذا الرابط مخصص لكِ فقط لإدارة حجزكِ ومرفقاتكِ. يرجى عدم مشاركته مع الآخرين حفاظاً على خصوصية بياناتك ومعرض صورك لاحقاً.
-          </div>
-        </div>
+        {b.status !== "cancelled" && (() => {
+          const currentIdx = Math.max(0, stages.findIndex((x) => !x.done));
+          const allDone = stages.every((x) => x.done);
+          const daysToEvent = b.event_date ? Math.ceil((new Date(b.event_date).getTime() - Date.now()) / 86400000) : null;
+          const here = (() => {
+            if (!b.deposit_sent_at) return { title: "الخطوة التالية: إرسال العربون", body: `حوّلي ${Number(b.deposit_amount).toLocaleString("ar-JO")} د.أ لتثبيت موعدك، ثم ارفعي الإيصال.`, cta: "إرسال العربون", target: "deposit-step" };
+            if (!(b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status))) return { title: "وصل إيصالك — بانتظار تأكيد المصوّرة", body: "تصلك رسالة فور التأكيد. عادةً خلال ساعات.", cta: null, target: null };
+            if (!b.delivered_at && b.status !== "completed" && daysToEvent !== null && daysToEvent >= 0) return { title: daysToEvent === 0 ? "اليوم يومك 🤍" : `باقي ${daysToEvent} ${daysToEvent === 1 ? "يوم" : "يوماً"} على يومك`, body: "حجزك مؤكَّد. أضيفي الموعد لتقويمك، واكتبي للمصوّرة أي تفاصيل تهمّك.", cta: null, target: null };
+            if (!b.delivered_at && b.status !== "completed") return { title: "صورك قيد التحرير", body: "تعمل المصوّرة على اختيار صورك وتحريرها. ستصلك رسالة عند جاهزيتها.", cta: null, target: null };
+            if (!b.client_received_at) return { title: "صورك جاهزة", body: "حمّلي صورك ثم أكّدي الاستلام.", cta: b.delivery_link ? "تحميل الصور" : null, target: b.delivery_link ? "delivery-link" : null };
+            return { title: "اكتمل حجزك", body: "شكراً لثقتك. رأيك يساعد عرائس أخريات.", cta: "قيّمي المصوّرة", target: "review-step" };
+          })();
+          return (
+            <div className="mb-8 overflow-hidden rounded-2xl bg-charcoal text-ivory grain-overlay dark:bg-card dark:text-foreground dark:ring-1 dark:ring-gold/30">
+              <div className="relative z-10 p-6 sm:p-8">
+                <div className="mb-2 text-xs tracking-wide text-gold">أنتِ هنا</div>
+                <h2 className="font-serif text-3xl leading-tight text-balance">{here.title}</h2>
+                <p className="mt-2 max-w-lg text-sm text-ivory/70 dark:text-muted-foreground">{here.body}</p>
+                {here.cta && here.target && (
+                  <button
+                    onClick={() => document.getElementById(here.target!)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    className="mt-5 inline-flex items-center gap-2 rounded-full bg-gold px-6 py-2.5 text-sm font-medium text-charcoal transition-transform active:scale-95"
+                  >
+                    {here.cta}
+                  </button>
+                )}
+                {(b.status === "confirmed" || b.status === "completed") && daysToEvent !== null && daysToEvent >= 0 && (
+                  <button onClick={addToCalendar} className="mt-5 ms-2 inline-flex items-center gap-2 rounded-full border border-ivory/20 px-5 py-2.5 text-sm hover:border-gold hover:text-gold transition-colors dark:border-border">
+                    <CalendarPlus className="h-4 w-4" /> أضيفي لتقويمك
+                  </button>
+                )}
 
-        {b.event_date && new Date(b.event_date).getTime() > Date.now() && (
-          <div className="mb-6 bg-gradient-to-r from-gold/20 via-gold/5 to-transparent border-r-4 border-gold p-4 rounded-s-sm flex items-center justify-between">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-gold mb-1">العد التنازلي للزفاف</div>
-              <div className="text-sm text-foreground">بقي <strong>{Math.ceil((new Date(b.event_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}</strong> يوم على فرحتك الكبرى! 🤍</div>
+                {/* خط المراحل: المنجز ذهبي، والحالي ينبض */}
+                <ol className="mt-8 grid grid-cols-6 gap-1" aria-label="مراحل الحجز">
+                  {stages.map((st, i) => {
+                    const current = !allDone && i === currentIdx;
+                    return (
+                      <li key={st.key} className="flex flex-col items-center gap-2 text-center">
+                        <motion.div
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
+                          className={`h-1 w-full origin-right rounded-full ${st.done ? "bg-gold" : current ? "bg-gold/40" : "bg-ivory/15 dark:bg-border"}`}
+                        />
+                        <span className={`text-[10px] leading-tight ${current ? "text-gold font-medium" : st.done ? "text-ivory/80 dark:text-foreground" : "text-ivory/40 dark:text-muted-foreground"}`}>{st.label}</span>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════
-            مؤشر تقدم الحجز البصري (Fix #2)
-            يُظهر المرحلة الحالية بوضوح تام للعميل
-        ══════════════════════════════════════════ */}
-        <BookingTimeline status={b.status} />
+          );
+        })()}
 
         {/* رابط تسليم الصور الخارجي (Drive / WeTransfer / Dropbox) */}
         {b.delivery_link && (
-          <div className="rounded-sm border border-emerald-200 bg-emerald-50 p-5 mb-6 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+          <div id="delivery-link" className="scroll-mt-24 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 mb-6 dark:bg-emerald-500/10 dark:border-emerald-500/20">
             <h2 className="font-serif text-lg mb-1">صورك جاهزة للتحميل</h2>
             <p className="text-sm text-muted-foreground mb-3">أرسلت لكِ المصوّرة رابط تحميل الصور بجودتها الكاملة.</p>
             <a
@@ -439,20 +436,6 @@ function TrackingPage() {
           </div>
         )}
 
-        {/* Timeline — تفاصيل المراحل */}
-        <div className="rounded-sm border border-border bg-card p-5 mb-6">
-          <h2 className="font-serif text-lg mb-4">حالة الحجز</h2>
-          <ol className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {stages.map((s) => (
-              <li key={s.key} className={`rounded-sm border p-3 text-center ${s.done ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-border bg-secondary/30 text-muted-foreground"}`}>
-                <div className="flex justify-center mb-1">{s.icon}</div>
-                <div className="text-xs">{s.label}</div>
-              </li>
-            ))}
-          </ol>
-        </div>
-
-        
           {/* Sneak Peek Gamification */}
           {b.sneak_peek_url && (
             <div className="rounded-sm border border-border bg-card overflow-hidden mb-6 relative">
@@ -484,18 +467,16 @@ function TrackingPage() {
             </div>
           )}
 
-          {/* Add to Calendar */}
-          {(b.status === 'confirmed' || b.status === 'completed') && (
-            <div className="flex justify-center mb-6">
-              <button onClick={addToCalendar} className="flex items-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 px-6 py-3 rounded-full font-medium transition-colors shadow-soft">
-                <CalendarPlus className="h-5 w-5" />
-                أضيفي الموعد لتقويمك (Google Calendar)
-              </button>
-            </div>
-          )}
-
           {/* Booking summary */}
-        <div className="rounded-sm border border-border bg-card p-5 mb-6 text-sm">
+        <details className="group rounded-2xl border border-border bg-card mb-6 text-sm" open={!b.deposit_sent_at}>
+          <summary className="flex cursor-pointer list-none items-center justify-between p-5">
+            <span className="font-serif text-lg">تفاصيل الحجز</span>
+            <span className="flex items-center gap-3 text-xs text-muted-foreground">
+              {new Date(b.event_date).toLocaleDateString("ar-JO", { day: "numeric", month: "long" })} · {Number(b.total_price).toLocaleString("ar-JO")} د.أ
+              <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+            </span>
+          </summary>
+          <div className="px-5 pb-5">
           <div className="grid sm:grid-cols-2 gap-3 mb-4">
             <Info label="التاريخ" v={b.event_date} />
             <Info label="الوقت" v={`${(b.start_time||"").slice(0,5)} - ${(b.end_time||"").slice(0,5)}`} />
@@ -525,14 +506,15 @@ function TrackingPage() {
             <Info label="المبلغ الإجمالي" v={`${Number(b.total_price).toLocaleString("ar-JO")} د.أ`} />
             <Info label="العربون المطلوب" v={`${Number(b.deposit_amount).toLocaleString("ar-JO")} د.أ`} />
           </div>
-        </div>
+          </div>
+        </details>
 
         {/* Deposit step */}
         {!b.deposit_sent_at && (
-          <div className="rounded-sm border border-gold/30 bg-gold/5 p-5 mb-6">
+          <div id="deposit-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="h-5 w-5 text-gold" />
-              <h2 className="font-serif text-xl">الخطوة التالية: إرسال العربون</h2>
+              <h2 className="font-serif text-xl">إرسال العربون</h2>
             </div>
             <p className="text-sm mb-4">حوّلي مبلغ <span className="font-semibold">{Number(b.deposit_amount).toLocaleString("ar-JO")} د.أ</span> ثم ارفعي إثبات التحويل أدناه.</p>
 
@@ -568,8 +550,7 @@ function TrackingPage() {
                   <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">CliQ Alias</div>
                   <div className="font-mono text-lg">{ph.cliq_alias}</div>
                 </div>
-                <button onClick={() => { navigator.clipboard.writeText(ph.cliq_alias); toast.success("تم النسخ"); }}
-                        className="p-2 hover:bg-secondary rounded-sm"><Copy className="h-4 w-4" /></button>
+                <CopyButton value={ph.cliq_alias} label="نسخ" />
               </div>
             )}
             {ph.bank_info && (
@@ -583,8 +564,17 @@ function TrackingPage() {
               <textarea placeholder="ملاحظة للمصورة (اختياري)" value={note} rows={2}
                         onChange={(e) => setNote(e.target.value)}
                         className="border border-border rounded-sm px-3 py-2 text-sm bg-background" />
-              <input ref={fileRef} type="file" accept="image/*,application/pdf"
-                     className="text-sm" />
+              <label className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 text-sm transition-colors ${pickedFile ? "border-gold/60 bg-card" : "border-border hover:border-gold/40"}`}>
+                <input ref={fileRef} type="file" accept="image/*,application/pdf" className="sr-only"
+                       onChange={(e) => setPickedFile(e.target.files?.[0] ?? null)} />
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-secondary">
+                  {pickedFile ? <CheckCircle2 className="h-5 w-5 text-emerald-600" /> : <Paperclip className="h-5 w-5 text-muted-foreground" />}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium truncate">{pickedFile ? pickedFile.name : "اختاري صورة الإيصال"}</span>
+                  <span className="block text-xs text-muted-foreground">{pickedFile ? `${(pickedFile.size / 1024 / 1024).toFixed(1)} ميجا — اضغطي للتغيير` : "صورة أو PDF، حتى ١٠ ميجا"}</span>
+                </span>
+              </label>
               <button onClick={onSendDeposit} disabled={uploading}
                       className="bg-gold text-charcoal py-3 rounded-sm font-medium hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
                 <Upload className="h-4 w-4" /> {uploading ? "جاري الإرسال…" : "تم إرسال العربون"}
@@ -619,11 +609,7 @@ function TrackingPage() {
           </div>
         )}
 
-        {b.deposit_sent_at && !b.deposit_confirmed_at && (
-          <div className="rounded-sm border border-amber-200 bg-amber-50 p-4 mb-6 text-sm text-amber-900">
-            تم استلام إشعار العربون. بانتظار تأكيد المصورة.
-          </div>
-        )}
+
 
         {/* Fix #5: زر المصالحة — يظهر فقط إذا كان هناك جلسة دفع إلكتروني معلّقة */}
         {b.deposit_checkout_session_id && !b.deposit_confirmed_at && b.status !== "confirmed" && b.status !== "cancelled" && (
@@ -667,7 +653,7 @@ function TrackingPage() {
 
         {/* Completed → review link */}
         {!!b.client_received_at && (
-          <div className="rounded-sm border border-gold/30 bg-gold/5 p-5 mb-6 shadow-sm">
+          <div id="review-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6 shadow-sm">
             <h2 className="font-serif text-xl mb-2 text-gold">شكراً لثقتك! 🌟</h2>
             <p className="text-sm mb-3">يسعدنا أن تكون تجربتك رائعة.</p>
             <div className="mb-4 bg-background border border-border p-3 rounded-sm text-xs text-muted-foreground flex items-start gap-2">
@@ -707,7 +693,7 @@ function TrackingPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-8">احفظي هذا الرابط للوصول لاحقًا لتتبع حجزك.</p>
+        <p className="text-center text-xs text-muted-foreground mt-8">هذا الرابط خاص بكِ — احفظيه للعودة لاحقاً ولا تشاركيه حفاظاً على خصوصية صورك.</p>
 
         <ClientGallery token={token} />
         <ClientChat token={token} clientName={b.client_name} />
