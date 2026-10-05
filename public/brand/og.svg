@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="640" viewBox="0 0 1200 640">
+<defs><radialGradient id="bgg" cx=".3" cy=".45" r=".8"><stop offset="0" stop-color="#2A211D"/><stop offset="1" stop-color="#1A1513"/></radialGradient></defs>
+<rect width="1200" height="640" fill="url(#bgg)"/>
+<g transform="translate(330 320) scale(.95) translate(-256 -256)"><defs>
+<linearGradient id="lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6E6DA"/><stop offset="1" stop-color="#D8B49E"/></linearGradient>
+<linearGradient id="md" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D8B49E"/><stop offset="1" stop-color="#9E6B55"/></linearGradient>
+<linearGradient id="dk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9E6B55"/><stop offset="1" stop-color="#4A2E22"/></linearGradient>
+<radialGradient id="glow" cx="0.5" cy="0.45" r="0.5"><stop offset="0" stop-color="#FFF8F3" stop-opacity=".85"/><stop offset="1" stop-color="#FFF8F3" stop-opacity="0"/></radialGradient>
+</defs>
+<polygon points="256.0,256.0 216.1,173.1 256.0,46.0" fill="url(#lt)"/>
+<polygon points="256.0,256.0 256.0,46.0 295.9,173.1" fill="url(#lt)"/>
+<polygon points="256.0,46.0 295.9,173.1 420.2,125.1" fill="url(#md)" opacity=".92"/>
+<polygon points="256.0,256.0 295.9,173.1 420.2,125.1" fill="url(#md)"/>
+<polygon points="256.0,256.0 420.2,125.1 345.7,235.5" fill="url(#md)"/>
+<polygon points="420.2,125.1 345.7,235.5 460.7,302.7" fill="url(#dk)" opacity=".92"/>
+<polygon points="256.0,256.0 345.7,235.5 460.7,302.7" fill="url(#dk)"/>
+<polygon points="256.0,256.0 460.7,302.7 327.9,313.4" fill="url(#dk)"/>
+<polygon points="460.7,302.7 327.9,313.4 347.1,445.2" fill="url(#dk)" opacity=".92"/>
+<polygon points="256.0,256.0 327.9,313.4 347.1,445.2" fill="url(#dk)"/>
+<polygon points="256.0,256.0 347.1,445.2 256.0,348.0" fill="url(#dk)"/>
+<polygon points="347.1,445.2 256.0,348.0 164.9,445.2" fill="url(#dk)" opacity=".92"/>
+<polygon points="256.0,256.0 256.0,348.0 164.9,445.2" fill="url(#dk)"/>
+<polygon points="256.0,256.0 164.9,445.2 184.1,313.4" fill="url(#md)"/>
+<polygon points="164.9,445.2 184.1,313.4 51.3,302.7" fill="url(#dk)" opacity=".92"/>
+<polygon points="256.0,256.0 184.1,313.4 51.3,302.7" fill="url(#md)"/>
+<polygon points="256.0,256.0 51.3,302.7 166.3,235.5" fill="url(#lt)"/>
+<polygon points="51.3,302.7 166.3,235.5 91.8,125.1" fill="url(#md)" opacity=".92"/>
+<polygon points="256.0,256.0 166.3,235.5 91.8,125.1" fill="url(#lt)"/>
+<polygon points="256.0,256.0 91.8,125.1 216.1,173.1" fill="url(#lt)"/>
+<polygon points="91.8,125.1 216.1,173.1 256.0,46.0" fill="url(#md)" opacity=".92"/>
+<polygon points="256.0,46.0 295.9,173.1 420.2,125.1 345.7,235.5 460.7,302.7 327.9,313.4 347.1,445.2 256.0,348.0 164.9,445.2 184.1,313.4 51.3,302.7 166.3,235.5 91.8,125.1 216.1,173.1" fill="none" stroke="#FFF8F3" stroke-opacity=".55" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="256.0,46.0 420.2,125.1 460.7,302.7 347.1,445.2 164.9,445.2 51.3,302.7 91.8,125.1" fill="none" stroke="#FFF8F3" stroke-opacity=".35" stroke-width="2"/>
+<line x1="256" y1="256" x2="256.0" y2="46.0" stroke="#FFF8F3" stroke-opacity=".25" stroke-width="1.5"/>
+<line x1="256" y1="256" x2="420.2" y2="125.1" stroke="#FFF8F3" stroke-opacity=".25" stroke-width="1.5"/>
+<line x1="256" y1="256" x2="460.7" y2="302.7" stroke="#FFF8F3" stroke-opacity=".25" stroke-width="1.5"/>
+<line x1="256" y1="256" x2="347.1" y2="445.2" stroke="#FFF8F3" stroke-opacity=".25" stroke-width="1.5"/>
+<line x1="256" y1="256" x2="164.9" y2="445.2" stroke="#FFF8F3" stroke-opacity=".25" stroke-width="1.5"/>
+<line x1="256" y1="256" x2="51.3" y2="302.7" stroke="#FFF8F3" stroke-opacity=".25" stroke-width="1.5"/>
+<line x1="256" y1="256" x2="91.8" y2="125.1" stroke="#FFF8F3" stroke-opacity=".25" stroke-width="1.5"/>
+<circle cx="256" cy="230" r="120" fill="url(#glow)"/></g>
+<text x="1080" y="250" text-anchor="end" fill="#FFF8F3" font-family="Cormorant Garamond Light" font-weight="600" font-size="104">Memoria</text>
+<text x="1080" y="360" text-anchor="end" fill="#D8B49E" font-family="Amiri" font-weight="700" font-size="88">ميموريا</text>
+<text x="1080" y="440" text-anchor="end" fill="#FFF8F3" fill-opacity=".7" font-family="Amiri" font-size="36">احجزي مصوّرة يومكِ في الأردن</text>
+</svg>

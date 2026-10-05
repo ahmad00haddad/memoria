@@ -1007,9 +1007,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">الباقة الأساسية</label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
-              {mainPackages.map((r) => {
+              {mainPackages.map((r, idx) => {
                 const isSelected = f.package_id === r.id;
-                const isVIP = r.package === 'full_day'; // Visual Anchor logic
+                // Same single anchor as the public price card ("الأكثر طلباً").
+                const isVIP = mainPackages.length >= 3 && idx === 1;
                 return (
                   <button
                     key={r.id}
@@ -1022,9 +1023,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                     }`}
                   >
                     {isVIP && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-white text-[10px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap animate-shimmer overflow-hidden shadow-sm z-10">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-white text-[10px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm z-10">
                         👑 الخيار المفضل
-                        <div className="absolute inset-0 bg-white/30 translate-x-[-100%] animate-[shimmer_2s_infinite]" />
                       </div>
                     )}
                     

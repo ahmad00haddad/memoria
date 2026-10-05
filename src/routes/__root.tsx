@@ -118,7 +118,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/app-icon-512.png" },
-      { rel: "icon", type: "image/png", href: "/app-icon-192.png" },
+      { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
     ],
     scripts: [
       // GA: يُحمَّل فقط عند وجود VITE_GA_MEASUREMENT_ID صالح (يبدأ بـ G-) لتفادي نداءات placeholder

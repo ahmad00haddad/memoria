@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Camera, Bell, Menu } from "lucide-react";
+import { Bell, Menu } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,9 +139,7 @@ export function Header() {
     >
       <div className="container-editorial flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="grid h-9 w-9 place-items-center rounded-sm bg-gradient-gold">
-            <Camera className="h-4 w-4 text-charcoal" />
-          </div>
+          <img src="/favicon.svg" alt="" width={36} height={36} className="h-9 w-9" />
           <div className="leading-tight">
             <div className="font-serif text-lg tracking-wide">Memoria <span className="text-muted-foreground text-sm">ميموريا</span></div>
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
