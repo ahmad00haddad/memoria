@@ -7,6 +7,9 @@
   // Public values only. Secrets (SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, ...)
   // go in `wrangler secret put`.
   "vars": {
+    // Resend's test sender: only delivers to the Resend account owner until a
+    // domain is verified. Booking verification falls back to auto when it fails.
+    "EMAIL_FROM": "onboarding@resend.dev",
     "PUBLIC_APP_URL": "https://memoria-production.ahmad000haddad.workers.dev",
     "SUPABASE_URL": "https://qrpkfanblpjiqgkufnrb.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_dMDE64mY-OTPE7PXzJ-SsA_lpt3mIDW"

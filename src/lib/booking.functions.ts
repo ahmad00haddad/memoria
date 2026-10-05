@@ -184,10 +184,17 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       verify_expires_at: new Date(Date.now() + v.VERIFY_WINDOW_MINUTES * 60_000).toISOString(),
       verify_attempts: 0,
     } as any).eq("id", row.id);
+    let emailSent = false;
     if (emailOn) {
       try {
-        await v.sendEmailCode({ to: data.client_email, client_name: data.client_name, code: emailCode, booking_id: row.id });
+        const r = await v.sendEmailCode({ to: data.client_email, client_name: data.client_name, code: emailCode, booking_id: row.id });
+        emailSent = r.ok;
       } catch (e) { console.error("[booking] verify email failed", e); }
+    }
+    if (!waNumber && !emailSent) {
+      // الإيميل لم يُرسل (مثلاً مُرسل Resend التجريبي) ولا واتساب — لا نترك العروس عالقة.
+      await v.markBookingVerified(row.id, "auto");
+      return { booking_id: row.id, tracking_token: row.client_tracking_token, verify: null };
     }
     return {
       booking_id: row.id,
@@ -195,7 +202,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       verify: {
         whatsapp_number: waNumber,
         whatsapp_code: waNumber ? waCode : null,
-        email: emailOn,
+        email: emailSent,
       },
     };
   });
