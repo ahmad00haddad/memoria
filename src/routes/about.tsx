@@ -10,9 +10,9 @@ export const Route = createFileRoute("/about")({
       { name: "description", content: "ميموريا منصّة أردنية متخصّصة في تنظيم حجوزات مصوّرات الأعراس. تعرّفي على قصّتنا، رؤيتنا، والكيان الذي يقف خلف المنصّة." },
       { property: "og:title", content: "من نحن — Memoria · ميموريا" },
       { property: "og:description", content: "قصّة ميموريا: لماذا بدأنا، وما الذي نؤمن به." },
-      { property: "og:url", content: "https://memoria-jo.lovable.app/about" },
+      { property: "og:url", content: "https://memoria-production.ahmad000haddad.workers.dev/about" },
     ],
-    links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/about" }],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/about" }],
   }),
   component: AboutPage,
 });

@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // يُستدعى من محركات البحث (Google, Bing) لاكتشاف الصفحات
 // ============================================================================
 
-const BASE_URL = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+const BASE_URL = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
 
 // أولويات الصفحات الثابتة
 const STATIC_PAGES = [

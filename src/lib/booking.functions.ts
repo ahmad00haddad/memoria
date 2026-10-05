@@ -179,7 +179,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     if (priv?.whatsapp || data.client_phone) {
       try {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-        const base = process.env.PUBLIC_APP_URL || "https://memoria.jo";
+        const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
         const trackingUrl = row.client_tracking_token
           ? `${base}/track/${row.client_tracking_token}`
           : undefined;
@@ -491,7 +491,7 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     if (bk.client_phone) {
       try {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-        const base = process.env.PUBLIC_APP_URL || "https://memoria.jo";
+        const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
         const trackingUrl = bk.client_tracking_token
           ? `${base}/track/${bk.client_tracking_token}`
           : undefined;

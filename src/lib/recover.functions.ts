@@ -39,7 +39,7 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
       return successResponse;
     }
 
-    const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+    const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
     let sentEmail = false;
 
     // تجميع الروابط

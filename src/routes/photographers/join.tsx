@@ -16,9 +16,9 @@ export const Route = createFileRoute("/photographers/join")({
       { name: "description", content: "انضمي إلى Memoria وابدئي استقبال حجوزات مباشرة من العميلات، بأدوات إدارة كاملة وبدون عمولة." },
       { property: "og:title", content: "انضمي كمصوّرة — Memoria" },
       { property: "og:description", content: "منصّة عربية لمصوّرات المناسبات — سجّلي مجاناً وابدئي." },
-      { property: "og:url", content: "https://memoria-jo.lovable.app/photographers/join" },
+      { property: "og:url", content: "https://memoria-production.ahmad000haddad.workers.dev/photographers/join" },
     ],
-    links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/photographers/join" }],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/photographers/join" }],
   }),
   component: JoinPage,
 });

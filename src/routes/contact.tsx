@@ -13,9 +13,9 @@ export const Route = createFileRoute("/contact")({
       { name: "description", content: "فريق ميموريا هنا للمساعدة في الحجوزات، الاشتراكات، والاستفسارات. أرسلي رسالتك وسنردّ خلال 24 ساعة." },
       { property: "og:title", content: "تواصلي معنا — Memoria · ميموريا" },
       { property: "og:description", content: "بريد الدعم، ساعات الرد، ونموذج تواصل سريع." },
-      { property: "og:url", content: "https://memoria-jo.lovable.app/contact" },
+      { property: "og:url", content: "https://memoria-production.ahmad000haddad.workers.dev/contact" },
     ],
-    links: [{ rel: "canonical", href: "https://memoria-jo.lovable.app/contact" }],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/contact" }],
   }),
   component: ContactPage,
 });

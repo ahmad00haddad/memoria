@@ -18,7 +18,7 @@ const UUID_RE = /^[0-9a-f-]{36}$/i;
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;
 
 function appBase(): string {
-  return process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+  return process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
 }
 
 // ----- المصوّرة/الأدمن تلغي الحجز -----

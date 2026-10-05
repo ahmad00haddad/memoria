@@ -24,7 +24,7 @@ export const isPaymentsEnabled = createServerFn({ method: "GET" }).handler(async
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;
 
 function appBase(): string {
-  return process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+  return process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
 }
 
 export const createDepositCheckout = createServerFn({ method: "POST" })
@@ -146,7 +146,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
     const monthlyPrice = Number(process.env.SUBSCRIPTION_MONTHLY_PRICE || "25");
     const amount = monthlyPrice * data.months;
     const currency = (process.env.PAYMENT_CURRENCY || "JOD").toUpperCase();
-    const base = process.env.PUBLIC_APP_URL || "https://memoria-jo.lovable.app";
+    const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
 
     const checkout = await provider.createSubscriptionCheckout({
       photographer_id: userId,
