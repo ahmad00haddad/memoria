@@ -24,6 +24,10 @@ function createSupabaseClient() {
       storage: brokeredPreviewStorage(),
       persistSession: true,
       autoRefreshToken: true,
+      // The default navigator.locks lock can deadlock (getSession() never
+      // resolves), leaving every page on its grey loading state until a
+      // refresh. Run auth operations without the cross-tab lock instead.
+      lock: async (_name, _timeout, fn) => fn(),
     }
   });
 }
