@@ -12,7 +12,8 @@ import { ar } from "date-fns/locale";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
 import { useServerFn } from "@tanstack/react-start";
-import { submitBookingRequest, getPublicDepositInfo } from "@/lib/booking.functions";
+import { submitBookingRequest, getPublicDepositInfo, getBookingByToken } from "@/lib/booking.functions";
+import { VerifyBookingPanel, type VerifyInfo } from "@/components/VerifyBookingPanel";
 import { getPhotographerProfileData } from "@/lib/profile.functions";
 import { Lightbox } from "@/components/Lightbox";
 import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
@@ -643,7 +644,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [f, setF] = useState(initial);
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState<{ token: string } | null>(null);
+  const [success, setSuccess] = useState<{ token: string; verify: VerifyInfo | null } | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [consent, setConsent] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState(false);
@@ -682,6 +683,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   };
   const navigate = useNavigate();
   const submitFn = useServerFn(submitBookingRequest);
+  const getByTokenFn = useServerFn(getBookingByToken);
   const mainPackages = pricing.filter((p) => p.package !== "addon");
   const addonPackages = pricing.filter((p) => p.package === "addon");
   const selected = pricing.find((p) => p.id === f.package_id);
@@ -773,7 +775,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           privacy_level: f.privacy_level,
         },
       });
-      setSuccess({ token: res.tracking_token });
+      setSuccess({ token: res.tracking_token, verify: (res as any).verify ?? null });
       // احفظي رابط التتبع على الجهاز حتى لا يضيع إذا أُغلقت الصفحة
       try {
         const list = JSON.parse(window.localStorage.getItem(MY_BOOKINGS_KEY) || "[]");
@@ -822,8 +824,23 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     return (
       <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
         <CheckCircle2 className="h-14 w-14 text-emerald-600 mx-auto mb-3" />
-        <h2 className="font-serif text-3xl mb-2">تم إرسال طلبك!</h2>
-        <p className="text-muted-foreground mb-5">تم إخطار {profile.display_name} وسيتم التواصل معكِ قريبًا.</p>
+        <h2 className="font-serif text-3xl mb-2">{success.verify ? "بقيت خطوة واحدة!" : "تم إرسال طلبك!"}</h2>
+        <p className="text-muted-foreground mb-5">
+          {success.verify ? "أكّدي طلبك ليصل إلى " + profile.display_name + "." : `تم إخطار ${profile.display_name} وسيتم التواصل معكِ قريبًا.`}
+        </p>
+        {success.verify && (
+          <div className="mb-5">
+            <VerifyBookingPanel
+              token={success.token}
+              verify={success.verify}
+              onVerified={() => setSuccess({ token: success.token, verify: null })}
+              onRecheck={async () => {
+                const r: any = await getByTokenFn({ data: { token: success.token } });
+                return !!r?.phone_verified;
+              }}
+            />
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3 mb-5 text-start">
           <div className="rounded-sm border border-border bg-secondary/40 p-3">
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">رقم الحجز</div>

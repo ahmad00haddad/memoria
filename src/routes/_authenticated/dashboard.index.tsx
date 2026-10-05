@@ -454,7 +454,7 @@ function Dashboard() {
       supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
       supabase.from("photographer_private").select("ical_token,cliq_alias,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
       supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
-      supabase.from("bookings").select("id,client_name,status,created_at,total_price,deposit_amount,event_date,delivery_due_at,production_stage,deposit_proof_url,deposit_sent_at,final_paid_at").eq("photographer_id", session.user.id).is("deleted_at", null),
+      supabase.from("bookings").select("id,client_name,status,created_at,total_price,deposit_amount,event_date,delivery_due_at,production_stage,deposit_proof_url,deposit_sent_at,final_paid_at").eq("photographer_id", session.user.id).is("deleted_at", null).not("phone_verified_at" as any, "is", null),
       supabase.from("reviews").select("rating,created_at").eq("photographer_id", session.user.id),
       supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       supabase.from("whatsapp_templates").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),

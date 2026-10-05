@@ -155,97 +155,48 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     // When the request was de-duplicated we must NOT re-send notifications/emails.
     const deduped = result.deduped === true;
     if (deduped) {
+      const { data: prev } = await supabaseAdmin.from("bookings")
+        .select("phone_verified_at, verify_code_wa, verify_code_email").eq("id", row.id).maybeSingle();
+      const p: any = prev;
+      if (!p || p.phone_verified_at) return { booking_id: row.id, tracking_token: row.client_tracking_token, verify: null };
+      const { publicWhatsAppNumber } = await import("@/lib/verification.server");
+      const waNumber = publicWhatsAppNumber();
       return {
-        booking_id: row.id,
-        tracking_token: row.client_tracking_token,
+        booking_id: row.id, tracking_token: row.client_tracking_token,
+        verify: { whatsapp_number: waNumber, whatsapp_code: waNumber ? p.verify_code_wa : null, email: !!p.verify_code_email },
       };
     }
 
-    const { data: priv } = await supabaseAdmin
-      .from("photographer_private")
-      .select("whatsapp, phone")
-      .eq("user_id", data.photographer_id)
-      .maybeSingle();
-
-    // In-app notification for the photographer
-    await supabaseAdmin.from("notifications").insert({
-      user_id: data.photographer_id,
-      title: "طلب حجز جديد",
-      body: `${data.client_name} يرغب بحجز ${summaryLabel} بتاريخ ${data.event_date}`,
-      link: `/dashboard/bookings/${row.id}`,
-    });
-
-    // إشعار واتساب فوري للعروس (محرك الإشعارات الذكي) — fire-and-forget
-    if (priv?.whatsapp || data.client_phone) {
+    // تأكيد الطلب قبل أن يُحسب: لا إشعار للمصوّرة ولا حجز طويل للموعد قبل التأكيد.
+    const v = await import("@/lib/verification.server");
+    const waNumber = v.publicWhatsAppNumber();
+    const emailOn = v.isEmailConfigured();
+    if (!waNumber && !emailOn) {
+      // لا قناة تأكيد مهيّأة بعد — نؤكد تلقائياً حتى لا تتعطل الحجوزات.
+      await v.markBookingVerified(row.id, "auto");
+      return { booking_id: row.id, tracking_token: row.client_tracking_token, verify: null };
+    }
+    const waCode = v.sixDigits();
+    const emailCode = v.sixDigits();
+    await supabaseAdmin.from("bookings").update({
+      verify_code_wa: waNumber ? waCode : null,
+      verify_code_email: emailOn ? emailCode : null,
+      verify_expires_at: new Date(Date.now() + v.VERIFY_WINDOW_MINUTES * 60_000).toISOString(),
+      verify_attempts: 0,
+    } as any).eq("id", row.id);
+    if (emailOn) {
       try {
-        const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-        const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
-        const trackingUrl = row.client_tracking_token
-          ? `${base}/track/${row.client_tracking_token}`
-          : undefined;
-        await sendWhatsAppNotification(
-          data.photographer_id,
-          data.client_phone,
-          "welcome",
-          {
-            client_name: data.client_name,
-            photographer_name: profile.display_name || profile.username || "المصورة",
-            event_date: data.event_date,
-            deposit_amount: deposit > 0 ? String(deposit) : undefined,
-            total_price: total > 0 ? String(total) : undefined,
-            service: mainRule.label,
-            tracking_url: trackingUrl,
-            venue: data.venue_address ?? undefined,
-          },
-        );
-      } catch (e) {
-        console.error("[booking] welcome WhatsApp failed", e);
-      }
+        await v.sendEmailCode({ to: data.client_email, client_name: data.client_name, code: emailCode, booking_id: row.id });
+      } catch (e) { console.error("[booking] verify email failed", e); }
     }
-
-    // Fire-and-forget emails — never block the booking on email failures.
-    try {
-      const { sendEmail, tplNewBookingForPhotographer, tplBookingReceivedForClient } =
-        await import("@/lib/email.server");
-      const { data: pUser } = await supabaseAdmin.auth.admin.getUserById(data.photographer_id);
-      const photographerEmail = pUser?.user?.email;
-      if (photographerEmail) {
-        const t1 = tplNewBookingForPhotographer({
-          photographer_name: profile.display_name || profile.username || "المصوّرة",
-          client_name: data.client_name,
-          service_label: summaryLabel,
-          event_date: data.event_date,
-          start_time: data.start_time,
-          total,
-          booking_id: row.id as string,
-        });
-        await sendEmail({
-          to: photographerEmail, subject: t1.subject, html: t1.html,
-          template: "new_booking_photographer",
-          related_booking_id: row.id as string,
-          related_user_id: data.photographer_id,
-        });
-      }
-      const t2 = tplBookingReceivedForClient({
-        client_name: data.client_name,
-        photographer_name: profile.display_name || profile.username || "المصوّرة",
-        event_date: data.event_date,
-        total,
-        deposit,
-        track_token: row.client_tracking_token as string,
-      });
-      await sendEmail({
-        to: data.client_email, subject: t2.subject, html: t2.html,
-        template: "booking_received_client",
-        related_booking_id: row.id as string,
-      });
-    } catch (e) {
-      console.error("[booking] email send failed", e);
-    }
-
     return {
-      booking_id: row.id as string,
-      tracking_token: row.client_tracking_token as string,
+      booking_id: row.id,
+      tracking_token: row.client_tracking_token,
+      verify: {
+        whatsapp_number: waNumber,
+        whatsapp_code: waNumber ? waCode : null,
+        email: emailOn,
+      },
     };
   });
 
@@ -258,7 +209,75 @@ export const getBookingByToken = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin.rpc("get_booking_by_token", { _token: data.token });
     if (error) throw new Error(error.message);
-    return row ?? null;
+    if (!row) return null;
+    const { data: vr } = await supabaseAdmin.from("bookings")
+      .select("phone_verified_at, verify_code_wa, verify_code_email")
+      .eq("client_tracking_token", data.token).maybeSingle();
+    const v: any = vr ?? {};
+    let verify = null;
+    if (!v.phone_verified_at) {
+      const { publicWhatsAppNumber } = await import("@/lib/verification.server");
+      const waNumber = publicWhatsAppNumber();
+      verify = { whatsapp_number: waNumber, whatsapp_code: waNumber ? v.verify_code_wa : null, email: !!v.verify_code_email };
+    }
+    return { ...(row as any), phone_verified: !!v.phone_verified_at, verify };
+  });
+
+const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;
+
+// العروس تكتب رمز الإيميل لتأكيد الطلب (5 محاولات كحد أقصى).
+export const verifyBookingEmailCode = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; code: string }) => {
+    if (!d || typeof d.token !== "string" || !TOKEN_RE.test(d.token)) throw new Error("invalid token");
+    const code = String(d.code ?? "").replace(/\D/g, "");
+    if (code.length !== 6) throw new Error("الرمز يتكوّن من 6 أرقام");
+    return { token: d.token, code };
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: b } = await supabaseAdmin.from("bookings")
+      .select("id, phone_verified_at, verify_code_email, verify_expires_at, verify_attempts")
+      .eq("client_tracking_token", data.token).is("deleted_at", null).maybeSingle();
+    const bk: any = b;
+    if (!bk) throw new Error("الحجز غير موجود أو انتهت مهلته");
+    if (bk.phone_verified_at) return { ok: true };
+    if (bk.verify_attempts >= 5) throw new Error("تجاوزتِ عدد المحاولات. احجزي من جديد.");
+    if (bk.verify_expires_at && new Date(bk.verify_expires_at).getTime() < Date.now()) {
+      throw new Error("انتهت صلاحية الرمز. اطلبي رمزاً جديداً.");
+    }
+    if (!bk.verify_code_email || bk.verify_code_email !== data.code) {
+      await supabaseAdmin.from("bookings").update({ verify_attempts: bk.verify_attempts + 1 } as any).eq("id", bk.id);
+      throw new Error("الرمز غير صحيح");
+    }
+    const { markBookingVerified } = await import("@/lib/verification.server");
+    await markBookingVerified(bk.id, "email");
+    return { ok: true };
+  });
+
+// إعادة إرسال رمز الإيميل (مرة كل دقيقة تقريباً) مع تمديد المهلة.
+export const resendBookingEmailCode = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string }) => {
+    if (!d || typeof d.token !== "string" || !TOKEN_RE.test(d.token)) throw new Error("invalid token");
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const v = await import("@/lib/verification.server");
+    const { data: b } = await supabaseAdmin.from("bookings")
+      .select("id, client_name, client_email, phone_verified_at, updated_at")
+      .eq("client_tracking_token", data.token).is("deleted_at", null).maybeSingle();
+    const bk: any = b;
+    if (!bk) throw new Error("الحجز غير موجود أو انتهت مهلته");
+    if (bk.phone_verified_at) return { ok: true };
+    if (!v.isEmailConfigured()) throw new Error("الإرسال بالإيميل غير متاح حالياً");
+    if (Date.now() - new Date(bk.updated_at).getTime() < 55_000) throw new Error("انتظري دقيقة قبل طلب رمز جديد");
+    const code = v.sixDigits();
+    await supabaseAdmin.from("bookings").update({
+      verify_code_email: code, verify_attempts: 0, updated_at: new Date().toISOString(),
+      verify_expires_at: new Date(Date.now() + v.VERIFY_WINDOW_MINUTES * 60_000).toISOString(),
+    } as any).eq("id", bk.id);
+    await v.sendEmailCode({ to: bk.client_email, client_name: bk.client_name, code, booking_id: bk.id });
+    return { ok: true };
   });
 
 export const clientMarkDepositSent = createServerFn({ method: "POST" })
@@ -279,6 +298,7 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
     });
     if (error) {
       if (error.message.includes("EXPIRED_BOOKING")) throw new Error("انتهت مهلة الحجز وحُجز الموعد لعميلة أخرى. تواصلي مع المصوّرة لاختيار موعد جديد.");
+      if (error.message.includes("BOOKING_NOT_VERIFIED")) throw new Error("أكّدي طلب الحجز أولاً (عبر واتساب أو رمز الإيميل) قبل إرسال العربون.");
       if (error.message.includes("BOOKING_NOT_AWAITING_DEPOSIT")) throw new Error("هذا الحجز لم يعد بانتظار العربون.");
       throw new Error(error.message);
     }

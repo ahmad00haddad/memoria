@@ -2,6 +2,7 @@ import { createFileRoute, useParams } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Header } from "@/components/site/Header";
+import { VerifyBookingPanel } from "@/components/VerifyBookingPanel";
 import { Footer } from "@/components/site/Footer";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -369,7 +370,22 @@ function TrackingPage() {
         </h1>
         <p className="text-muted-foreground text-sm mb-4">حجز مع {ph.display_name} (@{ph.username})</p>
 
-        {b.status !== "cancelled" && (() => {
+        {b.verify && b.status !== "cancelled" && (
+          <div className="mb-6">
+            <VerifyBookingPanel
+              token={token}
+              verify={b.verify}
+              onVerified={() => { load(); }}
+              onRecheck={async () => {
+                const r: any = await get({ data: { token } });
+                if (r?.phone_verified) setB(r);
+                return !!r?.phone_verified;
+              }}
+            />
+          </div>
+        )}
+
+        {b.status !== "cancelled" && !b.verify && (() => {
           const currentIdx = Math.max(0, stages.findIndex((x) => !x.done));
           const allDone = stages.every((x) => x.done);
           const daysToEvent = b.event_date ? Math.ceil((new Date(b.event_date).getTime() - Date.now()) / 86400000) : null;

@@ -72,6 +72,7 @@ function BookingsList() {
           .select("*")
           .eq("photographer_id", session.user.id)
           .is("deleted_at", null)
+          .not("phone_verified_at" as any, "is", null) // طلبات غير مؤكدة (سبام محتمل) لا تظهر
           .order("event_date", { ascending: false });
         if (error) throw error;
         cachedBookingsList = data ?? [];
