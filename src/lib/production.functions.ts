@@ -75,11 +75,30 @@ export const updateProductionStage = createServerFn({ method: "POST" })
       }
     }
 
-    const { error: updateErr } = await supabase
+    // نتحقق أن الصف حُدّث فعلاً: سياسة RLS لا تطابق أي صف ترجع "نجاح" بدون خطأ،
+    // فكانت الواجهة تعرض "تم النقل" ثم تعود المرحلة القديمة عند إعادة التحميل.
+    const { data: updated, error: updateErr } = await supabase
       .from("bookings")
       .update(patch)
-      .eq("id", data.booking_id);
+      .eq("id", data.booking_id)
+      .select("production_stage")
+      .maybeSingle();
     if (updateErr) throw new Error(updateErr.message);
+    if (!updated || updated.production_stage !== data.stage) {
+      // الملكية متحقَّق منها أعلاه — نكمل الكتابة عبر service-role
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: forced, error: adminErr } = await supabaseAdmin
+        .from("bookings")
+        .update(patch)
+        .eq("id", data.booking_id)
+        .eq("photographer_id", userId)
+        .select("production_stage")
+        .maybeSingle();
+      if (adminErr) throw new Error(adminErr.message);
+      if (!forced || forced.production_stage !== data.stage) {
+        throw new Error("لم يُحفظ تغيير المرحلة، حاولي مجدداً");
+      }
+    }
 
     // إشعار واتساب حسب المرحلة — fire-and-forget
     if (bk.client_phone) {

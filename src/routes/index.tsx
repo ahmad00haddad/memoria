@@ -296,7 +296,7 @@ function Landing() {
                 >
                   <label className="flex flex-1 items-center gap-2 rounded-full px-4 py-2 focus-within:bg-secondary/60">
                     <span className="text-xs text-muted-foreground shrink-0">المدينة</span>
-                    <select value={heroCity} onChange={(e) => setHeroCity(e.target.value)} className="w-full bg-transparent text-sm outline-none">
+                    <select value={heroCity} onChange={(e) => setHeroCity(e.target.value)} className="w-full bg-transparent text-sm text-foreground outline-none [&>option]:bg-background [&>option]:text-foreground">
                       <option value="">كل المدن</option>
                       {cities.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>

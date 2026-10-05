@@ -306,6 +306,13 @@ function PhotographerPage() {
               <div className="text-[10px] uppercase tracking-[0.5em] text-gold mb-4">
                 {profile.tagline || "WEDDING PHOTOGRAPHY"}
               </div>
+              {profile.avatar_url && (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.display_name}
+                  className="mb-5 h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-2 border-gold/60 shadow-elegant"
+                />
+              )}
               <h1 className="display-serif text-[clamp(3rem,8vw,7rem)] mb-6">
                 {profile.display_name}
               </h1>
@@ -360,9 +367,9 @@ function PhotographerPage() {
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
             className="order-1 lg:order-2 lg:col-span-7 relative min-h-[420px] lg:min-h-[640px] rounded-sm overflow-hidden bg-gradient-royal"
           >
-            {profile.cover_url && (
+            {(profile.cover_url || profile.avatar_url) && (
               <ProgressiveImage
-                src={profile.cover_url}
+                src={profile.cover_url || profile.avatar_url!}
                 alt={profile.display_name}
                 className="absolute inset-0 h-full w-full object-cover"
               />
@@ -606,6 +613,26 @@ const getAddonEmoji = (name: string) => {
   return '✨';
 };
 
+const MY_BOOKINGS_KEY = "memoria.my-bookings";
+
+function SavedBookingsBanner() {
+  const [items, setItems] = useState<{ token: string; photographer?: string; date?: string }[]>([]);
+  useEffect(() => {
+    try { setItems(JSON.parse(window.localStorage.getItem(MY_BOOKINGS_KEY) || "[]")); } catch {}
+  }, []);
+  if (items.length === 0) return null;
+  return (
+    <div className="mb-4 rounded-sm border border-emerald-600/30 bg-emerald-600/5 px-3 py-2 text-xs space-y-1">
+      <div className="font-medium text-foreground">لديكِ حجوزات سابقة من هذا الجهاز:</div>
+      {items.slice(0, 3).map((x) => (
+        <Link key={x.token} to="/track/$token" params={{ token: x.token }} className="block underline underline-offset-2 text-emerald-700 dark:text-emerald-400">
+          تتبّع حجزك{x.photographer ? ` مع ${x.photographer}` : ""}{x.date ? ` — ${x.date}` : ""}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
   const storageKey = `memoria.booking-draft.${profile.username}`;
   const initial = {
@@ -747,6 +774,12 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         },
       });
       setSuccess({ token: res.tracking_token });
+      // احفظي رابط التتبع على الجهاز حتى لا يضيع إذا أُغلقت الصفحة
+      try {
+        const list = JSON.parse(window.localStorage.getItem(MY_BOOKINGS_KEY) || "[]");
+        const next = [{ token: res.tracking_token, photographer: profile.display_name, date: f.event_date }, ...list.filter((x: any) => x?.token !== res.tracking_token)].slice(0, 10);
+        window.localStorage.setItem(MY_BOOKINGS_KEY, JSON.stringify(next));
+      } catch {}
       hapticVibrate("success");
       
       // Idea 1: Confetti on Booking Submit
@@ -765,6 +798,22 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       setSubmitting(false);
     }
   };
+
+  // Idea 4: Dynamic Page Title — must stay above the early return below, or
+  // React throws "rendered fewer hooks" the moment the booking succeeds.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const originalTitle = document.title;
+    const handleVisibilityChange = () => {
+      if (document.hidden && !success && (f.event_date || f.package_id)) {
+        document.title = "عُودي لإكمال حجزك! 💍";
+      } else {
+        document.title = originalTitle;
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [f, success]);
 
   if (success) {
     const trackUrl = `/track/${success.token}`;
@@ -828,21 +877,6 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     3: !!f.client_name && !!f.client_phone && !!f.client_email && consent,
   };
   
-  // Idea 4: Dynamic Page Title
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    const originalTitle = document.title;
-    const handleVisibilityChange = () => {
-      if (document.hidden && !success && (f.event_date || f.package_id)) {
-        document.title = "عُودي لإكمال حجزك! 💍";
-      } else {
-        document.title = originalTitle;
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [f, success]);
-
   const goNext = () => {
     if (!stepValid[step]) {
       const msg = step === 1 ? "يجب اختيار التاريخ والباقة قبل المتابعة للخطوة التالية." :
@@ -867,6 +901,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft">
       <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Book in simple steps</div>
       <h2 className="font-serif text-3xl mb-4">احجزي بخطوات بسيطة</h2>
+      <SavedBookingsBanner />
       {restoredDraft && !success && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-sm border border-gold/30 bg-gold/5 px-3 py-2 text-xs">
           <span className="text-foreground">تم استعادة مسودتك السابقة تلقائيًا.</span>

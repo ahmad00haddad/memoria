@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Upload, X, Eye, Check, ChevronDown } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
-import { uploadProfilePhoto, uploadPortfolioPhoto } from "@/lib/upload";
+import { uploadProfilePhoto, uploadPortfolioPhoto, deletePortfolioPhoto, MAX_PORTFOLIO_PHOTOS } from "@/lib/upload";
 import { requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 import { startTour, useTourState, resetTour } from "@/components/ClientTour";
 
@@ -169,10 +169,14 @@ function ProfilePage() {
   };
 
   const onPortfolio = async (files: FileList) => {
+    const room = MAX_PORTFOLIO_PHOTOS - (p.portfolio_urls ?? []).length;
+    if (room <= 0) return toast.error(`وصلتِ للحد الأقصى (${MAX_PORTFOLIO_PHOTOS} صورة). احذفي صورة لإضافة أخرى.`);
+    const picked = Array.from(files);
+    if (picked.length > room) toast(`سيتم رفع ${room} صور فقط — الحد الأقصى ${MAX_PORTFOLIO_PHOTOS} صورة`);
     setPortfolioUploading(true);
     try {
       const urls: string[] = [];
-      for (const f of Array.from(files)) {
+      for (const f of picked.slice(0, room)) {
         const res = await uploadPortfolioPhoto(f, uid);
         if (res.ok) urls.push(res.publicUrl || res.path);
         else toast.error(res.userMessage);
@@ -202,7 +206,10 @@ function ProfilePage() {
     const before = [...(p.portfolio_urls ?? [])];
     const arr = before.filter((_, idx) => idx !== i);
     if (!(await savePortfolio(arr))) return;
-    toast("أُزيلت الصورة", { action: { label: "تراجع", onClick: () => savePortfolio(before) } });
+    let undone = false;
+    toast("أُزيلت الصورة", { action: { label: "تراجع", onClick: () => { undone = true; savePortfolio(before); } } });
+    // بعد انتهاء مهلة التراجع نحذف الملف فعلياً من التخزين
+    setTimeout(() => { if (!undone) deletePortfolioPhoto(before[i]).catch(() => {}); }, 8000);
   };
 
   const save = async () => {
@@ -331,7 +338,7 @@ function ProfilePage() {
             <div className="mt-6">
               <div className="mb-1 flex items-baseline justify-between">
                 <span className="text-sm">معرض الأعمال</span>
-                <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{portfolioCount} {portfolioCount < 5 ? `· أضيفي ${5 - portfolioCount} لتظهري في البحث` : "صورة"}</span>
+                <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{portfolioCount}/{MAX_PORTFOLIO_PHOTOS} {portfolioCount < 5 ? `· أضيفي ${5 - portfolioCount} لتظهري في البحث` : "صورة"}</span>
               </div>
               <p className="mb-3 text-xs text-muted-foreground">الصورة الأولى هي ما تراه العروس في نتائج البحث.</p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -351,7 +358,7 @@ function ProfilePage() {
                     </motion.div>
                   ))}
                 </AnimatePresence>
-                <div
+                {portfolioCount < MAX_PORTFOLIO_PHOTOS && <div
                   onClick={() => portfolioRef.current?.click()}
                   onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                   onDragLeave={() => setDragOver(false)}
@@ -368,7 +375,7 @@ function ProfilePage() {
                     <Upload className="h-6 w-6 mb-2 transition-transform duration-300 group-hover:-translate-y-1 group-hover:text-gold" />
                   )}
                   <span className="text-[11px] text-center px-2">{portfolioUploading ? "جاري الرفع…" : dragOver ? "أفلتي الصور هنا" : "إضافة صور"}</span>
-                </div>
+                </div>}
                 <input ref={portfolioRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && onPortfolio(e.target.files)} />
               </div>
             </div>

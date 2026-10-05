@@ -512,7 +512,10 @@ function Dashboard() {
   };
 
   useEffect(() => {
-    loadData();
+    // أي خطأ في التحميل كان يترك اللوحة عالقة على الهيكل الرمادي حتى التحديث
+    loadData()
+      .catch((e) => { console.error("[dashboard] load failed", e); toast.error("تعذّر تحميل اللوحة، حاولي مجدداً"); })
+      .finally(() => setLoading(false));
   }, [navigate]);
 
   const dismissQuickStart = async () => {

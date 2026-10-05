@@ -347,13 +347,14 @@ export async function uploadProfilePhoto(
     maxMb: 5,
     allowedTypes: "image",
     upsert: true,
-    // توفير التخزين: الأفاتار 512px، صورة الغلاف 1280px
-    maxDimension: type === "avatar" ? 512 : 1280,
-    targetSizeMb: type === "avatar" ? 0.1 : 0.25,
+    // ضغط عالٍ لتوفير التخزين: الأفاتار 400px/~60KB، الغلاف 1280px/~180KB
+    maxDimension: type === "avatar" ? 400 : 1280,
+    targetSizeMb: type === "avatar" ? 0.06 : 0.18,
   });
   if (result.ok) {
     const { data } = supabase.storage.from("avatars").getPublicUrl(result.path);
-    return { ...result, publicUrl: data.publicUrl };
+    // المسار ثابت (upsert) — بدون ?v= يعرض المتصفح/CDN الصورة القديمة المخزّنة
+    return { ...result, publicUrl: `${data.publicUrl}?v=${Date.now()}` };
   }
   return result;
 }
@@ -361,8 +362,21 @@ export async function uploadProfilePhoto(
 /**
  * رفع صورة معرض الأعمال (portfolio).
  * يُخزَّن داخل bucket "avatars" العام تحت مجلد <uid>/portfolio/
- * مضغوطة إلى 1600px / ~300KB لتخفيف استهلاك التخزين.
+ * مضغوطة إلى 1400px / ~200KB لتخفيف استهلاك التخزين.
  */
+/** الحد الأقصى لصور معرض الأعمال لكل مصوّرة (مطبّق أيضاً في قاعدة البيانات). */
+export const MAX_PORTFOLIO_PHOTOS = 20;
+
+/** يحذف ملف معرض الأعمال من التخزين عبر رابطه العام (لا يترك ملفات يتيمة). */
+export async function deletePortfolioPhoto(publicUrl: string) {
+  const marker = "/object/public/avatars/";
+  const idx = publicUrl.indexOf(marker);
+  if (idx < 0) return;
+  const path = decodeURIComponent(publicUrl.slice(idx + marker.length).split("?")[0]);
+  if (!path.includes("/portfolio/")) return;
+  await supabase.storage.from("avatars").remove([path]);
+}
+
 export async function uploadPortfolioPhoto(
   file: File,
   userId: string,
@@ -374,8 +388,8 @@ export async function uploadPortfolioPhoto(
     maxMb: 10,
     allowedTypes: "image",
     upsert: false,
-    maxDimension: 1600,
-    targetSizeMb: 0.3,
+    maxDimension: 1400,
+    targetSizeMb: 0.2,
   });
   if (result.ok) {
     const { data } = supabase.storage.from("avatars").getPublicUrl(result.path);

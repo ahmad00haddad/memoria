@@ -115,7 +115,10 @@ function TrackingPage() {
     try {
       const data = await get({ data: { token } });
       setB(data);
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) {
+      console.error("[track] load failed", e);
+      toast.error("تعذّر تحميل الحجز، حاولي التحديث بعد قليل");
+    }
     finally { setLoading(false); }
   };
 

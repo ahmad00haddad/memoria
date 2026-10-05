@@ -106,7 +106,14 @@ function BookingDetail() {
   const [tab, setTab] = useState<TabKey>("overview");
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const [dismissedHints, setDismissedHints] = useState<string[]>([]);
+  // التلميحات المُغلقة تُحفظ لكل حجز حتى لا تعود للظهور في كل زيارة
+  const hintsKey = `memoria.dismissed-hints.${id}`;
+  const [dismissedHints, setDismissedHints] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem(hintsKey) || "[]"); } catch { return []; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(hintsKey, JSON.stringify(dismissedHints)); } catch { /* ignore */ }
+  }, [hintsKey, dismissedHints]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const confirmFn = useServerFn(confirmBookingAfterDeposit);
   const softDeleteFn = useServerFn(softDeleteBooking);
@@ -408,7 +415,6 @@ function BookingDetail() {
     { key: "overview", label: "نظرة عامة", icon: <LayoutGrid className="h-4 w-4" /> },
     { key: "chat", label: "المحادثة", icon: <MessageSquare className="h-4 w-4" />, badge: unread },
     { key: "production", label: "الإنتاج", icon: <ListChecks className="h-4 w-4" /> },
-    { key: "gallery", label: "المعرض", icon: <ImagePlus className="h-4 w-4" /> },
   ];
 
   return (
@@ -705,9 +711,6 @@ function BookingDetail() {
               </div>
             )}
 
-            {tab === "gallery" && (
-              <GalleryPanel bookingId={id} clientToken={b.client_tracking_token} b={b} />
-            )}
           </motion.div>
         </AnimatePresence>
       </section>

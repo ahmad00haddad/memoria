@@ -52,9 +52,11 @@ export function useAuthState(): AuthState {
 
     void load();
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      queueMicrotask(() => {
+      // setTimeout (not a microtask): calling Supabase from inside this callback
+      // while it still holds the auth lock deadlocks, leaving pages stuck loading.
+      setTimeout(() => {
         void load(session);
-      });
+      }, 0);
     });
 
     return () => {

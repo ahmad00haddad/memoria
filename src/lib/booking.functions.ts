@@ -277,7 +277,11 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
       _reference: (data.reference ?? null) as any,
       _note: (data.note ?? null) as any,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.message.includes("EXPIRED_BOOKING")) throw new Error("انتهت مهلة الحجز وحُجز الموعد لعميلة أخرى. تواصلي مع المصوّرة لاختيار موعد جديد.");
+      if (error.message.includes("BOOKING_NOT_AWAITING_DEPOSIT")) throw new Error("هذا الحجز لم يعد بانتظار العربون.");
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -431,8 +435,22 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
       }
     }
 
-    if (!bk.deposit_sent_at && !bk.deposit_proof_url && !bk.deposit_checkout_session_id) {
-      throw new Error("لا يمكن تأكيد الحجز قبل وصول إثبات العربون من العميل");
+    // كان مجرّد فتح صفحة الدفع الإلكتروني (checkout session) يكفي للتأكيد حتى لو لم يُدفع شيء.
+    // الآن: إمّا دفع إلكتروني مؤكَّد من مزوّد الدفع، أو إثبات تحويل رفعته العميلة وتراجعه المصوّرة.
+    if (bk.deposit_checkout_session_id && !bk.deposit_confirmed_at) {
+      const { data: fresh } = await supabase
+        .from("bookings").select("deposit_confirmed_at, status").eq("id", data.booking_id).maybeSingle();
+      bk.deposit_confirmed_at = fresh?.deposit_confirmed_at ?? null;
+      // المصالحة نفسها قد تكون أكّدت الحجز (دفع إلكتروني ناجح)
+      if (fresh?.status === "confirmed") return { ok: true };
+    }
+    if (!bk.deposit_confirmed_at && !bk.deposit_sent_at && !bk.deposit_proof_url) {
+      throw new Error(bk.deposit_checkout_session_id
+        ? "الدفع الإلكتروني لم يكتمل بعد — لا يمكن تأكيد الحجز حتى يصل المبلغ"
+        : "لا يمكن تأكيد الحجز قبل وصول إثبات العربون من العميل");
+    }
+    if (bk.status !== "pending_deposit" && bk.status !== "quote") {
+      throw new Error("هذا الحجز ليس بانتظار العربون");
     }
     const patch: any = { status: "confirmed", updated_at: new Date().toISOString() };
     if (!bk.deposit_confirmed_at) patch.deposit_confirmed_at = new Date().toISOString();

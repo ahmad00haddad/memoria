@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { X, Download, Share } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+function wasDismissed() {
+  try { return !!localStorage.getItem("pwa_prompt_dismissed"); } catch { return true; }
+}
+
 export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [show, setShow] = useState(false);
@@ -26,8 +30,7 @@ export function PwaInstallPrompt() {
     if (ios) {
       const timer = setTimeout(() => {
         // Only show if user hasn't dismissed it recently
-        const dismissed = localStorage.getItem("pwa_prompt_dismissed");
-        if (!dismissed) setShow(true);
+        if (!wasDismissed()) setShow(true);
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -36,8 +39,7 @@ export function PwaInstallPrompt() {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      const dismissed = localStorage.getItem("pwa_prompt_dismissed");
-      if (!dismissed) setShow(true);
+      if (!wasDismissed()) setShow(true);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -50,17 +52,16 @@ export function PwaInstallPrompt() {
   const handleInstall = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        setShow(false);
-      }
+      await deferredPrompt.userChoice;
       setDeferredPrompt(null);
     }
+    // سواء ثبّتت أو رفضت — لا نعيد إظهار الشريط مرة أخرى
+    handleDismiss();
   };
 
   const handleDismiss = () => {
     setShow(false);
-    localStorage.setItem("pwa_prompt_dismissed", "true");
+    try { localStorage.setItem("pwa_prompt_dismissed", "true"); } catch { /* ignore */ }
   };
 
   if (isStandalone || !show) return null;

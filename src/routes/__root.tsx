@@ -192,7 +192,10 @@ function RootComponent() {
         return;
       }
 
-      queueMicrotask(() => {
+      // Must be a macrotask: router.invalidate() re-runs beforeLoad → getSession(),
+      // which deadlocks if it runs while this callback still holds the auth lock
+      // (the "page hangs until refresh" bug when returning to the dashboard).
+      setTimeout(() => {
         router.invalidate();
 
         if (event !== "SIGNED_OUT") {
@@ -200,7 +203,7 @@ function RootComponent() {
         } else {
           queryClient.clear();
         }
-      });
+      }, 0);
     });
 
     return () => subscription.unsubscribe();
