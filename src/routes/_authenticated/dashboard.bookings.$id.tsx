@@ -131,12 +131,13 @@ function BookingDetail() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return nav({ to: "/login" });
     setUid(session.user.id);
-    const [{ data: bk }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
+    const [{ data: bkRaw }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
       supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at").eq("id", id).maybeSingle(),
       supabase.from("messages").select("id, created_at, booking_id, sender_id, sender_name, body, read_at").eq("booking_id", id).order("created_at"),
       supabase.from("contracts").select("id, status, sign_token, signed_at, client_name").eq("booking_id", id).maybeSingle(),
       supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
     ]);
+    const bk = bkRaw as any;
     setB(bk); setMsgs(m ?? []); setContract(ct); setTemplates(tpl ?? []);
     if (bk) {
       try { localStorage.setItem("memoria:last-booking", JSON.stringify({ id: bk.id, name: bk.client_name })); } catch { /* ignore */ }
