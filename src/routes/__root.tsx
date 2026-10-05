@@ -139,6 +139,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           ]
         : []),
       {
+        // رابط Lovable القديم يعمل على قاعدة بيانات قديمة — نحوّل زوّاره للموقع الحقيقي
+        // مع الإبقاء على نفس الصفحة (مثل /track/... أو /photographers/...).
+        children: "(function(){if(location.hostname==='memoria-jo.lovable.app'){location.replace('https://memoria-production.ahmad000haddad.workers.dev'+location.pathname+location.search+location.hash);}})();",
+      },
+      {
         children: "(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
       },
       {
