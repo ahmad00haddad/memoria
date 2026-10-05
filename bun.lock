@@ -1,13 +1,15 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 1,
   "workspaces": {
     "": {
       "name": "tanstack_start_ts",
       "dependencies": {
         "@cloudflare/vite-plugin": "^1.25.5",
         "@fontsource-variable/cairo": "^5.2.7",
+        "@fontsource-variable/cormorant-garamond": "^5.3.0",
         "@fontsource-variable/playfair-display": "^5.2.8",
+        "@fontsource/amiri": "^5.3.0",
+        "@fontsource/aref-ruqaa": "^5.3.0",
         "@hookform/resolvers": "^5.2.2",
         "@lovable.dev/cloud-auth-js": "^1.1.2",
         "@radix-ui/react-accordion": "^1.2.12",
@@ -244,7 +246,13 @@
 
     "@fontsource-variable/cairo": ["@fontsource-variable/cairo@5.2.7", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource-variable/cairo/-/cairo-5.2.7.tgz", {}, "sha512-vY7VKyZ/tuzuMVaB5AJY33TD0XJOfIyUZ0bDrvsDuiY7RkQWX1nGSNbh4ZLUSOXi2ivTOzb4tPjPBMhty2+hzg=="],
 
+    "@fontsource-variable/cormorant-garamond": ["@fontsource-variable/cormorant-garamond@5.3.0", "", {}, "sha512-rgZJ/5w3hi60swAPnrOXpZf5wEH6NTrvm4H8D9Y4b1QIFUqlX14eM3QTMU/eAznjfh0eXpO1QUqsFhiy58aoMg=="],
+
     "@fontsource-variable/playfair-display": ["@fontsource-variable/playfair-display@5.2.8", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource-variable/playfair-display/-/playfair-display-5.2.8.tgz", {}, "sha512-ZzVIXPOrL85yyOvZYoBzUszIJM+xKkHqni4IYn2CVLaGQQdJR8sBeC8yFNgjxSJ7ludTwta8qpULeOFuk5X75A=="],
+
+    "@fontsource/amiri": ["@fontsource/amiri@5.3.0", "", {}, "sha512-i4SWJnVIphj8556EdVzNrEG/Qu82k6JXjXTtSUIohx3tHmo2GHw1Kv60TWo+xjk7Yf1Etb2Gskh0lUFclTKyUw=="],
+
+    "@fontsource/aref-ruqaa": ["@fontsource/aref-ruqaa@5.3.0", "", {}, "sha512-GC+ckm4v2zndUWuR2JiMdO333mNZqrzxHN/9rpBJhLwDwcwYXzr+GzCRzgK6afGMhYnV0pwrqeGeLm4ZNmWhWQ=="],
 
     "@hookform/resolvers": ["@hookform/resolvers@5.2.2", "", { "dependencies": { "@standard-schema/utils": "^0.3.0" }, "peerDependencies": { "react-hook-form": "^7.55.0" } }, "sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA=="],
 
