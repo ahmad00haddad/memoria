@@ -209,6 +209,22 @@ function RootComponent() {
     return () => subscription.unsubscribe();
   }, [queryClient, router]);
 
+  // بعد كل نشر جديد تُحذف ملفات JS القديمة من الخادم؛ التبويب المفتوح مسبقاً
+  // يفشل في تحميلها فيعلق على الشاشة الرمادية. نعيد التحميل مرة واحدة تلقائياً.
+  useEffect(() => {
+    const onPreloadError = (e: Event) => {
+      e.preventDefault();
+      try {
+        if (sessionStorage.getItem("memoria.chunk-reload")) return;
+        sessionStorage.setItem("memoria.chunk-reload", "1");
+      } catch { /* ignore */ }
+      window.location.reload();
+    };
+    window.addEventListener("vite:preloadError", onPreloadError);
+    const clear = setTimeout(() => { try { sessionStorage.removeItem("memoria.chunk-reload"); } catch { /* ignore */ } }, 10000);
+    return () => { window.removeEventListener("vite:preloadError", onPreloadError); clearTimeout(clear); };
+  }, []);
+
   // PWA (PR4): تسجيل الـ service worker + التقاط حدث التثبيت لاستخدامه في صفحة /app.
   useEffect(() => {
     if (typeof window === "undefined") return;

@@ -1,7 +1,7 @@
 // Memoria Service Worker — PWA caching + offline support
 // Version: 5.0 (wedding redesign; never cache cross-origin/API responses)
 
-const CACHE_NAME = "memoria-v5";
+const CACHE_NAME = "memoria-v6";
 const OFFLINE_PAGE = "/offline.html";
 
 // الملفات الأساسية التي تُحفظ دائماً في الـ cache (App Shell)
