@@ -143,8 +143,9 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
     }
 
     // سعر الاشتراك من env (الافتراضي: 25 دينار/شهر)
-    const monthlyPrice = Number(process.env.SUBSCRIPTION_MONTHLY_PRICE || "25");
-    const amount = monthlyPrice * data.months;
+    const monthlyPrice = Number(process.env.SUBSCRIPTION_MONTHLY_PRICE || "7");
+    const yearlyPrice = Number(process.env.SUBSCRIPTION_YEARLY_PRICE || "70");
+    const amount = data.months === 12 ? yearlyPrice : monthlyPrice * data.months;
     const currency = (process.env.PAYMENT_CURRENCY || "JOD").toUpperCase();
     const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
 

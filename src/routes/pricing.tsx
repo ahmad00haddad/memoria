@@ -74,6 +74,9 @@ function PricingPage() {
             <div className="text-4xl font-serif my-4">
               7 <span className="text-xl font-sans">د.أ</span> <span className="text-sm text-muted-foreground">/ شهريًا</span>
             </div>
+            <div className="-mt-2 mb-4 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs text-gold">
+              أو 70 د.أ سنويًا — شهران مجاناً
+            </div>
             <p className="text-sm text-muted-foreground mb-6">كل ما تحتاجينه لإدارة احترافية كاملة. ادفعي عبر CliQ أو بطاقة دولية.</p>
             <Link
               to={authLoading || isPhotographer ? "/dashboard/subscription" : "/login"}

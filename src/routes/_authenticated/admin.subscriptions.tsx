@@ -18,6 +18,7 @@ type PaymentRow = {
   id: string;
   photographer_id: string;
   amount: number;
+  period_months?: number | null;
   method: string;
   status: string;
   proof_url: string | null;
@@ -121,7 +122,7 @@ function AdminSubs() {
               key={r.id}
               r={r}
               url={r.proof_signed_url ?? undefined}
-              onApprove={() => { setApproveRow(r); setApproveMonths(1); }}
+              onApprove={() => { setApproveRow(r); setApproveMonths(r.period_months || 1); }}
               onReject={() => { setRejectRow(r); setRejectReason(""); }}
             />
           ))}

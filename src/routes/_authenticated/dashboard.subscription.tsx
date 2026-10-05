@@ -20,8 +20,12 @@ export const Route = createFileRoute("/_authenticated/dashboard/subscription")({
 // Admin's CliQ alias to receive subscription payments
 const ADMIN_CLIQ_ALIAS = "MEMORIA";
 const ADMIN_CLIQ_NAME = "Memoria Platform";
-const PRICE_USD = 9;
-const PRICE_JOD = 7; // ~7 JOD = 9 USD
+// الأسعار بالدينار. السنوي = شهران مجاناً (70 بدل 84).
+const PLANS = {
+  monthly: { months: 1, jod: 7, label: "شهري", per: "شهريًا" },
+  yearly: { months: 12, jod: 70, label: "سنوي", per: "سنويًا" },
+} as const;
+type PlanKey = keyof typeof PLANS;
 
 type Sub = {
   id: string;
@@ -50,7 +54,9 @@ function SubscriptionPage() {
   const [uploading, setUploading] = useState(false);
   const [reference, setReference] = useState("");
   const [onlinePayLoading, setOnlinePayLoading] = useState(false);
-  const [selectedMonths, setSelectedMonths] = useState(1);
+  const [planKey, setPlanKey] = useState<PlanKey>("yearly");
+  const plan = PLANS[planKey];
+  const selectedMonths = plan.months;
   const fileRef = useRef<HTMLInputElement>(null);
   const checkoutFn = useServerFn(createSubscriptionCheckout);
 
@@ -98,7 +104,7 @@ function SubscriptionPage() {
       u.searchParams.delete("payment");
       window.history.replaceState({}, "", u.toString());
       // تحديث فوري لواجهة المستخدم (Optimistic Update)
-      setSub((prev) => prev ? { ...prev, status: "active", current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() } : null);
+      setSub((prev) => prev ? { ...prev, status: "active", current_period_end: new Date(Date.now() + selectedMonths * 30 * 24 * 60 * 60 * 1000).toISOString() } : null);
       load();
     } else if (status === "cancelled") {
       toast.message("أُلغي الدفع. يمكنك المحاولة مجدداً أو استخدام CliQ.");
@@ -140,7 +146,8 @@ function SubscriptionPage() {
       const path = uploadResult.path;
       const { error: insErr } = await supabase.from("subscription_payments").insert({
         photographer_id: userId,
-        amount: PRICE_USD,
+        amount: plan.jod,
+        period_months: plan.months,
         method: "cliq",
         status: "pending",
         proof_url: path,
@@ -208,7 +215,34 @@ function SubscriptionPage() {
         {/* Payment methods */}
         {showPayment && effectiveStatus !== "pending_review" && (
           <div className="mt-10">
-            <h2 className="font-serif text-2xl mb-1">الدفع — {PRICE_USD}$ شهريًا</h2>
+            <h2 className="font-serif text-2xl mb-1">اختاري خطتك</h2>
+            <p className="text-sm text-muted-foreground mb-4">السنوي أوفر — وتحويل واحد فقط في السنة.</p>
+            <div className="grid grid-cols-2 gap-3 mb-8" role="radiogroup" aria-label="مدة الاشتراك">
+              {(Object.keys(PLANS) as PlanKey[]).map((k) => {
+                const p = PLANS[k];
+                const active = planKey === k;
+                const saving = PLANS.monthly.jod * p.months - p.jod;
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setPlanKey(k)}
+                    className={`relative rounded-sm border p-4 text-start transition ${active ? "border-gold bg-gold/5 ring-1 ring-gold" : "border-border bg-card hover:border-foreground/30"}`}
+                  >
+                    {saving > 0 && (
+                      <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">وفّري {saving} د.أ</span>
+                    )}
+                    <div className="text-sm text-muted-foreground">{p.label}</div>
+                    <div className="font-serif text-3xl mt-1">{p.jod} <span className="text-sm font-sans">د.أ</span></div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {p.months === 12 ? `≈ ${(p.jod / 12).toFixed(1)} د.أ للشهر · 12 شهراً` : "يُجدَّد كل شهر"}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
             <p className="text-sm text-muted-foreground mb-6">اختاري طريقة الدفع المناسبة لكِ.</p>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -220,7 +254,7 @@ function SubscriptionPage() {
                 </div>
                 <ol className="text-sm space-y-2 text-muted-foreground mb-5 list-decimal list-inside">
                   <li>افتحي تطبيق البنك ورسالة CliQ</li>
-                  <li>حوّلي <span className="text-foreground font-semibold">{PRICE_JOD} د.أ</span> (~{PRICE_USD}$) إلى:</li>
+                  <li>حوّلي <span className="text-foreground font-semibold">{plan.jod} د.أ</span> ({plan.label}) إلى:</li>
                 </ol>
                 <div className="bg-secondary rounded-sm p-3 mb-4 flex items-center justify-between active:scale-95 transition-transform duration-200">
                   <div>
@@ -292,7 +326,7 @@ function SubscriptionPage() {
                 <div key={p.id} className="flex items-center justify-between p-4 border-b border-border last:border-0">
                   <div>
                     <div className="text-sm">
-                      {p.amount}$ · {p.method === "cliq" ? "CliQ" : "بطاقة"}
+                      {p.amount} د.أ · {p.method === "cliq" ? "CliQ" : "بطاقة"}
                     </div>
                     <div className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString("ar-JO")}</div>
                     {p.notes && <div className="text-xs text-muted-foreground mt-1">{p.notes}</div>}
