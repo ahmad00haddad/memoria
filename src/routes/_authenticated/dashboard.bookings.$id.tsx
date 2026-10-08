@@ -628,6 +628,14 @@ function BookingDetail() {
                       {b.status === "pending_deposit" && (
                         <p className="mb-3 text-xs text-muted-foreground">تأكّدي أن المبلغ في الإيصال <strong className="text-foreground">{b.deposit_amount} د.أ</strong> قبل التأكيد.</p>
                       )}
+                      {(() => {
+                        const lines = String(b.client_notes ?? "").split(/\r?\n/).filter((l) => /^(رقم العملية|اسم المحوِّل):/.test(l));
+                        return lines.length > 0 && (
+                          <div className="mb-3 space-y-1 rounded-xl bg-secondary/60 p-3 text-xs">
+                            {lines.slice(-2).map((l, i) => <div key={i} className="font-medium">{l}</div>)}
+                          </div>
+                        );
+                      })()}
                       {proofUrl ? (
                         <button onClick={() => setProofOpen(true)} className="block w-full overflow-hidden rounded-xl border border-border bg-secondary transition-transform active:scale-[0.98]">
                           <motion.img layoutId="proof-image" src={proofUrl} alt="إثبات تحويل العربون" className="max-h-60 w-full object-contain" />

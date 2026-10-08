@@ -256,7 +256,9 @@ function TrackingPage() {
 
 
       // 2. Update booking
-      await sendDeposit({ data: { token, proof_path: path, reference: reference.trim(), note: `اسم المحوِّل: ${note.trim()}` } });
+      // The RPC drops _reference, so it also goes in the note the photographer sees
+      await sendDeposit({ data: { token, proof_path: path, reference: reference.trim(),
+          note: `رقم العملية: ${reference.trim()}\nاسم المحوِّل: ${note.trim()}` } });
       toast.success("تم إرسال الإيصال بنجاح. سنقوم بتأكيد الحجز قريباً.", { id: "upload-receipt" });
       setReference(""); setNote(""); setPickedFile(null);
       if (fileRef.current) fileRef.current.value = "";
