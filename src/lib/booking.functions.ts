@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT } from "./validation";
 
 type BookingItemInput = { rule_id: string; qty: number };
 
@@ -22,11 +23,14 @@ function validateInput(d: SubmitInput): SubmitInput {
   const isTime = (s: any) => typeof s === "string" && /^\d{2}:\d{2}(:\d{2})?$/.test(s);
   if (!d || typeof d !== "object") throw new Error("invalid payload");
   if (!isUuid(d.photographer_id)) throw new Error("invalid photographer_id");
-  if (!d.client_name || d.client_name.length > 120) throw new Error("invalid client_name");
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.client_email ?? "")) throw new Error("invalid email");
-  if (!d.client_phone || d.client_phone.length > 30) throw new Error("invalid phone");
-  if (!isDate(d.event_date)) throw new Error("invalid event_date");
-  if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error("invalid time");
+  if (!d.client_name || d.client_name.length > 120) throw new Error("اكتبي اسمكِ الكامل");
+  if (!isEmail(d.client_email)) throw new Error(EMAIL_HINT);
+  d.client_email = d.client_email.trim();
+  const phone = normalizePhone(d.client_phone ?? "");
+  if (!phone) throw new Error(PHONE_HINT);
+  d.client_phone = phone;
+  if (!isDate(d.event_date)) throw new Error("اختاري تاريخ المناسبة");
+  if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error("اختاري وقت البداية والنهاية");
   const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
   const duration = toMin(d.end_time) - toMin(d.start_time);
   if (duration <= 0) throw new Error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
@@ -35,14 +39,14 @@ function validateInput(d: SubmitInput): SubmitInput {
   // اليوم بتوقيت الأردن (UTC+3) وليس UTC، لتفادي رفض/قبول يوم كامل بالخطأ قرب منتصف الليل
   const todayStr = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().split("T")[0];
   if (d.event_date < todayStr) throw new Error("لا يمكن اختيار تاريخ في الماضي");
-  if (!Array.isArray(d.items) || d.items.length === 0 || d.items.length > 30) throw new Error("invalid items");
+  if (!Array.isArray(d.items) || d.items.length === 0 || d.items.length > 30) throw new Error("اختاري باقة");
   for (const it of d.items) {
     if (!isUuid(it.rule_id)) throw new Error("invalid item rule_id");
     if (!Number.isInteger(it.qty) || it.qty < 1 || it.qty > 50) throw new Error("invalid item qty");
   }
   if (d.privacy_level !== "public" && d.privacy_level !== "private_only") throw new Error("invalid privacy_level");
-  if (d.venue_address && d.venue_address.length > 500) throw new Error("invalid venue");
-  if (d.client_notes && d.client_notes.length > 4000) throw new Error("invalid notes");
+  if (d.venue_address && d.venue_address.length > 500) throw new Error("عنوان المكان طويل جداً");
+  if (d.client_notes && d.client_notes.length > 4000) throw new Error("الملاحظات طويلة جداً");
   return d;
 }
 
@@ -290,9 +294,11 @@ export const resendBookingEmailCode = createServerFn({ method: "POST" })
 export const clientMarkDepositSent = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string; proof_path?: string | null; reference?: string | null; note?: string | null }) => {
     if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
-    if (d.proof_path && (typeof d.proof_path !== "string" || d.proof_path.length > 500)) throw new Error("invalid proof_path");
-    if (d.reference && (typeof d.reference !== "string" || d.reference.length > 200)) throw new Error("invalid reference");
-    if (d.note && (typeof d.note !== "string" || d.note.length > 2000)) throw new Error("invalid note");
+    if (typeof d.proof_path !== "string" || !d.proof_path || d.proof_path.length > 500) throw new Error("ارفعي صورة إيصال التحويل");
+    if (typeof d.reference !== "string" || d.reference.trim().length < 3) throw new Error("اكتبي رقم العملية المرجعي");
+    if (typeof d.note !== "string" || d.note.trim().length < 3) throw new Error("اكتبي اسم صاحب الحساب المحوِّل");
+    if (d.reference && (typeof d.reference !== "string" || d.reference.length > 200)) throw new Error("رقم الحوالة طويل جداً");
+    if (d.note && (typeof d.note !== "string" || d.note.length > 2000)) throw new Error("الملاحظة طويلة جداً");
     return d;
   })
   .handler(async ({ data }) => {
@@ -346,9 +352,9 @@ export const clientAddNote = createServerFn({ method: "POST" })
 export const submitReviewByToken = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string; rating: number; comment?: string | null; client_name?: string | null }) => {
     if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
-    if (!Number.isInteger(d.rating) || d.rating < 1 || d.rating > 5) throw new Error("invalid rating");
-    if (d.comment && d.comment.length > 2000) throw new Error("comment too long");
-    if (d.client_name && d.client_name.length > 120) throw new Error("name too long");
+    if (!Number.isInteger(d.rating) || d.rating < 1 || d.rating > 5) throw new Error("اختاري عدد النجوم");
+    if (d.comment && d.comment.length > 2000) throw new Error("التعليق طويل جداً (الحد 2000 حرف)");
+    if (d.client_name && d.client_name.length > 120) throw new Error("الاسم طويل جداً");
     return d;
   })
   .handler(async ({ data }) => {

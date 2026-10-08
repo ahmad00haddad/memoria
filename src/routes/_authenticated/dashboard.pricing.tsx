@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyErrors";
 import { Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -8,7 +9,8 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2, Copy, Check } from "lucide-react";
+import { Plus, Trash2, Copy, Check, X, CircleCheck, Star, Zap } from "lucide-react";
+import { parseFeatures, serializeFeatures, type Feature, type FeatureKind } from "@/lib/packageFeatures";
 import { hapticVibrate } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard/pricing")({ component: PricingMgr });
@@ -17,6 +19,14 @@ type Rule = {
   _key?: string;
   id?: string; service: "photography" | "cinematic_video"; package: "hourly" | "full_day" | "addon";
   label: string; price: number; per_photo_price?: number | null; description?: string | null;
+  subtitle?: string | null; cta_label?: string | null;
+};
+
+const KIND_ORDER: FeatureKind[] = ["regular", "exclusive", "fast"];
+const KIND_META: Record<FeatureKind, { icon: typeof Star; title: string }> = {
+  regular: { icon: CircleCheck, title: "ميزة عادية — اضغطي للتغيير" },
+  exclusive: { icon: Star, title: "ميزة حصرية — اضغطي للتغيير" },
+  fast: { icon: Zap, title: "تسليم سريع — اضغطي للتغيير" },
 };
 
 function PricingMgr() {
@@ -30,7 +40,7 @@ function PricingMgr() {
   const [justSaved, setJustSaved] = useState(false);
   const [deposit, setDeposit] = useState<{ percent: number; fixed: number | null }>({ percent: 25, fixed: null });
   const keyOf = (r: Rule) => r.id ?? r._key ?? "";
-  const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "" })));
+  const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "", subtitle: r.subtitle ?? "", cta_label: r.cta_label ?? "" })));
   const withKeys = (rs: Rule[]) => rs.map((r) => ({ ...r, _key: r.id ?? Math.random().toString(36).slice(2) }));
 
   useEffect(() => {
@@ -58,9 +68,9 @@ function PricingMgr() {
   
   const injectMarketTemplates = () => {
     const templates: Rule[] = [
-      { service: "photography", package: "hourly", label: "الباقة الأساسية (4 ساعات)", price: 150, per_photo_price: 0, description: "تغطية 4 ساعات، 100 صورة معدلة، تسليم فلاش ميموري" },
-      { service: "photography", package: "full_day", label: "الباقة الذهبية (يوم كامل)", price: 250, per_photo_price: 0, description: "تغطية كاملة من الصالون للقاعة، ألبوم مطبوع 10 صفحات" },
-      { service: "cinematic_video", package: "full_day", label: "باقة VIP (تصوير + فيديو)", price: 400, per_photo_price: 0, description: "تغطية فريقين، تصوير فيديو سينمائي، ألبوم حراري فاخر" }
+      { service: "photography", package: "hourly", label: "الباقة الأساسية (4 ساعات)", price: 150, per_photo_price: 0, subtitle: "مثالية للخطبة والحفلات العائلية الصغيرة", description: "تغطية 4 ساعات\n100 صورة معدلة\nتسليم فلاش ميموري" },
+      { service: "photography", package: "full_day", label: "الباقة الذهبية (يوم كامل)", price: 250, per_photo_price: 0, subtitle: "يوم الزفاف كاملاً من التحضيرات حتى نهاية الحفل", description: "تغطية كاملة من الصالون للقاعة\nألبوم مطبوع 10 صفحات" },
+      { service: "cinematic_video", package: "full_day", label: "باقة VIP (تصوير + فيديو)", price: 400, per_photo_price: 0, subtitle: "التجربة المتكاملة صوراً وفيديو", description: "تغطية فريقين\nتصوير فيديو سينمائي\nألبوم حراري فاخر" }
     ];
     setRules([...rules, ...withKeys(templates)]);
     toast.success("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي.");
@@ -114,12 +124,20 @@ function PricingMgr() {
         label: r.label.trim(),
         photographer_id: uid,
         price: Number(r.price),
-        per_photo_price: r.per_photo_price ? Math.max(0, Number(r.per_photo_price)) : 0
+        per_photo_price: r.per_photo_price ? Math.max(0, Number(r.per_photo_price)) : 0,
+        subtitle: r.subtitle?.trim() || null,
+        cta_label: r.cta_label?.trim() || null,
       };
-      const { error } = r.id
-        ? await supabase.from("pricing_rules").update(payload).eq("id", r.id)
-        : await supabase.from("pricing_rules").insert(payload);
-      if (error) { setSaving(false); return toast.error(`تعذّر حفظ "${payload.label}": ${error.message}`); }
+      const write = (p: any) => r.id
+        ? supabase.from("pricing_rules").update(p).eq("id", r.id)
+        : supabase.from("pricing_rules").insert(p);
+      let { error } = await write(payload);
+      // Database not migrated yet (subtitle/cta_label missing): still save the rest
+      if (error && /subtitle|cta_label/.test(error.message)) {
+        const { subtitle, cta_label, ...rest } = payload;
+        ({ error } = await write(rest));
+      }
+      if (error) { setSaving(false); return toast.error(`تعذّر حفظ "${payload.label}": ${friendlyError(error.message)}`); }
     }
     const { data } = await supabase.from("pricing_rules").select("*").eq("photographer_id", uid).order("price");
     setRules(withKeys((data ?? []) as Rule[]));
@@ -140,7 +158,7 @@ function PricingMgr() {
           <BackToDashboard />
           <div className="rounded-sm border border-destructive/30 bg-card p-6 shadow-soft mt-4">
             <h1 className="font-serif text-3xl mb-2">تعذّر فتح صفحة الأسعار</h1>
-            <p className="text-sm text-muted-foreground mb-4">{loadError}</p>
+            <p className="text-sm text-muted-foreground mb-4">{friendlyError(loadError)}</p>
             <button onClick={() => window.location.reload()} className="bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">إعادة المحاولة</button>
           </div>
         </section>
@@ -240,7 +258,8 @@ function PricingMgr() {
               </div>
 
               <label className="block text-xs text-muted-foreground mb-1">اسم الباقة</label>
-              <input placeholder="مثال: باقة ٤ ساعات" value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="w-full bg-transparent font-serif text-2xl border-b border-border pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
+              <input placeholder="مثال: باقة ٤ ساعات" value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="w-full bg-transparent font-serif text-2xl border-b border-border pb-2 mb-3 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
+              <input maxLength={120} aria-label="وصف قصير تحت الاسم" placeholder="سطر قصير تحت الاسم، مثال: مثالية للحفلات العائلية الأنيقة" value={r.subtitle ?? ""} onChange={(e) => upd(i, "subtitle", e.target.value)} className="w-full bg-transparent text-sm text-muted-foreground border-b border-border/60 pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
 
               <div className="grid grid-cols-2 gap-4 mb-5">
                 <div>
@@ -258,8 +277,11 @@ function PricingMgr() {
                 </div>
               </div>
 
-              <label className="block text-xs text-muted-foreground mb-1">ماذا تشمل الباقة؟</label>
-              <textarea rows={2} placeholder="مثال: تغطية ٤ ساعات، ١٠٠ صورة معدّلة، تسليم خلال أسبوعين" value={r.description ?? ""} onChange={(e) => upd(i, "description", e.target.value)} className="w-full resize-none rounded-xl bg-secondary/60 px-3 py-2.5 text-sm leading-relaxed outline-none ring-1 ring-transparent transition focus:ring-gold/50" />
+              <label className="block text-xs text-muted-foreground mb-1">ماذا تشمل الباقة؟ <span className="text-muted-foreground/70">— ميزة في كل سطر، والأرقام تظهر بالخط العريض تلقائياً</span></label>
+              <FeatureEditor value={r.description ?? ""} onChange={(v) => upd(i, "description", v)} />
+
+              <label className="block text-xs text-muted-foreground mt-5 mb-1">نص زر الحجز <span className="text-muted-foreground/70">(اختياري)</span></label>
+              <input maxLength={40} placeholder="احجزي هذه الباقة" value={r.cta_label ?? ""} onChange={(e) => upd(i, "cta_label", e.target.value)} className="w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50" />
             </motion.div>
             );
           })}
@@ -290,6 +312,49 @@ function PricingMgr() {
         </AnimatePresence>
       </section>
       <Footer />
+    </div>
+  );
+}
+function FeatureEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  // Local rows so a freshly added empty row survives until it's typed in
+  const [rows, setRows] = useState<Feature[]>(() => {
+    const fs = parseFeatures(value);
+    return fs.length ? fs : [{ kind: "regular", text: "" }];
+  });
+  const commit = (next: Feature[]) => { setRows(next); onChange(serializeFeatures(next)); };
+  const set = (i: number, patch: Partial<Feature>) => commit(rows.map((f, j) => (j === i ? { ...f, ...patch } : f)));
+  const insertAfter = (i: number) => {
+    setRows([...rows.slice(0, i + 1), { kind: "regular", text: "" }, ...rows.slice(i + 1)]);
+    requestAnimationFrame(() => (document.activeElement?.closest("[data-features]")?.querySelectorAll("input")[i + 1] as HTMLInputElement | undefined)?.focus());
+  };
+  return (
+    <div className="space-y-1.5" data-features>
+      {rows.map((f, i) => {
+        const { icon: Icon, title } = KIND_META[f.kind];
+        return (
+          <div key={i} className="flex items-center gap-2 rounded-xl bg-secondary/60 px-2 py-1 ring-1 ring-transparent focus-within:ring-gold/50">
+            <button type="button" title={title} aria-label={title}
+              onClick={() => set(i, { kind: KIND_ORDER[(KIND_ORDER.indexOf(f.kind) + 1) % KIND_ORDER.length] })}
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-gold transition-colors hover:bg-background">
+              <Icon className={`h-4 w-4 ${f.kind === "exclusive" ? "fill-gold" : ""}`} />
+            </button>
+            <input value={f.text} maxLength={90} placeholder="مثال: تغطية 6 ساعات"
+              onChange={(e) => set(i, { text: e.target.value.replace(/^[★⚡]\s*/, "") })}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); insertAfter(i); } }}
+              className="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-foreground/50" />
+            {rows.length > 1 && (
+              <button type="button" aria-label="حذف الميزة" onClick={() => commit(rows.filter((_, j) => j !== i))}
+                className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-destructive">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        );
+      })}
+      <button type="button" onClick={() => setRows([...rows, { kind: "regular", text: "" }])} className="inline-flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground hover:text-gold">
+        <Plus className="h-3.5 w-3.5" /> إضافة ميزة
+      </button>
+      <p className="px-2 text-[11px] text-muted-foreground/80">اضغطي الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع</p>
     </div>
   );
 }

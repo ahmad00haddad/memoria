@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyErrors";
 import { Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
@@ -146,7 +147,7 @@ function Contracts() {
   const missingCancel = body.trim().length > 0 && !/إلغاء|الإلغاء/.test(body);
 
   if (loading) return <PageLoader />;
-  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{loadError}</div>;
+  if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{friendlyError(loadError)}</div>;
 
   return (
     <div className="min-h-screen bg-background">

@@ -196,7 +196,15 @@ function TrackingPage() {
   const onSendDeposit = async () => {
     const file = fileRef.current?.files?.[0];
     if (!file) {
-      toast.error("الرجاء اختيار صورة إيصال التحويل أولاً، أو استخدمي زر «حوّلت بدون إيصال».", { id: "upload-receipt" });
+      toast.error("ارفعي صورة إيصال التحويل (لقطة شاشة من تطبيق البنك تكفي).", { id: "upload-receipt" });
+      return;
+    }
+    if (reference.trim().length < 3) {
+      toast.error("اكتبي رقم العملية المرجعي الظاهر في إيصال التحويل.", { id: "upload-receipt" });
+      return;
+    }
+    if (note.trim().length < 3) {
+      toast.error("اكتبي اسم صاحب الحساب الذي حوّلتِ منه.", { id: "upload-receipt" });
       return;
     }
 
@@ -220,14 +228,18 @@ function TrackingPage() {
         try {
           const { default: imageCompression } = await import('browser-image-compression');
           finalFile = await imageCompression(file, {
-            maxSizeMB: 1.2,
-            maxWidthOrHeight: 2400,
+            maxSizeMB: 0.4,
+            maxWidthOrHeight: 1600,
             useWebWorker: true,
             fileType: 'image/jpeg',
           });
         } catch (err) {
-          console.warn('receipt compression failed, uploading original', err);
+          console.warn('receipt compression failed', err);
         }
+      }
+      // Never store a big file: if compression couldn't shrink it, ask for a screenshot instead
+      if (finalFile.size > 2 * 1024 * 1024) {
+        throw new Error("تعذّر تصغير الملف. التقطي لقطة شاشة للإيصال وارفعيها بدلاً منه.");
       }
 
       // 1. Upload to storage — المسار يجب أن يبدأ بـ public-tokens/<token>
@@ -244,29 +256,13 @@ function TrackingPage() {
 
 
       // 2. Update booking
-      await sendDeposit({ data: { token, proof_path: path, reference: reference || null, note: note || null } });
+      await sendDeposit({ data: { token, proof_path: path, reference: reference.trim(), note: `اسم المحوِّل: ${note.trim()}` } });
       toast.success("تم إرسال الإيصال بنجاح. سنقوم بتأكيد الحجز قريباً.", { id: "upload-receipt" });
       setReference(""); setNote(""); setPickedFile(null);
       if (fileRef.current) fileRef.current.value = "";
       load();
     } catch (e: any) {
       toast.error(e.message || "حدث خطأ أثناء رفع الملف", { id: "upload-receipt" });
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // بعض العميلات يحوّلن عبر CliQ من تطبيق البنك بدون حفظ إيصال —
-  // نسمح بإبلاغ المصوّرة بدون مرفق بدل أن يعلق الزر بلا استجابة.
-  const onSendDepositWithoutProof = async () => {
-    setUploading(true);
-    try {
-      await sendDeposit({ data: { token, proof_path: null, reference: reference || null, note: note || null } });
-      toast.success("أبلغنا المصوّرة بالتحويل. قد تطلب منكِ الإيصال للتأكيد.");
-      setReference(""); setNote("");
-      load();
-    } catch (e: any) {
-      toast.error(e.message || "تعذّر إرسال الإشعار");
     } finally {
       setUploading(false);
     }
@@ -577,10 +573,10 @@ function TrackingPage() {
             )}
 
             <div className="grid gap-3">
-              <input type="text" placeholder="رقم العملية المرجعي (اختياري)" value={reference}
+              <input type="text" placeholder="رقم العملية المرجعي (مطلوب)" required value={reference}
                      onChange={(e) => setReference(e.target.value)}
                      className="border border-border rounded-sm px-3 py-2 text-sm bg-background" />
-              <textarea placeholder="ملاحظة للمصورة (اختياري)" value={note} rows={2}
+              <input type="text" placeholder="اسم صاحب الحساب الذي حوّلتِ منه (مطلوب)" required value={note}
                         onChange={(e) => setNote(e.target.value)}
                         className="border border-border rounded-sm px-3 py-2 text-sm bg-background" />
               <label className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-4 text-sm transition-colors ${pickedFile ? "border-gold/60 bg-card" : "border-border hover:border-gold/40"}`}>
@@ -591,17 +587,14 @@ function TrackingPage() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium truncate">{pickedFile ? pickedFile.name : "اختاري صورة الإيصال"}</span>
-                  <span className="block text-xs text-muted-foreground">{pickedFile ? `${(pickedFile.size / 1024 / 1024).toFixed(1)} ميجا — اضغطي للتغيير` : "صورة أو PDF، حتى ١٠ ميجا"}</span>
+                  <span className="block text-xs text-muted-foreground">{pickedFile ? `${(pickedFile.size / 1024 / 1024).toFixed(1)} ميجا — اضغطي للتغيير` : "مطلوب — صورة أو لقطة شاشة للإيصال"}</span>
                 </span>
               </label>
               <button onClick={onSendDeposit} disabled={uploading}
                       className="bg-gold text-charcoal py-3 rounded-sm font-medium hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
                 <Upload className="h-4 w-4" /> {uploading ? "جاري الإرسال…" : "تم إرسال العربون"}
               </button>
-              <button onClick={onSendDepositWithoutProof} disabled={uploading}
-                      className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground disabled:opacity-60">
-                حوّلت بدون إيصال — أبلغي المصوّرة فقط
-              </button>
+
             </div>
           </div>
         )}

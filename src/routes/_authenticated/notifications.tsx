@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyErrors";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -108,7 +109,7 @@ function NotificationsPage() {
         {loading ? (
           <ListSkeleton rows={5} />
         ) : loadError ? (
-          <p className="text-destructive">{loadError}</p>
+          <p className="text-destructive">{friendlyError(loadError)}</p>
         ) : items.length === 0 ? (
           <EmptyState
             icon={Bell}

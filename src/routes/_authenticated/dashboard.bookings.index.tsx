@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyErrors";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
@@ -230,7 +231,7 @@ function BookingsList() {
         </div>
 
         {loading && <ListSkeleton />}
-        {loadError && <p className="text-center text-sm text-red-500 py-8">{loadError}</p>}
+        {loadError && <p className="text-center text-sm text-red-500 py-8">{friendlyError(loadError)}</p>}
 
         {!loading && !loadError && displayed.length === 0 && (
           list.length === 0 ? (

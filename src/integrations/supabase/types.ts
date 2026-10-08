@@ -753,6 +753,7 @@ export type Database = {
       pricing_rules: {
         Row: {
           created_at: string
+          cta_label: string | null
           description: string | null
           id: string
           label: string
@@ -761,9 +762,11 @@ export type Database = {
           photographer_id: string
           price: number
           service: Database["public"]["Enums"]["service_type"]
+          subtitle: string | null
         }
         Insert: {
           created_at?: string
+          cta_label?: string | null
           description?: string | null
           id?: string
           label: string
@@ -772,9 +775,11 @@ export type Database = {
           photographer_id: string
           price: number
           service: Database["public"]["Enums"]["service_type"]
+          subtitle?: string | null
         }
         Update: {
           created_at?: string
+          cta_label?: string | null
           description?: string | null
           id?: string
           label?: string
@@ -783,6 +788,7 @@ export type Database = {
           photographer_id?: string
           price?: number
           service?: Database["public"]["Enums"]["service_type"]
+          subtitle?: string | null
         }
         Relationships: [
           {

@@ -7,6 +7,8 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
+import { friendlyError } from "@/lib/friendlyErrors";
+import { isEmail, EMAIL_HINT } from "@/lib/validation";
 import { recordReferralAfterSignup } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/photographers/join")({
@@ -110,6 +112,9 @@ function JoinPage() {
     if (!form.display_name.trim()) {
       return fail("الرجاء إدخال الاسم الكامل أو اسم الاستوديو.");
     }
+    if (!isEmail(form.email)) {
+      return fail(EMAIL_HINT);
+    }
     if (form.password.length < 8) {
       return fail("كلمة المرور يجب أن تكون 8 أحرف على الأقل.");
     }
@@ -125,7 +130,7 @@ function JoinPage() {
       return fail("اسم المستخدم مستخدم بالفعل، الرجاء اختيار اسم آخر.");
     }
     const { data: signUpData, error } = await supabase.auth.signUp({
-      email: form.email,
+      email: form.email.trim().toLowerCase(),
       password: form.password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
@@ -149,7 +154,7 @@ function JoinPage() {
       if (m.includes("rate") || m.includes("limit")) {
         return fail("محاولات كثيرة، الرجاء المحاولة بعد قليل.");
       }
-      return fail(error.message);
+      return fail(friendlyError(error.message));
     }
     // Record referral via secure server function (idempotent, no-op if no session yet).
     if (refCode && signUpData.user) {
@@ -159,7 +164,7 @@ function JoinPage() {
     if (signUpData.session) {
       navigate({ to: "/dashboard" });
     } else {
-      setConfirmSent(form.email);
+      setConfirmSent(form.email.trim().toLowerCase());
     }
   };
 
@@ -194,7 +199,7 @@ function JoinPage() {
               </button>
               <Link to="/login" className="inline-block border border-border px-5 py-2.5 rounded-full text-sm hover:bg-secondary">تسجيل الدخول</Link>
             </div>
-            {err && <p className="mt-3 text-sm text-destructive">{err}</p>}
+            {err && <p className="mt-3 text-sm text-destructive">{friendlyError(err)}</p>}
           </div>
         ) : (<>
         <div className="text-center mb-8">
@@ -250,7 +255,7 @@ function JoinPage() {
               </div>
             )}
           </div>
-          {err && <p className="text-sm text-destructive">{err}</p>}
+          {err && <p className="text-sm text-destructive">{friendlyError(err)}</p>}
           <button disabled={loading || uState === "taken"} className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory py-3 rounded-full hover:opacity-90 disabled:opacity-60 active:scale-[0.99] transition-transform dark:bg-gold dark:text-charcoal">
             {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
             {loading ? "ننشئ حسابك…" : "إنشاء حسابي"}

@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyErrors";
 import { Lightbulb } from "lucide-react";
 import { createFileRoute, Link, useNavigate, ErrorComponentProps } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
@@ -308,7 +309,7 @@ function ProductionBoard() {
       <Header />
       <section className="container-editorial py-24 text-center">
         <BackToDashboard />
-        <p className="text-destructive mt-8">{err}</p>
+        <p className="text-destructive mt-8">{friendlyError(err)}</p>
         {uid && <button onClick={() => load(uid, true)} className="mt-4 rounded-full border border-border px-5 py-2 text-sm hover:bg-secondary">أعيدي المحاولة</button>}
       </section>
       <Footer />

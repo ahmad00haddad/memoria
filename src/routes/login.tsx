@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyErrors";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { emailTypoSuggestion } from "@/lib/form-hints";
@@ -108,7 +109,7 @@ function LoginPage() {
       setSuccess("أهلاً بعودتك — ننقلك الآن.");
       navigate({ to: redirectPath, replace: true });
     } catch (error: any) {
-      const message = error?.message || "حدث خلل غير متوقع أثناء تسجيل الدخول.";
+      const message = friendlyError(error);
       setErr(message);
       toast.error(message);
     } finally {
@@ -157,7 +158,7 @@ function LoginPage() {
           {success && <p className="text-sm text-emerald-600">{success}</p>}
           {err && (
             <div className="text-sm text-destructive">
-              {err}
+              {friendlyError(err)}
               {unconfirmed && (
                 <button
                   type="button"

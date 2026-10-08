@@ -21,6 +21,9 @@ import { hapticVibrate } from "@/lib/utils";
 import { playSound } from "@/lib/sounds";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin } from "lucide-react";
+import { Zap, CircleCheck } from "lucide-react";
+import { parseFeatures, emphasizeNumbers } from "@/lib/packageFeatures";
+import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT } from "@/lib/validation";
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
 
@@ -113,6 +116,7 @@ type Pricing = {
   package: "hourly" | "full_day" | "addon";
   label: string; price: number;
   per_photo_price: number | null; description: string | null;
+  subtitle?: string | null; cta_label?: string | null;
 };
 
 function PhotographerPage() {
@@ -416,8 +420,9 @@ function PhotographerPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 relative">
             {pricing.filter((p) => p.package !== "addon").map((p, idx, arr) => {
               const isPopular = arr.length >= 3 && idx === 1;
+              const features = parseFeatures(p.description);
               return (
-                <div key={p.id} className={`relative rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${isPopular ? 'border-gold border-2 ring-1 ring-gold/20 shadow-[0_0_20px_rgba(201,162,39,0.15)]' : 'border-border'}`}>
+                <div key={p.id} className={`relative flex flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${isPopular ? 'border-gold border-2 ring-1 ring-gold/20 shadow-[0_0_20px_rgba(201,162,39,0.15)]' : 'border-border'}`}>
                   {isPopular && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-charcoal px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">
                       الباقة الأكثر طلباً
@@ -425,9 +430,21 @@ function PhotographerPage() {
                   )}
                   <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? "فيديو سينمائي" : "تصوير فوتوغرافي"}</div>
                   <h3 className="font-serif text-2xl mb-1">{p.label}</h3>
-                  {p.description && <p className="text-sm text-muted-foreground mb-4 whitespace-pre-line">{p.description}</p>}
-                  <div className="font-serif text-3xl text-gold mb-4">{Number(p.price).toLocaleString("ar-JO")} <span className="text-sm">د.أ</span></div>
-                  <button onClick={() => pickPackage(p.id)} className={`w-full py-2 rounded-sm text-sm ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>احجزي هذه الباقة</button>
+                  {p.subtitle && <p className="text-sm text-muted-foreground">{p.subtitle}</p>}
+                  <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString("ar-JO")} <span className="text-sm">د.أ</span></div>
+                  {features.length > 0 && (
+                    <ul className="mb-6 space-y-2.5 border-t border-border pt-4 text-sm text-muted-foreground">
+                      {features.map((ft, i) => (
+                        <li key={i} className={`flex items-start gap-2.5 leading-relaxed ${ft.kind === "exclusive" ? "text-foreground font-medium" : ""}`}>
+                          {ft.kind === "exclusive" ? <Star className="mt-0.5 h-4 w-4 shrink-0 fill-gold text-gold" aria-label="ميزة حصرية" />
+                            : ft.kind === "fast" ? <Zap className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-label="تسليم سريع" />
+                            : <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold/70" aria-hidden />}
+                          <span>{emphasizeNumbers(ft.text)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>{p.cta_label?.trim() || "احجزي هذه الباقة"}</button>
                 </div>
               );
             })}
@@ -652,10 +669,19 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [shake, setShake] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // A sent request survives refresh/leaving the page, so the bride can always copy her tracking link again
+  const successKey = `memoria.booking-success.${profile.username}`;
+  const saveSuccess = (v: { token: string; verify: VerifyInfo | null } | null) => {
+    setSuccess(v);
+    try { v ? window.localStorage.setItem(successKey, JSON.stringify(v)) : window.localStorage.removeItem(successKey); } catch {}
+  };
+
   // Restore draft from localStorage on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
+      const done = window.localStorage.getItem(successKey);
+      if (done) { const v = JSON.parse(done); if (v?.token) { setSuccess(v); return; } }
       const raw = window.localStorage.getItem(storageKey);
       if (!raw) return;
       const draft = JSON.parse(raw);
@@ -742,6 +768,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     if (!f.client_name || !f.client_phone || !f.client_email || !f.event_date || !selected) {
       return toast.error("الرجاء تعبئة الاسم والهاتف والإيميل والتاريخ واختيار الباقة");
     }
+    if (!normalizePhone(f.client_phone)) return toast.error(PHONE_HINT);
+    if (!isEmail(f.client_email)) return toast.error(EMAIL_HINT);
     if (!consent) {
       return toast.error("الرجاء الموافقة على سياسة الخصوصية والشروط");
     }
@@ -775,7 +803,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           privacy_level: f.privacy_level,
         },
       });
-      setSuccess({ token: res.tracking_token, verify: (res as any).verify ?? null });
+      saveSuccess({ token: res.tracking_token, verify: (res as any).verify ?? null });
       // احفظي رابط التتبع على الجهاز حتى لا يضيع إذا أُغلقت الصفحة
       try {
         const list = JSON.parse(window.localStorage.getItem(MY_BOOKINGS_KEY) || "[]");
@@ -828,12 +856,27 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         <p className="text-muted-foreground mb-5">
           {success.verify ? "أكّدي طلبك ليصل إلى " + profile.display_name + "." : `تم إخطار ${profile.display_name} وسيتم التواصل معكِ قريبًا.`}
         </p>
+        <div className="mb-5 rounded-sm border-2 border-gold bg-gold/10 p-4 text-start">
+          <div className="font-semibold mb-1">🔗 رابط تتبّع حجزك — احفظيه الآن</div>
+          <p className="text-xs text-muted-foreground mb-3 leading-relaxed">هذا الرابط هو طريقتك الوحيدة لمتابعة الحجز ورفع إثبات العربون. انسخيه وأرسليه لنفسك على واتساب. حفظناه أيضاً على هذا الجهاز.</p>
+          <div className="font-mono text-[11px] break-all rounded-sm bg-background border border-border px-2 py-1.5 mb-3 select-all" dir="ltr">{fullUrl}</div>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => { navigator.clipboard.writeText(fullUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+              className="inline-flex items-center gap-2 rounded-sm bg-charcoal text-ivory px-4 py-2 text-sm">
+              {copied ? <><CheckCircle2 className="h-4 w-4" /> تم النسخ</> : <><ClipboardCopy className="h-4 w-4" /> نسخ الرابط</>}
+            </button>
+            <a href={`https://wa.me/?text=${encodeURIComponent("رابط تتبّع حجزي في ميموريا: " + fullUrl)}`} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-sm border border-border px-4 py-2 text-sm hover:bg-secondary">
+              <MessageCircle className="h-4 w-4" /> أرسليه لنفسك على واتساب
+            </a>
+          </div>
+        </div>
         {success.verify && (
           <div className="mb-5">
             <VerifyBookingPanel
               token={success.token}
               verify={success.verify}
-              onVerified={() => setSuccess({ token: success.token, verify: null })}
+              onVerified={() => saveSuccess({ token: success.token, verify: null })}
               onRecheck={async () => {
                 const r: any = await getByTokenFn({ data: { token: success.token } });
                 return !!r?.phone_verified;
@@ -860,30 +903,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                   className="flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 inline-flex items-center justify-center gap-2">
             <Send className="h-4 w-4" /> اذهبي لصفحة تتبع الحجز
           </button>
-          <button
-            onClick={() => { 
-              navigator.clipboard.writeText(fullUrl); 
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            }}
-            className="sm:w-auto border border-border py-3 px-4 rounded-sm hover:bg-secondary inline-flex items-center justify-center gap-2 text-sm transition-colors"
-          >
-            {copied ? (
-              <motion.div initial={{ scale: 0.5 }} animate={{ scale: 1 }} className="flex items-center gap-2 text-emerald-600">
-                <CheckCircle2 className="h-4 w-4" /> تم النسخ
-              </motion.div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <ClipboardCopy className="h-4 w-4" /> نسخ الرابط
-              </div>
-            )}
-          </button>
+
         </div>
-        <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-          ⚠️ احفظي رابط التتبّع — هو وسيلة وصولك الوحيدة للحجز:
-          <br/>
-          <span className="font-mono text-[11px] break-all">{fullUrl}</span>
-        </p>
+        <button onClick={() => { if (confirm("هل حفظتِ رابط التتبّع؟ سيبقى محفوظاً في قائمة حجوزاتك على هذا الجهاز.")) saveSuccess(null); }}
+          className="mt-4 text-xs text-muted-foreground underline underline-offset-2">إرسال طلب حجز جديد</button>
       </div>
     );
   }
@@ -891,7 +914,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const stepValid: Record<1 | 2 | 3, boolean> = {
     1: !!f.event_date && !!selected && !isBlocked && !hasConflict,
     2: true,
-    3: !!f.client_name && !!f.client_phone && !!f.client_email && consent,
+    3: !!f.client_name.trim() && !!normalizePhone(f.client_phone) && isEmail(f.client_email) && consent,
   };
   
   const goNext = () => {
@@ -1118,7 +1141,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       {step === 3 && (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="الاسم" v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
-        <Field label="الهاتف" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
+        <div>
+          <Field label="رقم الجوال (واتساب)" type="tel" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
+          {f.client_phone.length >= 4 && !normalizePhone(f.client_phone) && <p className="mt-1 text-xs text-destructive">{PHONE_HINT}</p>}
+        </div>
         <div className="sm:col-span-2">
           <Field label="الإيميل" type="email" v={f.client_email} on={(v) => setF({ ...f, client_email: v })} />
         </div>
@@ -1165,7 +1191,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             التالي <ChevronLeft className="h-4 w-4" />
           </button>
         ) : (
-          <button onClick={submit} disabled={submitting || !consent} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm transition-all duration-300">
+          <button onClick={submit} disabled={submitting} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm transition-all duration-300">
             {submitting ? (
               <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" /> جاري الإرسال…

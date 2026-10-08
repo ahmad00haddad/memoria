@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/friendlyErrors";
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -82,7 +83,7 @@ function RecoverPage() {
               />
             </label>
             
-            {err && <p className="text-sm text-destructive">{err}</p>}
+            {err && <p className="text-sm text-destructive">{friendlyError(err)}</p>}
             
             <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
               {loading ? "جاري الإرسال…" : "أرسل لي روابط التتبع"}
