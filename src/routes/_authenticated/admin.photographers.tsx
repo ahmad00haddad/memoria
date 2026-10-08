@@ -196,7 +196,7 @@ function AdminPhotographers() {
                         <CheckCircle2 className="h-3 w-3" /> توثيق
                       </button>
                     ) : (
-                      <button onClick={() => onVerify(r, "rejected")}
+                      <button onClick={() => onVerify(r, "unverified")}
                               className="text-xs px-2.5 py-1.5 rounded-sm border border-destructive text-destructive hover:bg-destructive/5 inline-flex items-center gap-1">
                         <X className="h-3 w-3" /> إلغاء توثيق
                       </button>
