@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, Clock, Upload, Copy, AlertTriangle, CreditCard, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
+import { notifyAdminsOfSubscriptionPayment } from "@/lib/admin-alerts.functions";
 import { createSubscriptionCheckout } from "@/lib/payments.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/subscription")({
@@ -59,6 +60,7 @@ function SubscriptionPage() {
   const selectedMonths = plan.months;
   const fileRef = useRef<HTMLInputElement>(null);
   const checkoutFn = useServerFn(createSubscriptionCheckout);
+  const notifyAdmins = useServerFn(notifyAdminsOfSubscriptionPayment);
 
   const load = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -154,6 +156,8 @@ function SubscriptionPage() {
         cliq_reference: reference || null,
       });
       if (insErr) throw insErr;
+      // Let admins know a receipt is waiting (never block the photographer on it)
+      notifyAdmins().catch(() => {});
       // Photographers cannot write subscriptions (RLS); the pending payment
       // row is what marks the subscription as under review.
       setSub((prev) => prev ? { ...prev, status: "pending_review" } : null);
