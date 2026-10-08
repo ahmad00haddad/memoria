@@ -30,6 +30,8 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function GlobalAuthError({ error, reset }: ErrorComponentProps) {
+  // A stale deploy chunk failed to load: reload into the new build instead of showing an error
+  if (typeof window !== "undefined") (window as any).__memoriaChunkReload?.(error);
   const errorMessage = error instanceof Error ? error.message : String(error);
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-6">

@@ -39,6 +39,8 @@ export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({
 });
 
 function BookingDetailError({ error, reset }: any) {
+  // A stale deploy chunk failed to load: reload into the new build instead of showing an error
+  if (typeof window !== "undefined") (window as any).__memoriaChunkReload?.(error);
   return _BookingDetailErrorBody(reset);
 }
 

@@ -23,6 +23,8 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginError({ error, reset }: any) {
+  // A stale deploy chunk failed to load: reload into the new build instead of showing an error
+  if (typeof window !== "undefined") (window as any).__memoriaChunkReload?.(error);
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-6">
       <div className="h-16 w-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">

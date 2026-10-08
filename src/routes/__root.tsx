@@ -56,6 +56,8 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
+  // A stale deploy chunk failed to load: reload into the new build instead of showing an error
+  if (typeof window !== "undefined") (window as any).__memoriaChunkReload?.(error);
   console.error(error);
   const router = useRouter();
 
@@ -219,18 +221,40 @@ function RootComponent() {
 
   // بعد كل نشر جديد تُحذف ملفات JS القديمة من الخادم؛ التبويب المفتوح مسبقاً
   // يفشل في تحميلها فيعلق على الشاشة الرمادية. نعيد التحميل مرة واحدة تلقائياً.
+  // Route chunks load through plain dynamic import(), which never fires
+  // vite:preloadError — so also catch the rejected import itself. The guard is
+  // a timestamp (not a once-per-session flag) so a second deploy later in the
+  // same session still recovers, while a truly broken chunk can't loop.
   useEffect(() => {
-    const onPreloadError = (e: Event) => {
-      e.preventDefault();
+    const KEY = "memoria.chunk-reload-at";
+    const reloadOnce = () => {
       try {
-        if (sessionStorage.getItem("memoria.chunk-reload")) return;
-        sessionStorage.setItem("memoria.chunk-reload", "1");
+        const last = Number(sessionStorage.getItem(KEY) || 0);
+        if (Date.now() - last < 30_000) return;
+        sessionStorage.setItem(KEY, String(Date.now()));
       } catch { /* ignore */ }
       window.location.reload();
     };
+    const isChunkError = (msg: string) =>
+      /dynamically imported module|Importing a module script failed|error loading dynamically imported|Failed to fetch dynamically|is not a valid JavaScript MIME type|ChunkLoadError/i.test(msg);
+    const onPreloadError = (e: Event) => { e.preventDefault(); reloadOnce(); };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      const msg = String((e.reason as any)?.message ?? e.reason ?? "");
+      if (isChunkError(msg)) reloadOnce();
+    };
+    const onError = (e: ErrorEvent) => { if (isChunkError(String(e.message ?? ""))) reloadOnce(); };
     window.addEventListener("vite:preloadError", onPreloadError);
-    const clear = setTimeout(() => { try { sessionStorage.removeItem("memoria.chunk-reload"); } catch { /* ignore */ } }, 10000);
-    return () => { window.removeEventListener("vite:preloadError", onPreloadError); clearTimeout(clear); };
+    window.addEventListener("unhandledrejection", onRejection);
+    window.addEventListener("error", onError);
+    (window as any).__memoriaChunkReload = (err: unknown) => {
+      if (isChunkError(String((err as any)?.message ?? err ?? ""))) { reloadOnce(); return true; }
+      return false;
+    };
+    return () => {
+      window.removeEventListener("vite:preloadError", onPreloadError);
+      window.removeEventListener("unhandledrejection", onRejection);
+      window.removeEventListener("error", onError);
+    };
   }, []);
 
   // PWA (PR4): تسجيل الـ service worker + التقاط حدث التثبيت لاستخدامه في صفحة /app.

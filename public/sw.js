@@ -1,7 +1,7 @@
 // Memoria Service Worker — PWA caching + offline support
 // Version: 5.0 (wedding redesign; never cache cross-origin/API responses)
 
-const CACHE_NAME = "memoria-v6";
+const CACHE_NAME = "memoria-v7";
 const OFFLINE_PAGE = "/offline.html";
 
 // الملفات الأساسية التي تُحفظ دائماً في الـ cache (App Shell)
@@ -114,7 +114,10 @@ async function cacheFirst(request) {
   if (cached) return cached;
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    // After a deploy a removed chunk can come back as the HTML app shell with
+    // 200; caching that under a .js URL would break the page until cleared.
+    const type = response.headers.get("content-type") || "";
+    if (response.ok && !type.includes("text/html")) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, response.clone());
     }

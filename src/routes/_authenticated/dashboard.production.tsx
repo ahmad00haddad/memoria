@@ -21,6 +21,8 @@ import { hapticVibrate } from "@/lib/utils";
 import { daysFromToday, relativeDay } from "@/components/dashboard/focus";
 
 function ProductionError({ error, reset }: ErrorComponentProps) {
+  // A stale deploy chunk failed to load: reload into the new build instead of showing an error
+  if (typeof window !== "undefined") (window as any).__memoriaChunkReload?.(error);
   const errorMessage = error instanceof Error ? error.message : String(error);
   return (
     <div className="min-h-screen bg-background flex flex-col">
