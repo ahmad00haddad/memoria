@@ -104,7 +104,7 @@ function AdminEmailLog() {
                     <td className="px-4 py-3">{r.subject}</td>
                     <td className="px-4 py-3 text-xs text-destructive">{r.error ?? "—"}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {r.sent_at ? new Date(r.sent_at).toLocaleString("ar-JO") : "—"}
+                      {(r.sent_at ?? (r as any).created_at) ? new Date(r.sent_at ?? (r as any).created_at).toLocaleString("ar-JO") : "—"}
                     </td>
                   </tr>
                 );

@@ -16,7 +16,8 @@ type Row = {
   user_id: string;
   role: string;
   created_at: string;
-  profile?: { username: string; display_name: string; email?: string } | null;
+  email?: string | null;
+  profile?: { username: string; display_name: string } | null;
 };
 
 function AdminRoles() {
@@ -44,15 +45,13 @@ function AdminRoles() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
   const grant = async () => {
-    if (!newUserId.trim()) { toast.error("أدخل معرّف المستخدم"); return; }
-    // Basic UUID format check
-    if (!/^[0-9a-f-]{36}$/i.test(newUserId.trim())) {
-      toast.error("معرّف المستخدم يجب أن يكون UUID صحيح (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)");
-      return;
-    }
+    const v = newUserId.trim();
+    if (!v) { toast.error("اكتب إيميل المستخدم"); return; }
+    const isId = /^[0-9a-f-]{36}$/i.test(v);
+    if (!isId && !v.includes("@")) { toast.error("اكتب إيميل صحيح، مثال: name@gmail.com"); return; }
     setGranting(true);
     try {
-      await grantFn({ data: { user_id: newUserId.trim(), role: newRole } });
+      await grantFn({ data: isId ? { user_id: v, role: newRole } : { email: v, role: newRole } });
       toast.success(`تم منح دور "${newRole}" بنجاح ✓`);
       setNewUserId("");
       load();
@@ -93,13 +92,14 @@ function AdminRoles() {
           </h3>
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[220px]">
-              <label className="text-xs text-muted-foreground mb-1 block">معرّف المستخدم (UUID)</label>
+              <label className="text-xs text-muted-foreground mb-1 block">إيميل المستخدم (أو معرّفه)</label>
               <input
                 type="text"
                 value={newUserId}
                 onChange={(e) => setNewUserId(e.target.value)}
-                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                className="border border-border bg-background rounded-sm px-3 py-2 text-sm w-full focus:outline-none focus:ring-1 focus:ring-gold font-mono"
+                placeholder="name@gmail.com"
+                dir="ltr"
+                className="border border-border bg-background rounded-sm px-3 py-2 text-sm w-full focus:outline-none focus:ring-1 focus:ring-gold"
               />
             </div>
             <div>
@@ -109,9 +109,8 @@ function AdminRoles() {
                 onChange={(e) => setNewRole(e.target.value)}
                 className="border border-border bg-background rounded-sm px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold"
               >
-                <option value="admin">admin</option>
-                <option value="moderator">moderator</option>
-                <option value="support">support</option>
+                <option value="admin">أدمن (صلاحيات كاملة)</option>
+                <option value="photographer">مصوّرة</option>
               </select>
             </div>
             <button
@@ -151,7 +150,9 @@ function AdminRoles() {
                           <span className="font-medium">{r.profile.display_name}</span>
                           <span className="text-muted-foreground text-xs ml-2">@{r.profile.username}</span>
                         </>
-                      ) : <span className="text-muted-foreground text-xs">مستخدم غير معروف</span>}
+                      ) : null}
+                      {r.email && <div className="text-xs text-muted-foreground" dir="ltr">{r.email}</div>}
+                      {!r.profile && !r.email && <span className="text-muted-foreground text-xs">مستخدم غير معروف</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-sm ${r.role === "admin" ? "bg-gold/20 text-gold" : "bg-blue-100 text-blue-800"}`}>

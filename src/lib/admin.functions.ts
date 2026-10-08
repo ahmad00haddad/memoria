@@ -728,7 +728,7 @@ export const listEmailLogAdmin = createServerFn({ method: "GET" })
     const { data, error } = await supabaseAdmin
       .from("email_log")
       .select("*")
-      .order("sent_at", { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -861,20 +861,26 @@ export const listUserRolesAdmin = createServerFn({ method: "GET" })
 
     const ids = Array.from(new Set((data ?? []).map((r: any) => r.user_id)));
     const { data: profs } = ids.length
-      ? await supabaseAdmin.from("profiles").select("id, username, display_name, email").in("id", ids)
+      ? await supabaseAdmin.from("profiles").select("id, username, display_name").in("id", ids)
       : { data: [] as any[] };
     const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+    // Email lives in auth.users, not profiles
+    const emails = new Map<string, string>();
+    await Promise.all(ids.map(async (id) => {
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(id as string);
+      if (u?.user?.email) emails.set(id as string, u.user.email);
+    }));
 
-    return (data ?? []).map((r: any) => ({ ...r, profile: profMap.get(r.user_id) ?? null }));
+    return (data ?? []).map((r: any) => ({ ...r, email: emails.get(r.user_id) ?? null, profile: profMap.get(r.user_id) ?? null }));
   });
 
 export const adminGrantRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { user_id: string; role: string }) => {
+  .inputValidator((d: { user_id?: string; email?: string; role: string }) => {
     const ROLES = ["admin", "photographer", "client"];
-    if (!d || typeof d.user_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.user_id)) {
-      throw new Error("invalid user_id");
-    }
+    const byId = typeof d?.user_id === "string" && /^[0-9a-f-]{36}$/i.test(d.user_id);
+    const byEmail = typeof d?.email === "string" && /^[^@s]+@[^@s]+.[^@s]+$/.test(d.email.trim());
+    if (!byId && !byEmail) throw new Error("اكتب إيميل المستخدم أو معرّفه");
     if (!ROLES.includes(d.role)) throw new Error(`role يجب أن يكون من: ${ROLES.join(", ")}`);
     return d;
   })
@@ -882,8 +888,21 @@ export const adminGrantRole = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let targetId = data.user_id;
+    if (!targetId && data.email) {
+      // Find the account by email (works for Google sign-ins too)
+      const want = data.email.trim().toLowerCase();
+      for (let page = 1; page <= 20 && !targetId; page++) {
+        const { data: list, error: lErr } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+        if (lErr) throw new Error(lErr.message);
+        targetId = list.users.find((u) => (u.email ?? "").toLowerCase() === want)?.id;
+        if (list.users.length < 200) break;
+      }
+      if (!targetId) throw new Error("لا يوجد حساب بهذا الإيميل. يجب أن يسجّل الشخص أولاً.");
+    }
+    data.user_id = targetId;
     const { error } = await supabaseAdmin.from("user_roles").upsert(
-      { user_id: data.user_id, role: data.role as any },
+      { user_id: targetId!, role: data.role as any },
       { onConflict: "user_id,role" }
     );
     if (error) throw new Error(error.message);
@@ -918,4 +937,4 @@ export const adminRevokeRole = createServerFn({ method: "POST" })
       after_data: { role: data.role },
     });
     return { ok: true };
-  });
+  });

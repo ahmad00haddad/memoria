@@ -66,6 +66,7 @@ function AdminLayout() {
           <TabLink to="/admin/notifications" icon={<Bell className="h-4 w-4" />} label="الإشعارات" />
           <TabLink to="/admin/email-log" icon={<Mail className="h-4 w-4" />} label="سجل البريد" />
           <TabLink to="/admin/audit-log" icon={<RefreshCw className="h-4 w-4" />} label="سجل العمليات" />
+          <TabLink to="/admin/contact-messages" icon={<Mail className="h-4 w-4" />} label="رسائل التواصل" />
         </nav>
 
         <Outlet />
