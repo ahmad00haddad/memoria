@@ -222,16 +222,24 @@ export const getBookingByToken = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!row) return null;
     const { data: vr } = await supabaseAdmin.from("bookings")
-      .select("phone_verified_at, verify_code_wa, verify_code_email")
+      .select("id, phone_verified_at, verify_code_wa, verify_code_email")
       .eq("client_tracking_token", data.token).maybeSingle();
     const v: any = vr ?? {};
+    // The bride signs through this link, so the tracking page must offer it
+    let contract: { sign_token: string; status: string } | null = null;
+    if (v.id) {
+      const { data: c } = await supabaseAdmin.from("contracts")
+        .select("sign_token, status").eq("booking_id", v.id)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+      contract = (c as any) ?? null;
+    }
     let verify = null;
     if (!v.phone_verified_at) {
       const { publicWhatsAppNumber } = await import("@/lib/verification.server");
       const waNumber = publicWhatsAppNumber();
       verify = { whatsapp_number: waNumber, whatsapp_code: waNumber ? v.verify_code_wa : null, email: !!v.verify_code_email };
     }
-    return { ...(row as any), phone_verified: !!v.phone_verified_at, verify };
+    return { ...(row as any), phone_verified: !!v.phone_verified_at, verify, contract };
   });
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;

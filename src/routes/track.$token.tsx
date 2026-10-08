@@ -695,6 +695,16 @@ function TrackingPage() {
           </button>
         </div>
 
+        {b.contract?.sign_token && b.status !== "cancelled" && (
+          <a href={`/contracts/${b.contract.sign_token}`} className={`mb-6 flex items-center justify-between gap-3 rounded-2xl border p-5 text-sm ${b.contract.status === "signed" ? "border-border bg-card" : "border-gold bg-gold/10"}`}>
+            <div>
+              <div className="font-semibold">{b.contract.status === "signed" ? "✅ عقد التصوير موقَّع" : "✍️ وقّعي عقد التصوير"}</div>
+              <div className="text-xs text-muted-foreground mt-1">{b.contract.status === "signed" ? "اضغطي لعرض العقد." : "اقرئي شروط الحجز ووقّعي العقد إلكترونياً — يحمي حقّكِ وحقّ المصوّرة."}</div>
+            </div>
+            <span className="shrink-0 text-gold">←</span>
+          </a>
+        )}
+
         {/* Photographer contact */}
         <div className="rounded-sm border border-border bg-card p-5 text-sm">
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">للتواصل عند الحاجة</div>
