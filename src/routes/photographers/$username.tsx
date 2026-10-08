@@ -1002,6 +1002,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                 modifiers={{ blocked: blockedDateObjs }}
                 modifiersClassNames={{ blocked: "line-through text-destructive/60 bg-destructive/5" }}
                 locale={ar}
+                // Full Arabic day names overflow the 7 narrow columns
+                formatters={{ formatWeekdayName: (d) => ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"][d.getDay()] }}
                 className="pointer-events-auto"
               />
               <div className="border-t border-border p-2 text-[11px] text-muted-foreground flex flex-col gap-2">

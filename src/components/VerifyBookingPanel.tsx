@@ -26,6 +26,9 @@ export function VerifyBookingPanel({ token, verify, onVerified, onRecheck }: {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(false);
+  // No channel open yet (e.g. page reopened later): let her ask for an email code
+  const [emailOn, setEmailOn] = useState(verify.email);
+  const [sending, setSending] = useState(false);
 
   const waHref = verify.whatsapp_number && verify.whatsapp_code
     ? `https://wa.me/${verify.whatsapp_number}?text=${encodeURIComponent(`رمز تأكيد حجزي في ميموريا: ${verify.whatsapp_code}`)}`
@@ -86,7 +89,23 @@ export function VerifyBookingPanel({ token, verify, onVerified, onRecheck }: {
         </div>
       )}
 
-      {verify.email && (
+      {!waHref && !emailOn && (
+        <button
+          type="button"
+          disabled={sending}
+          onClick={async () => {
+            setSending(true);
+            try { await resendFn({ data: { token } }); setEmailOn(true); toast.success("أرسلنا رمز التأكيد لإيميلكِ"); }
+            catch (e: any) { toast.error(e?.message || "تعذّر الإرسال"); }
+            finally { setSending(false); }
+          }}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-sm bg-charcoal text-ivory py-3 text-sm disabled:opacity-50"
+        >
+          <Mail className="h-4 w-4" /> {sending ? "جاري الإرسال…" : "أرسلي لي رمز التأكيد على الإيميل"}
+        </button>
+      )}
+
+      {emailOn && (
         <div className="space-y-2">
           {waHref && <div className="text-center text-[11px] text-muted-foreground">أو</div>}
           <label className="flex items-center gap-1.5 text-sm"><Mail className="h-4 w-4" /> أدخلي الرمز المرسل لإيميلك</label>

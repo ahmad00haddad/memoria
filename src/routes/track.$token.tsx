@@ -525,7 +525,7 @@ function TrackingPage() {
         </details>
 
         {/* Deposit step */}
-        {!b.deposit_sent_at && (
+        {!b.deposit_sent_at && !b.verify && (
           <div id="deposit-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="h-5 w-5 text-gold" />
