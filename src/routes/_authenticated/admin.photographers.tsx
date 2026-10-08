@@ -84,13 +84,12 @@ function AdminPhotographers() {
   };
 
   const onDelete = async (r: Row) => {
-    const c1 = window.prompt(`لحذف "${r.display_name}" نهائيًا اكتبي اسم المستخدم بالضبط: ${r.username}`);
-    if (c1 !== r.username) { if (c1 !== null) toast.error("لم يتطابق الاسم"); return; }
     if (!(await confirm({
-      title: "حذف المصوّرة نهائيًا",
-      description: "هذا الإجراء لا يمكن التراجع عنه وسيؤدي إلى مسح جميع البيانات.",
+      title: `حذف "${r.display_name}" نهائيًا`,
+      description: "لا يمكن التراجع عن هذا. ستُمسح الصفحة والحجوزات والصور. إن أردتِ إخفاءها فقط استخدمي «أرشفة».",
       confirmText: "حذف نهائي",
       destructive: true,
+      requireText: r.username,
     }))) return;
     try {
       await del({ data: { photographer_id: r.id } });

@@ -23,6 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin } from "lucide-react";
 import { Zap, CircleCheck } from "lucide-react";
 import { parseFeatures, emphasizeNumbers } from "@/lib/packageFeatures";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT } from "@/lib/validation";
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
@@ -668,6 +669,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
   const [copied, setCopied] = useState(false);
+  const askConfirm = useConfirm();
 
   // A sent request survives refresh/leaving the page, so the bride can always copy her tracking link again
   const successKey = `memoria.booking-success.${profile.username}`;
@@ -905,7 +907,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           </button>
 
         </div>
-        <button onClick={() => { if (confirm("هل حفظتِ رابط التتبّع؟ سيبقى محفوظاً في قائمة حجوزاتك على هذا الجهاز.")) saveSuccess(null); }}
+        <button onClick={async () => { if (await askConfirm({ title: "إرسال طلب حجز جديد؟", description: "تأكدي أنكِ حفظتِ رابط التتبّع. سيبقى محفوظاً أيضاً في قائمة حجوزاتك على هذا الجهاز.", confirmText: "طلب جديد", cancelText: "رجوع" })) saveSuccess(null); }}
           className="mt-4 text-xs text-muted-foreground underline underline-offset-2">إرسال طلب حجز جديد</button>
       </div>
     );
