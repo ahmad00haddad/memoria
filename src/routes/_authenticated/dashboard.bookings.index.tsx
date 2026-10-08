@@ -338,7 +338,8 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
           if (canConfirm && offset.x > 80) { hapticVibrate("medium"); onConfirm(); }
           else if (canWa && offset.x < -80) { hapticVibrate("light"); window.open(`https://wa.me/${normalizeWa(booking.client_phone)}`, "_blank"); }
         }}
-        onClick={() => { if (Math.abs(x.get()) < 4) nav({ to: "/dashboard/bookings/$id", params: { id: booking.id } }); }}
+        // onTap (not onClick): framer swallows clicks on draggable cards
+        onTap={() => { if (Math.abs(x.get()) < 4) nav({ to: "/dashboard/bookings/$id", params: { id: booking.id } }); }}
         className={`relative cursor-pointer rounded-2xl border bg-card p-4 transition-[border-color,box-shadow] duration-500 hover:border-gold/40 ${fresh ? "border-gold shadow-[0_0_0_4px_color-mix(in_oklab,var(--gold)_25%,transparent)]" : "border-border"} ${booking.status === "cancelled" ? "opacity-70" : ""}`}
         whileDrag={{ boxShadow: "0 12px 28px rgba(0,0,0,0.15)" }}
         animate={showHint ? { x: [0, 36, 0] } : undefined}
@@ -383,9 +384,9 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
           <span className="text-sm font-semibold tabular-nums" title={`الأساسي ${booking.base_price ?? 0} + التنقّل ${booking.travel_fee ?? 0}`}>
             {booking.total_price ? `${Number(booking.total_price).toLocaleString("ar-JO")} د.أ` : "—"}
           </span>
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Link to="/dashboard/bookings/$id" params={{ id: booking.id }} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold">
             التفاصيل <ChevronLeft className="h-3.5 w-3.5" />
-          </span>
+          </Link>
         </div>
 
         {showHint && (
