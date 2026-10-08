@@ -13,7 +13,8 @@ export function parseFeatures(description: string | null | undefined): Feature[]
   // Older packages were written as one comma-separated line.
   const lines = raw.includes("\n") ? raw.split("\n") : raw.split(/[،,](?!\d)/);
   return lines
-    .map((l) => l.trim())
+    // Photographers often type their own bullets ("• ", "- ") — the card draws its own icon
+    .map((l) => l.trim().replace(/^[•·\-–*✓✔]\s*/, ""))
     .filter(Boolean)
     .map((l) => {
       if (l.startsWith("★")) return { kind: "exclusive" as const, text: l.slice(1).trim() };

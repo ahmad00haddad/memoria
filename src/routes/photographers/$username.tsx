@@ -689,7 +689,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       if (draft?.addonQty) setAddonQty(draft.addonQty);
       if (draft?.step) setStep(draft.step);
       if (typeof draft?.consent === "boolean") setConsent(draft.consent);
-      setRestoredDraft(true);
+      if (draft?.f?.event_date || draft?.f?.package_id || draft?.f?.client_name) setRestoredDraft(true);
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -703,7 +703,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   }, [f, addonQty, step, consent, success, storageKey]);
 
   const clearDraft = () => {
-    setF(initial); setAddonQty({}); setStep(1); setConsent(false);
+    setF(initial); setAddonQty({}); setStep(1); setConsent(false); setRestoredDraft(false);
     try { window.localStorage.removeItem(storageKey); } catch {}
     toast.success("تم مسح المسودة");
   };
@@ -1187,7 +1187,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           </button>
         )}
         {step < 3 ? (
-          <button type="button" onClick={goNext} disabled={!stepValid[step]} className="flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-50 inline-flex items-center justify-center gap-1 text-sm">
+          <button type="button" onClick={goNext} aria-disabled={!stepValid[step]} className={`flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 ${stepValid[step] ? "" : "opacity-50"} inline-flex items-center justify-center gap-1 text-sm`}>
             التالي <ChevronLeft className="h-4 w-4" />
           </button>
         ) : (
@@ -1300,7 +1300,8 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 function Field({ label, v, on, type = "text" }: { label: string; v: string; on: (v: string) => void; type?: string }) {
-  return <div><label className="text-sm text-muted-foreground">{label}</label><input type={type} value={v} onChange={(e) => on(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></div>;
+  const auto = type === "email" ? "email" : type === "tel" ? "tel" : label === "الاسم" ? "name" : "off";
+  return <label className="block"><span className="text-sm text-muted-foreground">{label}</span><input type={type} autoComplete={auto} dir={type === "text" ? undefined : "ltr"} value={v} onChange={(e) => on(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
 }
 
 function FallbackPage({ children }: { children: React.ReactNode }) {

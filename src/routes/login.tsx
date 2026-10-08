@@ -57,7 +57,8 @@ function LoginPage() {
     try { const last = localStorage.getItem("memoria_last_email"); if (last) setEmail(last); } catch { /* ignore */ }
   }, []);
   const search = Route.useSearch() as any;
-  const redirectPath = search?.redirect || "/dashboard";
+  const r = search?.redirect;
+  const redirectPath = typeof r === "string" && r.startsWith("/") && !r.startsWith("//") ? r : "/dashboard";
 
   useEffect(() => {
     let active = true;

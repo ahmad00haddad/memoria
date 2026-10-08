@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { friendlyError } from "@/lib/friendlyErrors";
 import { isEmail, EMAIL_HINT } from "@/lib/validation";
+import { toast } from "sonner";
 import { recordReferralAfterSignup } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/photographers/join")({
@@ -221,7 +222,7 @@ function JoinPage() {
           )}
           <Field label="الاسم الكامل / اسم الاستوديو" value={form.display_name} onChange={upd("display_name")} required />
           <div>
-            <Field label="اسم المستخدم (بالإنجليزية)" value={form.username} onChange={(v) => { setUsernameTouched(true); upd("username")(v.toLowerCase()); }} required placeholder="مثال: studio_amman" ltr />
+            <Field label="اسم المستخدم (بالإنجليزية)" value={form.username} onChange={(v) => { setUsernameTouched(true); if (/[^a-zA-Z0-9_\s]/.test(v)) toast.error("اسم المستخدم بالأحرف الإنجليزية فقط، مثال: sara_photo", { id: "username-latin" }); upd("username")(v.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "")); }} required placeholder="مثال: studio_amman" ltr />
             <div className="mt-1 flex items-center justify-between text-xs">
               <span className="text-muted-foreground" dir="ltr">{form.username ? `memoria/photographers/${form.username}` : ""}</span>
               <span className={uState === "free" ? "text-emerald-600" : uState === "taken" || uState === "invalid" ? "text-destructive" : "text-muted-foreground"}>

@@ -61,7 +61,15 @@ function SignPage() {
   }, [token]);
 
   if (loading) return <PageLoader />;
-  if (!data) return <div className="min-h-screen grid place-items-center">العقد غير موجود</div>;
+  if (!data) return (
+    <div className="min-h-screen grid place-items-center px-6 text-center">
+      <div className="max-w-sm space-y-3">
+        <h1 className="font-serif text-3xl">رابط العقد غير صالح</h1>
+        <p className="text-sm text-muted-foreground">قد يكون الرابط ناقصاً أو انتهت صلاحيته. اطلبي من المصوّرة إرسال رابط العقد مرة أخرى.</p>
+        <a href="/" className="inline-block rounded-sm bg-charcoal px-5 py-2 text-sm text-ivory">العودة للرئيسية</a>
+      </div>
+    </div>
+  );
 
   const { contract, booking, photographer } = data;
   const signed = contract.status === "signed";
