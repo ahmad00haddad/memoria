@@ -879,7 +879,7 @@ export const adminGrantRole = createServerFn({ method: "POST" })
   .inputValidator((d: { user_id?: string; email?: string; role: string }) => {
     const ROLES = ["admin", "photographer", "client"];
     const byId = typeof d?.user_id === "string" && /^[0-9a-f-]{36}$/i.test(d.user_id);
-    const byEmail = typeof d?.email === "string" && /^[^@s]+@[^@s]+.[^@s]+$/.test(d.email.trim());
+    const byEmail = typeof d?.email === "string" && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email.trim());
     if (!byId && !byEmail) throw new Error("اكتب إيميل المستخدم أو معرّفه");
     if (!ROLES.includes(d.role)) throw new Error(`role يجب أن يكون من: ${ROLES.join(", ")}`);
     return d;
