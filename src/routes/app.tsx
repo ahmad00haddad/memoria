@@ -17,6 +17,7 @@ export const Route = createFileRoute("/app")({
         content: "ثبّتي Memoria كتطبيق على هاتفك (iPhone أو Android) أو على سطح المكتب — يعمل دون متجر، بسرعة، ومع أيقونة على الشاشة الرئيسية.",
       },
     ],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/app" }],
   }),
   component: AppDownloadPage,
 });

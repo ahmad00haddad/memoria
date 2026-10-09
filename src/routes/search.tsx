@@ -27,13 +27,14 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
   head: () => ({
     meta: [
-      { title: "ابحث عن مصوّر عرسك | Memoria" },
+      { title: "مصوّرات أعراس في الأردن — ابحثي واحجزي | Memoria" },
       {
         name: "description",
         content:
           "اعثري على مصوّر عرسك المثالي في الأردن. فلترة بالمدينة والسعر والتاريخ المتاح وتقييمات حقيقية من العرائس.",
       },
     ],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/search" }],
   }),
 });
 
@@ -187,7 +188,7 @@ function SearchPage() {
         <section className="container-editorial py-6 sm:py-10 md:py-12">
           {/* Mobile Large Title */}
           <div className="sm:hidden mb-6 px-2">
-            <h1 className="font-serif text-3xl font-bold">البحث</h1>
+            <p className="font-serif text-3xl font-bold">البحث</p>
           </div>
 
           <div className="hidden sm:block text-center mb-6 md:mb-8">

@@ -16,6 +16,7 @@ export const Route = createFileRoute("/guide")({
       { property: "og:title", content: "كيف يعمل Memoria — رحلتك خطوة بخطوة" },
       { property: "og:description", content: "دليل شامل لكل خطوة في المنصة: للزبون وللمصور." },
     ],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/guide" }],
   }),
   component: GuidePage,
 });

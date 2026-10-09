@@ -8,6 +8,7 @@ export const Route = createFileRoute("/terms")({
       { title: "الشروط والأحكام — Memoria" },
       { name: "description", content: "شروط استخدام منصة Memoria لحجوزات مصوّرات الأعراس في الأردن: الحجز، العربون، الإلغاء، والتسليم." },
     ],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/terms" }],
   }),
   component: TermsPage,
 });

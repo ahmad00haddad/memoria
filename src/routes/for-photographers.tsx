@@ -12,6 +12,7 @@ export const Route = createFileRoute("/for-photographers")({
       { property: "og:title", content: "للمصوّرات — انضمي إلى Memoria" },
       { property: "og:description", content: "نظام إدارة كامل لأعمال مصوّرات الأعراس." },
     ],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/for-photographers" }],
   }),
   component: ForPhotographersPage,
 });

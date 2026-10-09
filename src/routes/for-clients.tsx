@@ -11,6 +11,7 @@ export const Route = createFileRoute("/for-clients")({
       { property: "og:title", content: "للعملاء — لماذا Memoria؟" },
       { property: "og:description", content: "حجز مصوّرات الأعراس في الأردن بشفافية وأمان كامل." },
     ],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/for-clients" }],
   }),
   component: ForClientsPage,
 });

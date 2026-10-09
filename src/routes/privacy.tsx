@@ -8,6 +8,7 @@ export const Route = createFileRoute("/privacy")({
       { title: "سياسة الخصوصية — Memoria" },
       { name: "description", content: "كيف نجمع بياناتك ونستخدمها ونحميها على منصة Memoria لحجوزات مصوّرات الأعراس في الأردن." },
     ],
+    links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/privacy" }],
   }),
   component: PrivacyPage,
 });
