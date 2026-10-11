@@ -104,7 +104,7 @@ type Profile = {
   avatar_url: string | null; cover_url: string | null; equipment: string | null;
   cliq_alias: string | null; portfolio_urls: string[] | null;
   deposit_percent: number; travel_fee_per_km: number; free_km: number;
-  is_featured?: boolean;
+  is_featured?: boolean; is_demo?: boolean;
   tagline?: string | null; booking_notes?: string | null;
   bank_info?: string | null; fixed_deposit?: number | null;
   is_published?: boolean;
@@ -148,7 +148,7 @@ function PhotographerPage() {
       const normalizedUsername = username.trim().toLowerCase();
       const { data: prof, error: profErr } = await supabase
         .from("profiles")
-        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,tagline,booking_notes,fixed_deposit")
+        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit")
         .eq("username", normalizedUsername)
         .eq("is_published", true)
         .maybeSingle();
@@ -309,6 +309,11 @@ function PhotographerPage() {
             className="order-2 lg:order-1 lg:col-span-5 flex flex-col justify-between"
           >
             <div>
+              {profile.is_demo && (
+                <div className="mb-4 inline-block rounded-full border border-gold/60 bg-charcoal/60 px-4 py-1.5 text-xs text-ivory backdrop-blur">
+                  نسخة تجريبية للمصوّرات فقط، لتري كيف سيبدو حسابك. الحجز يعمل بشكل طبيعي، أما التحويل فغير متاح.
+                </div>
+              )}
               <div className="text-[10px] uppercase tracking-[0.5em] text-gold mb-4">
                 {profile.tagline || "WEDDING PHOTOGRAPHY"}
               </div>
@@ -898,7 +903,9 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         </div>
         <div className="bg-gold/5 border border-gold/30 rounded-sm p-4 mb-5 text-start">
           <div className="text-xs uppercase tracking-[0.2em] text-gold mb-1">الخطوة التالية</div>
-          <p className="text-sm">حوّلي العربون بقيمة <span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span>، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز.</p>
+          {profile.is_demo
+            ? <p className="text-sm">هذا حساب تجريبي، لذلك لا يوجد تحويل للعربون. يمكنك فتح صفحة تتبع الحجز لترى كيف تبدو.</p>
+            : <p className="text-sm">حوّلي العربون بقيمة <span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span>، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز.</p>}
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <button onClick={() => navigate({ to: trackUrl })}
@@ -1238,6 +1245,16 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
     hapticVibrate();
     setTimeout(() => setCopied(false), 2000);
   };
+
+  if (profile.is_demo) {
+    return (
+      <div className="bg-charcoal text-ivory rounded-sm p-6 sm:p-8 h-fit lg:sticky lg:top-24">
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">نسخة تجريبية</div>
+        <h3 className="font-serif text-2xl mb-3">التحويل غير متاح</h3>
+        <p className="text-sm text-ivory/80">هذا الحساب للعرض فقط. في حساب مصوّرة حقيقي تظهر هنا معلومات العربون وطريقة التحويل. جرّبي الحجز كما هو، وسيعمل بشكل طبيعي.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-charcoal text-ivory rounded-sm p-6 sm:p-8 h-fit lg:sticky lg:top-24">

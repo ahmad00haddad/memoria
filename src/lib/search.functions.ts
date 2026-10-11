@@ -35,6 +35,7 @@ export type SearchResultItem = {
   min_price: number | null;
   avg_rating: number;
   review_count: number;
+  is_demo?: boolean;
 };
 
 function validate(d: SearchInput): SearchInput {
@@ -68,7 +69,15 @@ export const searchPhotographers = createServerFn({ method: "POST" })
 
     if (error) throw new Error(error.message);
 
+    const names = (rows ?? []).map((r: any) => r.username);
+    const demo = new Set<string>();
+    if (names.length) {
+      const { data: flags } = await supabase.from("profiles").select("username").in("username", names).eq("is_demo", true);
+      for (const f of flags ?? []) demo.add((f as any).username);
+    }
+
     return (rows ?? []).map((r: any) => ({
+      is_demo: demo.has(r.username),
       username: r.username,
       display_name: r.display_name,
       city: r.city,

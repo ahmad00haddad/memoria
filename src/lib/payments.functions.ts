@@ -50,6 +50,9 @@ export const createDepositCheckout = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!bk) throw new Error("الحجز غير موجود");
 
+    const { isDemoBookingToken, DEMO_PAYMENT_MESSAGE } = await import("@/lib/booking.functions");
+    if (await isDemoBookingToken(supabaseAdmin, data.token)) throw new Error(DEMO_PAYMENT_MESSAGE);
+
     if (bk.deposit_confirmed_at || bk.status === "confirmed") {
       throw new Error("تم تأكيد العربون لهذا الحجز مسبقاً");
     }

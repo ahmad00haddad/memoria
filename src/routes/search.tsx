@@ -787,6 +787,12 @@ function BentoPhotographerCard({ p, idx, compareList, setCompareList }: { p: Sea
             </div>
           </div>
 
+          {p.is_demo && (
+            <div className="absolute top-3 left-3 text-[10px] bg-black/60 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
+              نسخة تجريبية للمصوّرات
+            </div>
+          )}
+
           {/* Featured badge */}
           {p.is_featured && (
             <div className="absolute top-3 right-3 text-[10px] uppercase

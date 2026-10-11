@@ -870,6 +870,7 @@ export type Database = {
           id: string
           income_goal: number | null
           instagram: string | null
+          is_demo: boolean
           is_featured: boolean
           is_published: boolean
           min_session_minutes: number
@@ -911,6 +912,7 @@ export type Database = {
           id: string
           income_goal?: number | null
           instagram?: string | null
+          is_demo?: boolean
           is_featured?: boolean
           is_published?: boolean
           min_session_minutes?: number
@@ -952,6 +954,7 @@ export type Database = {
           id?: string
           income_goal?: number | null
           instagram?: string | null
+          is_demo?: boolean
           is_featured?: boolean
           is_published?: boolean
           min_session_minutes?: number

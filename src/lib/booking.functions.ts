@@ -239,7 +239,15 @@ export const getBookingByToken = createServerFn({ method: "GET" })
       const waNumber = publicWhatsAppNumber();
       verify = { whatsapp_number: waNumber, whatsapp_code: waNumber ? v.verify_code_wa : null, email: !!v.verify_code_email };
     }
-    return { ...(row as any), phone_verified: !!v.phone_verified_at, verify, contract };
+    let isDemo = false;
+    if (v.id) {
+      const { data: bkp } = await supabaseAdmin.from("bookings").select("photographer_id").eq("id", v.id).maybeSingle();
+      if (bkp?.photographer_id) {
+        const { data: pr } = await supabaseAdmin.from("profiles").select("is_demo").eq("id", bkp.photographer_id).maybeSingle();
+        isDemo = !!(pr as any)?.is_demo;
+      }
+    }
+    return { ...(row as any), phone_verified: !!v.phone_verified_at, verify, contract, is_demo: isDemo };
   });
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;
@@ -299,6 +307,16 @@ export const resendBookingEmailCode = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const DEMO_PAYMENT_MESSAGE = "هذا حساب تجريبي للمصوّرات فقط، لذلك التحويل غير متاح عليه. الحجز نفسه يعمل بشكل طبيعي.";
+
+// Demo photographer accounts (profiles.is_demo) take bookings but never money.
+export async function isDemoBookingToken(admin: any, token: string): Promise<boolean> {
+  const { data: bk } = await admin.from("bookings").select("photographer_id").eq("client_tracking_token", token).maybeSingle();
+  if (!bk?.photographer_id) return false;
+  const { data: prof } = await admin.from("profiles").select("is_demo").eq("id", bk.photographer_id).maybeSingle();
+  return !!prof?.is_demo;
+}
+
 export const clientMarkDepositSent = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string; proof_path?: string | null; reference?: string | null; note?: string | null }) => {
     if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
@@ -311,6 +329,7 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (await isDemoBookingToken(supabaseAdmin, data.token)) throw new Error(DEMO_PAYMENT_MESSAGE);
     const { error } = await supabaseAdmin.rpc("client_mark_deposit_sent", {
       _token: data.token,
       _proof_path: (data.proof_path ?? null) as any,

@@ -529,7 +529,13 @@ function TrackingPage() {
         </details>
 
         {/* Deposit step */}
-        {!b.deposit_sent_at && !b.verify && (
+        {!b.deposit_sent_at && !b.verify && b.is_demo && (
+          <div id="deposit-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6">
+            <h2 className="font-serif text-xl mb-2">نسخة تجريبية</h2>
+            <p className="text-sm">هذا حساب تجريبي للمصوّرات فقط ليروا كيف سيبدو حسابهن، لذلك التحويل وإرسال العربون غير متاحين هنا. الحجز وصفحة التتبع تعمل كما هي.</p>
+          </div>
+        )}
+        {!b.deposit_sent_at && !b.verify && !b.is_demo && (
           <div id="deposit-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="h-5 w-5 text-gold" />
