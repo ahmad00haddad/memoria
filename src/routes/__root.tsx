@@ -26,6 +26,7 @@ import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from 
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { ClientTour } from "@/components/ClientTour";
+import { IntroContext, markIntroSeen, readIntro } from "@/lib/intro";
 
 function NotFoundComponent() {
   return (
@@ -322,6 +323,12 @@ function RootComponent() {
   const firstPage = useRef(true);
   useEffect(() => { firstPage.current = false; }, []);
 
+  // Entrance choreography plays on a browser's first visit only (see lib/intro).
+  // Read once per page load: the server and the hydrating client agree, and the
+  // whole first session keeps the intro until the next full load.
+  const [intro] = useState(readIntro);
+  useEffect(() => { markIntroSeen(); }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -344,7 +351,14 @@ function RootComponent() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               >
-                <Outlet />
+                {/* Remounts with each page: on return visits initial={false} renders every
+                    entrance already finished; things that mount later (galleries,
+                    booking steps, filtered results) still animate. */}
+                <IntroContext.Provider value={intro}>
+                  <AnimatePresence initial={intro}>
+                    <Outlet key="page" />
+                  </AnimatePresence>
+                </IntroContext.Provider>
               </motion.div>
             </AnimatePresence>
             <MobileTabBar />

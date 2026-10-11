@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+
+const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 
 // Lightbox مع دعم اللمس (سحب يمين/يسار)، أزرار، ولوحة المفاتيح.
 export function Lightbox({
@@ -17,6 +20,8 @@ export function Lightbox({
   const lastTap = useRef<number>(0);
   const [showHeart, setShowHeart] = useState(false);
   const [heartPos, setHeartPos] = useState({ x: 0, y: 0 });
+  // +1 = moved to the next image, -1 = previous; drives the slide direction
+  const [dir, setDir] = useState(1);
 
   useEffect(() => setI(index), [index]);
 
@@ -31,8 +36,8 @@ export function Lightbox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [images.length]);
 
-  const next = () => setI((p) => (p + 1) % images.length);
-  const prev = () => setI((p) => (p - 1 + images.length) % images.length);
+  const next = () => { setDir(1); setI((p) => (p + 1) % images.length); };
+  const prev = () => { setDir(-1); setI((p) => (p - 1 + images.length) % images.length); };
 
   const onTouchStart = (e: React.TouchEvent) => { 
     startX.current = e.touches[0].clientX; 
@@ -56,8 +61,14 @@ export function Lightbox({
   if (!images.length) return null;
 
   return (
-    <div
+    // Opens and closes with a short fade so the gallery doesn't pop over the page.
+    // Exit plays when the parent wraps this in <AnimatePresence>.
+    <motion.div
       className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center select-none"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.15, ease: "easeOut" } }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={onClose}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
@@ -95,10 +106,30 @@ export function Lightbox({
           }} 
         />
       )}
-      <img
+      {/* The image settles in from a slight scale on open (wrapper below); switching images slides
+          24px in the direction of travel and crossfades. */}
+      <motion.div
+        className="flex max-w-full max-h-full items-center justify-center"
+        initial={{ scale: 0.96 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.25, ease: EASE_OUT }}
+      >
+      <AnimatePresence initial={false} custom={dir} mode="popLayout">
+      <motion.img
+        key={i}
+        custom={dir}
+        variants={{
+          enter: (d: number) => ({ opacity: 0, x: d * 24 }),
+          center: { opacity: 1, x: 0 },
+          exit: (d: number) => ({ opacity: 0, x: d * -24 }),
+        }}
+        initial="enter"
+        animate="center"
+        exit="exit"
+        transition={{ duration: 0.22, ease: EASE_OUT }}
         src={images[i]}
         alt=""
-        className="max-w-full max-h-full object-contain p-4 transition-transform duration-200"
+        className="max-w-full max-h-full object-contain p-4"
         onClick={(e) => {
           e.stopPropagation();
           const now = Date.now();
@@ -113,6 +144,8 @@ export function Lightbox({
           }
         }}
       />
-    </div>
+      </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -1,6 +1,6 @@
 import { friendlyError } from "@/lib/friendlyErrors";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { emailTypoSuggestion } from "@/lib/form-hints";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
@@ -159,7 +159,9 @@ function LoginPage() {
             <Link to="/forgot-password" className="text-gold underline">نسيتِ كلمة المرور؟</Link>
           </div>
           {success && <p className="text-sm text-emerald-600">{success}</p>}
+          <AnimatePresence initial={false}>
           {err && (
+            <motion.div key="login-error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
             <div className="text-sm text-destructive">
               {friendlyError(err)}
               {unconfirmed && (
@@ -176,7 +178,9 @@ function LoginPage() {
                 </button>
               )}
             </div>
+            </motion.div>
           )}
+          </AnimatePresence>
           <button disabled={loading} className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory py-3 rounded-full hover:opacity-90 disabled:opacity-60 active:scale-[0.99] transition-transform dark:bg-gold dark:text-charcoal">
             {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
             {loading ? "ندخلك…" : "دخول"}

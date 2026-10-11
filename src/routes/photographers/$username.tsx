@@ -20,6 +20,7 @@ import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
 import { hapticVibrate } from "@/lib/utils";
 import { playSound } from "@/lib/sounds";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
+import { useIntro } from "@/lib/intro";
 import { CountTo, DrawFrame, DrawIcon, EASE_DRAW, EASE_OUT, RevealWords, RiseIn } from "@/components/site/Reveal";
 import { MapPin } from "lucide-react";
 import { Zap, CircleCheck } from "lucide-react";
@@ -225,6 +226,7 @@ function PhotographerPage() {
   }, [profile, reviews]);
 
   // Idea 8: Scroll progress bar, eased with a spring so it glides instead of stepping
+  const intro = useIntro();
   const { scrollYProgress } = useScroll();
   const progressX = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
 
@@ -318,7 +320,7 @@ function PhotographerPage() {
                     src={profile.avatar_url}
                     alt={profile.display_name}
                     className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-2 border-transparent shadow-elegant"
-                    initial={{ opacity: 0, scale: 0.92 }}
+                    initial={intro ? { opacity: 0, scale: 0.92 } : false}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.9, ease: EASE_OUT }}
                   />
@@ -326,7 +328,7 @@ function PhotographerPage() {
                   <svg aria-hidden viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full -rotate-90 text-gold/60">
                     <motion.circle
                       cx="50" cy="50" r="49" fill="none" stroke="currentColor" strokeWidth="2" vectorEffect="non-scaling-stroke"
-                      initial={{ pathLength: 0 }}
+                      initial={intro ? { pathLength: 0 } : false}
                       animate={{ pathLength: 1 }}
                       transition={{ duration: 1.6, delay: 0.3, ease: EASE_DRAW }}
                     />
@@ -460,7 +462,7 @@ function PhotographerPage() {
                       ))}
                     </ul>
                   )}
-                  <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>{p.cta_label?.trim() || "احجزي هذه الباقة"}</button>
+                  <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm transition-transform duration-150 ease-out active:scale-[0.97] ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>{p.cta_label?.trim() || "احجزي هذه الباقة"}</button>
                   {pickedPackageId === p.id && <DrawFrame key={`pick-${p.id}`} duration={1.2} />}
                 </div>
                 </RiseIn>
@@ -493,7 +495,7 @@ function PhotographerPage() {
                 key={i}
                 onClick={() => setLightboxIdx(i)}
                 className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in"
-                initial={{ opacity: 0, y: 18 }}
+                initial={intro ? { opacity: 0, y: 18 } : false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.8, delay: (i % 4) * 0.08, ease: EASE_OUT }}
@@ -502,6 +504,7 @@ function PhotographerPage() {
               </motion.button>
             ))}
           </div>
+          <AnimatePresence>
           {lightboxIdx !== null && (
             <Lightbox
               images={(profile.portfolio_urls ?? []).slice(0, 12)}
@@ -509,6 +512,7 @@ function PhotographerPage() {
               onClose={() => setLightboxIdx(null)}
             />
           )}
+          </AnimatePresence>
         </section>
       )}
 
@@ -982,12 +986,17 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         </div>
       )}
 
+      {/* the error eases open instead of shoving the form down in one frame */}
+      <AnimatePresence initial={false}>
       {formError && (
+        <motion.div key="form-error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
         <div role="alert" aria-live="assertive" className="mb-4 rounded-sm border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
           <span className="mt-0.5 text-base leading-none">⚠️</span>
           <span>{formError}</span>
         </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Stepper */}
       <div className="mb-6">

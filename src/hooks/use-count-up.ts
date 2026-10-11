@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useIntro } from "@/lib/intro";
 
 /**
  * Animates a numeric value toward `target` over `duration` ms using rAF.
@@ -8,8 +9,10 @@ import { useEffect, useRef, useState } from "react";
  * Respects prefers-reduced-motion by snapping to the final value.
  */
 export function useCountUp(target: number, duration = 1100): number {
-  const [value, setValue] = useState(0);
-  const lastRef = useRef(0);
+  // Return visits skip the intro: the first value lands without counting.
+  const intro = useIntro();
+  const [value, setValue] = useState(intro ? 0 : target);
+  const lastRef = useRef(intro ? 0 : target);
 
   useEffect(() => {
     if (typeof window === "undefined" || Number.isNaN(target)) {
@@ -17,7 +20,7 @@ export function useCountUp(target: number, duration = 1100): number {
       lastRef.current = target;
       return;
     }
-    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const reduce = !intro && lastRef.current === 0 ? true : window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const from = lastRef.current;
     if (reduce || from === target) {
       setValue(target);

@@ -33,6 +33,7 @@ import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { NotificationPermission } from "@/components/NotificationPermission";
 import { staggerContainer, fadeUp } from "@/lib/animations";
 import { useCountUp } from "@/hooks/use-count-up";
+import { useIntro } from "@/lib/intro";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { CopyButton } from "@/components/ui/copy-button";
 import { TodayFocus } from "@/components/dashboard/TodayFocus";
@@ -68,6 +69,7 @@ function NumStat({
   extra?: React.ReactNode;
   compact?: boolean;
 }) {
+  const intro = useIntro();
   const animated = useCountUp(Number.isFinite(value) ? value : 0);
   const display = fallback !== undefined && value === 0
     ? fallback
@@ -75,7 +77,7 @@ function NumStat({
   return (
     <motion.div
       variants={fadeUp}
-      initial={compact ? "hidden" : undefined}
+      initial={compact && intro ? "hidden" : compact ? false : undefined}
       animate={compact ? "visible" : undefined}
       className={`min-w-0 rounded-2xl bg-card/60 ring-1 ring-border/70 transition-colors hover:ring-gold/40 ${compact ? "p-4" : "p-6"}`}
     >
@@ -418,6 +420,7 @@ function greeting() {
 }
 
 function Dashboard() {
+  const intro = useIntro();
   const [profile, setProfile] = useState<any>(cachedDashboard?.profile ?? null);
   const [sub, setSub] = useState<any>(cachedDashboard?.sub ?? null);
   const [loading, setLoading] = useState(!cachedDashboard);
@@ -615,7 +618,7 @@ function Dashboard() {
         {isNewUser ? (
           <>
             <NewUserWelcome profile={profile} pricingCount={pricingCount} hasCliq={hasCliq} />
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-5 md:grid-cols-3 mb-5">
+            <motion.div variants={staggerContainer} initial={intro ? "hidden" : false} animate="visible" className="grid gap-5 md:grid-cols-3 mb-5">
               <Card
                 title="الحجوزات"
                 desc="راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز."
@@ -679,7 +682,7 @@ function Dashboard() {
             {/* ── ٣ أرقام أساسية فقط، والباقي عند الطلب ── */}
             {hasAnyStats && (
               <div className="mb-12">
-                <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <motion.div variants={staggerContainer} initial={intro ? "hidden" : false} animate="visible" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <NumStat
                     icon={<TrendingUp className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />}
                     label="إيرادات هذا الشهر"

@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useIntro } from "@/lib/intro";
 import { useServerFn } from "@tanstack/react-start";
 import { listPublishedCities } from "@/lib/search.functions";
 import { ArrowLeft, Calendar, Camera, MessageSquareOff, Receipt, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -137,12 +138,14 @@ function Landing() {
   const navigate = useNavigate();
   // The root AnimatePresence has initial={false}, which skips `initial` on first
   // load — so self-drawing lines start from state flipped after mount instead.
-  const [archDrawn, setArchDrawn] = useState(false);
+  const intro = useIntro();
+  // starts drawn on return visits (no intro), otherwise flips after mount to draw
+  const [archDrawn, setArchDrawn] = useState(!intro);
   useEffect(() => setArchDrawn(true), []);
   // A refresh restores the old scroll position, so the hero built off-screen. Start
   // the first homepage of each page load at the top (after the router's restore).
   useEffect(() => {
-    if (landedOnce) return;
+    if (landedOnce || !intro) return;
     landedOnce = true;
     const top = () => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     top();
@@ -645,8 +648,7 @@ function Landing() {
 // The ornament draws itself from its centre outwards, then the two rules
 // extend away from it toward the page edges.
 function Flourish() {
-  const ref = useRef<HTMLDivElement>(null);
-  const on = useInView(ref, { once: true, amount: 1 });
+  const [ref, on] = useSeen<HTMLDivElement>(1);
   const ease = [0.65, 0, 0.35, 1] as const;
   const draw = (delay: number, duration = 0.7) => ({
     "data-draw": true,

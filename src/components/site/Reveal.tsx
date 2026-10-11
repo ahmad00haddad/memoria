@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useIntro } from "@/lib/intro";
 import { animate, motion, useInView } from "framer-motion";
 
 /**
@@ -12,10 +13,12 @@ export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 /** true once the element has been at least `amount` visible (or after mount when `onMount`). */
 export function useSeen<T extends Element>(amount = 0.6, onMount = false) {
   const ref = useRef<T>(null);
+  const intro = useIntro();
   const inView = useInView(ref, { once: true, amount });
   const [mounted, setMounted] = useState(false);
   useEffect(() => { if (onMount) setMounted(true); }, [onMount]);
-  return [ref, onMount ? mounted : inView] as const;
+  // return visits: everything is simply "already seen", so it renders finished
+  return [ref, !intro || (onMount ? mounted : inView)] as const;
 }
 
 /** A hairline that draws itself from `from` (the reading start in RTL is "right"). */
@@ -47,8 +50,9 @@ export function DrawRule({
 /** Gold script text that a single soft band of light sweeps across, once. */
 export function Shimmer({ children, delay = 0, onMount = false }: { children: ReactNode; delay?: number; onMount?: boolean }) {
   const [ref, on] = useSeen<HTMLSpanElement>(0.8, onMount);
+  const intro = useIntro();
   return (
-    <span ref={ref} className={on ? "shimmer-once" : undefined} style={on ? { animationDelay: `${delay}s` } : undefined}>
+    <span ref={ref} className={on && intro ? "shimmer-once" : undefined} style={on ? { animationDelay: `${delay}s` } : undefined}>
       {children}
     </span>
   );
@@ -108,26 +112,28 @@ const arNum = new Intl.NumberFormat("ar-EG");
 /** A number that counts up (Arabic-Indic digits) the first time it is seen. */
 export function CountTo({ from = 0, to, delay = 0, duration = 1.6, onMount = false, decimals = 0, locale }: { from?: number; to: number; delay?: number; duration?: number; onMount?: boolean; decimals?: number; /** e.g. "en" to keep Latin digits */ locale?: string }) {
   const [ref, on] = useSeen<HTMLSpanElement>(0.8, onMount);
-  const [val, setVal] = useState(from);
+  const intro = useIntro();
+  const [val, setVal] = useState(intro ? from : to);
   const fmt = locale || decimals
     ? new Intl.NumberFormat(locale ?? "ar-EG", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
     : arNum;
   useEffect(() => {
     if (!on) return;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setVal(to); return; }
+    if (!intro || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setVal(to); return; }
     const k = 10 ** decimals;
     const c = animate(from, to, { duration, delay, ease: EASE_OUT, onUpdate: (v) => setVal(Math.round(v * k) / k) });
     return () => c.stop();
-  }, [on, from, to, delay, duration, decimals]);
+  }, [on, from, to, delay, duration, decimals, intro]);
   return <span ref={ref} className="tabular-nums">{fmt.format(val)}</span>;
 }
 
 /** Wraps a stroked line icon (lucide) so its strokes draw themselves when seen. */
 export function DrawIcon({ children, delay = 0, duration = 1.1 }: { children: ReactNode; delay?: number; duration?: number }) {
   const [ref, on] = useSeen<HTMLSpanElement>(1);
+  const intro = useIntro();
   useEffect(() => {
     const root = ref.current;
-    if (!root) return;
+    if (!root || !intro) return;
     const shapes = Array.from(root.querySelectorAll<SVGGeometryElement>("path,circle,rect,line,polyline,polygon,ellipse"));
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     shapes.forEach((el) => {
@@ -137,7 +143,7 @@ export function DrawIcon({ children, delay = 0, duration = 1.1 }: { children: Re
       el.style.strokeDashoffset = on ? "0" : `${len}`;
       el.style.transition = on ? `stroke-dashoffset ${duration}s cubic-bezier(0.65,0,0.35,1) ${delay}s` : "none";
     });
-  }, [on, delay, duration, ref]);
+  }, [on, delay, duration, ref, intro]);
   return <span ref={ref} className="inline-flex">{children}</span>;
 }
 
@@ -179,6 +185,7 @@ export function DrawFrame({ className = "text-gold", width = 2, radius = 2, dela
  * with a line break between them from `sm` up, matching the old `<br>` markup.
  */
 export function RevealWords({ lines, delay = 0.15, step = 0.09 }: { lines: string[]; delay?: number; step?: number }) {
+  const intro = useIntro();
   let n = 0;
   return (
     <>
@@ -191,7 +198,7 @@ export function RevealWords({ lines, delay = 0.15, step = 0.09 }: { lines: strin
               <motion.span
                 key={wi}
                 className="inline-block"
-                initial={{ opacity: 0, y: "0.5em", filter: "blur(8px)" }}
+                initial={intro ? { opacity: 0, y: "0.5em", filter: "blur(8px)" } : false}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 0.9, delay: delay + i * step, ease: EASE_OUT }}
               >
@@ -208,10 +215,11 @@ export function RevealWords({ lines, delay = 0.15, step = 0.09 }: { lines: strin
 
 /** A block (card, row) that rises in when it scrolls into view; `index` staggers siblings. */
 export function RiseIn({ children, className = "", index = 0, cols = 3 }: { children: ReactNode; className?: string; index?: number; cols?: number }) {
+  const intro = useIntro();
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 36, filter: "blur(6px)" }}
+      initial={intro ? { opacity: 0, y: 36, filter: "blur(6px)" } : false}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.9, delay: (index % cols) * 0.12, ease: EASE_OUT }}
