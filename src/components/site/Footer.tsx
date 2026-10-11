@@ -1,12 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { startTour } from "@/components/ClientTour";
+import { DrawRule } from "@/components/site/Reveal";
 
 export function Footer() {
   const { loading: authLoading, authed, isPhotographer } = useAuthState();
 
   return (
-    <footer className="mt-24 border-t border-border/60 bg-background">
+    <footer className="relative mt-24 bg-background">
+      <DrawRule className="absolute inset-x-0 top-0 h-px bg-border/60" duration={1.8} />
       <div className="container-editorial py-12 grid gap-8 sm:grid-cols-4 text-sm">
         <div>
           <div className="font-serif text-xl mb-2">Memoria <span className="text-muted-foreground text-base">· ميموريا</span></div>

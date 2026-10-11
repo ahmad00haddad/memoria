@@ -22,7 +22,7 @@ import "lenis/dist/lenis.css";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { PhotographerCommandPalette } from "@/components/CommandPalette";
 import { SmoothScroll } from "@/components/SmoothScroll";
-import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from "framer-motion";
+import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig, PresenceContext } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { ClientTour } from "@/components/ClientTour";
@@ -335,7 +335,12 @@ function RootComponent() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               >
-                <Outlet />
+                {/* initial={false} above is only meant to stop this wrapper fading in on
+                    first load. Reset presence so the page's own entrance animations
+                    (initial/whileInView) still play instead of rendering finished. */}
+                <PresenceContext.Provider value={null}>
+                  <Outlet />
+                </PresenceContext.Provider>
               </motion.div>
             </AnimatePresence>
             <MobileTabBar />

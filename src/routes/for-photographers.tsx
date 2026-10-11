@@ -75,8 +75,8 @@ function ForPhotographersPage() {
             {FEATURES.map((f) => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="rounded-sm border border-border bg-card p-6 hover:border-gold/40 hover:shadow-elegant transition">
-                  <div className="grid h-11 w-11 place-items-center rounded-sm bg-gold/10 text-gold mb-4">
+                <div key={f.title} className="group rounded-sm border border-border bg-card p-6 hover:border-gold/40 hover:shadow-elegant transition">
+                  <div className="grid h-11 w-11 place-items-center rounded-sm bg-gold/10 text-gold mb-4 transition-colors duration-500 group-hover:bg-gold group-hover:text-charcoal">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h3 className="font-serif text-xl mb-2">{f.title}</h3>

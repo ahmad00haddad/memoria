@@ -19,7 +19,8 @@ import { Lightbox } from "@/components/Lightbox";
 import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
 import { hapticVibrate } from "@/lib/utils";
 import { playSound } from "@/lib/sounds";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
+import { DrawFrame, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
 import { MapPin } from "lucide-react";
 import { Zap, CircleCheck } from "lucide-react";
 import { parseFeatures, emphasizeNumbers } from "@/lib/packageFeatures";
@@ -223,18 +224,9 @@ function PhotographerPage() {
     return () => { el.remove(); };
   }, [profile, reviews]);
 
-  // Idea 8: Scroll Progress Bar Logic
-  useEffect(() => {
-    const el = document.getElementById("scroll-progress-bar");
-    if (!el) return;
-    const updateScroll = () => {
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      const scroll = window.scrollY;
-      el.style.transform = `scaleX(${Math.max(0, Math.min(1, scroll / docHeight))})`;
-    };
-    window.addEventListener("scroll", updateScroll, { passive: true });
-    return () => window.removeEventListener("scroll", updateScroll);
-  }, []);
+  // Idea 8: Scroll progress bar, eased with a spring so it glides instead of stepping
+  const { scrollYProgress } = useScroll();
+  const progressX = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
 
   if (loading) return <FallbackPage>جاري التحميل…</FallbackPage>;
   if (loadFailed) return (
@@ -266,10 +258,10 @@ function PhotographerPage() {
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
       {/* Idea 8: Scroll Progress Bar */}
-      <div 
+      <motion.div
         id="scroll-progress-bar"
-        className="fixed top-0 left-0 right-0 h-1 bg-gold origin-left z-50 transition-transform duration-75" 
-        style={{ transform: "scaleX(0)" }}
+        className="fixed top-0 left-0 right-0 h-1 bg-gold origin-left z-50"
+        style={{ scaleX: progressX }}
       />
       
       {/* إخفاء الهيدر التقليدي في الموبايل واستبداله بزر رجوع بسيط */}
@@ -295,7 +287,10 @@ function PhotographerPage() {
           <span>Memoria · العدد ٠١</span>
           <span className="hidden sm:inline">{new Date().toLocaleDateString("ar-JO", { year: "numeric", month: "long" })}</span>
           <span className="ms-auto inline-flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-gold inline-block animate-pulse" />
+            <span className="relative inline-flex h-1.5 w-1.5">
+              <span aria-hidden className="absolute inset-0 rounded-full bg-gold opacity-60 animate-ping opacity-0 [animation-duration:1.6s] [animation-iteration-count:2] [animation-delay:0.8s]" />
+              <span className="relative h-1.5 w-1.5 rounded-full bg-gold" />
+            </span>
             ملف المصوّرة
           </span>
         </div>
@@ -318,11 +313,25 @@ function PhotographerPage() {
                 {profile.tagline || "WEDDING PHOTOGRAPHY"}
               </div>
               {profile.avatar_url && (
-                <img
-                  src={profile.avatar_url}
-                  alt={profile.display_name}
-                  className="mb-5 h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-2 border-gold/60 shadow-elegant"
-                />
+                <span className="relative mb-5 inline-block">
+                  <motion.img
+                    src={profile.avatar_url}
+                    alt={profile.display_name}
+                    className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-2 border-transparent shadow-elegant"
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.9, ease: EASE_OUT }}
+                  />
+                  {/* the gold ring draws itself around the portrait, from the top */}
+                  <svg aria-hidden viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full -rotate-90 text-gold/60">
+                    <motion.circle
+                      cx="50" cy="50" r="49" fill="none" stroke="currentColor" strokeWidth="2" vectorEffect="non-scaling-stroke"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 1.6, delay: 0.3, ease: EASE_DRAW }}
+                    />
+                  </svg>
+                </span>
               )}
               <h1 className="display-serif text-[clamp(3rem,8vw,7rem)] mb-6">
                 {profile.display_name}
@@ -476,9 +485,18 @@ function PhotographerPage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {profile.portfolio_urls!.slice(0, 12).map((u, i) => (
-              <button type="button" key={i} onClick={() => setLightboxIdx(i)} className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in">
+              <motion.button
+                type="button"
+                key={i}
+                onClick={() => setLightboxIdx(i)}
+                className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in"
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.8, delay: (i % 4) * 0.08, ease: EASE_OUT }}
+              >
                 <ProgressiveImage src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" />
-              </button>
+              </motion.button>
             ))}
           </div>
           {lightboxIdx !== null && (
@@ -863,7 +881,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         <p className="text-muted-foreground mb-5">
           {success.verify ? "أكّدي طلبك ليصل إلى " + profile.display_name + "." : `تم إخطار ${profile.display_name} وسيتم التواصل معكِ قريبًا.`}
         </p>
-        <div className="mb-5 rounded-sm border-2 border-gold bg-gold/10 p-4 text-start">
+        <div className="relative mb-5 rounded-sm border-2 border-transparent bg-gold/10 p-4 text-start">
+          <DrawFrame delay={0.4} />
           <div className="font-semibold mb-1">🔗 رابط تتبّع حجزك — احفظيه الآن</div>
           <p className="text-xs text-muted-foreground mb-3 leading-relaxed">هذا الرابط هو طريقتك الوحيدة لمتابعة الحجز ورفع إثبات العربون. انسخيه وأرسليه لنفسك على واتساب. حفظناه أيضاً على هذا الجهاز.</p>
           <div className="font-mono text-[11px] break-all rounded-sm bg-background border border-border px-2 py-1.5 mb-3 select-all" dir="ltr">{fullUrl}</div>

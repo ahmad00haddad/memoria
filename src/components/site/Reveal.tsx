@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useInView } from "framer-motion";
+import { animate, motion, useInView } from "framer-motion";
 
 /**
  * Quiet, one-shot entrance helpers for existing page details (gold rules,
- * script words, captions). They animate from React state rather than
- * `initial`, because the root AnimatePresence has initial={false}, which
- * skips `initial` on first load.
+ * script words, captions, icons, frames). Each plays once, when seen.
  */
 
 export const EASE_DRAW = [0.65, 0, 0.35, 1] as const;
@@ -102,5 +100,66 @@ export function RiseImg({ className = "", delay = 0, ...img }: React.ImgHTMLAttr
       animate={{ clipPath: on ? "inset(0% 0% 0% 0%)" : "inset(100% 0% 0% 0%)" }}
       transition={{ duration: 1.3, delay, ease: EASE_OUT }}
     />
+  );
+}
+
+const arNum = new Intl.NumberFormat("ar-EG");
+
+/** A number that counts up (Arabic-Indic digits) the first time it is seen. */
+export function CountTo({ from = 0, to, delay = 0, duration = 1.6, onMount = false }: { from?: number; to: number; delay?: number; duration?: number; onMount?: boolean }) {
+  const [ref, on] = useSeen<HTMLSpanElement>(0.8, onMount);
+  const [val, setVal] = useState(from);
+  useEffect(() => {
+    if (!on) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setVal(to); return; }
+    const c = animate(from, to, { duration, delay, ease: EASE_OUT, onUpdate: (v) => setVal(Math.round(v)) });
+    return () => c.stop();
+  }, [on, from, to, delay, duration]);
+  return <span ref={ref} className="tabular-nums">{arNum.format(val)}</span>;
+}
+
+/** Wraps a stroked line icon (lucide) so its strokes draw themselves when seen. */
+export function DrawIcon({ children, delay = 0, duration = 1.1 }: { children: ReactNode; delay?: number; duration?: number }) {
+  const [ref, on] = useSeen<HTMLSpanElement>(1);
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    const shapes = Array.from(root.querySelectorAll<SVGGeometryElement>("path,circle,rect,line,polyline,polygon,ellipse"));
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    shapes.forEach((el) => {
+      const len = el.getTotalLength?.() ?? 0;
+      if (!len) return;
+      el.style.strokeDasharray = `${len}`;
+      el.style.strokeDashoffset = on ? "0" : `${len}`;
+      el.style.transition = on ? `stroke-dashoffset ${duration}s cubic-bezier(0.65,0,0.35,1) ${delay}s` : "none";
+    });
+  }, [on, delay, duration, ref]);
+  return <span ref={ref} className="inline-flex">{children}</span>;
+}
+
+/**
+ * Gold frame that draws itself around a card. Put it inside a `relative` card
+ * whose own border is transparent (same width) so the layout doesn't shift.
+ */
+export function DrawFrame({ className = "text-gold", width = 2, radius = 2, delay = 0, duration = 1.8 }: { className?: string; width?: number; radius?: number; delay?: number; duration?: number }) {
+  const [ref, on] = useSeen<SVGSVGElement>(0.5);
+  const half = width / 2;
+  return (
+    <svg ref={ref} aria-hidden className={`pointer-events-none absolute overflow-visible ${className}`} style={{ inset: -half, width: `calc(100% + ${width}px)`, height: `calc(100% + ${width}px)` }}>
+      {/* the svg spans the border's centre line, so a 100% rect strokes exactly over it */}
+      <motion.rect
+        x={0}
+        y={0}
+        width="100%"
+        height="100%"
+        rx={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={width}
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: on ? 1 : 0 }}
+        transition={{ duration, delay, ease: EASE_DRAW }}
+      />
+    </svg>
   );
 }

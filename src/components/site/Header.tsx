@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Bell, Menu } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
@@ -139,7 +139,7 @@ export function Header() {
     >
       <div className="container-editorial flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          <img src="/favicon.svg" alt="" width={36} height={36} className="h-9 w-9" />
+          <img src="/favicon.svg" alt="" width={36} height={36} className="h-9 w-9 transition-transform duration-700 ease-out group-hover:rotate-[25deg] group-hover:scale-105" />
           <div className="leading-tight">
             <div className="font-serif text-lg tracking-wide">Memoria <span className="text-muted-foreground text-sm">ميموريا</span></div>
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
@@ -297,9 +297,20 @@ function NavLink({
   children: React.ReactNode;
   className?: string;
 }) {
+  const active = useRouterState({ select: (s) => s.location.pathname === to });
   return (
     <Link to={to as any} className={`relative group px-2 py-1 rounded-sm hover:bg-secondary transition-colors ${className}`}>
       <span className="relative z-10">{children}</span>
+      {/* the current page's link underlines itself, drawing in from the reading start */}
+      {active && (
+        <motion.span
+          aria-hidden
+          className="absolute bottom-0 left-0 right-0 h-px bg-gold origin-right"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.9, delay: 0.3, ease: [0.65, 0, 0.35, 1] }}
+        />
+      )}
       <motion.span
         className="absolute bottom-0 left-0 right-0 h-px bg-gold origin-left"
         initial={{ scaleX: 0 }}

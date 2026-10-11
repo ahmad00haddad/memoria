@@ -3,6 +3,8 @@ import { Check, Sparkles } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { motion } from "framer-motion";
+import { DrawFrame, EASE_OUT } from "@/components/site/Reveal";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -65,10 +67,18 @@ function PricingPage() {
           </div>
 
           {/* Pro plan */}
-          <div className="relative rounded-sm border-2 border-gold bg-card p-8 shadow-elegant">
-            <div className="absolute -top-3 right-6 bg-gold text-charcoal text-[11px] uppercase tracking-[0.25em] px-3 py-1 rounded-sm">
+          <div className="relative rounded-sm border-2 border-transparent bg-card p-8 shadow-elegant">
+            {/* the gold frame draws itself, then the badge settles onto it */}
+            <DrawFrame duration={1.6} />
+            <motion.div
+              className="absolute -top-3 right-6 bg-gold text-charcoal text-[11px] uppercase tracking-[0.25em] px-3 py-1 rounded-sm"
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 1.3, ease: EASE_OUT }}
+            >
               الأكثر طلبًا
-            </div>
+            </motion.div>
             <div className="text-xs uppercase tracking-[0.25em] text-gold mb-2">احترافي</div>
             <h3 className="font-serif text-2xl mb-1">Elite Pro</h3>
             <div className="text-4xl font-serif my-4">

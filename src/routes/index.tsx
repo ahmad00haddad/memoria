@@ -11,7 +11,7 @@ import heroImg from "@/assets/hero-bride.jpg";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { DrawRule, RiseImg, SettleIn, Shimmer, TypeIn, useSeen, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
+import { CountTo, DrawIcon, DrawRule, RiseImg, SettleIn, Shimmer, TypeIn, useSeen, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -312,7 +312,7 @@ function Landing() {
                     <input type="date" value={heroDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setHeroDate(e.target.value)} className="w-full bg-transparent text-sm outline-none" />
                   </label>
                   <button type="submit" className="group inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm text-ivory transition-all hover:gap-3 active:scale-[0.98] dark:bg-gold dark:text-charcoal">
-                    {heroDate ? "المتاحات" : "ابحثي"} <ArrowLeft className="h-4 w-4" />
+                    {heroDate ? "المتاحات" : "ابحثي"} <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
                   </button>
                 </motion.form>
               )}
@@ -347,7 +347,17 @@ function Landing() {
                 </motion.div>
               )}
               <motion.div variants={fadeUp} className="flex items-center gap-6 pt-2 text-sm text-muted-foreground flex-wrap">
-                <div className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 fill-gold text-gold" /> تقييمات حقيقية من عملاء سابقات</div>
+                <div className="flex items-center gap-1.5">
+                  <motion.span
+                    className="inline-flex"
+                    initial={{ rotate: 0, scale: 1 }}
+                    animate={{ rotate: [0, 0, 144], scale: [1, 1.45, 1] }}
+                    transition={{ duration: 1.1, delay: 1.6, ease: EASE_OUT, times: [0, 0.35, 1] }}
+                  >
+                    <Star className="h-3.5 w-3.5 fill-gold text-gold" />
+                  </motion.span>
+                  تقييمات حقيقية من عملاء سابقات
+                </div>
                 <span className="hidden sm:block h-3 w-px bg-border" />
                 <div className="hidden sm:block">حجز فوري بدون واتساب</div>
               </motion.div>
@@ -399,7 +409,7 @@ function Landing() {
                   <div className="text-xs text-muted-foreground">سعر فوري</div>
                   <span className="text-[10px] text-gold border border-gold/30 px-1.5 py-0.5 rounded-sm">مثال تقديري</span>
                 </div>
-                <div className="font-serif text-3xl tabular-nums">~٣٢٠ <span className="text-sm text-muted-foreground">د.أ</span></div>
+                <div className="font-serif text-3xl tabular-nums">~<CountTo onMount from={200} to={320} delay={1.1} duration={1.8} /> <span className="text-sm text-muted-foreground">د.أ</span></div>
                 <div className="text-xs text-muted-foreground leading-relaxed mt-1">٤ ساعات تصوير + ٥٠ صورة معدّلة — الأسعار تختلف حسب المصوّر</div>
               </motion.div>
             </motion.div>
@@ -642,7 +652,7 @@ function RoleCard({ index, title, desc, cta, href, highlight }: { index: string;
           highlight ? "bg-charcoal text-ivory grain-overlay" : "bg-card border border-border"
         }`}
       >
-        <span aria-hidden className={`absolute -top-6 end-4 font-serif text-[8rem] leading-none select-none ${highlight ? "text-ivory/[0.06]" : "text-foreground/[0.05]"}`}>{index}</span>
+        <span aria-hidden className={`absolute -top-6 end-4 font-serif text-[8rem] leading-none select-none transition-transform duration-700 ease-out group-hover:-translate-x-3 group-hover:translate-y-2 ${highlight ? "text-ivory/[0.06]" : "text-foreground/[0.05]"}`}>{index}</span>
         <div className={`eyebrow mb-6 ${highlight ? "" : "!text-muted-foreground"}`}>
           {highlight ? "للمصوّرين" : "للعملاء"}
         </div>
@@ -662,12 +672,21 @@ function Feature({ n, icon: Icon, title, desc, last }: { n: string; icon: typeof
       {/* row rules draw in from the reading start as each row arrives */}
       <DrawRule className="absolute inset-x-0 top-0 h-px bg-border" duration={1.3} />
       {last && <DrawRule className="absolute inset-x-0 bottom-0 h-px bg-border" duration={1.3} delay={0.25} />}
-      <span className="font-serif text-4xl text-gold/70 tabular-nums leading-none pt-1 transition-colors group-hover:text-gold" dir="ltr">{n}</span>
+      <motion.span
+        className="font-serif text-4xl text-gold/70 tabular-nums leading-none pt-1 transition-colors group-hover:text-gold"
+        dir="ltr"
+        initial={{ opacity: 0.15 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 1 }}
+        transition={{ duration: 1.2, delay: 0.2, ease: EASE_OUT }}
+      >
+        {n}
+      </motion.span>
       <div>
         <h3 className="font-serif text-2xl mb-2">{title}</h3>
         <p className="text-muted-foreground leading-loose max-w-md">{desc}</p>
       </div>
-      <Icon className="h-5 w-5 text-muted-foreground/50 mt-2 transition-colors group-hover:text-gold" strokeWidth={1.25} />
+      <span className="mt-2"><DrawIcon delay={0.35}><Icon className="h-5 w-5 text-muted-foreground/50 transition-colors group-hover:text-gold" strokeWidth={1.25} /></DrawIcon></span>
     </motion.li>
   );
 }
