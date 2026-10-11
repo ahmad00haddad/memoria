@@ -11,6 +11,7 @@ import heroImg from "@/assets/hero-bride.jpg";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { DrawRule, RiseImg, SettleIn, Shimmer, TypeIn, useSeen, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -263,7 +264,7 @@ function Landing() {
             className="flex items-center gap-4 text-muted-foreground mb-10 lg:mb-14"
           >
             <span className="eyebrow">Memoria</span>
-            <span className="h-px flex-1 max-w-24 bg-gold/40" />
+            <DrawRule onMount delay={0.3} duration={1.1} className="h-px flex-1 max-w-24 bg-gold/40" />
             <span className="text-xs">عمّان · الأردن</span>
             <span className="hidden sm:inline font-serif italic text-sm text-muted-foreground/70" dir="ltr">Wedding photography, booked beautifully</span>
           </motion.div>
@@ -284,7 +285,7 @@ function Landing() {
               >
                 من النقرة الأولى
                 <span className="block font-script text-gold text-[3.4rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
-                  إلى الذكرى الأبدية
+                  <Shimmer onMount delay={2.4}>إلى الذكرى الأبدية</Shimmer>
                 </span>
               </motion.h1>
               <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-md leading-loose">
@@ -388,7 +389,7 @@ function Landing() {
                 <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-charcoal/40 to-transparent" />
               </div>
               <span aria-hidden className="hidden lg:block absolute top-1/2 -end-14 -translate-y-1/2 rotate-90 origin-center whitespace-nowrap font-serif italic text-sm tracking-[0.3em] text-muted-foreground/60" dir="ltr">
-                est. 2026 — Amman
+                <TypeIn onMount text="est. 2026 — Amman" delay={1.4} />
               </span>
               <motion.div
                 animate={float}
@@ -477,15 +478,15 @@ function Landing() {
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-28">
               <div className="eyebrow mb-3">سير العمل</div>
-              <h2 className="font-serif text-4xl sm:text-5xl mb-4">حلّ كامل<br /><span className="font-script text-gold">لكل مشكلة</span></h2>
+              <h2 className="font-serif text-4xl sm:text-5xl mb-4">حلّ كامل<br /><span className="font-script text-gold"><Shimmer delay={0.4}>لكل مشكلة</Shimmer></span></h2>
               <p className="text-muted-foreground leading-loose max-w-xs">كل ما كان يضيع في محادثات الواتساب، صار في مكانه الصحيح.</p>
             </div>
           </div>
-          <ol className="lg:col-span-7 lg:col-start-6 divide-y divide-border border-y border-border">
+          <ol className="lg:col-span-7 lg:col-start-6">
             <Feature n="01" icon={MessageSquareOff} title="بدون واتساب" desc="جميع التفاصيل تُدخل عبر النموذج: الموقع، الوقت، نوع التصوير." />
             <Feature n="02" icon={Calendar} title="تقويم ذكي" desc="مزامنة Google Calendar مع فاصل ساعتين بين الجلسات لمراعاة الازدحام." />
             <Feature n="03" icon={Receipt} title="سعر فوري" desc="حاسبة ديناميكية تشمل الساعات، الإضافات، ورسوم التنقّل بالكيلومتر." />
-            <Feature n="04" icon={ShieldCheck} title="عربون آمن" desc="تأكيد الحجز برفع إثبات تحويل CliQ ومصادقة المصوّر." />
+            <Feature last n="04" icon={ShieldCheck} title="عربون آمن" desc="تأكيد الحجز برفع إثبات تحويل CliQ ومصادقة المصوّر." />
           </ol>
         </div>
       </motion.section>
@@ -501,7 +502,7 @@ function Landing() {
           whileInView="visible"
           viewport={viewportOnce}
         >
-          <span aria-hidden className="pointer-events-none absolute -top-10 start-6 font-serif text-[16rem] leading-none text-gold/10 select-none">”</span>
+          <SettleIn className="pointer-events-none absolute -top-10 start-6 origin-top-right font-serif text-[16rem] leading-none text-gold/10 select-none">”</SettleIn>
           <div className="container-editorial relative">
             <div className="eyebrow mb-3">تجارب حقيقية</div>
             <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-14">آراء العرائس</h2>
@@ -510,10 +511,7 @@ function Landing() {
                 <blockquote className="font-serif text-2xl sm:text-3xl leading-[1.7] text-ivory">
                   تجربة رائعة من البداية للنهاية. أسعار واضحة وبدون مفاجآت، والمصورة كانت لطيفة جداً وصورها خيالية. أنقذتني من ضياع الأوقات والبحث العشوائي.
                 </blockquote>
-                <figcaption className="mt-8 flex items-center gap-4">
-                  <span className="h-px w-10 bg-gold" />
-                  <span className="font-script text-2xl text-gold">سارة الأحمد</span>
-                </figcaption>
+                <SignedName name="سارة الأحمد" />
               </motion.figure>
               <div className="lg:col-span-4 lg:col-start-9 space-y-10 lg:pt-24">
                 <Quote name="دانة وليد" text="أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير." />
@@ -577,7 +575,7 @@ function Landing() {
               <motion.div key={p.username} variants={fadeUp} className={i % 2 ? "lg:mt-16" : ""}>
                 <Link to="/photographers/$username" params={{ username: p.username }} className="group block">
                   <div className="aspect-[3/4] bg-gradient-royal overflow-hidden rounded-t-full">
-                    {p.cover_url && <img src={p.cover_url} alt={p.display_name} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />}
+                    {p.cover_url && <RiseImg src={p.cover_url} alt={p.display_name} loading="lazy" delay={i * 0.12} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />}
                   </div>
                   <div className="pt-4 flex items-baseline justify-between gap-3">
                     <div className="font-serif text-xl group-hover:text-gold transition-colors">{p.display_name}</div>
@@ -658,9 +656,12 @@ function RoleCard({ index, title, desc, cta, href, highlight }: { index: string;
   );
 }
 
-function Feature({ n, icon: Icon, title, desc }: { n: string; icon: typeof Calendar; title: string; desc: string }) {
+function Feature({ n, icon: Icon, title, desc, last }: { n: string; icon: typeof Calendar; title: string; desc: string; last?: boolean }) {
   return (
-    <motion.li variants={fadeUp} className="group grid grid-cols-[auto_1fr_auto] items-start gap-6 py-8">
+    <motion.li variants={fadeUp} className="group relative grid grid-cols-[auto_1fr_auto] items-start gap-6 py-8">
+      {/* row rules draw in from the reading start as each row arrives */}
+      <DrawRule className="absolute inset-x-0 top-0 h-px bg-border" duration={1.3} />
+      {last && <DrawRule className="absolute inset-x-0 bottom-0 h-px bg-border" duration={1.3} delay={0.25} />}
       <span className="font-serif text-4xl text-gold/70 tabular-nums leading-none pt-1 transition-colors group-hover:text-gold" dir="ltr">{n}</span>
       <div>
         <h3 className="font-serif text-2xl mb-2">{title}</h3>
@@ -668,5 +669,27 @@ function Feature({ n, icon: Icon, title, desc }: { n: string; icon: typeof Calen
       </div>
       <Icon className="h-5 w-5 text-muted-foreground/50 mt-2 transition-colors group-hover:text-gold" strokeWidth={1.25} />
     </motion.li>
+  );
+}
+
+// The short gold rule draws first, then the signature resolves beside it.
+function SignedName({ name }: { name: string }) {
+  const [ref, on] = useSeen<HTMLElement>(1);
+  return (
+    <figcaption ref={ref} className="mt-8 flex items-center gap-4">
+      <motion.span
+        aria-hidden
+        className="h-px w-10 origin-right bg-gold"
+        animate={{ scaleX: on ? 1 : 0 }}
+        transition={{ duration: 0.9, ease: EASE_DRAW }}
+      />
+      <motion.span
+        className="font-script text-2xl text-gold"
+        animate={on ? { opacity: 1, x: 0, filter: "blur(0px)" } : { opacity: 0, x: 12, filter: "blur(4px)" }}
+        transition={{ duration: 1, delay: 0.7, ease: EASE_OUT }}
+      >
+        {name}
+      </motion.span>
+    </figcaption>
   );
 }
