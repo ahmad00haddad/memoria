@@ -15,14 +15,14 @@ import { Toaster } from "@/components/ui/sonner";
 import { installFriendlyToasts } from "@/lib/friendlyErrors";
 installFriendlyToasts();
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { PhotographerCommandPalette } from "@/components/CommandPalette";
 import { SmoothScroll } from "@/components/SmoothScroll";
-import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig, PresenceContext } from "framer-motion";
+import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { ClientTour } from "@/components/ClientTour";
@@ -315,6 +315,8 @@ function RootComponent() {
   }, [pathname]);
 
   // Page entrance animation (Task 7)
+  const firstPage = useRef(true);
+  useEffect(() => { firstPage.current = false; }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -326,21 +328,19 @@ function RootComponent() {
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-sm focus:shadow-sm">
               تخطي إلى المحتوى الرئيسي
             </a>
-            <AnimatePresence mode="wait" initial={false}>
+            {/* No initial={false} here: it is inherited by every page and would make all
+                their entrance animations render already finished. The wrapper itself
+                skips its fade only on the very first page. */}
+            <AnimatePresence mode="wait">
               <motion.div
                 id="main-content"
                 key={pathname}
-                initial={{ opacity: 0, y: 6 }}
+                initial={firstPage.current ? false : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               >
-                {/* initial={false} above is only meant to stop this wrapper fading in on
-                    first load. Reset presence so the page's own entrance animations
-                    (initial/whileInView) still play instead of rendering finished. */}
-                <PresenceContext.Provider value={null}>
-                  <Outlet />
-                </PresenceContext.Provider>
+                <Outlet />
               </motion.div>
             </AnimatePresence>
             <MobileTabBar />
