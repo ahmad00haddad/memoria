@@ -33,6 +33,9 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
+// Only the first homepage render of a page load jumps to the top (not back/forward).
+let landedOnce = false;
+
 // ─── اختيار الدور عند أول زيارة ────────────────────────────────────────────
 export const VISITOR_ROLE_KEY = "memoria_visitor_role";
 
@@ -134,6 +137,17 @@ function Landing() {
   // load — so self-drawing lines start from state flipped after mount instead.
   const [archDrawn, setArchDrawn] = useState(false);
   useEffect(() => setArchDrawn(true), []);
+  // A refresh restores the old scroll position, so the hero built off-screen. Start
+  // the first homepage of each page load at the top (after the router's restore).
+  useEffect(() => {
+    if (landedOnce) return;
+    landedOnce = true;
+    const top = () => window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    top();
+    const raf = requestAnimationFrame(top);
+    const t = window.setTimeout(top, 60);
+    return () => { cancelAnimationFrame(raf); window.clearTimeout(t); };
+  }, []);
   useEffect(() => {
     let active = true;
 
@@ -364,40 +378,58 @@ function Landing() {
             </motion.div>
 
             <motion.div
-              className="order-1 lg:order-2 lg:col-span-5 relative mx-auto w-full max-w-[420px] lg:max-w-none"
+              className="group/hero order-1 lg:order-2 lg:col-span-5 relative mx-auto w-full max-w-[420px] lg:max-w-none"
               variants={scaleIn}
               initial="hidden"
               animate="visible"
             >
               {/* thin offset arch outline behind the photo */}
-              {/* the offset gold arch draws itself: up one side, over the top, down and closed along the base */}
-              <svg
+              {/* The gold arch draws itself while sliding out from behind the photo to its
+                  offset; on hover it eases back toward the photo. */}
+              <motion.div
                 aria-hidden
-                viewBox="0 0 300 420"
-                preserveAspectRatio="none"
-                className="absolute inset-0 h-full w-full translate-x-3 -translate-y-3 overflow-visible text-gold/80 lg:translate-x-5 lg:-translate-y-5"
+                className="absolute inset-0"
+                initial={{ x: -20, y: 20 }}
+                animate={archDrawn ? { x: 0, y: 0 } : { x: -20, y: 20 }}
+                transition={{ duration: 2.6, delay: 1.1, ease: [0.65, 0, 0.35, 1] }}
               >
-                <motion.path
-                  d="M0.5 419.5V150A149.5 149.5 0 0 1 299.5 150V419.5Z"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  vectorEffect="non-scaling-stroke"
-                  data-draw
-                  animate={archDrawn ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
-                  transition={{ pathLength: { duration: 2.2, delay: 0.5, ease: [0.65, 0, 0.35, 1] }, opacity: { duration: 0.01, delay: 0.5 } }}
-                />
-              </svg>
-              <div className="relative overflow-hidden rounded-t-full group shadow-elegant">
-                <img
+                <svg
+                  viewBox="0 0 300 420"
+                  preserveAspectRatio="none"
+                  className="absolute inset-0 h-full w-full translate-x-3 -translate-y-3 overflow-visible text-gold transition-transform duration-700 ease-out group-hover/hero:translate-x-1.5 group-hover/hero:-translate-y-1.5 lg:translate-x-5 lg:-translate-y-5 lg:group-hover/hero:translate-x-2.5 lg:group-hover/hero:-translate-y-2.5"
+                >
+                  <motion.path
+                    d="M0.5 419.5V150A149.5 149.5 0 0 1 299.5 150V419.5Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    vectorEffect="non-scaling-stroke"
+                    data-draw
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={archDrawn ? { pathLength: 1, opacity: 0.85 } : { pathLength: 0, opacity: 0 }}
+                    transition={{ duration: 2.6, delay: 1.1, ease: [0.65, 0, 0.35, 1] }}
+                  />
+                </svg>
+              </motion.div>
+              {/* the photo rises into its arch from the base, settling from a slow zoom */}
+              <motion.div
+                className="relative overflow-hidden rounded-t-full group shadow-elegant"
+                initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
+                animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
+                transition={{ duration: 1.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <motion.img
                   src={heroImg}
                   alt="عروس في إطلالة سينمائية"
                   width={598}
                   height={1420}
-                  className="w-full aspect-[3/4.2] object-cover object-top will-change-transform transition-transform duration-[1600ms] ease-out group-hover:scale-[1.04]"
+                  initial={{ scale: 1.18 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 2.6, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                  className="w-full aspect-[3/4.2] object-cover object-top will-change-transform"
                 />
                 <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-charcoal/40 to-transparent" />
-              </div>
+              </motion.div>
               <span aria-hidden className="hidden lg:block absolute top-1/2 -end-14 -translate-y-1/2 rotate-90 origin-center whitespace-nowrap font-serif italic text-sm tracking-[0.3em] text-muted-foreground/60" dir="ltr">
                 <TypeIn onMount text="est. 2026 — Amman" delay={1.4} />
               </span>

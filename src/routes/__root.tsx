@@ -149,6 +149,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: "(function(){if(location.hostname==='memoria-jo.lovable.app'){location.replace('https://memoria-production.ahmad000haddad.workers.dev'+location.pathname+location.search+location.hash);}})();",
       },
       {
+        // The homepage builds itself on load; don't let the browser restore a mid-page scroll
+        children: "if(location.pathname==='/'&&'scrollRestoration' in history)history.scrollRestoration='manual';",
+      },
+      {
         children: "(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
       },
       {
