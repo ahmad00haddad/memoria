@@ -375,13 +375,13 @@ function Landing() {
                 aria-hidden
                 viewBox="0 0 300 420"
                 preserveAspectRatio="none"
-                className="absolute inset-0 h-full w-full translate-x-3 -translate-y-3 overflow-visible text-gold/50 lg:translate-x-5 lg:-translate-y-5"
+                className="absolute inset-0 h-full w-full translate-x-3 -translate-y-3 overflow-visible text-gold/80 lg:translate-x-5 lg:-translate-y-5"
               >
                 <motion.path
                   d="M0.5 419.5V150A149.5 149.5 0 0 1 299.5 150V419.5Z"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1"
+                  strokeWidth="1.5"
                   vectorEffect="non-scaling-stroke"
                   data-draw
                   animate={archDrawn ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}

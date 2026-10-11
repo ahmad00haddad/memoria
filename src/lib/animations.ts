@@ -3,8 +3,8 @@ import type { Variants } from "framer-motion";
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } },
+  hidden: { opacity: 0, y: 44, filter: "blur(8px)" },
+  visible: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 1.1, ease: easeOut } },
 };
 
 export const fadeDown: Variants = {
@@ -23,13 +23,13 @@ export const fadeRight: Variants = {
 };
 
 export const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.94 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.7, ease: easeOut } },
+  hidden: { opacity: 0, scale: 0.88, filter: "blur(10px)" },
+  visible: { opacity: 1, scale: 1, filter: "blur(0px)", transition: { duration: 1.4, ease: easeOut } },
 };
 
 export const staggerContainer: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+  visible: { transition: { staggerChildren: 0.16, delayChildren: 0.2 } },
 };
 
 export const float = {
