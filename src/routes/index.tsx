@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { listPublishedCities } from "@/lib/search.functions";
 import { ArrowLeft, Calendar, Camera, MessageSquareOff, Receipt, ShieldCheck, Sparkles, Star } from "lucide-react";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -11,6 +11,7 @@ import heroImg from "@/assets/hero-bride.jpg";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
 import { ScrollReveal } from "@/components/ScrollReveal";
+import { CountUp, DrawRule, Magnetic, Marquee, ParallaxImg, ScrollGem, ScrollProgress, TiltCard, WordsReveal } from "@/components/motion/Kit";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -192,6 +193,14 @@ function Landing() {
   const [heroDate, setHeroDate] = useState("");
   const [heroCity, setHeroCity] = useState("");
   const [cities, setCities] = useState<string[]>([]);
+  const [photographerCount, setPhotographerCount] = useState(0);
+  useEffect(() => {
+    supabase
+      .from("profiles")
+      .select("username", { count: "exact", head: true })
+      .eq("is_published", true)
+      .then(({ count }) => setPhotographerCount(count ?? 0), () => {});
+  }, []);
   const runCities = useServerFn(listPublishedCities);
   useEffect(() => { runCities({}).then((c: any) => setCities(c ?? [])).catch(() => {}); /* eslint-disable-next-line */ }, []);
   const [resume, setResume] = useState<{ label: string; city?: string; date?: string } | null>(null);
@@ -244,6 +253,7 @@ function Landing() {
       <AnimatePresence>
         {showRoleGate && <RoleGate onSelect={handleRoleSelect} />}
       </AnimatePresence>
+      <ScrollProgress />
       <div className="min-h-screen bg-background">
         <Header />
 
@@ -274,15 +284,12 @@ function Landing() {
               <motion.p variants={fadeUp} className="eyebrow">
                 منصّة الحجوزات الأكثر فخامة لمصوّري الأعراس في الأردن
               </motion.p>
-              <motion.h1
-                variants={fadeUp}
-                className="font-serif text-[2.9rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]"
-              >
-                من النقرة الأولى
+              <h1 className="font-serif text-[2.9rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]">
+                <WordsReveal text="من النقرة الأولى" delay={0.15} />
                 <span className="block font-script text-gold text-[3.4rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
-                  إلى الذكرى الأبدية
+                  <WordsReveal text="إلى الذكرى الأبدية" delay={0.5} stagger={0.12} />
                 </span>
-              </motion.h1>
+              </h1>
               <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-md leading-loose">
                 {visitorRole === "photographer" || isPhotographer
                   ? "ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان."
@@ -306,9 +313,12 @@ function Landing() {
                     <span className="text-xs text-muted-foreground shrink-0">تاريخ العرس</span>
                     <input type="date" value={heroDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setHeroDate(e.target.value)} className="w-full bg-transparent text-sm outline-none" />
                   </label>
-                  <button type="submit" className="group inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm text-ivory transition-all hover:gap-3 active:scale-[0.98] dark:bg-gold dark:text-charcoal">
-                    {heroDate ? "المتاحات" : "ابحثي"} <ArrowLeft className="h-4 w-4" />
-                  </button>
+                  <Magnetic strength={0.25} className="sm:w-auto">
+                    <button type="submit" className="group relative inline-flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-charcoal px-6 py-3 text-sm text-ivory transition-all hover:gap-3 active:scale-[0.98] dark:bg-gold dark:text-charcoal">
+                      <span aria-hidden className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                      {heroDate ? "المتاحات" : "ابحثي"} <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+                    </button>
+                  </Magnetic>
                 </motion.form>
               )}
               {resume && visitorRole !== "photographer" && !isPhotographer && (
@@ -355,16 +365,25 @@ function Landing() {
               animate="visible"
             >
               {/* thin offset arch outline behind the photo */}
-              <div aria-hidden className="absolute inset-0 translate-x-3 -translate-y-3 lg:translate-x-5 lg:-translate-y-5 rounded-t-full border border-gold/50" />
-              <div className="relative overflow-hidden rounded-t-full group shadow-elegant">
-                <img
+              <motion.div
+                aria-hidden
+                className="absolute inset-0 rounded-t-full border border-gold/50"
+                initial={{ x: 0, y: 0, opacity: 0 }}
+                animate={{ x: 20, y: -20, opacity: 1 }}
+                transition={{ duration: 1.4, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              />
+              <div className="relative rounded-t-full shadow-elegant">
+                <ParallaxImg
                   src={heroImg}
                   alt="عروس في إطلالة سينمائية"
                   width={598}
                   height={1420}
-                  className="w-full aspect-[3/4.2] object-cover object-top will-change-transform transition-transform duration-[1600ms] ease-out group-hover:scale-[1.04]"
+                  eager
+                  strength={8}
+                  className="aspect-[3/4.2] rounded-t-full"
+                  imgClassName="object-top"
                 />
-                <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-charcoal/40 to-transparent" />
+                <div aria-hidden className="absolute inset-x-0 bottom-0 h-1/3 rounded-b-none bg-gradient-to-t from-charcoal/40 to-transparent" />
               </div>
               <span aria-hidden className="hidden lg:block absolute top-1/2 -end-14 -translate-y-1/2 rotate-90 origin-center whitespace-nowrap font-serif italic text-sm tracking-[0.3em] text-muted-foreground/60" dir="ltr">
                 est. 2026 — Amman
@@ -386,6 +405,14 @@ function Landing() {
       </section>
 
       <Flourish />
+
+      {/* Moments ribbon */}
+      <Marquee
+        className="py-8 font-serif text-2xl sm:text-3xl text-foreground/70"
+        items={["الطلّة الأولى", "الزفّة", "الكوشة", "الخطوبة", "ليلة الحنّة", "الدبكة", "قصّ الكيكة", "جلسة ما قبل العرس"]}
+      />
+
+      <Stats photographers={photographerCount} cities={cities.length} />
 
       {/* Role chooser */}
       {(!visitorRole || visitorRole === "guest" || isPhotographer) && (
@@ -452,7 +479,8 @@ function Landing() {
         whileInView="visible"
         viewport={viewportOnce}
       >
-        <div className="grid gap-12 lg:grid-cols-12">
+        <div className="relative grid gap-12 lg:grid-cols-12">
+          <ScrollGem className="absolute -start-40 top-1/3 hidden h-[420px] w-[420px] opacity-[0.07] lg:block" turns={0.6} />
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-28">
               <div className="eyebrow mb-3">سير العمل</div>
@@ -480,7 +508,7 @@ function Landing() {
           whileInView="visible"
           viewport={viewportOnce}
         >
-          <span aria-hidden className="pointer-events-none absolute -top-10 start-6 font-serif text-[16rem] leading-none text-gold/10 select-none">”</span>
+          <QuoteGlyph />
           <div className="container-editorial relative">
             <div className="eyebrow mb-3">تجارب حقيقية</div>
             <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-14">آراء العرائس</h2>
@@ -555,13 +583,27 @@ function Landing() {
             {featured.map((p, i) => (
               <motion.div key={p.username} variants={fadeUp} className={i % 2 ? "lg:mt-16" : ""}>
                 <Link to="/photographers/$username" params={{ username: p.username }} className="group block">
-                  <div className="aspect-[3/4] bg-gradient-royal overflow-hidden rounded-t-full">
-                    {p.cover_url && <img src={p.cover_url} alt={p.display_name} loading="lazy" className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />}
-                  </div>
+                  <TiltCard max={5} className="rounded-t-full">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-t-full bg-gradient-royal">
+                      {p.cover_url && (
+                        <ParallaxImg
+                          src={p.cover_url}
+                          alt={p.display_name}
+                          strength={10}
+                          className="h-full w-full rounded-t-full"
+                          imgClassName="transition-[filter,transform] duration-700 group-hover:brightness-110"
+                        />
+                      )}
+                      <div aria-hidden className="absolute inset-x-0 bottom-0 flex translate-y-full items-end justify-center bg-gradient-to-t from-charcoal/80 to-transparent p-5 pt-16 text-sm text-ivory transition-transform duration-500 ease-out group-hover:translate-y-0">
+                        <span className="inline-flex items-center gap-2">شاهدي المعرض <ArrowLeft className="h-4 w-4" /></span>
+                      </div>
+                    </div>
+                  </TiltCard>
                   <div className="pt-4 flex items-baseline justify-between gap-3">
                     <div className="font-serif text-xl group-hover:text-gold transition-colors">{p.display_name}</div>
                     {p.city && <div className="text-xs text-muted-foreground">{p.city}</div>}
                   </div>
+                  <DrawRule className="mt-3" delay={0.2 + i * 0.1} />
                 </Link>
               </motion.div>
             ))}
@@ -578,14 +620,71 @@ function Landing() {
 }
 
 function Flourish() {
+  const draw = (delay: number) => ({
+    initial: { pathLength: 0, opacity: 0 },
+    whileInView: { pathLength: 1, opacity: 1 },
+    viewport: { once: true },
+    transition: { duration: 1.4, delay, ease: [0.22, 1, 0.36, 1] as const },
+  });
   return (
     <div aria-hidden className="container-editorial flex items-center gap-4 text-gold/60">
-      <span className="h-px flex-1 bg-gradient-to-l from-gold/40 to-transparent" />
+      <motion.span className="h-px flex-1 origin-left bg-gradient-to-l from-gold/40 to-transparent" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} />
       <svg width="44" height="14" viewBox="0 0 44 14" fill="none" stroke="currentColor" strokeWidth="1">
-        <path d="M1 7h12M31 7h12M22 1c-3 3-3 9 0 12M22 1c3 3 3 9 0 12M15 7a3 3 0 1 0 6 0M23 7a3 3 0 1 0 6 0" />
+        <motion.path d="M1 7h12M31 7h12" {...draw(0.3)} />
+        <motion.path d="M22 1c-3 3-3 9 0 12M22 1c3 3 3 9 0 12" {...draw(0.5)} />
+        <motion.path d="M15 7a3 3 0 1 0 6 0M23 7a3 3 0 1 0 6 0" {...draw(0.7)} />
       </svg>
-      <span className="h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent" />
+      <motion.span className="h-px flex-1 origin-right bg-gradient-to-r from-gold/40 to-transparent" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} />
     </div>
+  );
+}
+
+function Stats({ photographers, cities }: { photographers: number; cities: number }) {
+  // Live counts appear only once they're big enough to read well (and agree with the plural label)
+  const items: { n: number; from?: number; suffix?: string; label: string }[] = [
+    ...(photographers >= 11 ? [{ n: photographers, label: "مصوّرة منشورة على المنصّة" }] : []),
+    ...(cities >= 3 && cities <= 10 ? [{ n: cities, label: "مدن أردنية" }] : []),
+    { n: 0, from: 40, label: "رسالة واتساب لازمة للحجز" },
+    { n: 100, suffix: "٪", label: "من العرابين بإيصال CliQ موثّق" },
+    { n: 14, label: "يوماً تجربة مجانية للمصوّرات" },
+  ];
+  return (
+    <section className="container-editorial py-14">
+      <div className={`grid gap-y-10 border-y border-border py-10 ${items.length > 3 ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"}`}>
+        {items.map((s, i) => (
+          <motion.div
+            key={s.label}
+            className="relative px-4 text-center sm:[&:not(:first-child)]:border-s sm:border-border"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="font-serif text-5xl sm:text-6xl text-gold leading-none">
+              <CountUp to={s.n} from={s.from} suffix={s.suffix} duration={1.4 + i * 0.2} />
+            </div>
+            <div className="mt-3 text-sm text-muted-foreground">{s.label}</div>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function QuoteGlyph() {
+  const ref = useRef<HTMLSpanElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y = useTransform(scrollYProgress, [0, 1], [-60, 80]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [-8, 6]);
+  return (
+    <motion.span
+      ref={ref}
+      aria-hidden
+      style={{ y, rotate }}
+      className="pointer-events-none absolute -top-10 start-6 font-serif text-[16rem] leading-none text-gold/10 select-none"
+    >
+      ”
+    </motion.span>
   );
 }
 
@@ -601,6 +700,7 @@ function Quote({ name, text }: { name: string; text: string }) {
 function RoleCard({ index, title, desc, cta, href, highlight }: { index: string; title: string; desc: string; cta: string; href: string; highlight?: boolean }) {
   return (
     <motion.div variants={fadeUp} className="h-full">
+      <TiltCard max={4} className="h-full rounded-2xl">
       <Link
         to={href}
         className={`group relative flex h-full flex-col overflow-hidden rounded-2xl p-8 sm:p-10 transition-all duration-500 hover:shadow-elegant ${
@@ -617,19 +717,22 @@ function RoleCard({ index, title, desc, cta, href, highlight }: { index: string;
           {cta} <ArrowLeft className="h-4 w-4" />
         </div>
       </Link>
+      </TiltCard>
     </motion.div>
   );
 }
 
 function Feature({ n, icon: Icon, title, desc }: { n: string; icon: typeof Calendar; title: string; desc: string }) {
   return (
-    <motion.li variants={fadeUp} className="group grid grid-cols-[auto_1fr_auto] items-start gap-6 py-8">
+    <motion.li variants={fadeUp} className="group relative grid grid-cols-[auto_1fr_auto] items-start gap-6 py-8 transition-[padding] duration-500 hover:ps-3">
+      <span aria-hidden className="absolute inset-y-0 start-0 w-px origin-top scale-y-0 bg-gold transition-transform duration-500 group-hover:scale-y-100" />
       <span className="font-serif text-4xl text-gold/70 tabular-nums leading-none pt-1 transition-colors group-hover:text-gold" dir="ltr">{n}</span>
       <div>
         <h3 className="font-serif text-2xl mb-2">{title}</h3>
         <p className="text-muted-foreground leading-loose max-w-md">{desc}</p>
+        <DrawRule className="mt-4 w-24" delay={0.3} />
       </div>
-      <Icon className="h-5 w-5 text-muted-foreground/50 mt-2 transition-colors group-hover:text-gold" strokeWidth={1.25} />
+      <Icon className="h-5 w-5 text-muted-foreground/50 mt-2 transition-all duration-500 group-hover:text-gold group-hover:-rotate-12 group-hover:scale-125" strokeWidth={1.25} />
     </motion.li>
   );
 }

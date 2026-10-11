@@ -26,6 +26,7 @@ import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from 
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { ClientTour } from "@/components/ClientTour";
+import { Splash } from "@/components/site/Splash";
 
 function NotFoundComponent() {
   return (
@@ -149,6 +150,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: "(function(){if(location.hostname==='memoria-jo.lovable.app'){location.replace('https://memoria-production.ahmad000haddad.workers.dev'+location.pathname+location.search+location.hash);}})();",
       },
       {
+        // الـ splash مرة واحدة لكل جلسة: نخفيه قبل أول رسم إن سبق عرضه
+        children: "try{if(sessionStorage.getItem('memoria.splash-seen')==='1'&&!/[?&]splash/.test(location.search))document.documentElement.classList.add('splash-seen')}catch(e){}",
+      },
+      {
         children: "(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();",
       },
       {
@@ -261,7 +266,10 @@ function RootComponent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    if ("serviceWorker" in navigator) {
+    // In dev the SW's cache-first rule serves stale /src/*.css edits; keep it production-only
+    if ("serviceWorker" in navigator && import.meta.env.DEV) {
+      navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister())).catch(() => {});
+    } else if ("serviceWorker" in navigator) {
       const onLoad = () => {
         navigator.serviceWorker.register("/sw.js").catch(() => {});
       };
@@ -322,6 +330,7 @@ function RootComponent() {
         <ConfirmProvider>
           <LazyMotion features={domAnimation}>
            <MotionConfig reducedMotion="user">
+            <Splash />
             <SmoothScroll />
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-sm focus:shadow-sm">
               تخطي إلى المحتوى الرئيسي
