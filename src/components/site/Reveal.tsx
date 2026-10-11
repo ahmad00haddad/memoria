@@ -106,16 +106,20 @@ export function RiseImg({ className = "", delay = 0, ...img }: React.ImgHTMLAttr
 const arNum = new Intl.NumberFormat("ar-EG");
 
 /** A number that counts up (Arabic-Indic digits) the first time it is seen. */
-export function CountTo({ from = 0, to, delay = 0, duration = 1.6, onMount = false }: { from?: number; to: number; delay?: number; duration?: number; onMount?: boolean }) {
+export function CountTo({ from = 0, to, delay = 0, duration = 1.6, onMount = false, decimals = 0, locale }: { from?: number; to: number; delay?: number; duration?: number; onMount?: boolean; decimals?: number; /** e.g. "en" to keep Latin digits */ locale?: string }) {
   const [ref, on] = useSeen<HTMLSpanElement>(0.8, onMount);
   const [val, setVal] = useState(from);
+  const fmt = locale || decimals
+    ? new Intl.NumberFormat(locale ?? "ar-EG", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    : arNum;
   useEffect(() => {
     if (!on) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setVal(to); return; }
-    const c = animate(from, to, { duration, delay, ease: EASE_OUT, onUpdate: (v) => setVal(Math.round(v)) });
+    const k = 10 ** decimals;
+    const c = animate(from, to, { duration, delay, ease: EASE_OUT, onUpdate: (v) => setVal(Math.round(v * k) / k) });
     return () => c.stop();
-  }, [on, from, to, delay, duration]);
-  return <span ref={ref} className="tabular-nums">{arNum.format(val)}</span>;
+  }, [on, from, to, delay, duration, decimals]);
+  return <span ref={ref} className="tabular-nums">{fmt.format(val)}</span>;
 }
 
 /** Wraps a stroked line icon (lucide) so its strokes draw themselves when seen. */
@@ -141,12 +145,16 @@ export function DrawIcon({ children, delay = 0, duration = 1.1 }: { children: Re
  * Gold frame that draws itself around a card. Put it inside a `relative` card
  * whose own border is transparent (same width) so the layout doesn't shift.
  */
-export function DrawFrame({ className = "text-gold", width = 2, radius = 2, delay = 0, duration = 1.8 }: { className?: string; width?: number; radius?: number; delay?: number; duration?: number }) {
+export function DrawFrame({ className = "text-gold", width = 2, radius = 2, delay = 0, duration = 1.8, fade = false }: { className?: string; width?: number; radius?: number; delay?: number; duration?: number; /** fade the drawn line away afterwards, leaving the card's own border */ fade?: boolean }) {
   const [ref, on] = useSeen<SVGSVGElement>(0.5);
   const half = width / 2;
   return (
     <svg ref={ref} aria-hidden className={`pointer-events-none absolute overflow-visible ${className}`} style={{ inset: -half, width: `calc(100% + ${width}px)`, height: `calc(100% + ${width}px)` }}>
       {/* the svg spans the border's centre line, so a 100% rect strokes exactly over it */}
+      <motion.g
+        animate={{ opacity: on && fade ? 0 : 1 }}
+        transition={{ duration: 1.2, delay: on && fade ? delay + duration + 0.4 : 0, ease: "easeOut" }}
+      >
       <motion.rect
         x={0}
         y={0}
@@ -160,6 +168,55 @@ export function DrawFrame({ className = "text-gold", width = 2, radius = 2, dela
         animate={{ pathLength: on ? 1 : 0 }}
         transition={{ duration, delay, ease: EASE_DRAW }}
       />
+      </motion.g>
     </svg>
+  );
+}
+
+/**
+ * A heading whose words rise out of a soft blur one after another, on first
+ * build. Words (never letters) so Arabic joining is untouched. `lines` render
+ * with a line break between them from `sm` up, matching the old `<br>` markup.
+ */
+export function RevealWords({ lines, delay = 0.15, step = 0.09 }: { lines: string[]; delay?: number; step?: number }) {
+  let n = 0;
+  return (
+    <>
+      {lines.map((line, li) => (
+        <span key={li}>
+          {li > 0 && <br className="hidden sm:block" />}
+          {line.split(" ").map((w, wi, arr) => {
+            const i = n++;
+            return (
+              <motion.span
+                key={wi}
+                className="inline-block"
+                initial={{ opacity: 0, y: "0.5em", filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ duration: 0.9, delay: delay + i * step, ease: EASE_OUT }}
+              >
+                {w}
+                {wi < arr.length - 1 || li < lines.length - 1 ? " " : ""}
+              </motion.span>
+            );
+          })}
+        </span>
+      ))}
+    </>
+  );
+}
+
+/** A block (card, row) that rises in when it scrolls into view; `index` staggers siblings. */
+export function RiseIn({ children, className = "", index = 0, cols = 3 }: { children: ReactNode; className?: string; index?: number; cols?: number }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 36, filter: "blur(6px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{ duration: 0.9, delay: (index % cols) * 0.12, ease: EASE_OUT }}
+    >
+      {children}
+    </motion.div>
   );
 }

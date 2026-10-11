@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export const Route = createFileRoute("/faq")({
@@ -52,26 +53,26 @@ function FaqPage() {
       <Header />
       <main className="container-editorial py-16 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">الأسئلة الشائعة</div>
-        <h1 className="font-serif text-4xl sm:text-5xl mb-4">إجابات سريعة وواضحة</h1>
+        <h1 className="font-serif text-4xl sm:text-5xl mb-4"><RevealWords lines={["إجابات سريعة وواضحة"]} /></h1>
         <p className="text-muted-foreground mb-10">إن لم تجدي إجابة لسؤالك هنا، <Link to="/contact" className="text-gold underline">تواصلي معنا</Link>.</p>
 
         <h2 className="font-serif text-2xl mb-4">للعميلات</h2>
         <Accordion type="single" collapsible className="mb-10">
           {clientQ.map((q, i) => (
-            <AccordionItem key={i} value={`c-${i}`}>
+            <RiseIn key={i} cols={1}><AccordionItem value={`c-${i}`}>
               <AccordionTrigger className="text-right">{q.q}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground leading-loose">{q.a}</AccordionContent>
-            </AccordionItem>
+            </AccordionItem></RiseIn>
           ))}
         </Accordion>
 
         <h2 className="font-serif text-2xl mb-4">للمصوّرات</h2>
         <Accordion type="single" collapsible>
           {photographerQ.map((q, i) => (
-            <AccordionItem key={i} value={`p-${i}`}>
+            <RiseIn key={i} cols={1}><AccordionItem value={`p-${i}`}>
               <AccordionTrigger className="text-right">{q.q}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground leading-loose">{q.a}</AccordionContent>
-            </AccordionItem>
+            </AccordionItem></RiseIn>
           ))}
         </Accordion>
       </main>

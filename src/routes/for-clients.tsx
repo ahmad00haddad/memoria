@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { Search, Shield, Star, Calendar, MessageCircle, Camera, Lock, Eye, CheckCircle2, Heart, FileCheck, Bell, Receipt, ArrowLeft, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/for-clients")({
@@ -38,7 +39,7 @@ function ForClientsPage() {
       <main>
         <section className="container-editorial py-16 sm:py-24 text-center">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">للعميلة</div>
-          <h1 className="font-serif text-4xl sm:text-5xl leading-tight mb-4">احجزي مصوّرة عرسكِ <br className="hidden sm:block" /> بثقة وأمان كامل</h1>
+          <h1 className="font-serif text-4xl sm:text-5xl leading-tight mb-4"><RevealWords lines={["احجزي مصوّرة عرسكِ", "بثقة وأمان كامل"]} /></h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Memoria منصّة متخصّصة في مصوّرات الأعراس في الأردن. اخترنا لكِ أفضل المصوّرات، تحقّقنا منهنّ، ووفّرنا أدوات حماية وتتبّع لكل خطوة من خطوات حجزكِ.
           </p>
@@ -56,11 +57,12 @@ function ForClientsPage() {
             <h2 className="font-serif text-3xl sm:text-4xl">١٢ سبباً لاختيار Memoria</h2>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => {
+            {FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="rounded-sm border border-border bg-card p-6 hover:border-gold/40 hover:shadow-elegant transition">
-                  <div className="grid h-11 w-11 place-items-center rounded-sm bg-gold/10 text-gold mb-4">
+                <RiseIn key={f.title} index={i}>
+                <div className="group h-full rounded-sm border border-border bg-card p-6 hover:border-gold/40 hover:shadow-elegant transition">
+                  <div className="grid h-11 w-11 place-items-center rounded-sm bg-gold/10 text-gold mb-4 transition-colors duration-500 group-hover:bg-gold group-hover:text-charcoal">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h3 className="font-serif text-xl mb-2">{f.title}</h3>
@@ -71,6 +73,7 @@ function ForClientsPage() {
                     </a>
                   )}
                 </div>
+                </RiseIn>
               );
             })}
           </div>

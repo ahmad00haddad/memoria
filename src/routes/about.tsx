@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { Camera, Heart, Shield, MapPin, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/about")({
@@ -23,7 +24,7 @@ function AboutPage() {
       <Header />
       <main className="container-editorial py-16 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">من نحن</div>
-        <h1 className="font-serif text-4xl sm:text-5xl mb-6">ذاكرة يومكِ، تُحفظ بأمان.</h1>
+        <h1 className="font-serif text-4xl sm:text-5xl mb-6"><RevealWords lines={["ذاكرة يومكِ، تُحفظ بأمان."]} /></h1>
         <p className="text-lg text-muted-foreground leading-loose mb-12">
           ميموريا منصّة أردنية متخصّصة، أُسّست لتنظيم رحلة حجز مصوّرات الأعراس من البحث حتى التسليم —
           بعيداً عن فوضى الرسائل، الأسعار الغامضة، والمواعيد المتداخلة.
@@ -66,12 +67,12 @@ function AboutPage() {
 
 function Block({ icon: Icon, title, children }: { icon: typeof Heart; title: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-4">
+    <RiseIn className="flex gap-4" cols={1}>
       <div className="shrink-0 grid h-10 w-10 place-items-center rounded-md bg-secondary"><Icon className="h-4 w-4 text-gold" /></div>
       <div>
         <h3 className="font-serif text-xl mb-2">{title}</h3>
         <p className="text-muted-foreground leading-loose">{children}</p>
       </div>
-    </div>
+    </RiseIn>
   );
 }

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { Calendar, DollarSign, FileSignature, MessageCircle, ListChecks, BarChart3, Bell, Share2, Camera, Image as ImageIcon, Lock, Smartphone, Globe, Sparkles, ArrowLeft, Wallet, ShieldCheck, Users } from "lucide-react";
 import { useAuthState } from "@/hooks/use-auth-state";
 
@@ -46,7 +47,7 @@ function ForPhotographersPage() {
         <section className="container-editorial py-16 sm:py-24 text-center">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">للمصوّرات</div>
           <h1 className="font-serif text-4xl sm:text-5xl leading-tight mb-4">
-            إدارة كاملة لاستوديوكِ <br className="hidden sm:block" /> من مكان واحد
+            <RevealWords lines={["إدارة كاملة لاستوديوكِ", "من مكان واحد"]} />
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Memoria ليست فقط منصّة عرض — بل نظام إدارة متكامل صُمّم خصيصاً لمصوّرات الأعراس في الأردن. حجوزات، عقود، عرابين، تسليم صور، تقارير، وقوالب واتساب — كل ذلك بالعربية وبواجهة Mobile-first.
@@ -72,16 +73,18 @@ function ForPhotographersPage() {
             <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">صُمّمت كل ميزة بناءً على احتياج حقيقي لمصوّرات يعملن فعلياً في السوق الأردني.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((f) => {
+            {FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
-                <div key={f.title} className="group rounded-sm border border-border bg-card p-6 hover:border-gold/40 hover:shadow-elegant transition">
+                <RiseIn key={f.title} index={i}>
+                <div className="group h-full rounded-sm border border-border bg-card p-6 hover:border-gold/40 hover:shadow-elegant transition">
                   <div className="grid h-11 w-11 place-items-center rounded-sm bg-gold/10 text-gold mb-4 transition-colors duration-500 group-hover:bg-gold group-hover:text-charcoal">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h3 className="font-serif text-xl mb-2">{f.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
                 </div>
+                </RiseIn>
               );
             })}
           </div>

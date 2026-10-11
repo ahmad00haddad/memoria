@@ -53,7 +53,9 @@ export function MobileTabBar() {
             <Link key={t.to} to={t.to as any} className={`relative flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${t.active ? "text-gold" : "text-muted-foreground"}`}>
               {t.active && <motion.span layoutId="tabbar-active" className="absolute top-0 h-0.5 w-8 rounded-full bg-gold" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
               <span className="relative">
-                <t.icon className="h-5 w-5" strokeWidth={t.active ? 2.2 : 1.8} />
+                <motion.span className="inline-flex" animate={{ y: t.active ? -2 : 0, scale: t.active ? 1.08 : 1 }} transition={{ type: "spring", stiffness: 400, damping: 22 }}>
+                  <t.icon className="h-5 w-5" strokeWidth={t.active ? 2.2 : 1.8} />
+                </motion.span>
                 {!!t.badge && (
                   <motion.span key={t.badge} initial={{ scale: 0.4 }} animate={{ scale: 1 }} className="absolute -top-1.5 -end-2 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-bold text-charcoal tabular-nums">
                     {t.badge}

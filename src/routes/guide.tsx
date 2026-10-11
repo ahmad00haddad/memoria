@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { RevealWords, RiseIn } from "@/components/site/Reveal";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -155,7 +157,15 @@ function GuidePage() {
             <Sparkles className="h-3.5 w-3.5" /> دليل شامل خطوة بخطوة
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl">
-            كيف يعمل <span className="text-primary">Memoria</span>؟
+            <RevealWords lines={["كيف يعمل"]} />{" "}
+            <motion.span
+              className="inline-block text-primary"
+              initial={{ opacity: 0, y: "0.5em", filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 0.9, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            >
+              Memoria
+            </motion.span>؟
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
             رحلتان واضحتان: واحدة للعروسين الباحثين عن مصوّر يثقون به، وواحدة للمصوّرين الذين يريدون
@@ -184,7 +194,7 @@ function GuidePage() {
           </div>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {clientSteps.map((s, i) => <StepCard key={s.title} step={s} index={i} accent="primary" />)}
+          {clientSteps.map((s, i) => <RiseIn key={s.title} index={i} className="h-full"><StepCard step={s} index={i} accent="primary" /></RiseIn>)}
         </div>
       </section>
 
@@ -201,7 +211,7 @@ function GuidePage() {
             </div>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {photographerSteps.map((s, i) => <StepCard key={s.title} step={s} index={i} accent="secondary" />)}
+            {photographerSteps.map((s, i) => <RiseIn key={s.title} index={i} className="h-full"><StepCard step={s} index={i} accent="secondary" /></RiseIn>)}
           </div>
         </div>
       </section>

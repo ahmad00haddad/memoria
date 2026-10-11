@@ -208,7 +208,17 @@ export function Header() {
                   <Bell className="h-5 w-5" />
                 </motion.div>
                 {unreadNotifs > 0 && (
-                  <span className="absolute -top-1 -left-1 bg-red-600 text-white text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadNotifs}</span>
+                  // a new notification pops the badge in and sends out one ring
+                  <motion.span
+                    key={unreadNotifs}
+                    className="absolute -top-1 -left-1 bg-red-600 text-white text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1"
+                    initial={{ scale: 0.4 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 520, damping: 14 }}
+                  >
+                    <span aria-hidden className="absolute inset-0 rounded-full bg-red-600 opacity-0 animate-ping [animation-duration:1.2s] [animation-iteration-count:1]" />
+                    <span className="relative">{unreadNotifs}</span>
+                  </motion.span>
                 )}
               </Link>
             </div>

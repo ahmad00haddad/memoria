@@ -11,7 +11,7 @@ import heroImg from "@/assets/hero-bride.jpg";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { CountTo, DrawIcon, DrawRule, RiseImg, SettleIn, Shimmer, TypeIn, useSeen, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
+import { CountTo, DrawFrame, DrawIcon, DrawRule, RiseImg, SettleIn, Shimmer, TypeIn, useSeen, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -75,17 +75,18 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
 
       {/* Role cards */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18 }}
+        initial="hidden"
+        animate="visible"
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.18, delayChildren: 0.25 } } }}
         className="grid sm:grid-cols-2 gap-4 w-full max-w-2xl"
       >
         {/* Client */}
-        <button
+        <motion.button
+          variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } } }}
           onClick={() => onSelect("client")}
           className="group flex flex-col items-start p-7 rounded-sm border-2 border-border bg-card hover:border-gold/60 hover:bg-gold/5 hover:shadow-elegant transition-all text-right"
         >
-          <div className="text-4xl mb-4">🌸</div>
+          <motion.div className="text-4xl mb-4" variants={{ hidden: { scale: 0.6, opacity: 0 }, visible: { scale: [0.6, 1.25, 1], opacity: 1, transition: { duration: 0.9, delay: 0.35, ease: EASE_OUT } } }}>🌸</motion.div>
           <div className="font-serif text-2xl mb-2">عروس أو أهل الزفاف</div>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">
             ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فوراً بدون واتساب.
@@ -93,14 +94,15 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
           <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
             ابحثي الآن <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
           </div>
-        </button>
+        </motion.button>
 
         {/* Photographer */}
-        <button
+        <motion.button
+          variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } } }}
           onClick={() => onSelect("photographer")}
           className="group flex flex-col items-start p-7 rounded-sm border-2 border-charcoal bg-charcoal text-ivory hover:opacity-95 hover:shadow-elegant transition-all text-right"
         >
-          <div className="text-4xl mb-4">📷</div>
+          <motion.div className="text-4xl mb-4" variants={{ hidden: { scale: 0.6, opacity: 0 }, visible: { scale: [0.6, 1.25, 1], opacity: 1, transition: { duration: 0.9, delay: 0.35, ease: EASE_OUT } } }}>📷</motion.div>
           <div className="font-serif text-2xl mb-2">مصوّرة محترفة</div>
           <p className="text-sm text-ivory/70 leading-relaxed mb-6 flex-1">
             أنشئي ملفكِ، حدّدي أسعاركِ، واستقبلي حجوزاتكِ — تجربة مجانية ١٤ يوماً بدون بطاقة.
@@ -108,7 +110,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
           <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
             انضمّي مجاناً <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
           </div>
-        </button>
+        </motion.button>
       </motion.div>
 
       {/* Skip */}
@@ -550,9 +552,10 @@ function Landing() {
             <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-14">آراء العرائس</h2>
             <div className="grid gap-12 lg:grid-cols-12">
               <motion.figure variants={fadeUp} className="lg:col-span-7">
-                <blockquote className="font-serif text-2xl sm:text-3xl leading-[1.7] text-ivory">
-                  تجربة رائعة من البداية للنهاية. أسعار واضحة وبدون مفاجآت، والمصورة كانت لطيفة جداً وصورها خيالية. أنقذتني من ضياع الأوقات والبحث العشوائي.
-                </blockquote>
+                <PhraseQuote
+                  className="font-serif text-2xl sm:text-3xl leading-[1.7] text-ivory"
+                  phrases={["تجربة رائعة من البداية للنهاية.", "أسعار واضحة وبدون مفاجآت،", "والمصورة كانت لطيفة جداً وصورها خيالية.", "أنقذتني من ضياع الأوقات والبحث العشوائي."]}
+                />
                 <SignedName name="سارة الأحمد" />
               </motion.figure>
               <div className="lg:col-span-4 lg:col-start-9 space-y-10 lg:pt-24">
@@ -579,8 +582,9 @@ function Landing() {
               <div className="eyebrow mb-3">المميّزون</div>
               <h2 className="font-serif text-4xl sm:text-5xl">مصوّرون بأعلى التقييمات</h2>
             </div>
-            <Link to="/search" className="text-sm border-b border-current/40 pb-1 hover:text-gold hover:border-gold transition-colors">
+            <Link to="/search" className="group/all relative text-sm pb-1 hover:text-gold transition-colors">
               كل المصوّرات
+              <DrawRule className="absolute inset-x-0 bottom-0 h-px bg-current/40 group-hover/all:bg-gold" duration={1} delay={0.3} />
             </Link>
           </div>
           {featuredStatus === "loading" && (
@@ -684,6 +688,7 @@ function RoleCard({ index, title, desc, cta, href, highlight }: { index: string;
           highlight ? "bg-charcoal text-ivory grain-overlay" : "bg-card border border-border"
         }`}
       >
+        <DrawFrame fade width={1.5} radius={16} duration={2} delay={0.3} className={highlight ? "text-gold/70" : "text-gold"} />
         <span aria-hidden className={`absolute -top-6 end-4 font-serif text-[8rem] leading-none select-none transition-transform duration-700 ease-out group-hover:-translate-x-3 group-hover:translate-y-2 ${highlight ? "text-ivory/[0.06]" : "text-foreground/[0.05]"}`}>{index}</span>
         <div className={`eyebrow mb-6 ${highlight ? "" : "!text-muted-foreground"}`}>
           {highlight ? "للمصوّرين" : "للعملاء"}
@@ -742,5 +747,24 @@ function SignedName({ name }: { name: string }) {
         {name}
       </motion.span>
     </figcaption>
+  );
+}
+
+// A quote that arrives phrase by phrase as it scrolls into view.
+function PhraseQuote({ phrases, className }: { phrases: string[]; className?: string }) {
+  const [ref, on] = useSeen<HTMLQuoteElement>(0.4);
+  return (
+    <blockquote ref={ref} className={className}>
+      {phrases.map((p, i) => (
+        <motion.span
+          key={i}
+          className="inline"
+          animate={on ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0.08, filter: "blur(6px)" }}
+          transition={{ duration: 1.1, delay: i * 0.45, ease: EASE_OUT }}
+        >
+          {p}{i < phrases.length - 1 ? " " : ""}
+        </motion.span>
+      ))}
+    </blockquote>
   );
 }

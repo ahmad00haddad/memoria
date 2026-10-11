@@ -20,7 +20,7 @@ import { optimizedImageUrl, responsiveSrcSet } from "@/lib/gallery.functions";
 import { hapticVibrate } from "@/lib/utils";
 import { playSound } from "@/lib/sounds";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
-import { DrawFrame, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
+import { CountTo, DrawFrame, DrawIcon, EASE_DRAW, EASE_OUT, RevealWords, RiseIn } from "@/components/site/Reveal";
 import { MapPin } from "lucide-react";
 import { Zap, CircleCheck } from "lucide-react";
 import { parseFeatures, emphasizeNumbers } from "@/lib/packageFeatures";
@@ -334,7 +334,7 @@ function PhotographerPage() {
                 </span>
               )}
               <h1 className="display-serif text-[clamp(3rem,8vw,7rem)] mb-6">
-                {profile.display_name}
+                <RevealWords lines={[profile.display_name]} delay={0.35} step={0.14} />
               </h1>
               <div className="flex flex-wrap items-center gap-2 mb-6">
                 {profile.is_featured && (
@@ -374,9 +374,9 @@ function PhotographerPage() {
 
             {/* Magazine-style stats row */}
             <div className="mt-12 grid grid-cols-3 gap-4 border-t border-ivory/10 pt-6">
-              <Stat label="التقييم" value={reviews.length ? avgRating.toFixed(1) : "—"} sub={reviews.length ? `${reviews.length} مراجعة` : "جديد"} />
+              <Stat label="التقييم" value={reviews.length ? <CountTo onMount to={avgRating} decimals={1} locale="en" delay={0.6} /> : "—"} sub={reviews.length ? `${reviews.length} مراجعة` : "جديد"} />
               <Stat label="الموقع" value={profile.city || "—"} sub={profile.base_location || "الأردن"} />
-              <Stat label="الباقات" value={String(pricing.filter((p) => p.package !== "addon").length)} sub="باقة احترافية" />
+              <Stat label="الباقات" value={<CountTo onMount to={pricing.filter((p) => p.package !== "addon").length} locale="en" delay={0.7} duration={1} />} sub="باقة احترافية" />
             </div>
           </motion.div>
 
@@ -437,7 +437,8 @@ function PhotographerPage() {
               const isPopular = arr.length >= 3 && idx === 1;
               const features = parseFeatures(p.description);
               return (
-                <div key={p.id} className={`relative flex flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${isPopular ? 'border-gold border-2 ring-1 ring-gold/20 shadow-[0_0_20px_rgba(201,162,39,0.15)]' : 'border-border'}`}>
+                <RiseIn key={p.id} index={idx} className="h-full">
+                <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${isPopular ? 'border-gold border-2 ring-1 ring-gold/20 shadow-[0_0_20px_rgba(201,162,39,0.15)]' : 'border-border'}`}>
                   {isPopular && (
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-charcoal px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">
                       الباقة الأكثر طلباً
@@ -460,7 +461,9 @@ function PhotographerPage() {
                     </ul>
                   )}
                   <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>{p.cta_label?.trim() || "احجزي هذه الباقة"}</button>
+                  {pickedPackageId === p.id && <DrawFrame key={`pick-${p.id}`} duration={1.2} />}
                 </div>
+                </RiseIn>
               );
             })}
           </div>
@@ -579,7 +582,7 @@ function PhotographerPage() {
   );
 }
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Stat({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) {
   return (
     <div className="group">
       <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-1 flex items-center gap-1">
@@ -876,7 +879,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     const bookingRef = success.token.slice(0, 8).toUpperCase();
     return (
       <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
-        <CheckCircle2 className="h-14 w-14 text-emerald-600 mx-auto mb-3" />
+        <div className="mb-3 flex justify-center"><DrawIcon duration={1.1}><CheckCircle2 className="h-14 w-14 text-emerald-600" /></DrawIcon></div>
         <h2 className="font-serif text-3xl mb-2">{success.verify ? "بقيت خطوة واحدة!" : "تم إرسال طلبك!"}</h2>
         <p className="text-muted-foreground mb-5">
           {success.verify ? "أكّدي طلبك ليصل إلى " + profile.display_name + "." : `تم إخطار ${profile.display_name} وسيتم التواصل معكِ قريبًا.`}
@@ -991,8 +994,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         <div className="flex items-center gap-2 mb-2">
           {[1, 2, 3].map((n) => (
             <div key={n} className="flex-1 flex items-center gap-2">
-              <div className={`h-7 w-7 grid place-items-center rounded-full text-xs font-semibold border ${step >= n ? "bg-charcoal text-ivory border-charcoal" : "bg-background text-muted-foreground border-border"}`}>{n}</div>
-              <div className={`h-1 flex-1 rounded-full ${step > n ? "bg-charcoal" : step === n ? "bg-gold/60" : "bg-border"}`} />
+              <div className={`h-7 w-7 grid place-items-center rounded-full text-xs font-semibold border transition-colors duration-500 ${step >= n ? "bg-charcoal text-ivory border-charcoal" : "bg-background text-muted-foreground border-border"}`}>{n}</div>
+              <div className={`h-1 flex-1 rounded-full transition-colors duration-700 ${step > n ? "bg-charcoal" : step === n ? "bg-gold/60" : "bg-border"}`} />
             </div>
           ))}
         </div>
@@ -1004,7 +1007,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       </div>
 
       {step === 1 && (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <motion.div key="step-1" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">التاريخ</label>
           <Popover>
@@ -1103,11 +1106,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         </div>
         {isBlocked && <p className="text-sm text-destructive sm:col-span-2">⚠️ هذا اليوم غير متاح</p>}
         {hasConflict && <p className="text-sm text-destructive sm:col-span-2">⚠️ يتعارض مع فترة محجوزة</p>}
-      </div>
+      </motion.div>
       )}
 
       {step === 2 && (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <motion.div key="step-2" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
           <Field label="الموقع / القاعة" v={f.venue_address} on={(v) => setF({ ...f, venue_address: v })} />
         </div>
@@ -1165,11 +1168,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
       )}
 
       {step === 3 && (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <motion.div key="step-3" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label="الاسم" v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
         <div>
           <Field label="رقم الجوال (واتساب)" type="tel" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
@@ -1206,7 +1209,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             <Link to="/terms" className="text-gold underline"> الشروط والأحكام</Link>، وأقرّ بأن بياناتي ستُستخدم لمعالجة هذا الحجز فقط.
           </span>
         </label>
-      </div>
+      </motion.div>
       )}
 
       {/* Step navigation */}

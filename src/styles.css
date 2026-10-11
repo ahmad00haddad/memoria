@@ -371,3 +371,31 @@
 }
 @keyframes shimmer-sweep { from { background-position: 100% 0; } to { background-position: 0% 0; } }
 @media (prefers-reduced-motion: reduce) { .shimmer-once { animation: none; color: var(--gold); background: none; } }
+
+/* Gold buttons: one soft band of light crosses them on hover */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  :is(a, button):is(.bg-gold, .bg-gradient-gold):not(.absolute):not(.fixed) {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  :is(a, button):is(.bg-gold, .bg-gradient-gold):not(.absolute):not(.fixed)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.45) 50%, transparent 65%);
+    transform: translateX(-120%);
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  :is(a, button):is(.bg-gold, .bg-gradient-gold):not(.absolute):not(.fixed):hover::after {
+    transform: translateX(120%);
+  }
+}
+
+/* Toasts glide in a little slower and softer than sonner's default */
+[data-sonner-toast] {
+  transition-duration: 550ms !important;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
