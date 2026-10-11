@@ -348,7 +348,3 @@
 
 .splash-seen #memoria-splash { display: none !important; }
 
-@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.marquee-track { animation: marquee var(--d, 40s) linear infinite; }
-.group:hover > .marquee-track { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }

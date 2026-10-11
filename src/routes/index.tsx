@@ -11,7 +11,8 @@ import heroImg from "@/assets/hero-bride.jpg";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { CountUp, DrawRule, Magnetic, Marquee, ParallaxImg, ScrollGem, ScrollProgress, TiltCard, WordsReveal } from "@/components/motion/Kit";
+import { ApertureSequence } from "@/components/site/ApertureSequence";
+import { DrawRule, Magnetic, ParallaxImg, ScrollGem, ScrollProgress, TiltCard, WordsReveal } from "@/components/motion/Kit";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -193,14 +194,6 @@ function Landing() {
   const [heroDate, setHeroDate] = useState("");
   const [heroCity, setHeroCity] = useState("");
   const [cities, setCities] = useState<string[]>([]);
-  const [photographerCount, setPhotographerCount] = useState(0);
-  useEffect(() => {
-    supabase
-      .from("profiles")
-      .select("username", { count: "exact", head: true })
-      .eq("is_published", true)
-      .then(({ count }) => setPhotographerCount(count ?? 0), () => {});
-  }, []);
   const runCities = useServerFn(listPublishedCities);
   useEffect(() => { runCities({}).then((c: any) => setCities(c ?? [])).catch(() => {}); /* eslint-disable-next-line */ }, []);
   const [resume, setResume] = useState<{ label: string; city?: string; date?: string } | null>(null);
@@ -406,13 +399,7 @@ function Landing() {
 
       <Flourish />
 
-      {/* Moments ribbon */}
-      <Marquee
-        className="py-8 font-serif text-2xl sm:text-3xl text-foreground/70"
-        items={["الطلّة الأولى", "الزفّة", "الكوشة", "الخطوبة", "ليلة الحنّة", "الدبكة", "قصّ الكيكة", "جلسة ما قبل العرس"]}
-      />
-
-      <Stats photographers={photographerCount} cities={cities.length} />
+      <ApertureSequence />
 
       {/* Role chooser */}
       {(!visitorRole || visitorRole === "guest" || isPhotographer) && (
@@ -636,38 +623,6 @@ function Flourish() {
       </svg>
       <motion.span className="h-px flex-1 origin-right bg-gradient-to-r from-gold/40 to-transparent" initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }} />
     </div>
-  );
-}
-
-function Stats({ photographers, cities }: { photographers: number; cities: number }) {
-  // Live counts appear only once they're big enough to read well (and agree with the plural label)
-  const items: { n: number; from?: number; suffix?: string; label: string }[] = [
-    ...(photographers >= 11 ? [{ n: photographers, label: "مصوّرة منشورة على المنصّة" }] : []),
-    ...(cities >= 3 && cities <= 10 ? [{ n: cities, label: "مدن أردنية" }] : []),
-    { n: 0, from: 40, label: "رسالة واتساب لازمة للحجز" },
-    { n: 100, suffix: "٪", label: "من العرابين بإيصال CliQ موثّق" },
-    { n: 14, label: "يوماً تجربة مجانية للمصوّرات" },
-  ];
-  return (
-    <section className="container-editorial py-14">
-      <div className={`grid gap-y-10 border-y border-border py-10 ${items.length > 3 ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"}`}>
-        {items.map((s, i) => (
-          <motion.div
-            key={s.label}
-            className="relative px-4 text-center sm:[&:not(:first-child)]:border-s sm:border-border"
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.6 }}
-            transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="font-serif text-5xl sm:text-6xl text-gold leading-none">
-              <CountUp to={s.n} from={s.from} suffix={s.suffix} duration={1.4 + i * 0.2} />
-            </div>
-            <div className="mt-3 text-sm text-muted-foreground">{s.label}</div>
-          </motion.div>
-        ))}
-      </div>
-    </section>
   );
 }
 

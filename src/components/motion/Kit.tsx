@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  animate,
   motion,
-  useInView,
   useMotionTemplate,
   useMotionValue,
   useReducedMotion,
@@ -18,7 +16,6 @@ import {
  */
 
 const EASE = [0.22, 1, 0.36, 1] as const;
-const arNum = new Intl.NumberFormat("ar-EG");
 
 function useFinePointer() {
   const [fine, setFine] = useState(false);
@@ -85,25 +82,6 @@ export function WordsReveal({
         </span>
       ))}
     </motion.span>
-  );
-}
-
-/** Number that counts up (in Arabic-Indic digits) the first time it scrolls into view. */
-export function CountUp({ to, from = 0, duration = 1.8, suffix = "", className = "" }: { to: number; from?: number; duration?: number; suffix?: string; className?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.8 });
-  const reduce = useReducedMotion();
-  const [val, setVal] = useState(from);
-  useEffect(() => {
-    if (!inView) return;
-    if (reduce) { setVal(to); return; }
-    const c = animate(from, to, { duration, ease: EASE, onUpdate: (v) => setVal(Math.round(v)) });
-    return () => c.stop();
-  }, [inView, from, to, duration, reduce]);
-  return (
-    <span ref={ref} className={`tabular-nums ${className}`}>
-      {arNum.format(val)}{suffix}
-    </span>
   );
 }
 
@@ -235,30 +213,6 @@ export function ParallaxImg({
         transition={{ duration: 1.6, ease: EASE }}
       />
     </motion.div>
-  );
-}
-
-/** Endless ribbon of words; pauses on hover. */
-export function Marquee({ items, className = "", speed = 40 }: { items: string[]; className?: string; speed?: number }) {
-  const row = (hidden?: boolean) => (
-    <div aria-hidden={hidden} className="flex shrink-0 items-center gap-10 pe-10" dir="rtl">
-      {items.map((t, i) => (
-        <span key={i} className="flex items-center gap-10 whitespace-nowrap">
-          <span>{t}</span>
-          <svg aria-hidden width="14" height="14" viewBox="0 0 512 512" className="text-gold/70">
-            <polygon fill="currentColor" points="256,46 295.9,173.1 420.2,125.1 345.7,235.5 460.7,302.7 327.9,313.4 347.1,445.2 256,348 164.9,445.2 184.1,313.4 51.3,302.7 166.3,235.5 91.8,125.1 216.1,173.1" />
-          </svg>
-        </span>
-      ))}
-    </div>
-  );
-  return (
-    <div className={`group relative flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] ${className}`} dir="ltr">
-      <div className="marquee-track flex shrink-0" style={{ ["--d" as string]: `${speed}s` }}>
-        {row()}
-        {row(true)}
-      </div>
-    </div>
   );
 }
 
