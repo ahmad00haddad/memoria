@@ -38,31 +38,17 @@ $$;
 
 -- Auth users. handle_new_user (role = photographer) creates the profile, role and trial row.
 -- The password is random and never shown: nobody signs in to these accounts.
-DO $$
-DECLARE
-  d record;
-BEGIN
-  FOR d IN
-    SELECT * FROM (VALUES
-      ('11111111-1111-4111-8111-000000000001'::uuid, 'layla-demo', 'ليلى (نسخة تجريبية)', 'layla.demo@memoria.invalid'),
-      ('11111111-1111-4111-8111-000000000002'::uuid, 'noor-demo',  'نور (نسخة تجريبية)',  'noor.demo@memoria.invalid')
-    ) AS t(id, username, display_name, email)
-  LOOP
-    IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = d.id) THEN
-      INSERT INTO auth.users (
-        instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-        raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-        confirmation_token, recovery_token, email_change_token_new, email_change
-      ) VALUES (
-        '00000000-0000-0000-0000-000000000000', d.id, 'authenticated', 'authenticated', d.email,
-        extensions.crypt(gen_random_uuid()::text, extensions.gen_salt('bf')), now(),
-        '{"provider":"email","providers":["email"]}'::jsonb,
-        jsonb_build_object('role', 'photographer', 'username', d.username, 'display_name', d.display_name),
-        now(), now(), '', '', '', ''
-      );
-    END IF;
-  END LOOP;
-END $$;
+INSERT INTO auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change)
+SELECT '00000000-0000-0000-0000-000000000000'::uuid, t.id, 'authenticated', 'authenticated', t.email,
+       extensions.crypt(gen_random_uuid()::text, extensions.gen_salt('bf')), now(),
+       '{"provider":"email","providers":["email"]}'::jsonb,
+       jsonb_build_object('role', 'photographer', 'username', t.username, 'display_name', t.display_name),
+       now(), now(), '', '', '', ''
+FROM (VALUES
+  ('11111111-1111-4111-8111-000000000001'::uuid, 'layla-demo', 'ليلى (نسخة تجريبية)', 'layla.demo@memoria.invalid'),
+  ('11111111-1111-4111-8111-000000000002'::uuid, 'noor-demo',  'نور (نسخة تجريبية)',  'noor.demo@memoria.invalid')
+) AS t(id, username, display_name, email)
+WHERE NOT EXISTS (SELECT 1 FROM auth.users u WHERE u.id = t.id);
 
 UPDATE public.profiles SET
   is_demo = true,
