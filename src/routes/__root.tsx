@@ -27,6 +27,7 @@ import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { ClientTour } from "@/components/ClientTour";
 import { Splash } from "@/components/site/Splash";
+import { ShutterFlash } from "@/components/site/ShutterFlash";
 
 function NotFoundComponent() {
   return (
@@ -335,6 +336,7 @@ function RootComponent() {
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-sm focus:shadow-sm">
               تخطي إلى المحتوى الرئيسي
             </a>
+            <ShutterFlash pathname={pathname} />
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 id="main-content"

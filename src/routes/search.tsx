@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { forwardRef, useEffect, useMemo, useState } from "react";
 import { Search, MapPin, Star, X, SlidersHorizontal, BadgeCheck, Heart } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { GridSkeleton } from "@/components/ui/loading";
@@ -619,14 +619,17 @@ function SearchPage() {
             )}
           </div>
         ) : (
-          <motion.div
-            className="columns-1 sm:columns-2 lg:columns-3 gap-4 -mx-4 sm:mx-0"
-            key={`${debouncedQ}|${city}|${minPrice}|${maxPrice}|${date}|${sort}|${minRating}`}
-          >
-            {displayResults.map((p, idx) => (
-              <BentoPhotographerCard key={p.username} p={p} idx={idx} compareList={compareList} setCompareList={setCompareList} />
-            ))}
-          </motion.div>
+          // Cards keep their identity across filter changes: the ones that stay glide to
+          // their new spot, dropped ones fade out, newcomers arrive in sequence.
+          <LayoutGroup>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 -mx-4 sm:mx-0">
+              <AnimatePresence mode="popLayout" initial={false}>
+                {displayResults.map((p, idx) => (
+                  <BentoPhotographerCard key={p.username} p={p} idx={idx} compareList={compareList} setCompareList={setCompareList} />
+                ))}
+              </AnimatePresence>
+            </div>
+          </LayoutGroup>
         )}
       </section>
       
@@ -653,7 +656,7 @@ function SearchPage() {
   );
 }
 
-function BentoPhotographerCard({ p, idx, compareList, setCompareList }: { p: SearchResultItem; idx: number; compareList: SearchResultItem[]; setCompareList: React.Dispatch<React.SetStateAction<SearchResultItem[]>> }) {
+const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; idx: number; compareList: SearchResultItem[]; setCompareList: React.Dispatch<React.SetStateAction<SearchResultItem[]>> }>(function BentoPhotographerCard({ p, idx, compareList, setCompareList }, ref) {
   const [isFav, setIsFav] = useState(false);
 
   useEffect(() => {
@@ -682,13 +685,21 @@ function BentoPhotographerCard({ p, idx, compareList, setCompareList }: { p: Sea
     } catch {}
   };
 
+  const ease = [0.22, 1, 0.36, 1] as const;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      ref={ref}
+      layout="position"
+      initial={{ opacity: 0, y: 40, scale: 0.96, filter: "blur(8px)" }}
+      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+      exit={{ opacity: 0, scale: 0.92, filter: "blur(6px)", transition: { duration: 0.3, ease } }}
       viewport={{ once: true, amount: 0.1 }}
-      transition={{ delay: Math.min(idx * 0.055, 0.4), duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="break-inside-avoid mb-4"
+      transition={{
+        delay: Math.min((idx % 9) * 0.07, 0.5),
+        duration: 0.7,
+        ease,
+        layout: { type: "spring", stiffness: 260, damping: 30 },
+      }}
     >
       <Link
         to="/photographers/$username"
@@ -805,4 +816,4 @@ function BentoPhotographerCard({ p, idx, compareList, setCompareList }: { p: Sea
       </Link>
     </motion.div>
   );
-}
+});
