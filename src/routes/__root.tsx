@@ -15,18 +15,18 @@ import { Toaster } from "@/components/ui/sonner";
 import { installFriendlyToasts } from "@/lib/friendlyErrors";
 installFriendlyToasts();
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
 import { PhotographerCommandPalette } from "@/components/CommandPalette";
-import { SmoothScroll } from "@/components/SmoothScroll";
 import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { ClientTour } from "@/components/ClientTour";
 import { IntroContext, markIntroSeen, readIntro } from "@/lib/intro";
+import { FirstVisitIntro } from "@/components/site/FirstVisitIntro";
 
 function NotFoundComponent() {
   return (
@@ -328,6 +328,17 @@ function RootComponent() {
   // whole first session keeps the intro until the next full load.
   const [intro] = useState(readIntro);
   useEffect(() => { markIntroSeen(); }, []);
+  // The soft page entrances play on every visit to public pages. Inside the app
+  // (dashboard/admin), used many times a day, they play on the first visit only.
+  const appArea = /^\/(dashboard|admin|notifications)/.test(pathname);
+  const playEntrances = intro || !appArea;
+  // The big one-time opening runs on public pages only (not the app, not
+  // tracking/contract links people open from WhatsApp). When its arch opens,
+  // bumping the epoch remounts the page so its own entrance builds in view.
+  const introEligible = !/^\/(dashboard|admin|notifications|track|contracts|review|login|forgot-password|reset-password|recover|onboarding|app|api)/.test(pathname);
+  const [showIntro] = useState(() => intro && introEligible);
+  const [epoch, setEpoch] = useState(0);
+  const onIntroReveal = useCallback(() => setEpoch(1), []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -335,10 +346,10 @@ function RootComponent() {
         <ConfirmProvider>
           <LazyMotion features={domAnimation}>
            <MotionConfig reducedMotion="user">
-            <SmoothScroll />
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-sm focus:shadow-sm">
               تخطي إلى المحتوى الرئيسي
             </a>
+            {showIntro && <FirstVisitIntro onReveal={onIntroReveal} />}
             {/* No initial={false} here: it is inherited by every page and would make all
                 their entrance animations render already finished. The wrapper itself
                 skips its fade only on the very first page. */}
@@ -354,8 +365,8 @@ function RootComponent() {
                 {/* Remounts with each page: on return visits initial={false} renders every
                     entrance already finished; things that mount later (galleries,
                     booking steps, filtered results) still animate. */}
-                <IntroContext.Provider value={intro}>
-                  <AnimatePresence initial={intro}>
+                <IntroContext.Provider key={epoch} value={playEntrances}>
+                  <AnimatePresence initial={playEntrances}>
                     <Outlet key="page" />
                   </AnimatePresence>
                 </IntroContext.Provider>

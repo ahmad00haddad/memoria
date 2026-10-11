@@ -440,7 +440,7 @@ function Landing() {
               </span>
               <motion.div
                 animate={float}
-                className="absolute -bottom-8 -start-4 sm:-start-12 bg-card/95 backdrop-blur border border-gold/25 rounded-2xl p-5 shadow-soft max-w-[250px]"
+                className="absolute -bottom-8 -start-4 sm:-start-12 bg-card border border-gold/25 will-change-transform rounded-2xl p-5 shadow-soft max-w-[250px]"
               >
                 <div className="flex items-center justify-between mb-1.5 gap-3">
                   <div className="text-xs text-muted-foreground">سعر فوري</div>
@@ -761,7 +761,7 @@ function PhraseQuote({ phrases, className }: { phrases: string[]; className?: st
         <motion.span
           key={i}
           className="inline"
-          animate={on ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0.08, filter: "blur(6px)" }}
+          animate={on ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0.08, filter: "blur(3px)" }}
           transition={{ duration: 1.1, delay: i * 0.45, ease: EASE_OUT }}
         >
           {p}{i < phrases.length - 1 ? " " : ""}

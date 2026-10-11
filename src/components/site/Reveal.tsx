@@ -198,7 +198,7 @@ export function RevealWords({ lines, delay = 0.15, step = 0.09 }: { lines: strin
               <motion.span
                 key={wi}
                 className="inline-block"
-                initial={intro ? { opacity: 0, y: "0.5em", filter: "blur(8px)" } : false}
+                initial={intro ? { opacity: 0, y: "0.5em", filter: "blur(4px)" } : false}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 0.9, delay: delay + i * step, ease: EASE_OUT }}
               >
@@ -219,8 +219,8 @@ export function RiseIn({ children, className = "", index = 0, cols = 3 }: { chil
   return (
     <motion.div
       className={className}
-      initial={intro ? { opacity: 0, y: 36, filter: "blur(6px)" } : false}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={intro ? { opacity: 0, y: 36 } : false}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.9, delay: (index % cols) * 0.12, ease: EASE_OUT }}
     >
