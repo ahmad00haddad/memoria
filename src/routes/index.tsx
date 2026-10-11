@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { listPublishedCities } from "@/lib/search.functions";
 import { ArrowLeft, Calendar, Camera, MessageSquareOff, Receipt, ShieldCheck, Sparkles, Star } from "lucide-react";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -129,6 +129,10 @@ function Landing() {
   const [showRoleGate, setShowRoleGate] = useState(false);
   const { loading: authLoading, authed, isPhotographer, userId } = useAuthState();
   const navigate = useNavigate();
+  // The root AnimatePresence has initial={false}, which skips `initial` on first
+  // load — so self-drawing lines start from state flipped after mount instead.
+  const [archDrawn, setArchDrawn] = useState(false);
+  useEffect(() => setArchDrawn(true), []);
   useEffect(() => {
     let active = true;
 
@@ -355,7 +359,24 @@ function Landing() {
               animate="visible"
             >
               {/* thin offset arch outline behind the photo */}
-              <div aria-hidden className="absolute inset-0 translate-x-3 -translate-y-3 lg:translate-x-5 lg:-translate-y-5 rounded-t-full border border-gold/50" />
+              {/* the offset gold arch draws itself: up one side, over the top, down and closed along the base */}
+              <svg
+                aria-hidden
+                viewBox="0 0 300 420"
+                preserveAspectRatio="none"
+                className="absolute inset-0 h-full w-full translate-x-3 -translate-y-3 overflow-visible text-gold/50 lg:translate-x-5 lg:-translate-y-5"
+              >
+                <motion.path
+                  d="M0.5 419.5V150A149.5 149.5 0 0 1 299.5 150V419.5Z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  vectorEffect="non-scaling-stroke"
+                  data-draw
+                  animate={archDrawn ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
+                  transition={{ pathLength: { duration: 2.2, delay: 0.5, ease: [0.65, 0, 0.35, 1] }, opacity: { duration: 0.01, delay: 0.5 } }}
+                />
+              </svg>
               <div className="relative overflow-hidden rounded-t-full group shadow-elegant">
                 <img
                   src={heroImg}
@@ -577,14 +598,30 @@ function Landing() {
   );
 }
 
+// The ornament draws itself from its centre outwards, then the two rules
+// extend away from it toward the page edges.
 function Flourish() {
+  const ref = useRef<HTMLDivElement>(null);
+  const on = useInView(ref, { once: true, amount: 1 });
+  const ease = [0.65, 0, 0.35, 1] as const;
+  const draw = (delay: number, duration = 0.7) => ({
+    "data-draw": true,
+    animate: on ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 },
+    transition: { pathLength: { duration, delay, ease }, opacity: { duration: 0.01, delay } },
+  });
+  const rule = {
+    animate: { scaleX: on ? 1 : 0 },
+    transition: { duration: 1.4, delay: 0.9, ease },
+  };
   return (
-    <div aria-hidden className="container-editorial flex items-center gap-4 text-gold/60">
-      <span className="h-px flex-1 bg-gradient-to-l from-gold/40 to-transparent" />
+    <div ref={ref} aria-hidden className="container-editorial flex items-center gap-4 text-gold/60">
+      <motion.span className="h-px flex-1 origin-left bg-gradient-to-l from-gold/40 to-transparent" {...rule} />
       <svg width="44" height="14" viewBox="0 0 44 14" fill="none" stroke="currentColor" strokeWidth="1">
-        <path d="M1 7h12M31 7h12M22 1c-3 3-3 9 0 12M22 1c3 3 3 9 0 12M15 7a3 3 0 1 0 6 0M23 7a3 3 0 1 0 6 0" />
+        <motion.path d="M22 1c-3 3-3 9 0 12M22 1c3 3 3 9 0 12" {...draw(0)} />
+        <motion.path d="M15 7a3 3 0 1 0 6 0M23 7a3 3 0 1 0 6 0" {...draw(0.35, 0.5)} />
+        <motion.path d="M1 7h12M31 7h12" {...draw(0.6, 0.45)} />
       </svg>
-      <span className="h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent" />
+      <motion.span className="h-px flex-1 origin-right bg-gradient-to-r from-gold/40 to-transparent" {...rule} />
     </div>
   );
 }

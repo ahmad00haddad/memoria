@@ -345,3 +345,8 @@
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+/* Self-drawing gold lines (framer pathLength) show fully drawn for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-draw] { stroke-dasharray: none !important; opacity: 1 !important; }
+}
