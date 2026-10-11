@@ -345,6 +345,3 @@
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
-
-.splash-seen #memoria-splash { display: none !important; }
-
