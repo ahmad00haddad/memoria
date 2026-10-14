@@ -184,6 +184,11 @@ function AdminSubs() {
               <span className="text-sm text-muted-foreground">شهر</span>
             </div>
 
+            {approveRow.method === "zbooni" && approveRow.period_months && approveMonths !== approveRow.period_months && (
+              <div className="mb-4 rounded-sm border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                تنبيه: المصوّرة اختارت {approveRow.period_months === 12 ? "السنوي (12 شهر)" : "الشهري (شهر واحد)"} ودفعت {approveRow.amount} JOD. تأكّد من طلب زبوني قبل تغيير المدة.
+              </div>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={submitApprove}
@@ -255,6 +260,11 @@ function PaymentCard({
         <div className="font-medium">{r.profile?.display_name ?? "—"} <span className="text-muted-foreground text-xs">@{r.profile?.username}</span></div>
         <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("ar-JO")}</div>
         {r.cliq_reference && <div className="text-xs">المرجع: <span className="font-mono">{r.cliq_reference}</span></div>}
+        {r.method === "zbooni" && (
+          <div className="text-xs font-semibold text-gold">
+            {r.period_months === 12 ? "Signature · سنوي" : "Flex · شهري"} — طابِق طلب زبوني بقيمة {r.amount} JOD ومنتج «{r.period_months === 12 ? "اشتراك سنوي" : "اشتراك شهري"}»
+          </div>
+        )}
         {r.payment_reference && <div className="text-xs">رمز الدفعة: <span className="font-mono" dir="ltr">{r.payment_reference}</span></div>}
         {r.email && <div className="text-xs">الإيميل: <span dir="ltr">{r.email}</span></div>}
         {r.method === "zbooni" && r.status === "pending" && (

@@ -10,8 +10,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 //   2) confirmZbooniSubscriptionPaid: المصوّرة تؤكّد أنها دفعت → تنبيه الأدمن،
 //      والأدمن يطابق الدفعة في لوحة زبوني (بالإيميل/المرجع) ويعتمدها.
 // الأسعار والروابط على الخادم فقط (server-authoritative).
-// روابط الباقات من env: ZBOONI_FLEX_URL / ZBOONI_SIGNATURE_URL، وإن غابت نعود
-// لمتجر cShop (ZBOONI_STORE_URL).
+// روابط الباقات من env: ZBOONI_FLEX_URL / ZBOONI_SIGNATURE_URL، وإن غابت نستخدم
+// صفحات المنتجين على متجر cShop (ZBOONI_STORE_URL).
 // ============================================================================
 
 const PLANS = {
@@ -22,8 +22,10 @@ type PlanKey = keyof typeof PLANS;
 
 function planUrl(plan: PlanKey): string {
   const store = process.env.ZBOONI_STORE_URL || "https://ahmad-haddad.zbooni.com";
-  const url = plan === "yearly" ? process.env.ZBOONI_SIGNATURE_URL : process.env.ZBOONI_FLEX_URL;
-  return url || store;
+  const url = plan === "yearly"
+    ? process.env.ZBOONI_SIGNATURE_URL || `${store}/products/shtrk-snwy-12-months`
+    : process.env.ZBOONI_FLEX_URL || `${store}/products/shtrk-shhry-1840056`;
+  return url;
 }
 
 function newReference(): string {
