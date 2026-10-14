@@ -323,7 +323,13 @@ export const listSubscriptionPaymentsAdmin = createServerFn({ method: "GET" })
         const { data: s } = await supabaseAdmin.storage.from("payment-proofs").createSignedUrl(p.proof_url, 3600);
         proof_signed_url = s?.signedUrl ?? null;
       }
-      return { ...p, profile: map.get(p.photographer_id) ?? null, proof_signed_url };
+      // زبوني: الإيميل هو مفتاح المطابقة مع طلبات لوحة زبوني
+      let email: string | null = null;
+      if (p.method === "zbooni") {
+        const { data: u } = await supabaseAdmin.auth.admin.getUserById(p.photographer_id);
+        email = u?.user?.email ?? null;
+      }
+      return { ...p, profile: map.get(p.photographer_id) ?? null, proof_signed_url, email };
     }));
     return enriched;
   });
@@ -937,4 +943,5 @@ export const adminRevokeRole = createServerFn({ method: "POST" })
       after_data: { role: data.role },
     });
     return { ok: true };
-  });
+  });
+

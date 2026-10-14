@@ -26,6 +26,9 @@ type PaymentRow = {
   created_at: string;
   notes: string | null;
   proof_signed_url?: string | null;
+  payment_reference?: string | null;
+  payer_confirmed_at?: string | null;
+  email?: string | null;
   profile?: { username: string; display_name: string } | null;
 };
 
@@ -100,13 +103,22 @@ function AdminSubs() {
 
   if (loading) return <PageLoader />;
 
-  const pending = rows.filter((r) => r.status === "pending");
+  // دفعات زبوني غير المؤكّدة = صفحة دفع فُتحت فقط؛ نعرضها بعد المؤكّدة.
+  const unconfirmed = (r: PaymentRow) => r.method === "zbooni" && !r.payer_confirmed_at;
+  const pending = rows
+    .filter((r) => r.status === "pending")
+    .sort((a, b) => Number(unconfirmed(a)) - Number(unconfirmed(b)));
   const reviewed = rows.filter((r) => r.status !== "pending");
 
   return (
     <section>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="font-serif text-2xl">مراجعة دفعات الاشتراك</h2>
+        <div>
+          <h2 className="font-serif text-2xl">مراجعة دفعات الاشتراك</h2>
+          <a href="https://www.zbooni.com/dashboard/orders" target="_blank" rel="noreferrer" className="text-xs text-gold inline-flex items-center gap-1 hover:underline">
+            طلبات زبوني للمطابقة <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
         <button onClick={load} className="text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
           <RefreshCw className="h-3.5 w-3.5" /> تحديث
         </button>
@@ -243,6 +255,13 @@ function PaymentCard({
         <div className="font-medium">{r.profile?.display_name ?? "—"} <span className="text-muted-foreground text-xs">@{r.profile?.username}</span></div>
         <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("ar-JO")}</div>
         {r.cliq_reference && <div className="text-xs">المرجع: <span className="font-mono">{r.cliq_reference}</span></div>}
+        {r.payment_reference && <div className="text-xs">رمز الدفعة: <span className="font-mono" dir="ltr">{r.payment_reference}</span></div>}
+        {r.email && <div className="text-xs">الإيميل: <span dir="ltr">{r.email}</span></div>}
+        {r.method === "zbooni" && r.status === "pending" && (
+          <div className={`text-xs ${r.payer_confirmed_at ? "text-emerald-600" : "text-muted-foreground"}`}>
+            {r.payer_confirmed_at ? `أكّدت الدفع ${new Date(r.payer_confirmed_at).toLocaleString("ar-JO")}` : "فتحت صفحة الدفع ولم تؤكّد بعد"}
+          </div>
+        )}
         {r.notes && <div className="text-xs text-muted-foreground italic">{r.notes}</div>}
       </div>
       <div className="text-sm font-semibold">{r.amount} JD · {r.method}</div>
