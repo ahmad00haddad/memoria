@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check } from "lucide-react";
+import { BadgeCheck, Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -101,6 +101,7 @@ export const Route = createFileRoute("/photographers/$username")({
 
 type Profile = {
   id: string; username: string; display_name: string;
+  verification_status?: string | null; verified_at?: string | null;
   bio: string | null; city: string | null; base_location: string | null;
   phone: string | null; instagram: string | null; whatsapp: string | null;
   avatar_url: string | null; cover_url: string | null; equipment: string | null;
@@ -150,7 +151,7 @@ function PhotographerPage() {
       const normalizedUsername = username.trim().toLowerCase();
       const { data: prof, error: profErr } = await supabase
         .from("profiles")
-        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit")
+        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit,verification_status,verified_at")
         .eq("username", normalizedUsername)
         .eq("is_published", true)
         .maybeSingle();
@@ -339,6 +340,15 @@ function PhotographerPage() {
                 <RevealWords lines={[profile.display_name]} delay={0.35} step={0.14} />
               </h1>
               <div className="flex flex-wrap items-center gap-2 mb-6">
+                {profile.verification_status === "verified" && (
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/60 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-200"
+                    title="راجع فريق ميموريا هذا الملف وتأكّد أن الأعمال والهوية حقيقية"
+                  >
+                    <BadgeCheck className="h-4 w-4 text-sky-400" />
+                    مصوّرة موثّقة من ميموريا
+                  </span>
+                )}
                 {profile.is_featured && (
                   <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30">
                     <Star className="h-3 w-3 fill-gold" /> اختيار المحرّر

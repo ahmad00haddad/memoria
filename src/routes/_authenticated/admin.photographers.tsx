@@ -28,6 +28,7 @@ type Row = {
   created_at: string;
   deleted_at?: string | null;
   verification_status?: string;
+  verification_checks?: { key: string; label: string; ok: boolean }[];
   bookings_count: number;
   reviews_count: number;
   subscription: {
@@ -50,14 +51,57 @@ function AdminPhotographers() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [renewFor, setRenewFor] = useState<Row | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "pending" | "verified">("all");
+
+  // Every verification change asks first and locks the row while it runs: the
+  // verify and unverify buttons share a spot, so a double click used to verify
+  // and then immediately unverify (seen 2026-10-08 in audit_logs).
+  const checklistText = (r: Row) =>
+    (r.verification_checks ?? []).map((c) => `${c.ok ? "✓" : "✗"} ${c.label}`).join("\n");
+  const missingOf = (r: Row) => (r.verification_checks ?? []).filter((c) => !c.ok);
 
   const onVerify = async (r: Row, status: "verified" | "rejected" | "unverified") => {
+    if (busyId) return;
+    const missing = missingOf(r);
+    const ask =
+      status === "verified"
+        ? {
+            title: `توثيق ${r.display_name}`,
+            description:
+              (missing.length ? `تنبيه: ${missing.length} من الشروط غير مكتملة.\n\n` : "") +
+              checklistText(r) +
+              "\n\nتأكّدي أيضاً بنفسكِ أن الأعمال والهوية حقيقية (افتحي الملف وحساب الإنستغرام).",
+            confirmText: "توثيق",
+          }
+        : status === "rejected"
+          ? {
+              title: `رفض طلب ${r.display_name}`,
+              description: missing.length
+                ? `سيصلها إشعار بما ينقص:\n${missing.map((c) => "✗ " + c.label).join("\n")}`
+                : "سيصلها إشعار بأن الطلب لم يُقبل وأن تتواصل معنا.",
+              confirmText: "رفض الطلب",
+              destructive: true,
+            }
+          : {
+              title: `إلغاء توثيق ${r.display_name}`,
+              description: "ستختفي شارة «موثّقة» من ملفها ومن البحث، وسيصلها إشعار بذلك.",
+              confirmText: "إلغاء التوثيق",
+              destructive: true,
+            };
+    if (!(await confirm(ask))) return;
+    setBusyId(r.id);
     try {
-      await verify({ data: { photographer_id: r.id, status } });
-      toast.success(status === "verified" ? "تم توثيق المصوّرة ✓" : "تم إلغاء توثيق المصوّرة");
+      const reason =
+        status === "rejected" && missing.length ? `أكملي ثم أعيدي الطلب: ${missing.map((c) => c.label).join("، ")}` : undefined;
+      await verify({ data: { photographer_id: r.id, status, reason } });
+      toast.success(status === "verified" ? "تم توثيق المصوّرة ✓" : status === "rejected" ? "رُفض الطلب وأُبلغت المصوّرة" : "تم إلغاء توثيق المصوّرة");
+      setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, verification_status: status } : x)));
       load();
     } catch (e: any) {
       toast.error(e.message || "تعذّر تعديل حالة التوثيق");
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -131,6 +175,12 @@ function AdminPhotographers() {
 
   if (loading) return <PageLoader />;
 
+  const pendingCount = rows.filter((r) => r.verification_status === "pending_review").length;
+  const shown = rows
+    .filter((r) => (filter === "pending" ? r.verification_status === "pending_review" : filter === "verified" ? r.verification_status === "verified" : true))
+    // waiting requests first, so they're never buried
+    .sort((a, b) => Number(b.verification_status === "pending_review") - Number(a.verification_status === "pending_review"));
+
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
@@ -138,6 +188,22 @@ function AdminPhotographers() {
         <button onClick={load} className="text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
           <RefreshCw className="h-3.5 w-3.5" /> تحديث
         </button>
+      </div>
+
+      <div className="mb-3 flex flex-wrap gap-2 text-xs">
+        {([
+          ["all", `الكل (${rows.length})`],
+          ["pending", `طلبات التوثيق (${pendingCount})`],
+          ["verified", `الموثّقات (${rows.filter((r) => r.verification_status === "verified").length})`],
+        ] as const).map(([k, label]) => (
+          <button
+            key={k}
+            onClick={() => setFilter(k)}
+            className={`rounded-full border px-3 py-1.5 transition-colors ${filter === k ? "border-charcoal bg-charcoal text-ivory dark:border-gold dark:bg-gold dark:text-charcoal" : "border-border hover:bg-secondary"} ${k === "pending" && pendingCount > 0 && filter !== k ? "border-amber-400 text-amber-700" : ""}`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       <div className="overflow-x-auto rounded-sm border border-border bg-card">
@@ -155,7 +221,7 @@ function AdminPhotographers() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {shown.map((r) => (
               <tr key={r.id} className="border-t border-border hover:bg-secondary/30">
                 <td className="p-3">
                   <div className="flex items-center gap-3">
@@ -173,7 +239,17 @@ function AdminPhotographers() {
                 <td className="p-3"><SubBadge sub={r.subscription} /></td>
                 <td className="p-3">{r.bookings_count}</td>
                 <td className="p-3">{r.reviews_count}</td>
-                <td className="p-3"><VerificationBadge status={r.verification_status} /></td>
+                <td className="p-3">
+                  <VerificationBadge status={r.verification_status} />
+                  {(r.verification_checks?.length ?? 0) > 0 && (
+                    <div
+                      className={`mt-1 text-[11px] ${missingOf(r).length ? "text-amber-700" : "text-emerald-700"}`}
+                      title={checklistText(r)}
+                    >
+                      الشروط {r.verification_checks!.length - missingOf(r).length}/{r.verification_checks!.length}
+                    </div>
+                  )}
+                </td>
                 <td className="p-3">
                   {r.is_published ? (
                     <span className="text-xs inline-flex items-center gap-1 text-emerald-700"><Eye className="h-3.5 w-3.5" /> ظاهرة</span>
@@ -190,13 +266,21 @@ function AdminPhotographers() {
                       <ExternalLink className="h-3 w-3" /> عرض
                     </a>
                     {r.verification_status !== "verified" ? (
-                      <button onClick={() => onVerify(r, "verified")}
-                              className="text-xs px-2.5 py-1.5 rounded-sm border border-emerald-500 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" /> توثيق
-                      </button>
+                      <>
+                        <button onClick={() => onVerify(r, "verified")} disabled={busyId === r.id}
+                                className="text-xs px-2.5 py-1.5 rounded-sm border border-emerald-500 text-emerald-700 hover:bg-emerald-50 inline-flex items-center gap-1 disabled:opacity-50">
+                          <CheckCircle2 className="h-3 w-3" /> توثيق
+                        </button>
+                        {r.verification_status === "pending_review" && (
+                          <button onClick={() => onVerify(r, "rejected")} disabled={busyId === r.id}
+                                  className="text-xs px-2.5 py-1.5 rounded-sm border border-border text-muted-foreground hover:bg-secondary inline-flex items-center gap-1 disabled:opacity-50">
+                            <X className="h-3 w-3" /> رفض الطلب
+                          </button>
+                        )}
+                      </>
                     ) : (
-                      <button onClick={() => onVerify(r, "unverified")}
-                              className="text-xs px-2.5 py-1.5 rounded-sm border border-destructive text-destructive hover:bg-destructive/5 inline-flex items-center gap-1">
+                      <button onClick={() => onVerify(r, "unverified")} disabled={busyId === r.id}
+                              className="text-xs px-2.5 py-1.5 rounded-sm border border-destructive text-destructive hover:bg-destructive/5 inline-flex items-center gap-1 disabled:opacity-50">
                         <X className="h-3 w-3" /> إلغاء توثيق
                       </button>
                     )}

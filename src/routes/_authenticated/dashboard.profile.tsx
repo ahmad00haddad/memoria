@@ -11,7 +11,7 @@ import { Upload, X, Eye, Check, ChevronDown } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
 import { uploadProfilePhoto, uploadPortfolioPhoto, deletePortfolioPhoto, MAX_PORTFOLIO_PHOTOS } from "@/lib/upload";
-import { requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
+import { getMyVerification, requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 import { startTour, useTourState, resetTour } from "@/components/ClientTour";
 
 // Empty input means "use the default"; 0 is a real value and must be kept.
@@ -82,6 +82,10 @@ function ProfilePage() {
   const nav = useNavigate();
   const updRefundFn = useServerFn(updateRefundPolicy);
   const verifyFn = useServerFn(requestVerification);
+  const myVerificationFn = useServerFn(getMyVerification);
+  const [vInfo, setVInfo] = useState<{ status: string; verified_at: string | null; checks: { key: string; label: string; ok: boolean }[] } | null>(null);
+  const loadVerification = () => { myVerificationFn().then(setVInfo as any).catch(() => {}); };
+  useEffect(() => { loadVerification(); /* eslint-disable-next-line */ }, []);
   const notifFn = useServerFn(updateNotificationPreferences);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -249,6 +253,7 @@ function ProfilePage() {
     setSaving(false);
     if (error || pErr) return toast.error((error ?? pErr)!.message);
     setOriginalP(p);
+    loadVerification();
     toast.success(p.is_published && !originalP?.is_published ? "حُفظ ملفك وأصبح منشوراً للعرائس" : "حُفظت التغييرات");
   };
 
@@ -463,39 +468,73 @@ function ProfilePage() {
             )}
           </Card>
 
-          <Card id="sec-trust" title="التوثيق" done={p.verification_status === "verified"} open={openSections["sec-trust"] ?? false} onToggle={toggle}>
-            <div className="flex items-center gap-3">
-              {p.verification_status === "verified" && (
-                <span className="inline-flex items-center gap-1 text-emerald-600 text-sm font-medium">✓ موثّقة</span>
-              )}
-              {p.verification_status === "pending_review" && (
-                <span className="inline-flex items-center gap-1 text-amber-600 text-sm font-medium">قيد المراجعة</span>
-              )}
-              {p.verification_status === "rejected" && (
-                <span className="inline-flex items-center gap-1 text-red-500 text-sm font-medium">رُفض الطلب</span>
-              )}
-              {(!p.verification_status || p.verification_status === "unverified") && (
-                <>
-                  <span className="text-sm text-muted-foreground">غير موثّقة</span>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await verifyFn();
-                        toast.success("أُرسل طلب التوثيق");
-                        setP({ ...p, verification_status: "pending_review" });
-                        setOriginalP((o: any) => ({ ...o, verification_status: "pending_review" }));
-                      } catch (e: any) {
-                        toast.error(e?.message || "تعذّر إرسال الطلب");
-                      }
-                    }}
-                    className="text-xs border border-gold/40 text-gold px-3 py-1.5 rounded-full hover:bg-gold/10"
-                  >
-                    اطلبي التوثيق
-                  </button>
-                </>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">المصوّرات الموثّقات يحصلن على شارة ✓ تزيد ثقة العرائس.</p>
+          <Card id="sec-trust" title="التوثيق" done={(vInfo?.status ?? p.verification_status) === "verified"} open={openSections["sec-trust"] ?? false} onToggle={toggle}>
+            {(() => {
+              const status = vInfo?.status ?? p.verification_status ?? "unverified";
+              const checks = vInfo?.checks ?? [];
+              const missing = checks.filter((c) => !c.ok);
+              return (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    التوثيق يعني أن فريق ميموريا راجع ملفكِ وتأكّد أن الأعمال والهوية حقيقية. الموثّقات يحصلن على شارة
+                    <span className="mx-1 font-medium text-foreground">✓ موثّقة</span>
+                    على الملف وفي نتائج البحث والمقارنة، ويظهرن عند تفعيل فلتر «الموثّقات فقط».
+                  </p>
+
+                  {status === "verified" && (
+                    <div className="rounded-sm border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
+                      ✓ ملفكِ موثّق{vInfo?.verified_at ? ` منذ ${new Date(vInfo.verified_at).toLocaleDateString("ar-JO", { day: "numeric", month: "long", year: "numeric" })}` : ""}.
+                    </div>
+                  )}
+                  {status === "pending_review" && (
+                    <div className="rounded-sm border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+                      طلبكِ قيد المراجعة. سيصلكِ إشعار عند القرار.
+                    </div>
+                  )}
+                  {status === "rejected" && (
+                    <div className="rounded-sm border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                      لم يُقبل الطلب السابق. أكملي ما ينقص ثم أعيدي الطلب (السبب في إشعاراتكِ).
+                    </div>
+                  )}
+
+                  {checks.length > 0 && status !== "verified" && (
+                    <ul className="space-y-1.5 text-sm">
+                      {checks.map((c) => (
+                        <li key={c.key} className={`flex items-center gap-2 ${c.ok ? "text-foreground" : "text-muted-foreground"}`}>
+                          <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${c.ok ? "bg-emerald-600 text-white" : "border border-border"}`}>
+                            {c.ok ? "✓" : ""}
+                          </span>
+                          {c.label}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {(status === "unverified" || status === "rejected" || !status) && (
+                    <button
+                      disabled={!checks.length || missing.length > 0}
+                      onClick={async () => {
+                        try {
+                          await verifyFn();
+                          toast.success("أُرسل طلب التوثيق — سيصلكِ إشعار بالقرار");
+                          setP({ ...p, verification_status: "pending_review" });
+                          setOriginalP((o: any) => ({ ...o, verification_status: "pending_review" }));
+                          loadVerification();
+                        } catch (e: any) {
+                          toast.error(e?.message || "تعذّر إرسال الطلب");
+                        }
+                      }}
+                      className="text-sm border border-gold/50 text-gold px-4 py-2 rounded-full hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {missing.length ? `أكملي ${missing.length} من الشروط لطلب التوثيق` : "اطلبي التوثيق"}
+                    </button>
+                  )}
+                  {missing.length > 0 && status !== "verified" && (
+                    <p className="text-xs text-muted-foreground">بعد حفظ التعديلات أعلاه تتحدّث القائمة تلقائياً.</p>
+                  )}
+                </div>
+              );
+            })()}
           </Card>
 
           <Card id="sec-notifs" title="الإشعارات والجولة التعريفية" open={openSections["sec-notifs"] ?? false} onToggle={toggle}>

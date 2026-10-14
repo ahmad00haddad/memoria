@@ -37,16 +37,49 @@ export const verifyPhotographerStatus = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ----- حالة توثيق المصوّرة + ما ينقصها -----
+export const getMyVerification = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { computeVerificationChecks } = await import("@/lib/photographer-verification.server");
+    const [{ data: prof }, checks] = await Promise.all([
+      supabaseAdmin.from("profiles").select("verification_status, verified_at").eq("id", userId).maybeSingle(),
+      computeVerificationChecks(supabaseAdmin, [userId]),
+    ]);
+    return {
+      status: (prof as any)?.verification_status ?? "unverified",
+      verified_at: (prof as any)?.verified_at ?? null,
+      checks: checks.get(userId) ?? [],
+    };
+  });
+
 // ----- المصوّرة تطلب التحقق -----
+// Refused until the checklist in lib/verification is complete, so every request
+// that reaches the admin is reviewable; the admins get a notification.
 export const requestVerification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { computeVerificationChecks, notifyAdmins } = await import("@/lib/photographer-verification.server");
+    const checks = (await computeVerificationChecks(supabaseAdmin, [userId])).get(userId) ?? [];
+    const missing = checks.filter((c) => !c.ok);
+    if (missing.length) throw new Error(`أكملي أولاً: ${missing.map((c) => c.label).join("، ")}`);
+
     const { error } = await (supabase as any)
       .from("profiles")
       .update({ verification_status: "pending_review", updated_at: new Date().toISOString() })
       .eq("id", userId);
     if (error) throw new Error(error.message);
+
+    const { data: me } = await supabaseAdmin.from("profiles").select("display_name").eq("id", userId).maybeSingle();
+    await notifyAdmins(supabaseAdmin, {
+      title: "🛡️ طلب توثيق جديد",
+      body: `${(me as any)?.display_name ?? "مصوّرة"} طلبت توثيق ملفها، وكل الشروط مكتملة.`,
+      link: "/admin/photographers",
+    }).catch(() => {});
     return { ok: true };
   });
 

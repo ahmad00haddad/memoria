@@ -53,7 +53,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         <AlertDialogContent dir="rtl">
           <AlertDialogHeader>
             <AlertDialogTitle>{opts?.title ?? "تأكيد"}</AlertDialogTitle>
-            {opts?.description && <AlertDialogDescription>{opts.description}</AlertDialogDescription>}
+            {opts?.description && <AlertDialogDescription className="whitespace-pre-line">{opts.description}</AlertDialogDescription>}
           </AlertDialogHeader>
           {opts?.requireText && (
             <label className="block space-y-1.5 text-sm">

@@ -67,11 +67,15 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
     const revCount = new Map<string, number>();
     (reviews ?? []).forEach((r: any) => revCount.set(r.photographer_id, (revCount.get(r.photographer_id) ?? 0) + 1));
 
+    const { computeVerificationChecks } = await import("@/lib/photographer-verification.server");
+    const checks = await computeVerificationChecks(supabaseAdmin, ids).catch(() => new Map());
+
     return (profiles ?? []).map((p: any) => ({
       ...p,
       subscription: subMap.get(p.id) ?? null,
       bookings_count: bookCount.get(p.id) ?? 0,
       reviews_count: revCount.get(p.id) ?? 0,
+      verification_checks: checks.get(p.id) ?? [],
     }));
   });
 
@@ -419,7 +423,10 @@ export const adminRejectSubscriptionPayment = createServerFn({ method: "POST" })
 
 export const adminVerifyPhotographer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { photographer_id: string; status: "verified" | "rejected" | "unverified" | "pending_review" }) => d)
+  .inputValidator((d: { photographer_id: string; status: "verified" | "rejected" | "unverified" | "pending_review"; reason?: string }) => {
+    if (d.reason && d.reason.length > 500) throw new Error("reason too long");
+    return d;
+  })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
@@ -448,8 +455,23 @@ export const adminVerifyPhotographer = createServerFn({ method: "POST" })
       actor_id: userId,
       entity_type: "profile",
       entity_id: data.photographer_id,
-      after_data: { verification_status: data.status }
+      after_data: { verification_status: data.status, reason: data.reason ?? null }
     });
+
+    // tell the photographer what happened (and why, when it's a no)
+    const note =
+      data.status === "verified"
+        ? { title: "✓ تم توثيق ملفكِ", body: "تظهر الآن شارة «موثّقة» على ملفكِ وفي نتائج البحث." }
+        : data.status === "rejected"
+          ? { title: "لم يُقبل طلب التوثيق", body: data.reason || "راجعي ملفكِ وأعيدي الطلب، أو تواصلي معنا." }
+          : data.status === "unverified"
+            ? { title: "أُزيل توثيق ملفكِ", body: data.reason || "تواصلي معنا لمعرفة السبب." }
+            : null;
+    if (note) {
+      await supabaseAdmin.from("notifications")
+        .insert({ user_id: data.photographer_id, type: "system", link: "/dashboard/profile", ...note })
+        .then(() => {}, () => {});
+    }
     return { ok: true };
   });
 
