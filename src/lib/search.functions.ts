@@ -57,26 +57,51 @@ export const searchPhotographers = createServerFn({ method: "POST" })
   .inputValidator((d: SearchInput) => validate(d ?? {}))
   .handler(async ({ data }) => {
     const supabase = getPublicClient() as any;
+    // The RPC's min_price is MIN over *all* pricing rules, add-ons included, so a
+    // 50 JOD extra showed as "starts from 50" on a 100 JOD photographer. The real
+    // starting price (cheapest bookable package) is recomputed below, and price
+    // filters/sorts are applied on it here instead of in the RPC.
+    const priceFiltered = data.min_price != null || data.max_price != null;
+    const priceSorted = data.sort === "price_asc" || data.sort === "price_desc";
+    const limit = data.limit ?? 48;
     const { data: rows, error } = await supabase.rpc("search_photographers", {
       _query: data.q || null,
       _city: data.city || null,
-      _min_price: data.min_price != null ? Number(data.min_price) : null,
-      _max_price: data.max_price != null ? Number(data.max_price) : null,
+      _min_price: null,
+      _max_price: null,
       _available_date: data.available_date || null,
-      _sort: data.sort || "featured",
-      _limit: data.limit ?? 48
+      _sort: priceSorted ? "featured" : data.sort || "featured",
+      _limit: priceFiltered || priceSorted ? 200 : limit,
     } as any);
 
     if (error) throw new Error(error.message);
 
     const names = (rows ?? []).map((r: any) => r.username);
     const demo = new Set<string>();
+    const startFrom = new Map<string, number>();
     if (names.length) {
-      const { data: flags } = await supabase.from("profiles").select("username").in("username", names).eq("is_demo", true);
-      for (const f of flags ?? []) demo.add((f as any).username);
+      const { data: profs } = await supabase.from("profiles").select("id, username, is_demo").in("username", names);
+      const byId = new Map<string, string>();
+      for (const f of (profs ?? []) as any[]) {
+        byId.set(f.id, f.username);
+        if (f.is_demo) demo.add(f.username);
+      }
+      if (byId.size) {
+        const { data: rules } = await supabase
+          .from("pricing_rules")
+          .select("photographer_id, price, package")
+          .in("photographer_id", [...byId.keys()])
+          .neq("package", "addon")
+          .gt("price", 0);
+        for (const r of (rules ?? []) as any[]) {
+          const u = byId.get(r.photographer_id);
+          const v = Number(r.price);
+          if (u && (!startFrom.has(u) || v < startFrom.get(u)!)) startFrom.set(u, v);
+        }
+      }
     }
 
-    return (rows ?? []).map((r: any) => ({
+    let out: SearchResultItem[] = (rows ?? []).map((r: any) => ({
       is_demo: demo.has(r.username),
       username: r.username,
       display_name: r.display_name,
@@ -87,10 +112,18 @@ export const searchPhotographers = createServerFn({ method: "POST" })
       cover_url: r.cover_url,
       is_featured: !!r.is_featured,
       verification_status: r.verification_status ?? null,
-      min_price: r.min_price != null ? Number(r.min_price) : null,
+      min_price: startFrom.get(r.username) ?? null,
       avg_rating: r.avg_rating != null ? Number(Number(r.avg_rating).toFixed(1)) : 0,
       review_count: r.review_count != null ? Number(r.review_count) : 0,
     }));
+
+    if (data.min_price != null) out = out.filter((r) => r.min_price != null && r.min_price >= data.min_price!);
+    if (data.max_price != null) out = out.filter((r) => r.min_price != null && r.min_price <= data.max_price!);
+    if (priceSorted) {
+      const dir = data.sort === "price_asc" ? 1 : -1;
+      out.sort((a, b) => (a.min_price == null ? 1 : b.min_price == null ? -1 : (a.min_price - b.min_price) * dir));
+    }
+    return out.slice(0, limit);
   });
 
 export const listPublishedCities = createServerFn({ method: "GET" })
