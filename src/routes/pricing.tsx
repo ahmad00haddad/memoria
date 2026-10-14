@@ -49,7 +49,7 @@ function PricingPage() {
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+        <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
           {/* Free trial card */}
           <div className="rounded-sm border border-border bg-card p-8 shadow-soft">
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">للبداية</div>
@@ -60,13 +60,29 @@ function PricingPage() {
             <p className="text-sm text-muted-foreground mb-6">جرّبي كل شيء قبل الالتزام. تبدأ تلقائيًا عند التسجيل.</p>
             <Link
               to={authLoading || isPhotographer ? "/dashboard" : "/photographers/join"}
-              className="block text-center w-full border border-charcoal text-charcoal py-3 rounded-sm hover:bg-secondary transition-colors"
+              className="block text-center w-full border border-foreground/70 text-foreground py-3 rounded-sm hover:bg-secondary transition-colors"
             >
               {authLoading || isPhotographer ? "افتحي لوحة التحكم" : "ابدئي مجانًا"}
             </Link>
           </div>
 
-          {/* Pro plan */}
+          {/* Flex — monthly */}
+          <div className="rounded-sm border border-border bg-card p-8 shadow-soft">
+            <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">شهري</div>
+            <h3 className="font-serif text-2xl mb-1">Flex</h3>
+            <div className="text-4xl font-serif my-4">
+              7 <span className="text-xl font-sans">د.أ</span> <span className="text-sm text-muted-foreground">/ شهر</span>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">دفعة لشهر كامل، بدون التزام طويل.</p>
+            <Link
+              to={authLoading || isPhotographer ? "/dashboard/subscription" : "/login"}
+              className="block text-center w-full border border-foreground/70 text-foreground py-3 rounded-sm hover:bg-secondary transition-colors"
+            >
+              اشتركي شهريًا
+            </Link>
+          </div>
+
+          {/* Signature — yearly */}
           <div className="relative rounded-sm border-2 border-transparent bg-card p-8 shadow-elegant">
             {/* the gold frame draws itself, then the badge settles onto it */}
             <DrawFrame duration={1.6} />
@@ -77,20 +93,20 @@ function PricingPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 1.3, ease: EASE_OUT }}
             >
-              الأكثر طلبًا
+              الأوفر
             </motion.div>
-            <div className="text-xs uppercase tracking-[0.25em] text-gold mb-2">احترافي</div>
-            <h3 className="font-serif text-2xl mb-1">Elite Pro</h3>
+            <div className="text-xs uppercase tracking-[0.25em] text-gold mb-2">سنوي</div>
+            <h3 className="font-serif text-2xl mb-1">Signature</h3>
             <div className="text-4xl font-serif my-4">
-              7 <span className="text-xl font-sans">د.أ</span> <span className="text-sm text-muted-foreground">/ شهريًا</span>
+              70 <span className="text-xl font-sans">د.أ</span> <span className="text-sm text-muted-foreground">/ سنة</span>
             </div>
             <div className="-mt-2 mb-4 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs text-gold">
-              أو 70 د.أ سنويًا — شهران مجاناً
+              شهران مجاناً — ≈ 5.8 د.أ للشهر
             </div>
-            <p className="text-sm text-muted-foreground mb-6">كل ما تحتاجينه لإدارة احترافية كاملة. ادفعي عبر CliQ أو بطاقة دولية.</p>
+            <p className="text-sm text-muted-foreground mb-6">سنة كاملة بدفعة واحدة، وأوفر 14 د.أ.</p>
             <Link
               to={authLoading || isPhotographer ? "/dashboard/subscription" : "/login"}
-              className="block text-center w-full bg-charcoal text-ivory py-3 rounded-sm shadow-soft hover:opacity-90 transition-opacity"
+              className="block text-center w-full bg-primary text-primary-foreground py-3 rounded-sm shadow-soft hover:opacity-90 transition-opacity"
             >
               اشتركي الآن
             </Link>

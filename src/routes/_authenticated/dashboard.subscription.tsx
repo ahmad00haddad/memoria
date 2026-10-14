@@ -23,8 +23,8 @@ const ADMIN_CLIQ_ALIAS = "MEMORIA";
 const ADMIN_CLIQ_NAME = "Memoria Platform";
 // الأسعار بالدينار. السنوي = شهران مجاناً (70 بدل 84).
 const PLANS = {
-  monthly: { months: 1, jod: 7, label: "شهري", per: "شهريًا" },
-  yearly: { months: 12, jod: 70, label: "سنوي", per: "سنويًا" },
+  monthly: { months: 1, jod: 7, name: "Flex", label: "شهري", per: "شهريًا" },
+  yearly: { months: 12, jod: 70, name: "Signature", label: "سنوي", per: "سنويًا" },
 } as const;
 type PlanKey = keyof typeof PLANS;
 
@@ -238,7 +238,8 @@ function SubscriptionPage() {
                     {saving > 0 && (
                       <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">وفّري {saving} د.أ</span>
                     )}
-                    <div className="text-sm text-muted-foreground">{p.label}</div>
+                    <div className="font-serif text-lg leading-tight">{p.name}</div>
+                    <div className="text-xs text-muted-foreground">{p.label}</div>
                     <div className="font-serif text-3xl mt-1">{p.jod} <span className="text-sm font-sans">د.أ</span></div>
                     <div className="text-xs text-muted-foreground mt-1">
                       {p.months === 12 ? `≈ ${(p.jod / 12).toFixed(1)} د.أ للشهر · 12 شهراً` : "يُجدَّد كل شهر"}
@@ -258,7 +259,7 @@ function SubscriptionPage() {
                 </div>
                 <ol className="text-sm space-y-2 text-muted-foreground mb-5 list-decimal list-inside">
                   <li>افتحي تطبيق البنك ورسالة CliQ</li>
-                  <li>حوّلي <span className="text-foreground font-semibold">{plan.jod} د.أ</span> ({plan.label}) إلى:</li>
+                  <li>حوّلي <span className="text-foreground font-semibold">{plan.jod} د.أ</span> ({plan.name} · {plan.label}) إلى:</li>
                 </ol>
                 <div className="bg-secondary rounded-sm p-3 mb-4 flex items-center justify-between active:scale-95 transition-transform duration-200">
                   <div>

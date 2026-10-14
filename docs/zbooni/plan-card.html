@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Elite Pro plan card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Aref+Ruqaa:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#16110F; --bg2:#231A16; --ivory:#F6EEE6; --muted:#B9A79A;
+    --champ:#D8B49E; --champ-hi:#F6E6DA; --bronze:#9E6B55;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1080px;height:1080px;background:var(--bg);overflow:hidden}
+  body{font-family:"Cairo",sans-serif;color:var(--ivory);position:relative}
+  .bg{position:absolute;inset:0;
+    background:
+      radial-gradient(700px 520px at 50% 18%, rgba(216,180,158,.20), transparent 70%),
+      radial-gradient(900px 600px at 50% 120%, rgba(158,107,85,.22), transparent 70%),
+      linear-gradient(180deg,var(--bg2),var(--bg));}
+  .frame{position:absolute;inset:40px;border:1px solid rgba(216,180,158,.35);border-radius:6px}
+  .frame::after{content:"";position:absolute;inset:12px;border:1px solid rgba(216,180,158,.12);border-radius:3px}
+  .wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:84px 120px 0;text-align:center}
+  .brand{display:flex;align-items:center;gap:18px;direction:ltr}
+  .brand img{width:84px;height:84px;filter:drop-shadow(0 6px 24px rgba(216,180,158,.35))}
+  .brand .word{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:54px;letter-spacing:.06em;color:var(--champ-hi)}
+  .eyebrow{margin-top:34px;font-family:"Cormorant Garamond",serif;font-style:italic;font-size:30px;letter-spacing:.32em;text-transform:uppercase;color:var(--champ);direction:ltr}
+  h1{margin-top:6px;font-family:"Aref Ruqaa",serif;font-size:108px;line-height:1.12;
+     background:linear-gradient(180deg,var(--champ-hi),var(--champ) 60%,var(--bronze));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .price{margin-top:18px;display:flex;align-items:baseline;gap:14px;justify-content:center}
+  .price .n{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:140px;line-height:1;color:var(--ivory)}
+  .price .c{font-size:40px;font-weight:600;color:var(--champ)}
+  .price .p{font-size:30px;color:var(--muted)}
+  .badge{margin-top:22px;display:inline-block;padding:10px 28px;border-radius:999px;font-size:27px;font-weight:700;color:#1A1513;
+         background:linear-gradient(90deg,var(--champ-hi),var(--champ))}
+  .sub{margin-top:22px;font-size:26px;color:var(--muted)}
+  .rule{width:120px;height:1px;margin:30px auto 26px;background:linear-gradient(90deg,transparent,var(--champ),transparent)}
+  ul{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:12px 48px;font-size:24px;color:var(--ivory);text-align:right}
+  li{display:flex;gap:12px;align-items:center}
+  li::before{content:"";width:9px;height:9px;transform:rotate(45deg);background:var(--champ);flex:none}
+  .foot{position:absolute;bottom:64px;left:0;right:0;text-align:center;font-size:22px;color:var(--muted);letter-spacing:.04em}
+  .foot b{color:var(--champ);font-weight:600}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="frame"></div>
+<div class="wrap">
+  <div class="brand"><img src="mark.svg" alt=""><span class="word">MEMORIA</span></div>
+  <div class="eyebrow" id="eb"></div>
+  <h1 id="title"></h1>
+  <div class="price"><span class="n" id="n"></span><span class="c">د.أ</span><span class="p" id="per"></span></div>
+  <div id="extra"></div>
+  <div class="rule"></div>
+  <ul>
+    <li>ملف عام احترافي برابط خاص</li>
+    <li>بطاقة أسعار وحاسبة فورية</li>
+    <li>تقويم ذكي بلا تعارضات</li>
+    <li>عربون وعقود وتتبّع الحجوزات</li>
+    <li>تسليم وتتبّع ما بعد التصوير</li>
+    <li>دعم فني بالعربية</li>
+  </ul>
+</div>
+<div class="foot">بدون أي عمولة على حجوزاتك · <b>memoria</b> · مصوّرو الأعراس في الأردن</div>
+<script>
+  const yearly = new URLSearchParams(location.search).get('plan') === 'yearly';
+  eb.textContent = yearly ? "Signature" : "Flex";
+  title.textContent = yearly ? 'اشتراك سنوي' : 'اشتراك شهري';
+  n.textContent = yearly ? '70' : '7';
+  per.textContent = yearly ? '/ سنة كاملة' : '/ شهر';
+  extra.innerHTML = yearly
+    ? '<div class="badge">وفّر 14 د.أ — شهرين مجاناً</div><div class="sub">≈ 5.8 د.أ للشهر · 12 شهراً</div>'
+    : '<div class="sub">دفعة واحدة لشهر كامل · بدون التزام</div>';
+</script>
+</body>
+</html>
