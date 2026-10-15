@@ -246,8 +246,8 @@ function ProfilePage() {
     // سياسة استرداد العربون عبر server fn مُصادَق (تتحقّق من ownership)
     try {
       await updRefundFn({ data: {
-        policy: (p.deposit_refund_policy as any) || "full",
-        percent: p.deposit_refund_policy === "partial" ? Number(p.deposit_refund_percent || 0) : null,
+        policy: "none",
+        percent: null,
       }});
     } catch (e: any) {
       setSaving(false);
@@ -449,30 +449,10 @@ function ProfilePage() {
             <Area label="ملاحظات تظهر للعميلة قبل الحجز" v={p.booking_notes} on={(v) => setP({ ...p, booking_notes: v })} hint="مثال: تسليم الصور خلال أسبوعين، الفيديو خلال شهر." />
           </Card>
 
-          <Card id="sec-refund" title="سياسة استرداد العربون" open={openSections["sec-refund"] ?? false} onToggle={toggle}>
-            <p className="text-xs text-muted-foreground -mt-2">
-              تُطبَّق تلقائياً عند إلغاء حجز مؤكَّد العربون فقط.
+          <Card id="sec-refund" title="سياسة العربون" open={openSections["sec-refund"] ?? false} onToggle={toggle}>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {g("العربون غير قابل للاسترداد على كل حجوزات ميموريا. يصلكِ مباشرة ويثبّت الموعد، وتظهر هذه السياسة للعميلة قبل التحويل.", "العربون غير قابل للاسترداد على كل حجوزات ميموريا. يصلك مباشرة ويثبّت الموعد، وتظهر هذه السياسة للعميلة قبل التحويل.")}
             </p>
-            <div className="grid sm:grid-cols-3 gap-2">
-              {[
-                { v: "full", l: "استرداد كامل" },
-                { v: "partial", l: "استرداد جزئي" },
-                { v: "none", l: "لا استرداد" },
-              ].map((o) => (
-                <label key={o.v} className={`flex items-center gap-2 border rounded-xl px-3 py-2 text-sm cursor-pointer transition-colors ${ (p.deposit_refund_policy || "full") === o.v ? "border-gold bg-gold/5" : "border-border hover:border-gold/30"}`}>
-                  <input
-                    type="radio" name="refundPolicy" value={o.v}
-                    checked={(p.deposit_refund_policy || "full") === o.v}
-                    onChange={() => setP({ ...p, deposit_refund_policy: o.v })}
-                    className="accent-[var(--gold)]"
-                  />
-                  {o.l}
-                </label>
-              ))}
-            </div>
-            {(p.deposit_refund_policy === "partial") && (
-              <NumField label="نسبة الاسترداد %" value={p.deposit_refund_percent} onChange={(v) => setP({ ...p, deposit_refund_percent: v })} min={0} max={100} />
-            )}
           </Card>
 
           <Card id="sec-trust" title="التوثيق" done={(vInfo?.status ?? p.verification_status) === "verified"} open={openSections["sec-trust"] ?? false} onToggle={toggle}>

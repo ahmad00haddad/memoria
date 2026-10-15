@@ -310,7 +310,7 @@ function Landing() {
               <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-md leading-loose">
                 {visitorRole === "photographer" || isPhotographer
                   ? "ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان."
-                  : "احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون آمن."}
+                  : "احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون موثّق."}
               </motion.p>
               {visitorRole !== "photographer" && !isPhotographer && (
                 <motion.form
@@ -533,7 +533,7 @@ function Landing() {
             <Feature n="01" icon={MessageSquareOff} title="بدون واتساب" desc="جميع التفاصيل تُدخل عبر النموذج: الموقع، الوقت، نوع التصوير." />
             <Feature n="02" icon={Calendar} title="تقويم ذكي" desc="مزامنة Google Calendar مع فاصل ساعتين بين الجلسات لمراعاة الازدحام." />
             <Feature n="03" icon={Receipt} title="سعر فوري" desc="حاسبة ديناميكية تشمل الساعات، الإضافات، ورسوم التنقّل بالكيلومتر." />
-            <Feature last n="04" icon={ShieldCheck} title="عربون آمن" desc="تأكيد الحجز برفع إثبات تحويل CliQ ومصادقة المصوّر." />
+            <Feature last n="04" icon={ShieldCheck} title="عربون موثّق" desc="تحويل CliQ مباشر للمصوّرة، مع إثبات مرفوع وتأكيد موثّق لكل حجز." />
           </ol>
         </div>
       </motion.section>

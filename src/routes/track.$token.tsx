@@ -741,12 +741,10 @@ function TrackingPage() {
             </p>
 
             {/* سياسة الاسترداد */}
-            {b?.refund_policy_text && (
-              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4 text-sm">
-                <p className="font-medium text-amber-800 dark:text-amber-300 mb-1">سياسة استرداد العربون:</p>
-                <p className="text-amber-700 dark:text-amber-400">{b.refund_policy_text}</p>
-              </div>
-            )}
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4 text-sm">
+              <p className="font-medium text-amber-800 dark:text-amber-300 mb-1">سياسة العربون:</p>
+              <p className="text-amber-700 dark:text-amber-400">العربون غير قابل للاسترداد بعد التحويل، لأنه يُحوَّل مباشرة للمصوّرة ويثبّت الموعد.</p>
+            </div>
 
             <label className="block text-sm font-medium mb-2">
               سبب الإلغاء <span className="text-muted-foreground">(اختياري)</span>
