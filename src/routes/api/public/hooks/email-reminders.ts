@@ -27,7 +27,31 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         const { sendEmail, tplEventReminder24h, tplSubscriptionExpiring } =
           await import("@/lib/email.server");
 
-        const results = { reminders: 0, sub_warnings: 0, sub_expired: 0, errors: 0 };
+        const results = { reminders: 0, sub_warnings: 0, sub_expired: 0, paytabs_reconciled: 0, errors: 0 };
+
+        // ===================================================================
+        // 0) PayTabs reconciliation — دفعات بطاقة معلّقة آخر 3 أيام فُقد إشعارها
+        // ===================================================================
+        try {
+          const { isPayTabsConfigured, settleSubscriptionPayment } = await import("@/lib/paytabs.server");
+          if (isPayTabsConfigured()) {
+            const { data: open } = await (supabaseAdmin as any)
+              .from("subscription_payments")
+              .select("payment_reference")
+              .eq("method", "gateway")
+              .eq("status", "pending")
+              .not("payment_reference", "is", null)
+              .gte("created_at", new Date(Date.now() - 3 * 86400000).toISOString())
+              .limit(50);
+            for (const r of (open ?? []) as any[]) {
+              const res = await settleSubscriptionPayment(r.payment_reference).catch(() => null);
+              if (res?.status === "paid" && !res.already) results.paytabs_reconciled++;
+            }
+          }
+        } catch (e) {
+          console.error("[email-reminders] paytabs reconcile failed:", e);
+          results.errors++;
+        }
 
         // نافذة إزالة التكرار — 20 ساعة
         const since = new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString();

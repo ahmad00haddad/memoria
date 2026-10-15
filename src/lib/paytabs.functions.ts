@@ -58,7 +58,7 @@ export const startPayTabsSubscription = createServerFn({ method: "POST" })
 
     const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
     try {
-      const { redirectUrl } = await createHostedPayment({
+      const { redirectUrl, tranRef } = await createHostedPayment({
         cartId: row.id,
         amount: plan.jod,
         currency: "JOD",
@@ -67,6 +67,10 @@ export const startPayTabsSubscription = createServerFn({ method: "POST" })
         returnUrl: `${base}/api/public/hooks/paytabs`,
         customer: { name: (prof as any)?.display_name || (prof as any)?.username || "Memoria", email },
       });
+      // نحفظ tran_ref لنتمكن من مطابقة الدفعة لاحقاً حتى لو فُقد الإشعار.
+      if (tranRef) {
+        await (supabaseAdmin as any).from("subscription_payments").update({ payment_reference: tranRef }).eq("id", row.id);
+      }
       return { configured: true as const, url: redirectUrl };
     } catch (e: any) {
       await (supabaseAdmin as any)
