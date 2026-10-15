@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect, ErrorComponentProps } from "@tanstack/react-router";
+import { GenderProvider } from "@/hooks/use-gender";
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,5 +57,5 @@ function GlobalAuthError({ error, reset }: ErrorComponentProps) {
 }
 
 function AuthenticatedLayout() {
-  return <Outlet />;
+  return <GenderProvider><Outlet /></GenderProvider>;
 }

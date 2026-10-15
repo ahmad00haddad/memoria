@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { g } from "@/hooks/use-gender";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle, X, Send, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -128,11 +129,11 @@ export function WhatsAppQuickSend({ booking }: { booking: Booking }) {
               {loading ? (
                 <div className="text-center text-muted-foreground py-8">جاري التحميل…</div>
               ) : templates.length === 0 ? (
-                <div className="text-sm text-muted-foreground">لا توجد قوالب. <Link to="/dashboard/whatsapp-templates" className="text-gold underline">أنشئي قالباً</Link></div>
+                <div className="text-sm text-muted-foreground">لا توجد قوالب. <Link to="/dashboard/whatsapp-templates" className="text-gold underline">{g("أنشئي قالباً", "أنشئ قالباً")}</Link></div>
               ) : (
                 <>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">اختاري قالباً</label>
+                    <label className="text-xs text-muted-foreground mb-2 block">{g("اختاري قالباً", "اختر قالباً")}</label>
                     <div className="flex flex-wrap gap-2">
                       {templates.map((t) => (
                         <button

@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { g } from "@/hooks/use-gender";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
@@ -43,7 +44,7 @@ function ReferralsPage() {
   if (loading) return <PageLoader />;
 
   const link = `${typeof window !== "undefined" ? window.location.origin : ""}/photographers/join?ref=${profile?.referral_code ?? ""}`;
-  const shareText = `مرحباً! أستخدم ميموريا لإدارة حجوزات التصوير (العربون، العقود، التسليم) ووفّر عليّ وقتاً كثيراً. سجّلي من هنا وجرّبيه مجاناً ١٤ يوماً:\n${link}`;
+  const shareText = g(`مرحباً! أستخدم ميموريا لإدارة حجوزات التصوير (العربون، العقود، التسليم) ووفّر عليّ وقتاً كثيراً. سجّلي من هنا وجرّبيه مجاناً ١٤ يوماً:\n${link}`, `مرحباً! أستخدم ميموريا لإدارة حجوزات التصوير (العربون، العقود، التسليم) ووفّر عليّ وقتاً كثيراً. سجّل من هنا وجرّبه مجاناً ١٤ يوماً:\n${link}`);
   const pending = refs.length - grantedCount;
 
   return (
@@ -52,7 +53,7 @@ function ReferralsPage() {
       <section className="container-editorial py-12 max-w-3xl">
         <div className="mb-4"><BackToDashboard /></div>
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">برنامج الإحالة</div>
-        <h1 className="font-serif text-4xl mb-2">ادعي زميلة، واربحي {REWARD_DAYS} يوماً مجاناً</h1>
+        <h1 className="font-serif text-4xl mb-2">{g("ادعي زميلة، واربحي", "ادعُ زميلاً، واربح")} {REWARD_DAYS} يوماً مجاناً</h1>
         <p className="text-muted-foreground mb-8">عن كل مصوّرة تسجّل من رابطك وتفعّل أول اشتراك مدفوع، يُضاف {REWARD_DAYS} يوماً لاشتراكك تلقائياً.</p>
 
         <div className="rounded-2xl border border-border bg-card p-6 mb-6">
@@ -67,11 +68,11 @@ function ReferralsPage() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366] px-4 py-2 text-sm text-white transition-transform active:scale-95"
               >
-                <MessageCircle className="h-4 w-4" /> أرسلي بواتساب
+                <MessageCircle className="h-4 w-4" /> {g("أرسلي بواتساب", "أرسل بواتساب")}
               </a>
             </div>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">الرسالة جاهزة — تختارين الزميلة من واتساب وترسلين.</p>
+          <p className="mt-2 text-xs text-muted-foreground">{g("الرسالة جاهزة — تختارين الزميلة من واتساب وترسلين.", "الرسالة جاهزة — تختار الزميلة من واتساب وترسل.")}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-8">
@@ -108,12 +109,12 @@ function ReferralsPage() {
           </ul>
         ) : (
           <div className="mb-8 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            لم تسجّل أي زميلة بعد. أرسلي الرابط لزميلتين أو ثلاث تعرفين أنهن يدِرن الحجوزات عبر واتساب.
+            {g("لم تسجّل أي زميلة بعد. أرسلي الرابط لزميلتين أو ثلاث تعرفين أنهن يدِرن الحجوزات عبر واتساب.", "لم تسجّل أي زميلة بعد. أرسل الرابط لزميلتين أو ثلاث تعرف أنهن يدِرن الحجوزات عبر واتساب.")}
           </div>
         )}
 
         <ol className="grid gap-3 text-sm sm:grid-cols-3">
-          {["أرسلي رابطك لزميلة", "تسجّل وتجرّب ١٤ يوماً مجاناً", `عند أول اشتراك مدفوع لها، يُضاف ${REWARD_DAYS} يوماً لكِ`].map((t, i) => (
+          {[g("أرسلي رابطك لزميلة", "أرسل رابطك لزميلة"), "تسجّل وتجرّب ١٤ يوماً مجاناً", g(`عند أول اشتراك مدفوع لها، يُضاف ${REWARD_DAYS} يوماً لكِ`, `عند أول اشتراك مدفوع لها، يُضاف ${REWARD_DAYS} يوماً لك`)].map((t, i) => (
             <li key={t} className="flex items-start gap-3 rounded-xl bg-secondary/50 p-4">
               <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gold/20 text-xs font-bold text-gold">{i + 1}</span>
               <span>{t}</span>

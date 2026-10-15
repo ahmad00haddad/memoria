@@ -1,4 +1,5 @@
 import { Lightbulb } from "lucide-react";
+import { g } from "@/hooks/use-gender";
 import { CopyButton } from "@/components/ui/copy-button";
 import { motion } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -98,7 +99,7 @@ function SubscriptionPage() {
     const result = u.searchParams.get("payment");
     if (result) {
       if (result === "success") toast.success("تم الدفع وتفعيل اشتراكك ✓");
-      else if (result === "failed") toast.error("لم تكتمل عملية الدفع. يمكنكِ المحاولة مجدداً.");
+      else if (result === "failed") toast.error(g("لم تكتمل عملية الدفع. يمكنكِ المحاولة مجدداً.", "لم تكتمل عملية الدفع. يمكنك المحاولة مجدداً."));
       else toast.message("نتحقّق من الدفعة… سيتحدّث الاشتراك خلال دقائق.");
       u.searchParams.delete("payment");
       window.history.replaceState({}, "", u.toString());
@@ -113,7 +114,7 @@ function SubscriptionPage() {
       const res: any = await ptStartFn({ data: { plan: planKey } });
       if (!res?.configured || !res?.url) {
         setCardEnabled(false);
-        toast.message("الدفع بالبطاقة غير متاح حالياً، استخدمي زبوني.");
+        toast.message(g("الدفع بالبطاقة غير متاح حالياً، استخدمي زبوني.", "الدفع بالبطاقة غير متاح حالياً، استخدم زبوني."));
         return;
       }
       window.location.href = res.url;
@@ -195,15 +196,15 @@ function SubscriptionPage() {
 
         {isActive && !showPayment && (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-            <span>سيصلك تذكير قبل الانتهاء بـ ٧ أيام و٣ أيام. لا شيء مطلوب منكِ الآن.</span>
-            <button onClick={() => setPayEarly(true)} className="rounded-full border border-border px-4 py-1.5 text-xs hover:bg-secondary">ادفعي مبكراً</button>
+            <span>{g("سيصلك تذكير قبل الانتهاء بـ ٧ أيام و٣ أيام. لا شيء مطلوب منكِ الآن.", "سيصلك تذكير قبل الانتهاء بـ ٧ أيام و٣ أيام. لا شيء مطلوب منك الآن.")}</span>
+            <button onClick={() => setPayEarly(true)} className="rounded-full border border-border px-4 py-1.5 text-xs hover:bg-secondary">{g("ادفعي مبكراً", "ادفع مبكراً")}</button>
           </div>
         )}
 
         {/* Payment methods */}
         {showPayment && effectiveStatus !== "pending_review" && (
           <div className="mt-10">
-            <h2 className="font-serif text-2xl mb-1">اختاري خطتك</h2>
+            <h2 className="font-serif text-2xl mb-1">{g("اختاري خطتك", "اختر خطتك")}</h2>
             <p className="text-sm text-muted-foreground mb-4">السنوي أوفر — ودفعة واحدة فقط في السنة.</p>
             <div className="grid grid-cols-2 gap-3 mb-8" role="radiogroup" aria-label="مدة الاشتراك">
               {(Object.keys(PLANS) as PlanKey[]).map((k) => {
@@ -220,7 +221,7 @@ function SubscriptionPage() {
                     className={`relative rounded-sm border p-4 text-start transition ${active ? "border-gold bg-gold/5 ring-1 ring-gold" : "border-border bg-card hover:border-foreground/30"}`}
                   >
                     {saving > 0 && (
-                      <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">وفّري {saving} د.أ</span>
+                      <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">{g("وفّري", "وفّر")} {saving} د.أ</span>
                     )}
                     <div className="font-serif text-lg leading-tight">{p.name}</div>
                     <div className="text-xs text-muted-foreground">{p.label}</div>
@@ -258,17 +259,17 @@ function SubscriptionPage() {
               if (!open) return null;
               return (
                 <div className="mt-6 rounded-sm border border-gold/40 bg-gold/5 p-6">
-                  <h3 className="font-serif text-xl mb-2">أتممتِ الدفع على زبوني؟</h3>
+                  <h3 className="font-serif text-xl mb-2">{g("أتممتِ الدفع على زبوني؟", "أتممت الدفع على زبوني؟")}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                    بعد إتمام دفع <span className="text-foreground font-semibold">{open.amount} د.أ</span> اضغطي التأكيد، نطابق الدفعة ونفعّل اشتراكك خلال ساعات.
-                    {zb?.email && <> تأكّدي أنكِ دفعتِ بنفس البريد <span dir="ltr" className="text-foreground">{zb.email}</span>.</>}
+                    بعد إتمام دفع <span className="text-foreground font-semibold">{open.amount} د.أ</span> {g("اضغطي", "اضغط")} التأكيد، نطابق الدفعة ونفعّل اشتراكك خلال ساعات.
+                    {zb?.email && <> {g("تأكّدي أنكِ دفعتِ بنفس البريد", "تأكّد أنك دفعت بنفس البريد")} <span dir="ltr" className="text-foreground">{zb.email}</span>.</>}
                   </p>
                   {open.reference && (
                     <div className="bg-secondary rounded-sm p-3 mb-4 flex items-center justify-between">
                       <div>
                         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">رمز الدفعة</div>
                         <div className="font-mono text-lg" dir="ltr">{open.reference}</div>
-                        <div className="text-xs text-muted-foreground mt-1">اكتبيه في ملاحظات الطلب إن وُجدت</div>
+                        <div className="text-xs text-muted-foreground mt-1">{g("اكتبيه في ملاحظات الطلب إن وُجدت", "اكتبه في ملاحظات الطلب إن وُجدت")}</div>
                       </div>
                       <CopyButton value={open.reference} label="نسخ" />
                     </div>
@@ -339,7 +340,7 @@ function CardPayCard({ planName, planLabel, amount, starting, onPay }: {
         className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory dark:bg-gold dark:text-charcoal py-3 rounded-full hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60"
       >
         {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-        {starting ? "نجهّز صفحة الدفع…" : `ادفعي ${amount} د.أ`}
+        {starting ? "نجهّز صفحة الدفع…" : g(`ادفعي ${amount} د.أ`, `ادفع ${amount} د.أ`)}
       </button>
       <p className="text-[11px] text-muted-foreground mt-3 text-center">
         الدفع على صفحة PayTabs الآمنة — لا نحفظ بيانات بطاقتك.
@@ -362,9 +363,9 @@ function ZbooniPayCard({ planName, planLabel, amount, starting, onPay }: {
         <div className="text-sm">Visa · Mastercard · Apple Pay · Google Pay · تقسيط Valu</div>
       </div>
       <ol className="text-sm space-y-1.5 text-muted-foreground mb-5 list-decimal list-inside">
-        <li>اضغطي الزر لفتح صفحة باقة <span className="text-foreground font-semibold">{planName}</span> ({planLabel}) على زبوني.</li>
-        <li>ادفعي <span className="text-foreground font-semibold">{amount} د.أ</span> بنفس بريدك المسجّل في Memoria.</li>
-        <li>ارجعي هنا واضغطي «نعم، دفعت».</li>
+        <li>{g("اضغطي الزر لفتح صفحة باقة", "اضغط الزر لفتح صفحة باقة")} <span className="text-foreground font-semibold">{planName}</span> ({planLabel}) على زبوني.</li>
+        <li>{g("ادفعي", "ادفع")} <span className="text-foreground font-semibold">{amount} د.أ</span> بنفس بريدك المسجّل في Memoria.</li>
+        <li>{g("ارجعي هنا واضغطي «نعم، دفعت».", "ارجع هنا واضغط «نعم، دفعت».")}</li>
       </ol>
       <button
         onClick={onPay}
@@ -372,7 +373,7 @@ function ZbooniPayCard({ planName, planLabel, amount, starting, onPay }: {
         className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory dark:bg-gold dark:text-charcoal py-3 rounded-full hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60"
       >
         {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-        {starting ? "نجهّز صفحة الدفع…" : `ادفعي ${amount} د.أ عبر زبوني`}
+        {starting ? "نجهّز صفحة الدفع…" : g(`ادفعي ${amount} د.أ عبر زبوني`, `ادفع ${amount} د.أ عبر زبوني`)}
       </button>
       <p className="text-[11px] text-muted-foreground mt-3 text-center">
         الدفع يتم على صفحة زبوني الآمنة — لا نحفظ بيانات بطاقتك.
@@ -388,7 +389,7 @@ function StatusCard({ sub, effectiveStatus, isActive, trialDaysLeft, periodEnds 
     return (
       <div className="rounded-sm border border-border bg-card p-6 shadow-soft flex items-center gap-3">
         <AlertTriangle className="h-5 w-5 text-destructive" />
-        <div>لا يوجد اشتراك نشط لحسابك. تواصلي مع الدعم.</div>
+        <div>{g("لا يوجد اشتراك نشط لحسابك. تواصلي مع الدعم.", "لا يوجد اشتراك نشط لحسابك. تواصل مع الدعم.")}</div>
       </div>
     );
   }
@@ -411,7 +412,7 @@ function StatusCard({ sub, effectiveStatus, isActive, trialDaysLeft, periodEnds 
           {effectiveStatus === "trial" && (
             <div className="text-sm">
               متبقّي <span className="font-semibold">{trialDaysLeft} يومًا</span> من تجربتك المجانية.
-              {trialDaysLeft <= 5 && <span className="text-destructive"> اشتركي الآن لتجنّب التوقف!</span>}
+              {trialDaysLeft <= 5 && <span className="text-destructive"> {g("اشتركي الآن لتجنّب التوقف!", "اشترك الآن لتجنّب التوقف!")}</span>}
             </div>
           )}
           {effectiveStatus === "active" && periodEnds && (
@@ -432,7 +433,7 @@ function StatusCard({ sub, effectiveStatus, isActive, trialDaysLeft, periodEnds 
             <div className="text-sm">وصلنا إثبات الدفع، والمراجعة تتم عادةً خلال ساعات. ملفك يبقى ظاهراً خلال المراجعة.</div>
           )}
           {effectiveStatus === "expired" && (
-            <div className="text-sm">انتهى اشتراكك. ادفعي لاستعادة الوصول الكامل.</div>
+            <div className="text-sm">{g("انتهى اشتراكك. ادفعي لاستعادة الوصول الكامل.", "انتهى اشتراكك. ادفع لاستعادة الوصول الكامل.")}</div>
           )}
         </div>
       </div>

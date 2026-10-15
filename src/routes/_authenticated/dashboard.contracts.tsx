@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { g } from "@/hooks/use-gender";
 import { Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
@@ -161,12 +162,12 @@ function Contracts() {
           <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-8">
             <h2 className="font-serif text-2xl mb-2">كيف يعمل قسم العقود؟</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              هنا تبنين القالب مرة واحدة فقط. بعد ذلك، من صفحة أي حجز، يمكنك إنشاء عقد جاهز باسم العميل وتاريخ الحدث والسعر، ثم إرسال رابط التوقيع له مباشرة.
+              {g("هنا تبنين القالب مرة واحدة فقط. بعد ذلك، من صفحة أي حجز، يمكنك إنشاء عقد جاهز باسم العميل وتاريخ الحدث والسعر، ثم إرسال رابط التوقيع له مباشرة.", "هنا تبني القالب مرة واحدة فقط. بعد ذلك، من صفحة أي حجز، يمكنك إنشاء عقد جاهز باسم العميل وتاريخ الحدث والسعر، ثم إرسال رابط التوقيع له مباشرة.")}
             </p>
             <div className="grid gap-3 md:grid-cols-3 text-sm">
-              <div className="rounded-sm border border-border bg-background p-4">1) احفظي قالبًا أساسيًا للعقود.</div>
-              <div className="rounded-sm border border-border bg-background p-4">2) افتحي أي حجز ثم أنشئي عقدًا منه.</div>
-              <div className="rounded-sm border border-border bg-background p-4">3) انسخي رابط التوقيع وأرسليه للعميل.</div>
+              <div className="rounded-sm border border-border bg-background p-4">{g("1) احفظي قالبًا أساسيًا للعقود.", "1) احفظ قالبًا أساسيًا للعقود.")}</div>
+              <div className="rounded-sm border border-border bg-background p-4">{g("2) افتحي أي حجز ثم أنشئي عقدًا منه.", "2) افتح أي حجز ثم أنشئ عقدًا منه.")}</div>
+              <div className="rounded-sm border border-border bg-background p-4">{g("3) انسخي رابط التوقيع وأرسليه للعميل.", "3) انسخ رابط التوقيع وأرسله للعميل.")}</div>
             </div>
           </div>
         )}
@@ -241,7 +242,7 @@ function Contracts() {
             </button>
           </div>
           {templates.length === 0 ? (
-            <p className="text-sm text-muted-foreground">لا قوالب بعد — العقد القياسي يُستخدم تلقائياً حتى تضيفي قالبك.</p>
+            <p className="text-sm text-muted-foreground">{g("لا قوالب بعد — العقد القياسي يُستخدم تلقائياً حتى تضيفي قالبك.", "لا قوالب بعد — العقد القياسي يُستخدم تلقائياً حتى تضيف قالبك.")}</p>
           ) : (
             <ul className="flex flex-wrap gap-2">
               <AnimatePresence initial={false}>
@@ -264,7 +265,7 @@ function Contracts() {
                   <textarea ref={bodyRef} value={body} onChange={(e) => setBody(e.target.value)} rows={14}
                     className="w-full rounded-xl border border-input px-3 py-2 bg-background text-sm leading-loose" />
                   <div className="mt-2 flex flex-wrap gap-1.5">
-                    <span className="w-full text-xs text-muted-foreground">انقري لإضافة حقل يُملأ تلقائياً من بيانات الحجز:</span>
+                    <span className="w-full text-xs text-muted-foreground">{g("انقري لإضافة حقل يُملأ تلقائياً من بيانات الحجز:", "انقر لإضافة حقل يُملأ تلقائياً من بيانات الحجز:")}</span>
                     {PLACEHOLDERS.map((ph) => (
                       <button key={ph} type="button" onClick={() => insertPlaceholder(ph)} className="rounded-full border border-gold/30 bg-gold/5 px-2.5 py-1 text-[11px] text-gold hover:bg-gold/15 active:scale-95">
                         {ph.slice(1, -1)}

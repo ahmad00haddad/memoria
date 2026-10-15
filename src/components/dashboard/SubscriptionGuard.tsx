@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { g } from "@/hooks/use-gender";
 import { Link, useLocation } from "@tanstack/react-router";
 import { AlertTriangle, Clock, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,7 +88,7 @@ export function SubscriptionGuard() {
           to="/dashboard/subscription"
           className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${expired ? "bg-destructive text-destructive-foreground" : "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal"}`}
         >
-          {expired ? "جدّدي الآن" : "جدّدي قبل ما يختفي ملفك"}
+          {expired ? g("جدّدي الآن", "جدّد الآن") : g("جدّدي قبل ما يختفي ملفك", "جدّد قبل ما يختفي ملفك")}
         </Link>
         {!expired && (
           <button

@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { GenderPicker } from "@/components/dashboard/GenderPicker";
+import { g, useGender } from "@/hooks/use-gender";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { uploadProfilePhoto } from "@/lib/upload";
@@ -43,15 +45,16 @@ const PKG_TEMPLATES = [
   { label: "جلسة خطوبة", price: "100", type: "hourly" as const },
 ];
 
-const STEPS = [
-  { icon: Sparkles, title: "مرحباً بكِ في Memoria", desc: "٤ خطوات قصيرة تستغرق أقل من ٥ دقائق — بعدها ملفك جاهز لاستقبال أول حجز." },
-  { icon: Camera, title: "معلوماتك الأساسية", desc: "الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بكِ." },
-  { icon: DollarSign, title: "أول باقة أسعار", desc: "بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لكِ باب الحجوزات." },
+const STEPS_ = () => [
+  { icon: Sparkles, title: g("مرحباً بكِ في Memoria", "مرحباً بك في Memoria"), desc: "٤ خطوات قصيرة تستغرق أقل من ٥ دقائق — بعدها ملفك جاهز لاستقبال أول حجز." },
+  { icon: Camera, title: "معلوماتك الأساسية", desc: g("الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بكِ.", "الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بك.") },
+  { icon: DollarSign, title: "أول باقة أسعار", desc: g("بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لكِ باب الحجوزات.", "بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لك باب الحجوزات.") },
   { icon: Wallet, title: "بيانات الدفع والتواصل", desc: "CliQ alias ورقم واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية تماماً." },
-  { icon: Eye, title: "نشر ملفك", desc: "راجعي البيانات ثم انشري بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم." },
+  { icon: Eye, title: "نشر ملفك", desc: g("راجعي البيانات ثم انشري بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم.", "راجع البيانات ثم انشر بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم.") },
 ];
 
 function Onboarding() {
+  useGender(); // يعيد الرسم فور تغيير صيغة المخاطبة
   const nav = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -94,7 +97,7 @@ function Onboarding() {
         pkg_type: first?.package ?? "hourly",
       });
       const savedStep = Number((p as any)?.onboarding_step ?? 0);
-      setStep(Math.min(Math.max(savedStep, 0), STEPS.length - 1));
+      setStep(Math.min(Math.max(savedStep, 0), STEPS_().length - 1));
       setLoading(false);
     })();
   }, [nav]);
@@ -116,21 +119,21 @@ function Onboarding() {
   const validateStep = (): string | null => {
     if (step === 1) {
       const uname = f.username.trim().toLowerCase();
-      if (!f.display_name.trim()) return "أدخلي الاسم الذي سيظهر للعميل.";
+      if (!f.display_name.trim()) return g("أدخلي الاسم الذي سيظهر للعميل.", "أدخل الاسم الذي سيظهر للعميل.");
       if (uname.length < 3 || !/^[a-z0-9_]+$/.test(uname)) return "اسم المستخدم يجب أن يكون ٣ أحرف على الأقل (a-z, 0-9, _).";
-      if (!f.city.trim()) return "اختاري المدينة الأساسية.";
+      if (!f.city.trim()) return g("اختاري المدينة الأساسية.", "اختر المدينة الأساسية.");
       if (f.avatar_url.trim() && !/^https?:\/\/.+/i.test(f.avatar_url.trim())) {
         return "رابط الصورة يجب أن يبدأ بـ http:// أو https://";
       }
     }
     if (step === 2) {
-      if (!f.pkg_label.trim()) return "أدخلي اسم الباقة (مثال: باقة الساعة الواحدة).";
-      if (!f.pkg_price || Number(f.pkg_price) <= 0) return "أدخلي سعراً صحيحاً للباقة.";
+      if (!f.pkg_label.trim()) return g("أدخلي اسم الباقة (مثال: باقة الساعة الواحدة).", "أدخل اسم الباقة (مثال: باقة الساعة الواحدة).");
+      if (!f.pkg_price || Number(f.pkg_price) <= 0) return g("أدخلي سعراً صحيحاً للباقة.", "أدخل سعراً صحيحاً للباقة.");
     }
     if (step === 3) {
-      if (!f.cliq_alias.trim() && !f.whatsapp.trim()) return "أضيفي CliQ أو رقم واتساب على الأقل.";
+      if (!f.cliq_alias.trim() && !f.whatsapp.trim()) return g("أضيفي CliQ أو رقم واتساب على الأقل.", "أضف CliQ أو رقم واتساب على الأقل.");
       if (f.whatsapp.trim() && !/^\+?\d{9,15}$/.test(f.whatsapp.trim().replace(/[\s-]/g, ""))) {
-        return "رقم واتساب غير صحيح — أدخلي رقماً دولياً مثل +9627XXXXXXXX.";
+        return g("رقم واتساب غير صحيح — أدخلي رقماً دولياً مثل +9627XXXXXXXX.", "رقم واتساب غير صحيح — أدخل رقماً دولياً مثل +9627XXXXXXXX.");
       }
     }
     return null;
@@ -205,13 +208,13 @@ function Onboarding() {
       .eq("photographer_id", uid);
     if (!pkgCount) {
       setSaving(false);
-      toast.error("أضيفي باقة سعرية واحدة على الأقل قبل نشر ملفك");
+      toast.error(g("أضيفي باقة سعرية واحدة على الأقل قبل نشر ملفك", "أضف باقة سعرية واحدة على الأقل قبل نشر ملفك"));
       setStep(2);
       return;
     }
     const { error } = await supabase.from("profiles").update({
       onboarding_completed_at: new Date().toISOString(),
-      onboarding_step: STEPS.length,
+      onboarding_step: STEPS_().length,
       is_published: true,
     } as any).eq("id", uid);
     setSaving(false);
@@ -228,12 +231,12 @@ function Onboarding() {
     try {
       const { error } = await supabase.from("profiles").update({
         onboarding_completed_at: new Date().toISOString(),
-        onboarding_step: STEPS.length,
+        onboarding_step: STEPS_().length,
       } as any).eq("id", uid);
       if (error) throw error;
       nav({ to: "/dashboard" });
     } catch (e: any) {
-      toast.error(e?.message || "تعذّر التخطي، حاولي مجدداً.");
+      toast.error(e?.message || g("تعذّر التخطي، حاولي مجدداً.", "تعذّر التخطي، حاول مجدداً."));
     } finally {
       setSaving(false);
     }
@@ -241,9 +244,9 @@ function Onboarding() {
 
   if (loading) return <PageLoader />;
 
-  const s = STEPS[step];
+  const s = STEPS_()[step];
   const Icon = s.icon;
-  const isLast = step === STEPS.length - 1;
+  const isLast = step === STEPS_().length - 1;
 
   return (
     <div className="min-h-screen bg-background">
@@ -251,11 +254,11 @@ function Onboarding() {
       <section className="container-editorial py-10 max-w-2xl">
         <div className="mb-6 flex items-center justify-between">
           <div className="text-xs uppercase tracking-[0.3em] text-gold">إعداد الحساب</div>
-          <button onClick={skip} className="text-xs text-muted-foreground hover:text-foreground">تخطّي وإكمال لاحقاً</button>
+          <button onClick={skip} className="text-xs text-muted-foreground hover:text-foreground">{g("تخطّي وإكمال لاحقاً", "تخطَّ وإكمال لاحقاً")}</button>
         </div>
 
         <div className="mb-6 flex items-center gap-2">
-          {STEPS.map((_, i) => (
+          {STEPS_().map((_, i) => (
             <span key={i} className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
               <motion.span
                 className="absolute inset-y-0 start-0 rounded-full bg-gold"
@@ -287,7 +290,7 @@ function Onboarding() {
               <Icon className="h-6 w-6 text-gold" />
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">الخطوة {step + 1} من {STEPS.length}</div>
+              <div className="text-xs text-muted-foreground mb-1">الخطوة {step + 1} من {STEPS_().length}</div>
               <h1 className="font-serif text-2xl leading-tight">{s.title}</h1>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{s.desc}</p>
             </div>
@@ -311,6 +314,9 @@ function Onboarding() {
 
           {step === 1 && (
             <div className="space-y-4">
+              <Field label="أنا">
+                <GenderPicker />
+              </Field>
               <Field label="الاسم الظاهر للعميل *">
                 <input value={f.display_name} onChange={(e) => upd("display_name", e.target.value)} className={inputCx} placeholder="سارة أحمد / استوديو النور" />
               </Field>
@@ -329,7 +335,7 @@ function Onboarding() {
                 </div>
               </Field>
               <Field label="نبذة قصيرة (اختياري)">
-                <textarea value={f.bio} onChange={(e) => upd("bio", e.target.value)} className={inputCx + " min-h-[90px]"} placeholder="أسلوبك، خبرتك، نوع الجلسات التي تفضّلينها…" />
+                <textarea value={f.bio} onChange={(e) => upd("bio", e.target.value)} className={inputCx + " min-h-[90px]"} placeholder={g("أسلوبك، خبرتك، نوع الجلسات التي تفضّلينها…", "أسلوبك، خبرتك، نوع الجلسات التي تفضّلها…")} />
               </Field>
               <div>
                 <div className="text-xs font-medium mb-1.5">صورتك الشخصية (اختياري)</div>
@@ -339,7 +345,7 @@ function Onboarding() {
                     {avatarBusy && <span className="absolute inset-0 grid place-items-center bg-black/40"><Loader2 className="h-5 w-5 animate-spin text-white" /></span>}
                   </span>
                   <span>
-                    <span className="block font-medium">{f.avatar_url ? "تغيير الصورة" : "اختاري صورة"}</span>
+                    <span className="block font-medium">{f.avatar_url ? "تغيير الصورة" : g("اختاري صورة", "اختر صورة")}</span>
                     <span className="block text-xs text-muted-foreground">الملفات بصورة شخصية تُفتح أكثر</span>
                   </span>
                 </button>
@@ -352,7 +358,7 @@ function Onboarding() {
             <div className="space-y-4">
               {!f.pkg_label && (
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="w-full text-xs text-muted-foreground">ابدئي من مثال وعدّليه:</span>
+                  <span className="w-full text-xs text-muted-foreground">{g("ابدئي من مثال وعدّليه:", "ابدأ من مثال وعدّله:")}</span>
                   {PKG_TEMPLATES.map((t) => (
                     <button key={t.label} type="button" onClick={() => { upd("pkg_label", t.label); upd("pkg_price", t.price); upd("pkg_type", t.type); }} className="rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-xs text-gold hover:bg-gold/15">
                       {t.label} · {t.price} د.أ

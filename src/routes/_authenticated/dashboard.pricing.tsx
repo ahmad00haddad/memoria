@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { g } from "@/hooks/use-gender";
 import { Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -23,11 +24,11 @@ type Rule = {
 };
 
 const KIND_ORDER: FeatureKind[] = ["regular", "exclusive", "fast"];
-const KIND_META: Record<FeatureKind, { icon: typeof Star; title: string }> = {
-  regular: { icon: CircleCheck, title: "ميزة عادية — اضغطي للتغيير" },
-  exclusive: { icon: Star, title: "ميزة حصرية — اضغطي للتغيير" },
-  fast: { icon: Zap, title: "تسليم سريع — اضغطي للتغيير" },
-};
+const KIND_META_ = (): Record<FeatureKind, { icon: typeof Star; title: string }> => ({
+  regular: { icon: CircleCheck, title: g("ميزة عادية — اضغطي للتغيير", "ميزة عادية — اضغط للتغيير") },
+  exclusive: { icon: Star, title: g("ميزة حصرية — اضغطي للتغيير", "ميزة حصرية — اضغط للتغيير") },
+  fast: { icon: Zap, title: g("تسليم سريع — اضغطي للتغيير", "تسليم سريع — اضغط للتغيير") },
+});
 
 function PricingMgr() {
   const nav = useNavigate();
@@ -73,7 +74,7 @@ function PricingMgr() {
       { service: "cinematic_video", package: "full_day", label: "باقة VIP (تصوير + فيديو)", price: 400, per_photo_price: 0, subtitle: "التجربة المتكاملة صوراً وفيديو", description: "تغطية فريقين\nتصوير فيديو سينمائي\nألبوم حراري فاخر" }
     ];
     setRules([...rules, ...withKeys(templates)]);
-    toast.success("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي.");
+    toast.success(g("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي.", "أضفنا ٣ باقات مقترحة — عدّل الأسعار ثم احفظ."));
   };
 
   const add = () => setRules([...rules, ...withKeys([{ service: "photography", package: "hourly", label: "", price: 0 }])]);
@@ -99,7 +100,7 @@ function PricingMgr() {
       if (error) {
         setRules((cur) => (cur.some((x) => x.id === r.id) ? cur : [...cur, r]));
         toast.error(error.code === "23503"
-          ? "لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّلي اسمها أو سعرها بدلاً من ذلك."
+          ? g("لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّلي اسمها أو سعرها بدلاً من ذلك.", "لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّل اسمها أو سعرها بدلاً من ذلك.")
           : error.message);
         return;
       }
@@ -183,10 +184,10 @@ function PricingMgr() {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none" />
               <h2 className="font-serif text-2xl mb-2 flex items-center gap-2">
                 <Lightbulb className="h-6 w-6 text-gold" />
-                هل أنتِ مستعجلة؟
+                {g("هل أنتِ مستعجلة؟", "هل أنت مستعجل؟")}
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                لا داعي للتفكير طويلاً! استخدمي الباقات القياسية المعتمدة في السوق الأردني بضغطة زر واحدة، ثم قومي بتعديل الأسعار بما يناسبك.
+                {g("لا داعي للتفكير طويلاً! استخدمي الباقات القياسية المعتمدة في السوق الأردني بضغطة زر واحدة، ثم قومي بتعديل الأسعار بما يناسبك.", "لا داعي للتفكير طويلاً! استخدم الباقات القياسية المعتمدة في السوق الأردني بضغطة زر واحدة، ثم قم بتعديل الأسعار بما يناسبك.")}
               </p>
               <button 
                 onClick={injectMarketTemplates}
@@ -198,9 +199,9 @@ function PricingMgr() {
           )}
           {rules.length === 0 && false && (
           <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-6">
-            <h2 className="font-serif text-2xl mb-2">ابدئي بأول باقة</h2>
+            <h2 className="font-serif text-2xl mb-2">{g("ابدئي بأول باقة", "ابدأ بأول باقة")}</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضيفي على الأقل باقة تصوير وباقة يوم كامل، ثم احفظيها لتظهر مباشرة في ملفك العام.
+              {g("العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضيفي على الأقل باقة تصوير وباقة يوم كامل، ثم احفظيها لتظهر مباشرة في ملفك العام.", "العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضف على الأقل باقة تصوير وباقة يوم كامل، ثم احفظها لتظهر مباشرة في ملفك العام.")}
             </p>
             <div className="grid gap-3 md:grid-cols-3 text-sm">
               <div className="rounded-sm border border-border bg-background p-4">
@@ -330,7 +331,7 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
   return (
     <div className="space-y-1.5" data-features>
       {rows.map((f, i) => {
-        const { icon: Icon, title } = KIND_META[f.kind];
+        const { icon: Icon, title } = KIND_META_()[f.kind];
         return (
           <div key={i} className="flex items-center gap-2 rounded-xl bg-secondary/60 px-2 py-1 ring-1 ring-transparent focus-within:ring-gold/50">
             <button type="button" title={title} aria-label={title}
@@ -354,7 +355,7 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
       <button type="button" onClick={() => setRows([...rows, { kind: "regular", text: "" }])} className="inline-flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground hover:text-gold">
         <Plus className="h-3.5 w-3.5" /> إضافة ميزة
       </button>
-      <p className="px-2 text-[11px] text-muted-foreground/80">اضغطي الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع</p>
+      <p className="px-2 text-[11px] text-muted-foreground/80">{g("اضغطي الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع", "اضغط الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع")}</p>
     </div>
   );
 }

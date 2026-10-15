@@ -1,4 +1,5 @@
 import { Lightbulb } from "lucide-react";
+import { g } from "@/hooks/use-gender";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { ChevronDown } from "lucide-react";
@@ -138,7 +139,7 @@ function ReportsPage() {
         <div className={`transition-opacity duration-300 ${fetching ? "opacity-50" : "opacity-100"}`}>
         {stats.count === 0 && (
           <div className="rounded-2xl border border-dashed border-border p-12 text-center mb-8">
-            <p className="text-muted-foreground">لا حجوزات في هذه الفترة. جرّبي فترة أطول.</p>
+            <p className="text-muted-foreground">{g("لا حجوزات في هذه الفترة. جرّبي فترة أطول.", "لا حجوزات في هذه الفترة. جرّب فترة أطول.")}</p>
           </div>
         )}
 

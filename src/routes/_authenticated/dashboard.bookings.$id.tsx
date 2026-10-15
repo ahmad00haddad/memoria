@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -368,22 +369,22 @@ function BookingDetail() {
     const eventIn = b.event_date ? daysFromToday(b.event_date) : null;
     if (b.status === "cancelled") return null;
     if (b.status === "pending_deposit" && (b.deposit_proof_url || b.deposit_sent_at)) {
-      return { title: "العربون وصل — راجعيه وأكّدي", detail: `تأكّدي من تطبيق البنك أن ${b.deposit_amount} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال`, cta: "تأكيد العربون", icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
+      return { title: g("العربون وصل — راجعيه وأكّدي", "العربون وصل — راجعه وأكّد"), detail: g(`تأكّدي من تطبيق البنك أن ${b.deposit_amount} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال`, `تأكّد من تطبيق البنك أن ${b.deposit_amount} د.أ وصلت فعلاً — لا تعتمد على صورة الإيصال`), cta: "تأكيد العربون", icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
     }
     if (b.status === "quote" || b.status === "pending_deposit") {
       return { title: "بانتظار العربون من العميلة", detail: `الطلب وصل ${ageLabel(b.created_at)}`, cta: "ذكّريها بواتساب", icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nلتثبيت موعدك بتاريخ ${new Date(b.event_date).toLocaleDateString("ar-JO")} يرجى إرسال العربون (${b.deposit_amount} د.أ) ورفع الإثبات من هنا:\n${trackUrl}`) };
     }
     if (stage !== "delivered" && eventIn !== null && eventIn >= 0) {
-      return { title: `التصوير ${relativeDay(eventIn)}`, detail: b.client_notes ? "راجعي ملاحظات العميلة وقائمة اللقطات" : "جهّزي قائمة اللقطات", cta: "قائمة اللقطات", icon: <ListChecks className="h-4 w-4" />, run: () => setTab("production") };
+      return { title: `التصوير ${relativeDay(eventIn)}`, detail: b.client_notes ? g("راجعي ملاحظات العميلة وقائمة اللقطات", "راجع ملاحظات العميلة وقائمة اللقطات") : g("جهّزي قائمة اللقطات", "جهّز قائمة اللقطات"), cta: "قائمة اللقطات", icon: <ListChecks className="h-4 w-4" />, run: () => setTab("production") };
     }
     if (stage !== "delivered") {
       const label = STAGES.find((s) => s.key === stage)?.label ?? "";
-      return { title: `المرحلة الحالية: ${label}`, detail: b.delivery_due_at ? `التسليم ${relativeDay(daysFromToday(b.delivery_due_at))}` : "حدّثي المرحلة لتعرف العميلة أين وصلت صورها", cta: "حدّثي الإنتاج", icon: <Edit3 className="h-4 w-4" />, run: () => setTab("production") };
+      return { title: `المرحلة الحالية: ${label}`, detail: b.delivery_due_at ? `التسليم ${relativeDay(daysFromToday(b.delivery_due_at))}` : g("حدّثي المرحلة لتعرف العميلة أين وصلت صورها", "حدّث المرحلة لتعرف العميلة أين وصلت صورها"), cta: g("حدّثي الإنتاج", "حدّث الإنتاج"), icon: <Edit3 className="h-4 w-4" />, run: () => setTab("production") };
     }
     if (!b.final_paid_at) {
-      return { title: "سُلّمت الصور — الدفعة النهائية لم تصل", detail: `المتبقي ${Number(b.total_price) - Number(b.deposit_amount || 0)} د.أ`, cta: "سجّلي استلام الدفعة", icon: <BadgeDollarSign className="h-4 w-4" />, run: markFinalPaid, busy: actionLoading === "final" };
+      return { title: "سُلّمت الصور — الدفعة النهائية لم تصل", detail: `المتبقي ${Number(b.total_price) - Number(b.deposit_amount || 0)} د.أ`, cta: g("سجّلي استلام الدفعة", "سجّل استلام الدفعة"), icon: <BadgeDollarSign className="h-4 w-4" />, run: markFinalPaid, busy: actionLoading === "final" };
     }
-    return { title: "اكتمل الحجز", detail: "رأي العميلة يساعد العرائس الأخريات على اختيارك", cta: "اطلبي تقييماً", icon: <Star className="h-4 w-4" />, run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nأتمنى أن تكون الصور قد نالت إعجابك! يسعدني سماع رأيك هنا:\n${origin}/review/${b.client_tracking_token}\n\nشكراً لكِ!`) };
+    return { title: "اكتمل الحجز", detail: "رأي العميلة يساعد العرائس الأخريات على اختيارك", cta: g("اطلبي تقييماً", "اطلب تقييماً"), icon: <Star className="h-4 w-4" />, run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nأتمنى أن تكون الصور قد نالت إعجابك! يسعدني سماع رأيك هنا:\n${origin}/review/${b.client_tracking_token}\n\nشكراً لكِ!`) };
   }, [b, actionLoading, trackUrl]);
 
   // ── تلميحات سياقية مرتبطة بهذا الحجز ──
@@ -395,17 +396,17 @@ function BookingDetail() {
       list.push({ key: "notes", text: `ملاحظة العميلة قبل التصوير: «${b.client_notes}»` });
     }
     if (contract && contract.status !== "signed" && b.status !== "cancelled") {
-      list.push({ key: "contract", text: "العقد لم يُوقَّع بعد.", action: { label: "أرسلي تذكيراً", run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nيرجى مراجعة العقد وتوقيعه من هنا:\n${origin}/contracts/${contract.sign_token}`) } });
+      list.push({ key: "contract", text: "العقد لم يُوقَّع بعد.", action: { label: g("أرسلي تذكيراً", "أرسل تذكيراً"), run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nيرجى مراجعة العقد وتوقيعه من هنا:\n${origin}/contracts/${contract.sign_token}`) } });
     }
     const mine = msgs.filter((m) => m.sender_id === uid);
     const theirs = msgs.filter((m) => m.sender_id !== uid);
     const lastTheirs = theirs[theirs.length - 1];
     const lastMine = mine[mine.length - 1];
     if (lastTheirs && (!lastMine || new Date(lastTheirs.created_at) > new Date(lastMine.created_at))) {
-      list.push({ key: "reply", text: `العميلة كتبت لكِ ${ageLabel(lastTheirs.created_at)} ولم تردّي بعد.`, action: { label: "افتحي المحادثة", run: () => setTab("chat") } });
+      list.push({ key: "reply", text: g(`العميلة كتبت لكِ ${ageLabel(lastTheirs.created_at)} ولم تردّي بعد.`, `العميلة كتبت لك ${ageLabel(lastTheirs.created_at)} ولم تردّ بعد.`), action: { label: g("افتحي المحادثة", "افتح المحادثة"), run: () => setTab("chat") } });
     }
     if (b.production_stage === "delivered" && !b.final_paid_at && b.status !== "cancelled") {
-      list.push({ key: "watermark", text: "صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّلي الدفعة النهائية." });
+      list.push({ key: "watermark", text: g("صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّلي الدفعة النهائية.", "صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّل الدفعة النهائية.") });
     }
     return list.filter((h) => !dismissedHints.includes(h.key));
   }, [b, contract, msgs, uid, dismissedHints]);
@@ -470,7 +471,7 @@ function BookingDetail() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={async () => {
-                  if (!(await confirm({ title: "تجديد رابط التتبّع", description: "الرابط القديم سيتوقف عن العمل، وستحتاجين لإرسال الرابط الجديد للعميلة.", confirmText: "تجديد" }))) return;
+                  if (!(await confirm({ title: "تجديد رابط التتبّع", description: g("الرابط القديم سيتوقف عن العمل، وستحتاجين لإرسال الرابط الجديد للعميلة.", "الرابط القديم سيتوقف عن العمل، وستحتاج لإرسال الرابط الجديد للعميلة."), confirmText: "تجديد" }))) return;
                   try { await regenTokenFn({ data: { booking_id: id } }); toast.success("جُدّد الرابط"); await load(); }
                   catch (e: any) { toast.error(e?.message || "تعذّر التجديد"); }
                 }}>
@@ -640,7 +641,7 @@ function BookingDetail() {
                       <h2 className="font-serif text-xl mb-1">إثبات العربون</h2>
                       {b.status === "pending_deposit" && (
                         <p className="mb-3 rounded-xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:bg-amber-950/20 dark:text-amber-300">
-                          <strong>لا تعتمدي على صورة الإيصال.</strong> الصور سهلة التزوير — افتحي تطبيق البنك وتأكّدي أن مبلغ <strong>{b.deposit_amount} د.أ</strong> وصل فعلاً لحسابك قبل الضغط على التأكيد.
+                          <strong>{g("لا تعتمدي على صورة الإيصال.", "لا تعتمد على صورة الإيصال.")}</strong> {g("الصور سهلة التزوير — افتحي تطبيق البنك وتأكّدي أن مبلغ", "الصور سهلة التزوير — افتح تطبيق البنك وتأكّد أن مبلغ")} <strong>{b.deposit_amount} د.أ</strong> وصل فعلاً لحسابك قبل الضغط على التأكيد.
                         </p>
                       )}
                       {(() => {
@@ -656,7 +657,7 @@ function BookingDetail() {
                           <motion.img layoutId="proof-image" src={proofUrl} alt="إثبات تحويل العربون" className="max-h-60 w-full object-contain" />
                         </button>
                       ) : (
-                        <p className="rounded-xl bg-amber-50 p-3 text-amber-900 dark:bg-amber-950/20 dark:text-amber-300">أشارت العميلة إلى التحويل بدون إيصال. تحقّقي من حسابك قبل التأكيد.</p>
+                        <p className="rounded-xl bg-amber-50 p-3 text-amber-900 dark:bg-amber-950/20 dark:text-amber-300">{g("أشارت العميلة إلى التحويل بدون إيصال. تحقّقي من حسابك قبل التأكيد.", "أشارت العميلة إلى التحويل بدون إيصال. تحقّق من حسابك قبل التأكيد.")}</p>
                       )}
                     </div>
                   )}
@@ -682,7 +683,7 @@ function BookingDetail() {
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto mb-4 px-1">
                   {msgs.length === 0 && (
                     <div className="py-10 text-center text-sm text-muted-foreground">
-                      لا رسائل بعد. اكتبي أول رسالة — تصل للعميلة في صفحة التتبّع.
+                      {g("لا رسائل بعد. اكتبي أول رسالة — تصل للعميلة في صفحة التتبّع.", "لا رسائل بعد. اكتب أول رسالة — تصل للعميلة في صفحة التتبّع.")}
                     </div>
                   )}
                   <AnimatePresence initial={false}>
@@ -715,7 +716,7 @@ function BookingDetail() {
                       onChange={(e) => setText(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                       rows={1}
-                      placeholder="اكتبي رسالة… (Shift+Enter لسطر جديد)"
+                      placeholder={g("اكتبي رسالة… (Shift+Enter لسطر جديد)", "اكتب رسالة… (Shift+Enter لسطر جديد)")}
                       className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-2.5 text-sm focus:border-gold/60 focus:outline-none"
                     />
                     {text && <span className="absolute -top-5 start-2 text-[10px] text-muted-foreground">المسودة محفوظة</span>}
@@ -751,7 +752,7 @@ function BookingDetail() {
             <motion.img layoutId="proof-image" src={proofUrl} alt="إثبات تحويل العربون" className="max-h-[85vh] max-w-full rounded-xl object-contain" />
             {b.status === "pending_deposit" && (
               <p className="absolute top-6 inset-x-4 mx-auto max-w-md rounded-xl bg-amber-500/90 px-4 py-2 text-center text-xs text-charcoal" onClick={(e) => e.stopPropagation()}>
-                تأكّدي من تطبيق البنك أن المبلغ وصل فعلاً — الإيصال وحده لا يكفي.
+                {g("تأكّدي من تطبيق البنك أن المبلغ وصل فعلاً — الإيصال وحده لا يكفي.", "تأكّد من تطبيق البنك أن المبلغ وصل فعلاً — الإيصال وحده لا يكفي.")}
               </p>
             )}
             <div className="absolute bottom-6 inset-x-0 flex justify-center gap-3" onClick={(e) => e.stopPropagation()}>
@@ -808,7 +809,7 @@ function ContractCard({ contract, templates, busy, onGenerate }: { contract: any
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-muted-foreground">لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئيه الآن.</p>
+          <p className="text-muted-foreground">{g("لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئيه الآن.", "لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئه الآن.")}</p>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => onGenerate()} disabled={busy} className="rounded-full bg-charcoal px-4 py-2 text-ivory transition-transform active:scale-95 disabled:opacity-60 dark:bg-gold dark:text-charcoal">عقد قياسي</button>
             {templates.map((t) => (
@@ -863,7 +864,7 @@ function ProductionPanel({ b, busy, onSetStage, onDeliver, onSaveLink, onSaveDel
             disabled={busy}
             className="inline-flex items-center gap-2 rounded-full bg-charcoal px-4 py-2 text-sm text-ivory transition-transform active:scale-95 disabled:opacity-60 dark:bg-gold dark:text-charcoal"
           >
-            انقلي إلى «{nextStage.label}» <ArrowLeft className="h-4 w-4" />
+            {g("انقلي", "انقل")} إلى «{nextStage.label}» <ArrowLeft className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -886,7 +887,7 @@ function ProductionPanel({ b, busy, onSetStage, onDeliver, onSaveLink, onSaveDel
               <button
                 onClick={() => (s.key === "delivered" ? onDeliver() : onSetStage(s.key))}
                 disabled={busy || isCurrent || b.status === "cancelled"}
-                title={isCurrent ? "المرحلة الحالية" : `انقلي إلى ${s.label}`}
+                title={isCurrent ? "المرحلة الحالية" : g(`انقلي إلى ${s.label}`, `انقل إلى ${s.label}`)}
                 className={`relative grid h-8 w-8 place-items-center rounded-full border-2 transition-colors duration-300 ${done ? "border-gold bg-gold text-charcoal" : isCurrent ? "border-gold bg-background text-gold" : "border-border bg-background text-muted-foreground hover:border-gold/50"}`}
               >
                 {isCurrent && <span className="absolute inset-0 rounded-full border-2 border-gold animate-ping opacity-30 motion-reduce:hidden" />}
@@ -999,7 +1000,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
     if (!files.length || !gallery) return;
     
     if (files.length > 30) {
-      toast.error("معرض المعاينة يقبل حتى 30 صورة في المرة. للتسليم الكامل استخدمي رابط التسليم الخارجي (Drive / WeTransfer).");
+      toast.error(g("معرض المعاينة يقبل حتى 30 صورة في المرة. للتسليم الكامل استخدمي رابط التسليم الخارجي (Drive / WeTransfer).", "معرض المعاينة يقبل حتى 30 صورة في المرة. للتسليم الكامل استخدم رابط التسليم الخارجي (Drive / WeTransfer)."));
       return;
     }
     const invalidTypes = files.filter(f => !f.type.startsWith("image/"));
@@ -1161,20 +1162,20 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
               type="text"
               value={watermarkText}
               onChange={(e) => setWatermarkText(e.target.value)}
-              placeholder="© اسم المصوّرة"
+              placeholder={g("© اسم المصوّرة", "© اسم المصوّر")}
               maxLength={80}
               disabled={!watermarkOn}
               className="min-w-[160px] flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-sm disabled:opacity-50"
             />
             <p className="basis-full text-xs text-muted-foreground">
-              {b.final_paid_at ? "الدفعة النهائية وصلت — العميلة ترى الصور بدون علامة." : "تظهر العلامة للعميلة حتى تسجّلي الدفعة النهائية، ثم تُفتح الصور الأصلية تلقائياً."}
-              {" "}للتسليم بالحجم الكامل استخدمي «رابط التسليم النهائي» في تبويب الإنتاج.
+              {b.final_paid_at ? "الدفعة النهائية وصلت — العميلة ترى الصور بدون علامة." : g("تظهر العلامة للعميلة حتى تسجّلي الدفعة النهائية، ثم تُفتح الصور الأصلية تلقائياً.", "تظهر العلامة للعميلة حتى تسجّل الدفعة النهائية، ثم تُفتح الصور الأصلية تلقائياً.")}
+              {" "}{g("للتسليم بالحجم الكامل استخدمي «رابط التسليم النهائي» في تبويب الإنتاج.", "للتسليم بالحجم الكامل استخدم «رابط التسليم النهائي» في تبويب الإنتاج.")}
             </p>
           </div>
 
           {visible.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              {b.status === "completed" ? "الحجز مكتمل والمعرض فارغ — العميلة تنتظر صورها. ارفعي دفعة أولى لتشويقها." : "لم تُرفع صور بعد. يقبل المعرض حتى ٣٠ صورة في كل مرة."}
+              {b.status === "completed" ? g("الحجز مكتمل والمعرض فارغ — العميلة تنتظر صورها. ارفعي دفعة أولى لتشويقها.", "الحجز مكتمل والمعرض فارغ — العميلة تنتظر صورها. ارفع دفعة أولى لتشويقها.") : "لم تُرفع صور بعد. يقبل المعرض حتى ٣٠ صورة في كل مرة."}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">

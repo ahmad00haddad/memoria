@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
@@ -102,7 +103,7 @@ function BookingsList() {
   const handleConfirm = async (id: string) => {
     const amount = list.find((b) => b.id === id)?.deposit_amount;
     // الإيصالات سهلة التزوير — نطلب تأكيداً صريحاً بأنها راجعت تطبيق البنك.
-    if (!window.confirm(`تأكّدتِ من تطبيق البنك أن العربون${amount ? ` (${amount} د.أ)` : ""} وصل فعلاً لحسابك؟\nلا تعتمدي على صورة الإيصال وحدها.`)) return;
+    if (!window.confirm(g("تأكّدتِ", "تأكّدت") + ` من تطبيق البنك أن العربون${amount ? ` (${amount} د.أ)` : ""} وصل فعلاً لحسابك؟\n` + g("لا تعتمدي على صورة الإيصال وحدها.", "لا تعتمد على صورة الإيصال وحدها."))) return;
     const prev = list;
     setList((l) => l.map((b) => (b.id === id ? { ...b, status: "confirmed" } : b))); // تحديث متفائل
     try {
@@ -215,7 +216,7 @@ function BookingsList() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="ابحثي بالاسم أو الهاتف أو المكان…"
+            placeholder={g("ابحثي بالاسم أو الهاتف أو المكان…", "ابحث بالاسم أو الهاتف أو المكان…")}
             className="w-full bg-card border border-border rounded-full py-2.5 ps-9 pe-9 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-gold/60 transition-colors"
           />
           {q && (
@@ -375,7 +376,7 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
         {(canConfirm || conflict || isOverdue(booking) || pendingAge !== null || (booking.status === "cancelled" && booking.cancellation_reason)) && (
           <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
             {canConfirm && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-gold"><Paperclip className="h-3 w-3" /> العربون وصل — راجعيه</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-gold"><Paperclip className="h-3 w-3" /> {g("العربون وصل — راجعيه", "العربون وصل — راجعه")}</span>
             )}
             {isOverdue(booking) && (
               <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-destructive"><AlertTriangle className="h-3 w-3" /> التسليم متأخر</span>
@@ -405,7 +406,7 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
 
         {showHint && (
           <div className="mt-3 rounded-lg bg-secondary/70 px-3 py-2 text-center text-[11px] text-muted-foreground">
-            اسحبي البطاقة يميناً لتأكيد العربون، ويساراً لفتح واتساب
+            {g("اسحبي البطاقة يميناً لتأكيد العربون، ويساراً لفتح واتساب", "اسحب البطاقة يميناً لتأكيد العربون، ويساراً لفتح واتساب")}
           </div>
         )}
       </motion.div>

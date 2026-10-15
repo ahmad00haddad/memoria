@@ -1,4 +1,5 @@
 import { Lightbulb } from "lucide-react";
+import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -104,10 +105,10 @@ function SubscriptionBanner({ sub }: { sub: any }) {
     : periodEnds ? Math.max(0, Math.ceil((periodEnds.getTime() - Date.now()) / 86400000)) : 0;
 
   const config: Record<string, { icon: any; bg: string; text: string; cta: string }> = {
-    trial: { icon: <Sparkles className="h-5 w-5 text-gold" />, bg: "bg-gold/10 border-gold/40 dark:bg-gold/5", text: `تجربة مجانية — متبقّي ${daysLeft} يوماً`, cta: "اشتركي الآن" },
+    trial: { icon: <Sparkles className="h-5 w-5 text-gold" />, bg: "bg-gold/10 border-gold/40 dark:bg-gold/5", text: `تجربة مجانية — متبقّي ${daysLeft} يوماً`, cta: g("اشتركي الآن", "اشترك الآن") },
     active: { icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />, bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-400", text: `اشتراك نشط - ينتهي بعد ${daysLeft} يومًا`, cta: "إدارة الاشتراك" },
     pending_review: { icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-400", text: "بانتظار مراجعة الإدارة - الموافقة تستغرق عادةً 24 ساعة", cta: "حالة الاشتراك" },
-    expired: { icon: <AlertTriangle className="h-5 w-5 text-destructive dark:text-red-400" />, bg: "bg-destructive/10 border-destructive/40 dark:bg-red-950/40 dark:border-red-900", text: "انتهى اشتراكك — جدّدي للاستمرار", cta: "جدّدي الاشتراك" },
+    expired: { icon: <AlertTriangle className="h-5 w-5 text-destructive dark:text-red-400" />, bg: "bg-destructive/10 border-destructive/40 dark:bg-red-950/40 dark:border-red-900", text: g("انتهى اشتراكك — جدّدي للاستمرار", "انتهى اشتراكك — جدّد للاستمرار"), cta: g("جدّدي الاشتراك", "جدّد الاشتراك") },
     canceled: { icon: <AlertTriangle className="h-5 w-5 text-muted-foreground" />, bg: "bg-secondary border-border", text: "اشتراكك ملغى", cta: "إعادة التفعيل" },
   };
   const c = config[sub.status] ?? config.trial;
@@ -130,27 +131,27 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
   const steps = [
     {
       num: 1,
-      title: "أكملي ملفك وأضيفي أول باقة",
+      title: g("أكملي ملفك وأضيفي أول باقة", "أكمل ملفك وأضف أول باقة"),
       why: "بعد هذه الخطوة يستطيع العميل رؤية اسمك وسعرك — جاهزة للحجز",
       done: !!profile?.display_name && !!profile?.username && pricingCount > 0,
       to: pricingCount === 0 ? "/dashboard/pricing" : "/dashboard/profile",
-      cta: "ابدئي من هنا",
+      cta: g("ابدئي من هنا", "ابدأ من هنا"),
     },
     {
       num: 2,
-      title: "أضيفي طريقة استقبال العربون",
+      title: g("أضيفي طريقة استقبال العربون", "أضف طريقة استقبال العربون"),
       why: "CliQ alias أو واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية",
       done: hasCliq,
       to: "/dashboard/profile",
-      cta: "أضيفي بيانات الدفع",
+      cta: g("أضيفي بيانات الدفع", "أضف بيانات الدفع"),
     },
     {
       num: 3,
-      title: "انشري ملفك وشاركيه",
+      title: g("انشري ملفك وشاركيه", "انشر ملفك وشاركه"),
       why: "بنقرة واحدة يصبح ملفك مرئياً ويمكن للعملاء طلب الحجز مباشرة",
       done: !!profile?.is_published && !!profile?.username,
       to: "/dashboard/profile",
-      cta: "فعّلي النشر",
+      cta: g("فعّلي النشر", "فعّل النشر"),
     },
   ];
 
@@ -338,7 +339,7 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
 
       <div className="mt-auto pt-6 flex items-center justify-between gap-3">
         <span className={`inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 group-hover:gap-3 ${feature ? "text-ivory dark:text-gold" : "text-foreground group-hover:text-gold"}`}>
-          {disabled ? "أكملي ملفك أولاً" : cta}
+          {disabled ? g("أكملي ملفك أولاً", "أكمل ملفك أولاً") : cta}
           {!disabled && <ArrowLeft className="h-4 w-4" />}
         </span>
         {quickAction && !disabled && (
@@ -403,7 +404,7 @@ function CircularProgress({ value }: { value: number }) {
       <span className="absolute text-[10px] font-bold">{value}%</span>
       {value < 100 && (
         <div className="absolute top-14 bg-popover text-popover-foreground text-[10px] px-3 py-1.5 rounded-sm shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
-          أكملي ملفك بنسبة 100% لزيادة الحجوزات!
+          {g("أكملي ملفك بنسبة 100% لزيادة الحجوزات!", "أكمل ملفك بنسبة 100% لزيادة الحجوزات!")}
         </div>
       )}
     </div>
@@ -517,7 +518,7 @@ function Dashboard() {
   useEffect(() => {
     // أي خطأ في التحميل كان يترك اللوحة عالقة على الهيكل الرمادي حتى التحديث
     loadData()
-      .catch((e) => { console.error("[dashboard] load failed", e); toast.error("تعذّر تحميل اللوحة، حاولي مجدداً"); })
+      .catch((e) => { console.error("[dashboard] load failed", e); toast.error(g("تعذّر تحميل اللوحة، حاولي مجدداً", "تعذّر تحميل اللوحة، حاول مجدداً")); })
       .finally(() => setLoading(false));
   }, [navigate]);
 
@@ -528,8 +529,8 @@ function Dashboard() {
       if (session) {
         await supabase.from("profiles").update({ quickstart_dismissed_at: new Date().toISOString() } as any).eq("id", session.user.id);
       }
-      toast.success("أخفينا قائمة الإعداد — تجدينها في الملف الشخصي");
-    } catch { toast.error("تعذّر الحفظ، حاولي مجدداً"); }
+      toast.success(g("أخفينا قائمة الإعداد — تجدينها في الملف الشخصي", "أخفينا قائمة الإعداد — تجدها في الملف الشخصي"));
+    } catch { toast.error(g("تعذّر الحفظ، حاولي مجدداً", "تعذّر الحفظ، حاول مجدداً")); }
   };
 
   if (loading) return <DashboardSkeleton />;
@@ -600,12 +601,12 @@ function Dashboard() {
                 {publicUrl && <CopyButton value={publicUrl} label="نسخ رابط ملفي" />}
               </div>
             ) : (
-              <div className="text-sm text-muted-foreground mt-1">أكملي اسم المستخدم من الملف الشخصي</div>
+              <div className="text-sm text-muted-foreground mt-1">{g("أكملي اسم المستخدم من الملف الشخصي", "أكمل اسم المستخدم من الملف الشخصي")}</div>
             )}
           </div>
           <div className="flex items-center gap-5">
             <button onClick={openCommandPalette} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:border-gold/40 hover:text-foreground transition-colors">
-              <Search className="h-4 w-4" /> ابحثي عن عروس أو صفحة
+              <Search className="h-4 w-4" /> {g("ابحثي عن عروس أو صفحة", "ابحث عن عروس أو صفحة")}
               <kbd className="rounded border border-border bg-secondary px-1.5 text-[10px] font-sans" dir="ltr">Ctrl K</kbd>
             </button>
             <button onClick={signOut} className="text-sm text-muted-foreground border-b border-current/30 pb-0.5 hover:text-foreground transition-colors">تسجيل الخروج</button>
@@ -621,7 +622,7 @@ function Dashboard() {
             <motion.div variants={staggerContainer} initial={intro ? "hidden" : false} animate="visible" className="grid gap-5 md:grid-cols-3 mb-5">
               <Card
                 title="الحجوزات"
-                desc="راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز."
+                desc={g("راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز.", "راجع الطلبات الواردة، أكّد العربون وتابع مراحل كل حجز.")}
                 cta="عرض الحجوزات"
                 to="/dashboard/bookings"
                 hint="لا توجد حجوزات بعد"
@@ -639,11 +640,11 @@ function Dashboard() {
               />
               <Card
                 title="بطاقة الأسعار"
-                desc="أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة."
+                desc={g("أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة.", "أضف باقاتك ليتمكن العميل من اختيار الخدمة المناسبة.")}
                 cta="إدارة الأسعار"
                 to="/dashboard/pricing"
                 urgent={pricingCount === 0}
-                badgeText={pricingCount === 0 ? "ابدئي من هنا" : `${pricingCount} باقات`}
+                badgeText={pricingCount === 0 ? g("ابدئي من هنا", "ابدأ من هنا") : `${pricingCount} باقات`}
                 quickAction={{ label: "إضافة باقة سريعة", to: "/dashboard/pricing" }}
                 icon={<Package className="h-6 w-6" />}
               />
@@ -672,7 +673,7 @@ function Dashboard() {
             {!hasAnyStats && profile?.is_published && profile?.username && (
               <div className="mb-10 rounded-2xl border border-gold/30 bg-gold/5 p-5 text-sm leading-relaxed flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <strong>ملفكِ منشور وجاهز.</strong> ضعي رابطه في بايو إنستجرام لتبدأ العرائس بالحجز مباشرة.
+                  <strong>{g("ملفكِ منشور وجاهز.", "ملفك منشور وجاهز.")}</strong> {g("ضعي", "ضع")} رابطه في بايو إنستجرام لتبدأ العرائس بالحجز مباشرة.
                   <div className="mt-1 text-xs text-muted-foreground" dir="ltr">{publicUrl.replace(/^https?:\/\//, "")}</div>
                 </div>
                 {publicUrl && <CopyButton value={publicUrl} label="نسخ الرابط" className="self-start sm:self-auto px-4 py-2 text-sm" />}
@@ -703,7 +704,7 @@ function Dashboard() {
                     icon={<Send className="h-5 w-5 text-violet-600 dark:text-violet-400" />}
                     label="تسليمات خلال ٧ أيام"
                     value={stats.deliveriesDueSoon}
-                    sub={stats.deliveriesDueSoon > 0 ? "تابعيها في لوحة الإنتاج" : "لا تسليمات قريبة"}
+                    sub={stats.deliveriesDueSoon > 0 ? g("تابعيها في لوحة الإنتاج", "تابعها في لوحة الإنتاج") : "لا تسليمات قريبة"}
                   />
                 </motion.div>
 

@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { g } from "@/hooks/use-gender";
 import { Lightbulb } from "lucide-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
@@ -178,7 +179,7 @@ function CalendarPage() {
   };
 
   const doSync = async () => {
-    if (!icalUrl) return toast.error("ألصقي رابط iCal من Google أولاً");
+    if (!icalUrl) return toast.error(g("ألصقي رابط iCal من Google أولاً", "ألصق رابط iCal من Google أولاً"));
     setSyncing(true);
     try {
       const r = await runSync();
@@ -222,7 +223,7 @@ function CalendarPage() {
           </summary>
           <div className="px-5 pb-5">
           <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-            للسفر أو ارتباط خارجي. السبب لكِ فقط ولا يظهر للعرائس.
+            {g("للسفر أو ارتباط خارجي. السبب لكِ فقط ولا يظهر للعرائس.", "للسفر أو ارتباط خارجي. السبب لك فقط ولا يظهر للعرائس.")}
           </p>
           <div className="flex flex-wrap gap-3 items-end">
             <Popover>
@@ -255,7 +256,7 @@ function CalendarPage() {
           </summary>
           <div className="px-5 pb-5">
           <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-            اختاري الطريقة الأنسب لكِ. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.
+            {g("اختاري الطريقة الأنسب لكِ. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.", "اختر الطريقة الأنسب لك. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.")}
           </p>
 
           {/* خيار 1: تصدير إلى تقويمك */}
@@ -265,11 +266,11 @@ function CalendarPage() {
               <h3 className="font-serif text-lg">الخيار ١ — تصدير حجوزاتي إلى تقويمي الشخصي</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-              <strong>الأنسب لكِ إذا:</strong> تريدين رؤية الحجوزات والأيام المحجوبة داخل Google/Apple Calendar الخاص بكِ مباشرة (للقراءة فقط).
+              <strong>{g("الأنسب لكِ إذا:", "الأنسب لك إذا:")}</strong> {g("تريدين رؤية الحجوزات والأيام المحجوبة داخل Google/Apple Calendar الخاص بكِ مباشرة", "تريد رؤية الحجوزات والأيام المحجوبة داخل Google/Apple Calendar الخاص بك مباشرة")} (للقراءة فقط).
               أي حجز جديد أو تعديل سيظهر تلقائياً في تقويمك خلال دقائق دون أي إعداد إضافي.
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              <strong>الطريقة:</strong> انسخي الرابط أدناه ثم في Google Calendar → إضافة تقويم → من URL → الصقي الرابط. في iPhone: الإعدادات → التقويم → الحسابات → اشتراك بتقويم.
+              <strong>الطريقة:</strong> {g("انسخي الرابط أدناه ثم في Google Calendar → إضافة تقويم → من URL → الصقي الرابط.", "انسخ الرابط أدناه ثم في Google Calendar → إضافة تقويم → من URL → الصق الرابط.")} في iPhone: الإعدادات → التقويم → الحسابات → اشتراك بتقويم.
             </p>
             <div className="flex flex-wrap gap-2 items-center">
               <input readOnly value={exportUrl} className="border border-border rounded-sm px-3 py-2 bg-secondary/30 flex-1 min-w-[260px] text-xs ltr:font-mono active:scale-95 transition-transform duration-200" dir="ltr" />
@@ -290,11 +291,11 @@ function CalendarPage() {
               <h3 className="font-serif text-lg">الخيار ٢ — استيراد مشاغلي من Google يدوياً</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-              <strong>الأنسب لكِ إذا:</strong> تريدين منع العميل من حجز يوم لديكِ فيه ارتباط شخصي مسجّل في Google Calendar.
-              تضغطين زر "مزامنة الآن" متى ما أحببتِ، وسنحجب الأيام التي عليها فعاليات.
+              <strong>{g("الأنسب لكِ إذا:", "الأنسب لك إذا:")}</strong> {g("تريدين منع العميل من حجز يوم لديكِ فيه ارتباط شخصي مسجّل في Google Calendar.", "تريد منع العميل من حجز يوم لديك فيه ارتباط شخصي مسجّل في Google Calendar.")}
+              {g("تضغطين زر «مزامنة الآن» متى ما أحببتِ، وسنحجب الأيام التي عليها فعاليات.", "تضغط زر «مزامنة الآن» متى ما أحببت، وسنحجب الأيام التي عليها فعاليات.")}
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              <strong>الطريقة:</strong> Google Calendar → إعدادات التقويم → العنوان السرّي بتنسيق iCal → انسخي الرابط والصقيه هنا.
+              <strong>الطريقة:</strong> Google Calendar → إعدادات التقويم → العنوان السرّي بتنسيق iCal → {g("انسخي الرابط والصقيه هنا.", "انسخ الرابط والصقه هنا.")}
             </p>
             <div className="flex flex-wrap gap-2 items-end">
               <input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[260px] text-xs" dir="ltr" />
@@ -314,11 +315,11 @@ function CalendarPage() {
               <span className="ml-auto text-[10px] px-2 py-0.5 bg-gold text-charcoal rounded-sm font-medium">الأقوى</span>
             </div>
             <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-              <strong>الأنسب لكِ إذا:</strong> تريدين كل شيء يحصل من نفسه دون أي تدخّل يومي.
-              نقوم بسحب مشاغلكِ من Google كل <strong>٣٠ دقيقة</strong> تلقائياً، وفي نفس الوقت تكون حجوزاتك ظاهرة في تقويم Google عبر رابط الخيار ١.
+              <strong>{g("الأنسب لكِ إذا:", "الأنسب لك إذا:")}</strong> {g("تريدين كل شيء يحصل من نفسه دون أي تدخّل يومي.", "تريد كل شيء يحصل من نفسه دون أي تدخّل يومي.")}
+              نقوم بسحب {g("مشاغلكِ", "مشاغلك")} من Google كل <strong>٣٠ دقيقة</strong> تلقائياً، وفي نفس الوقت تكون حجوزاتك ظاهرة في تقويم Google عبر رابط الخيار ١.
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              <strong>الطريقة:</strong> فعّلي الزرّ أدناه + استخدمي رابط الخيار ١ في تقويمك = مزامنة كاملة في الاتجاهين.
+              <strong>الطريقة:</strong> {g("فعّلي الزرّ أدناه + استخدمي رابط الخيار ١", "فعّل الزرّ أدناه + استخدم رابط الخيار ١")} في تقويمك = مزامنة كاملة في الاتجاهين.
             </p>
             <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
               <div>
@@ -336,7 +337,7 @@ function CalendarPage() {
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoSync ? "translate-x-6" : "translate-x-1"}`} />
               </button>
             </div>
-            {!icalUrl && <p className="text-xs text-destructive mt-2">احفظي رابط iCal أولاً في الخيار ٢ لتفعيل المزامنة التلقائية.</p>}
+            {!icalUrl && <p className="text-xs text-destructive mt-2">{g("احفظي رابط iCal أولاً في الخيار ٢ لتفعيل المزامنة التلقائية.", "احفظ رابط iCal أولاً في الخيار ٢ لتفعيل المزامنة التلقائية.")}</p>}
           </div>
           </div>
         </details>
@@ -348,7 +349,7 @@ function CalendarPage() {
           </summary>
           <div className="px-5 pb-5">
           <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-            مثال: حجب كل أيام الجمعة كعطلة رسمية دائمة لكِ، بحيث لا يستطيع العملاء اختيارها.
+            {g("مثال: حجب كل أيام الجمعة كعطلة رسمية دائمة لكِ، بحيث لا يستطيع العملاء اختيارها.", "مثال: حجب كل أيام الجمعة كعطلة رسمية دائمة لك، بحيث لا يستطيع العملاء اختيارها.")}
           </p>
           <div className="grid sm:grid-cols-4 gap-3 items-end">
             <div>
@@ -378,7 +379,7 @@ function CalendarPage() {
 
         <h2 className="font-serif text-xl mb-3">الأيام المحجوبة القادمة</h2>
         <div className="rounded-sm border border-border bg-card overflow-hidden mb-8">
-          {unavail.filter((u) => u.date >= format(new Date(), "yyyy-MM-dd")).length === 0 ? <p className="p-4 text-sm text-muted-foreground">لا أيام محجوبة. انقري على أي يوم في التقويم لحجبه.</p> : unavail.filter((u) => u.date >= format(new Date(), "yyyy-MM-dd")).map((u) => (
+          {unavail.filter((u) => u.date >= format(new Date(), "yyyy-MM-dd")).length === 0 ? <p className="p-4 text-sm text-muted-foreground">{g("لا أيام محجوبة. انقري على أي يوم في التقويم لحجبه.", "لا أيام محجوبة. انقر على أي يوم في التقويم لحجبه.")}</p> : unavail.filter((u) => u.date >= format(new Date(), "yyyy-MM-dd")).map((u) => (
             <div key={u.id} className="flex items-center justify-between p-3 border-b border-border last:border-0">
               <div><div className="text-sm">{new Date(u.date).toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>{u.reason && <div className="text-xs text-muted-foreground">{u.reason}</div>}</div>
               <button onClick={() => unblock(u.id)} aria-label="فتح اليوم" className="rounded-full p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"><X className="h-4 w-4" /></button>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { g } from "@/hooks/use-gender";
 import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, CheckCircle2, ChevronDown, Sparkles } from "lucide-react";
@@ -75,7 +76,7 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
             </div>
             <div>
               <div className="font-serif text-xl">لا شيء عاجل اليوم</div>
-              <p className="text-sm text-muted-foreground">كل الطلبات مرتّبة. استمتعي بيومك.</p>
+              <p className="text-sm text-muted-foreground">{g("كل الطلبات مرتّبة. استمتعي بيومك.", "كل الطلبات مرتّبة. استمتع بيومك.")}</p>
             </div>
           </motion.div>
         )}

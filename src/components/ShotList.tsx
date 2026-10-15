@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { g } from "@/hooks/use-gender";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, Circle, Plus, Trash2, ListChecks, Sparkles, X } from "lucide-react";
@@ -128,7 +129,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
         <p className="text-sm text-muted-foreground">جاري التحميل…</p>
       ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground mb-4">
-          لا توجد لقطات بعد. أضيفي قائمة لقطات لمتابعة ما تم تنفيذه خلال الجلسة.
+          {g("لا توجد لقطات بعد. أضيفي قائمة لقطات لمتابعة ما تم تنفيذه خلال الجلسة.", "لا توجد لقطات بعد. أضف قائمة لقطات لمتابعة ما تم تنفيذه خلال الجلسة.")}
         </p>
       ) : (
         <ul className="space-y-1 mb-4">
@@ -173,7 +174,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
           onKeyDown={(e) => {
             if (e.key === "Enter") add();
           }}
-          placeholder="أضيفي لقطة جديدة…"
+          placeholder={g("أضيفي لقطة جديدة…", "أضف لقطة جديدة…")}
           maxLength={200}
           className="flex-1 border border-input bg-background px-3 py-2 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-ring"
         />

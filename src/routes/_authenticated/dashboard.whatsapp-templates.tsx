@@ -1,4 +1,5 @@
 import { Lightbulb } from "lucide-react";
+import { g } from "@/hooks/use-gender";
 import { motion } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
@@ -27,15 +28,15 @@ const CATEGORIES = [
 ];
 
 // متى يُستخدم كل نوع — يظهر تحت القالب كتلميح
-const CATEGORY_HINT: Record<string, string> = {
+const CATEGORY_HINT_ = (): Record<string, string> => ({
   welcome: "بعد وصول طلب حجز جديد",
   deposit: "لتذكير العروس بإرسال العربون",
   confirmed: "بعد تأكيد العربون",
   reminder: "قبل يوم التصوير",
   delivery: "عند تسليم الصور",
   review: "بعد استلام الصور",
-  general: "متى شئتِ",
-};
+  general: g("متى شئتِ", "متى شئت"),
+});
 
 // قيم تجريبية لمعاينة شكل الرسالة
 const SAMPLE: Record<string, string> = {
@@ -152,7 +153,7 @@ function TemplatesPage() {
           <div>
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">قوالب جاهزة</div>
             <h1 className="font-serif text-4xl flex items-center gap-2"><MessageCircle className="h-7 w-7 text-emerald-600" /> رسائل واتساب</h1>
-            <p className="text-sm text-muted-foreground mt-2">أنشئي قوالب جاهزة وأرسليها بنقرة من صفحة كل حجز.</p>
+            <p className="text-sm text-muted-foreground mt-2">{g("أنشئي قوالب جاهزة وأرسليها بنقرة من صفحة كل حجز.", "أنشئ قوالب جاهزة وأرسليها بنقرة من صفحة كل حجز.")}</p>
           </div>
           <div className="flex gap-2">
             {items.length === 0 && (
@@ -167,12 +168,12 @@ function TemplatesPage() {
         </div>
 
         <p className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
-          <Info className="h-3.5 w-3.5 text-gold" /> انقري على أي متغيّر تحت القالب لإضافته مكان المؤشّر — يُستبدل تلقائياً ببيانات الحجز عند الإرسال.
+          <Info className="h-3.5 w-3.5 text-gold" /> {g("انقري", "انقر")} على أي متغيّر تحت القالب لإضافته مكان المؤشّر — يُستبدل تلقائياً ببيانات الحجز عند الإرسال.
         </p>
 
         {items.length === 0 ? (
           <div className="rounded-sm border border-dashed border-border p-12 text-center text-muted-foreground">
-            لا توجد قوالب بعد. اضغطي "إضافة قوالب جاهزة" للبدء بـ 6 قوالب جاهزة.
+            {g("لا توجد قوالب بعد. اضغطي «إضافة قوالب جاهزة» للبدء بـ 6 قوالب جاهزة.", "لا توجد قوالب بعد. اضغط «إضافة قوالب جاهزة» للبدء بـ 6 قوالب جاهزة.")}
           </div>
         ) : (
           <div className="grid gap-4">
@@ -240,7 +241,7 @@ function TemplateCard({ t, dirty, justSaved, onChange, onSave, onRemove }: {
           {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
         </select>
       </div>
-      <p className="mb-3 text-xs text-muted-foreground">يُستخدم: {CATEGORY_HINT[t.category] ?? "متى شئتِ"}</p>
+      <p className="mb-3 text-xs text-muted-foreground">يُستخدم: {CATEGORY_HINT_()[t.category] ?? g("متى شئتِ", "متى شئت")}</p>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div>
@@ -265,7 +266,7 @@ function TemplateCard({ t, dirty, justSaved, onChange, onSave, onRemove }: {
               </button>
             ))}
           </div>
-          {long && <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">الرسائل القصيرة تُقرأ أكثر — حاولي الاختصار.</p>}
+          {long && <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{g("الرسائل القصيرة تُقرأ أكثر — حاولي الاختصار.", "الرسائل القصيرة تُقرأ أكثر — حاول الاختصار.")}</p>}
         </div>
 
         {/* معاينة كما تصل في واتساب */}

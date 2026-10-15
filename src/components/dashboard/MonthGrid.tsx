@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { g } from "@/hooks/use-gender";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -96,7 +97,7 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
                   key={key}
                   disabled={past && !bks.length}
                   onClick={() => (bks.length ? onOpenBooking(bks[0]) : onToggle(key, blk?.id))}
-                  title={bks.length ? bks.map((b) => b.client_name).join("، ") : blk ? `محجوب${blk.reason ? ` — ${blk.reason}` : ""} · انقري لفتحه` : "انقري لحجب هذا اليوم"}
+                  title={bks.length ? bks.map((b) => b.client_name).join("، ") : blk ? `محجوب${blk.reason ? ` — ${blk.reason}` : ""} · ${g("انقري", "انقر")} لفتحه` : g("انقري لحجب هذا اليوم", "انقر لحجب هذا اليوم")}
                   className={`group relative flex aspect-square sm:aspect-auto sm:h-14 flex-col items-center justify-center rounded-xl text-sm tabular-nums transition-colors
                     ${bks.length ? "bg-gold/15 text-foreground hover:bg-gold/25" : blk ? "bg-secondary text-muted-foreground" : past ? "text-muted-foreground/40" : "hover:bg-secondary"}
                     ${isToday ? "ring-2 ring-gold/60" : ""}`}
@@ -120,7 +121,7 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
       <div className="mt-4 flex flex-wrap gap-4 text-[11px] text-muted-foreground">
         <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-gold/30" /> حجز</span>
         <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-secondary" /> محجوب (لا يظهر للعرائس)</span>
-        <span className="ms-auto">انقري على يوم لحجبه أو فتحه</span>
+        <span className="ms-auto">{g("انقري على يوم لحجبه أو فتحه", "انقر على يوم لحجبه أو فتحه")}</span>
       </div>
     </div>
   );

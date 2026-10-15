@@ -2,6 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
+import { GenderPicker } from "@/components/dashboard/GenderPicker";
+import { g, useGender } from "@/hooks/use-gender";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
@@ -54,7 +56,7 @@ function LivePhonePreview({ p }: { p: any }) {
           <h2 className="font-serif text-xl font-bold">{p.display_name || "اسم المصورة"}</h2>
           <p className="text-[10px] text-muted-foreground mb-3">{p.city || "المدينة"} • 100% نسبة الرد</p>
           <div className="text-xs mb-4 p-3 bg-secondary/30 rounded-lg text-foreground/80 leading-relaxed border border-border/50">
-            {p.bio || "اكتبي نبذة تعريفية جذابة هنا لتظهر للعرائس..."}
+            {p.bio || g("اكتبي نبذة تعريفية جذابة هنا لتظهر للعرائس...", "اكتب نبذة تعريفية جذابة هنا لتظهر للعرائس...")}
           </div>
           
           <div className="grid grid-cols-2 gap-2 mb-4">
@@ -79,6 +81,7 @@ function LivePhonePreview({ p }: { p: any }) {
 }
 
 function ProfilePage() {
+  useGender(); // يعيد الرسم فور تغيير صيغة المخاطبة
   const nav = useNavigate();
   const updRefundFn = useServerFn(updateRefundPolicy);
   const verifyFn = useServerFn(requestVerification);
@@ -174,7 +177,7 @@ function ProfilePage() {
 
   const onPortfolio = async (files: FileList) => {
     const room = MAX_PORTFOLIO_PHOTOS - (p.portfolio_urls ?? []).length;
-    if (room <= 0) return toast.error(`وصلتِ للحد الأقصى (${MAX_PORTFOLIO_PHOTOS} صورة). احذفي صورة لإضافة أخرى.`);
+    if (room <= 0) return toast.error(g(`وصلتِ للحد الأقصى (${MAX_PORTFOLIO_PHOTOS} صورة). احذفي صورة لإضافة أخرى.`, `وصلت للحد الأقصى (${MAX_PORTFOLIO_PHOTOS} صورة). احذف صورة لإضافة أخرى.`));
     const picked = Array.from(files);
     if (picked.length > room) toast(`سيتم رفع ${room} صور فقط — الحد الأقصى ${MAX_PORTFOLIO_PHOTOS} صورة`);
     setPortfolioUploading(true);
@@ -217,7 +220,7 @@ function ProfilePage() {
   };
 
   const save = async () => {
-    if (usernameState === "taken") return toast.error("اسم المستخدم محجوز — اختاري اسماً آخر");
+    if (usernameState === "taken") return toast.error(g("اسم المستخدم محجوز — اختاري اسماً آخر", "اسم المستخدم محجوز — اختر اسماً آخر"));
     setSaving(true);
     const finalDepositPercent = Math.max(0, Math.min(100, numOr(p.deposit_percent, 25)));
     const finalFixedDeposit = p.fixed_deposit ? Math.max(0, Number(p.fixed_deposit)) : null;
@@ -330,7 +333,7 @@ function ProfilePage() {
             </div>
           )}
           {!p.is_published && pct === 100 && (
-            <p className="mt-4 text-sm text-gold">كل شيء جاهز — فعّلي النشر واحفظي ليظهر ملفك في البحث.</p>
+            <p className="mt-4 text-sm text-gold">{g("كل شيء جاهز — فعّلي النشر واحفظي ليظهر ملفك في البحث.", "كل شيء جاهز — فعّل النشر واحفظ ليظهر ملفك في البحث.")}</p>
           )}
         </div>
 
@@ -343,7 +346,7 @@ function ProfilePage() {
             <div className="mt-6">
               <div className="mb-1 flex items-baseline justify-between">
                 <span className="text-sm">معرض الأعمال</span>
-                <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{portfolioCount}/{MAX_PORTFOLIO_PHOTOS} {portfolioCount < 5 ? `· أضيفي ${5 - portfolioCount} لتظهري في البحث` : "صورة"}</span>
+                <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{portfolioCount}/{MAX_PORTFOLIO_PHOTOS} {portfolioCount < 5 ? g(`· أضيفي ${5 - portfolioCount} لتظهري في البحث`, `· أضف ${5 - portfolioCount} لتظهر في البحث`) : "صورة"}</span>
               </div>
               <p className="mb-3 text-xs text-muted-foreground">الصورة الأولى هي ما تراه العروس في نتائج البحث.</p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -379,7 +382,7 @@ function ProfilePage() {
                   ) : (
                     <Upload className="h-6 w-6 mb-2 transition-transform duration-300 group-hover:-translate-y-1 group-hover:text-gold" />
                   )}
-                  <span className="text-[11px] text-center px-2">{portfolioUploading ? "جاري الرفع…" : dragOver ? "أفلتي الصور هنا" : "إضافة صور"}</span>
+                  <span className="text-[11px] text-center px-2">{portfolioUploading ? "جاري الرفع…" : dragOver ? g("أفلتي الصور هنا", "أفلت الصور هنا") : "إضافة صور"}</span>
                 </div>}
                 <input ref={portfolioRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && onPortfolio(e.target.files)} />
               </div>
@@ -387,6 +390,10 @@ function ProfilePage() {
           </Card>
 
           <Card id="sec-basics" title="المعلومات الأساسية" done={!!p.display_name && !!p.username && !!p.city && bioWords >= 15} open={openSections["sec-basics"] ?? true} onToggle={toggle}>
+            <div className="block">
+              <span className="mb-1 block text-sm text-muted-foreground">صيغة المخاطبة في لوحة التحكم</span>
+              <GenderPicker />
+            </div>
             <Field label="الاسم المعروض" v={p.display_name} on={(v) => setP({ ...p, display_name: v })} />
             <label className="block">
               <span className="text-sm text-muted-foreground">اسم المستخدم (يظهر في رابط ملفك)</span>
@@ -412,7 +419,7 @@ function ProfilePage() {
               label="نبذة قصيرة"
               v={p.bio}
               on={(v) => setP({ ...p, bio: v })}
-              hint={bioWords === 0 ? "النبذات بين ٤٠ و٨٠ كلمة تحصل على حجوزات أكثر." : bioWords < 40 ? `${bioWords} كلمة — أضيفي قليلاً عن أسلوبك وما يميّزك.` : bioWords > 120 ? `${bioWords} كلمة — النبذة الأقصر تُقرأ أكثر.` : `${bioWords} كلمة — طول مناسب.`}
+              hint={bioWords === 0 ? "النبذات بين ٤٠ و٨٠ كلمة تحصل على حجوزات أكثر." : bioWords < 40 ? g(`${bioWords} كلمة — أضيفي قليلاً عن أسلوبك وما يميّزك.`, `${bioWords} كلمة — أضف قليلاً عن أسلوبك وما يميّزك.`) : bioWords > 120 ? `${bioWords} كلمة — النبذة الأقصر تُقرأ أكثر.` : `${bioWords} كلمة — طول مناسب.`}
             />
             <Area label="المعدّات" v={p.equipment} on={(v) => setP({ ...p, equipment: v })} />
           </Card>
@@ -476,24 +483,24 @@ function ProfilePage() {
               return (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    التوثيق يعني أن فريق ميموريا راجع ملفكِ وتأكّد أن الأعمال والهوية حقيقية. الموثّقات يحصلن على شارة
+                    {g("التوثيق يعني أن فريق ميموريا راجع ملفكِ وتأكّد أن الأعمال والهوية حقيقية. الموثّقات يحصلن على شارة", "التوثيق يعني أن فريق ميموريا راجع ملفك وتأكّد أن الأعمال والهوية حقيقية. الموثّقات يحصلن على شارة")}
                     <span className="mx-1 font-medium text-foreground">✓ موثّقة</span>
                     على الملف وفي نتائج البحث والمقارنة، ويظهرن عند تفعيل فلتر «الموثّقات فقط».
                   </p>
 
                   {status === "verified" && (
                     <div className="rounded-sm border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
-                      ✓ ملفكِ موثّق{vInfo?.verified_at ? ` منذ ${new Date(vInfo.verified_at).toLocaleDateString("ar-JO", { day: "numeric", month: "long", year: "numeric" })}` : ""}.
+                      ✓ {g("ملفكِ", "ملفك")} موثّق{vInfo?.verified_at ? ` منذ ${new Date(vInfo.verified_at).toLocaleDateString("ar-JO", { day: "numeric", month: "long", year: "numeric" })}` : ""}.
                     </div>
                   )}
                   {status === "pending_review" && (
                     <div className="rounded-sm border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
-                      طلبكِ قيد المراجعة. سيصلكِ إشعار عند القرار.
+                      {g("طلبكِ قيد المراجعة. سيصلكِ إشعار عند القرار.", "طلبك قيد المراجعة. سيصلك إشعار عند القرار.")}
                     </div>
                   )}
                   {status === "rejected" && (
                     <div className="rounded-sm border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-                      لم يُقبل الطلب السابق. أكملي ما ينقص ثم أعيدي الطلب (السبب في إشعاراتكِ).
+                      {g("لم يُقبل الطلب السابق. أكملي ما ينقص ثم أعيدي الطلب (السبب في إشعاراتكِ).", "لم يُقبل الطلب السابق. أكمل ما ينقص ثم أعد الطلب (السبب في إشعاراتك).")}
                     </div>
                   )}
 
@@ -516,7 +523,7 @@ function ProfilePage() {
                       onClick={async () => {
                         try {
                           await verifyFn();
-                          toast.success("أُرسل طلب التوثيق — سيصلكِ إشعار بالقرار");
+                          toast.success(g("أُرسل طلب التوثيق — سيصلكِ إشعار بالقرار", "أُرسل طلب التوثيق — سيصلك إشعار بالقرار"));
                           setP({ ...p, verification_status: "pending_review" });
                           setOriginalP((o: any) => ({ ...o, verification_status: "pending_review" }));
                           loadVerification();
@@ -526,7 +533,7 @@ function ProfilePage() {
                       }}
                       className="text-sm border border-gold/50 text-gold px-4 py-2 rounded-full hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {missing.length ? `أكملي ${missing.length} من الشروط لطلب التوثيق` : "اطلبي التوثيق"}
+                      {missing.length ? g(`أكملي ${missing.length} من الشروط لطلب التوثيق`, `أكمل ${missing.length} من الشروط لطلب التوثيق`) : g("اطلبي التوثيق", "اطلب التوثيق")}
                     </button>
                   )}
                   {missing.length > 0 && status !== "verified" && (
@@ -597,7 +604,7 @@ function ProfilePage() {
             className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+4.5rem)] z-40 px-4 sm:bottom-6"
           >
             <div className="mx-auto flex max-w-xl items-center gap-3 rounded-full bg-charcoal py-2 ps-5 pe-2 text-ivory shadow-2xl dark:bg-card dark:text-foreground dark:ring-1 dark:ring-gold/30">
-              <span className="flex-1 text-sm">لديكِ تغييرات غير محفوظة</span>
+              <span className="flex-1 text-sm">{g("لديكِ تغييرات غير محفوظة", "لديك تغييرات غير محفوظة")}</span>
               <button onClick={() => setP(originalP)} className="rounded-full px-3 py-2 text-sm text-ivory/70 hover:text-ivory dark:text-muted-foreground dark:hover:text-foreground">تراجع</button>
               <button onClick={save} disabled={saving || usernameState === "taken"} className="inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal disabled:opacity-60 active:scale-95 transition-transform">
                 {saving && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-charcoal/30 border-t-charcoal" />}

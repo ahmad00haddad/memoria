@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { g } from "@/hooks/use-gender";
 import { Lightbulb } from "lucide-react";
 import { createFileRoute, Link, useNavigate, ErrorComponentProps } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
@@ -33,7 +34,7 @@ function ProductionError({ error, reset }: ErrorComponentProps) {
         </div>
         <div className="space-y-2 max-w-md">
           <h1 className="font-serif text-3xl">عذراً! يبدو أن هناك سلكاً قد انقطع 🔌</h1>
-          <p className="text-muted-foreground">حدث خطأ غير متوقع أثناء تحميل لوحة الإنتاج. لا تقلقي، بياناتك بأمان.</p>
+          <p className="text-muted-foreground">{g("حدث خطأ غير متوقع أثناء تحميل لوحة الإنتاج. لا تقلقي، بياناتك بأمان.", "حدث خطأ غير متوقع أثناء تحميل لوحة الإنتاج. لا تقلق، بياناتك بأمان.")}</p>
           <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-sm mt-4 text-left font-mono" dir="ltr">{errorMessage}</p>
         </div>
         <div className="flex gap-4">
@@ -121,11 +122,11 @@ function ProductionBoard() {
       if (isRetry) toast.success("تم التحديث", { id: "load-retry" });
       setErr(null);
     } catch (e: any) {
-      toast.error("تعذّر تحميل البيانات — تحقّقي من الاتصال.", {
+      toast.error(g("تعذّر تحميل البيانات — تحقّقي من الاتصال.", "تعذّر تحميل البيانات — تحقّق من الاتصال."), {
         id: "load-retry",
-        action: { label: "أعيدي المحاولة", onClick: () => load(id, true) }
+        action: { label: g("أعيدي المحاولة", "أعد المحاولة"), onClick: () => load(id, true) }
       });
-      setErr("تعذّر تحميل لوحة الإنتاج. تحقّقي من اتصالك بالإنترنت.");
+      setErr(g("تعذّر تحميل لوحة الإنتاج. تحقّقي من اتصالك بالإنترنت.", "تعذّر تحميل لوحة الإنتاج. تحقّق من اتصالك بالإنترنت."));
       console.error("[production] fetch error:", e?.message);
     }
   };
@@ -137,13 +138,13 @@ function ProductionBoard() {
         if (sessionError) throw sessionError;
 
         if (!session) {
-          toast.info("انتهت جلستك. سجّلي الدخول للعودة إلى لوحة الإنتاج.");
+          toast.info(g("انتهت جلستك. سجّلي الدخول للعودة إلى لوحة الإنتاج.", "انتهت جلستك. سجّل الدخول للعودة إلى لوحة الإنتاج."));
           return nav({ to: "/login", search: { redirect: window.location.pathname } });
         }
         setUid(session.user.id);
         await load(session.user.id);
       } catch (e: any) {
-        toast.error("تعذّر التحقق من هويتك. حدّثي الصفحة.");
+        toast.error(g("تعذّر التحقق من هويتك. حدّثي الصفحة.", "تعذّر التحقق من هويتك. حدّث الصفحة."));
         setErr("مشكلة في التحقق من الجلسة.");
       } finally {
         setLoading(false);
@@ -197,7 +198,7 @@ function ProductionBoard() {
                 toast.success("تم التراجع بنجاح");
                 try { await load(uid); } catch {}
               } else {
-                toast.error("تعذّر التراجع، حاولي يدوياً.");
+                toast.error(g("تعذّر التراجع، حاولي يدوياً.", "تعذّر التراجع، حاول يدوياً."));
               }
             } finally {
               setUndoLockUntil((prev) => { const n = { ...prev }; delete n[b.id]; return n; });
@@ -236,7 +237,7 @@ function ProductionBoard() {
 
     if (next.key === "selecting" && dir === 1 && !b.selection_link) {
       wiggle();
-      toast.error("أضيفي رابط اختيار الصور أولاً حتى تعرف العميلة من أين تختار.", {
+      toast.error(g("أضيفي رابط اختيار الصور أولاً حتى تعرف العميلة من أين تختار.", "أضف رابط اختيار الصور أولاً حتى تعرف العميلة من أين تختار."), {
         action: { label: "فتح الحجز", onClick: () => nav({ to: "/dashboard/bookings/$id", params: { id: b.id } }) }
       });
       return;
@@ -312,7 +313,7 @@ function ProductionBoard() {
       <section className="container-editorial py-24 text-center">
         <BackToDashboard />
         <p className="text-destructive mt-8">{friendlyError(err)}</p>
-        {uid && <button onClick={() => load(uid, true)} className="mt-4 rounded-full border border-border px-5 py-2 text-sm hover:bg-secondary">أعيدي المحاولة</button>}
+        {uid && <button onClick={() => load(uid, true)} className="mt-4 rounded-full border border-border px-5 py-2 text-sm hover:bg-secondary">{g("أعيدي المحاولة", "أعد المحاولة")}</button>}
       </section>
       <Footer />
     </div>
@@ -339,7 +340,7 @@ function ProductionBoard() {
           <EmptyState
             icon={Inbox}
             title="لا أعمال قيد الإنتاج"
-            description="عند تأكيد عربون أي حجز يظهر هنا تلقائياً لتتابعي مراحله حتى التسليم."
+            description={g("عند تأكيد عربون أي حجز يظهر هنا تلقائياً لتتابعي مراحله حتى التسليم.", "عند تأكيد عربون أي حجز يظهر هنا تلقائياً لتتابع مراحله حتى التسليم.")}
           />
         ) : (
           <>
@@ -353,7 +354,7 @@ function ProductionBoard() {
                 >
                   <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
                   <div className="flex-1 space-y-1">
-                    <p>حرّكي كل حجز بزر <strong>التالي</strong> عند انتهاء مرحلته. العميلة ترى المرحلة في صفحة التتبّع وتصلها رسالة عند التحرير والتسليم.</p>
+                    <p>{g("حرّكي كل حجز بزر", "حرّك كل حجز بزر")} <strong>التالي</strong> عند انتهاء مرحلته. العميلة ترى المرحلة في صفحة التتبّع وتصلها رسالة عند التحرير والتسليم.</p>
                     <p className="text-xs text-muted-foreground">عند الانتقال إلى «قيد التحرير» يبدأ عدّاد أيام التحرير تلقائياً.</p>
                   </div>
                   <button
@@ -368,7 +369,7 @@ function ProductionBoard() {
 
             {editingCount > 3 && (
               <div className="mb-4 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
-                <Info className="h-3.5 w-3.5" /> لديكِ {editingCount} حجوزات قيد التحرير في وقت واحد — قد يؤخّر ذلك مواعيد التسليم.
+                <Info className="h-3.5 w-3.5" /> {g("لديكِ", "لديك")} {editingCount} حجوزات قيد التحرير في وقت واحد — قد يؤخّر ذلك مواعيد التسليم.
               </div>
             )}
 
@@ -459,8 +460,8 @@ function ProductionBoard() {
                 <p>عند التأكيد:</p>
                 <ul className="list-disc space-y-1 ps-5">
                   <li>تصل للعميلة رسالة بأن صورها جاهزة مع رابط التحميل.</li>
-                  <li>يُطلب منها تقييم تجربتها معكِ.</li>
-                  {!deliverDialog.b?.final_paid_at && <li>تبقى صور المعرض بعلامة مائية حتى تسجّلي الدفعة النهائية.</li>}
+                  <li>{g("يُطلب منها تقييم تجربتها معكِ.", "يُطلب منها تقييم تجربتها معك.")}</li>
+                  {!deliverDialog.b?.final_paid_at && <li>{g("تبقى صور المعرض بعلامة مائية حتى تسجّلي الدفعة النهائية.", "تبقى صور المعرض بعلامة مائية حتى تسجّل الدفعة النهائية.")}</li>}
                 </ul>
               </div>
             </AlertDialogDescription>
@@ -544,7 +545,7 @@ function StageCard({ b, sIdx, compact, moving, wiggle, lockLeft, onMove }: {
               onClick={() => onMove(-1)}
               disabled={moving}
               aria-label="المرحلة السابقة"
-              title={`أرجعي إلى ${STAGES[sIdx - 1].label}`}
+              title={g(`أرجعي إلى ${STAGES[sIdx - 1].label}`, `أرجع إلى ${STAGES[sIdx - 1].label}`)}
               className="grid place-items-center rounded-lg border border-border px-2.5 py-1.5 hover:bg-secondary disabled:opacity-50"
             >
               <ChevronRight className="h-3.5 w-3.5" />
