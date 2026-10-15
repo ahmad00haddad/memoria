@@ -302,7 +302,9 @@ function SubscriptionPage() {
                     <div className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString("ar-JO")}</div>
                     {p.notes && <div className="text-xs text-muted-foreground mt-1">{p.notes}</div>}
                   </div>
-                  <PaymentBadge status={p.status} />
+                  {isOpenCheckout(p)
+                    ? <span className="text-xs px-2.5 py-1 rounded-sm bg-secondary text-muted-foreground">لم يكتمل</span>
+                    : <PaymentBadge status={p.status} />}
                 </div>
               ))}
             </div>

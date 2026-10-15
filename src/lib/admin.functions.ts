@@ -368,13 +368,16 @@ export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" }
     // Renew subscription directly without RPC (avoids auth.uid() issue)
     const { data: sub } = await supabaseAdmin
       .from("subscriptions")
-      .select("current_period_end, trial_ends_at")
+      .select("status, current_period_end, trial_ends_at")
       .eq("photographer_id", payment.photographer_id)
       .maybeSingle();
 
-    const currentEnd = sub?.current_period_end ? new Date(sub.current_period_end) : null;
     const now = new Date();
-    const start = currentEnd && currentEnd > now ? currentEnd : now;
+    // نبدأ من نهاية الفترة الحالية أو التجربة المجانية — لا تضيع أيام مدفوعة/تجريبية.
+    const ends = [now.getTime()];
+    if (sub?.current_period_end) ends.push(new Date(sub.current_period_end).getTime());
+    if ((sub as any)?.status === "trial" && sub?.trial_ends_at) ends.push(new Date(sub.trial_ends_at).getTime());
+    const start = new Date(Math.max(...ends));
     const end = new Date(start);
     end.setMonth(end.getMonth() + data.months);
 
