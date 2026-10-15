@@ -10,6 +10,7 @@ import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, Badg
 import imageCompression from 'browser-image-compression';
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
+import { buildClientWhatsAppMessage } from "@/components/dashboard/ManualBookingSheet";
 import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken
 } from "@/lib/booking.functions";
 import { createContractForBooking } from "@/lib/contracts.functions";
@@ -578,7 +579,17 @@ function BookingDetail() {
                   <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm">
                     <h2 className="font-serif text-xl mb-1">العميلة والمكان</h2>
                     <Row k="الهاتف" v={b.client_phone && (
-                      <span className="inline-flex items-center gap-2"><span dir="ltr">{b.client_phone}</span><CopyButton value={b.client_phone} iconOnly label="نسخ الرقم" className="px-2" /></span>
+                      <span className="inline-flex flex-wrap items-center gap-2"><span dir="ltr">{b.client_phone}</span><CopyButton value={b.client_phone} iconOnly label="نسخ الرقم" className="px-2" />
+                        <button
+                          onClick={() => openWhatsApp(buildClientWhatsAppMessage({
+                            clientName: b.client_name, photographerName: "", eventDate: b.event_date,
+                            total: Number(b.total_price ?? 0), deposit: Number(b.deposit_amount ?? 0),
+                            confirmed: b.status === "confirmed" || b.status === "completed", trackUrl,
+                            contractUrl: contract?.sign_token && contract?.status !== "signed" ? `${origin}/contracts/${contract.sign_token}` : null,
+                          }))}
+                          className="inline-flex items-center gap-1 rounded-full bg-[#25D366] px-3 py-1 text-xs font-medium text-white hover:opacity-90"
+                        >رابط المتابعة على واتساب</button>
+                      </span>
                     )} />
                     <Row k="البريد" v={b.client_email && (
                       <span className="inline-flex items-center gap-2"><span className="truncate max-w-[180px]" dir="ltr">{b.client_email}</span><CopyButton value={b.client_email} iconOnly label="نسخ البريد" className="px-2" /></span>

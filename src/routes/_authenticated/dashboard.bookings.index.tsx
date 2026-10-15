@@ -13,7 +13,8 @@ import { ListSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { hapticVibrate } from "@/lib/utils";
 import { daysFromToday, relativeDay, ageLabel } from "@/components/dashboard/focus";
-import { Inbox, Search, CheckCircle2, MessageCircle, ChevronLeft, Paperclip, AlertTriangle, History, X } from "lucide-react";
+import { Inbox, Search, CheckCircle2, MessageCircle, ChevronLeft, Paperclip, AlertTriangle, History, X, Plus } from "lucide-react";
+import { ManualBookingSheet } from "@/components/dashboard/ManualBookingSheet";
 
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/")({ component: BookingsList });
 
@@ -55,6 +56,7 @@ function BookingsList() {
   const [fresh, setFresh] = useState<string[]>([]);
   const [lastOpened, setLastOpened] = useState<{ id: string; name: string } | null>(null);
   const [showSwipeHint, setShowSwipeHint] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -185,10 +187,19 @@ function BookingsList() {
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-5 pb-24">
         <BackToDashboard />
 
-        <div className="flex items-baseline justify-between">
-          <h1 className="font-serif text-3xl">الحجوزات</h1>
-          <span className="text-xs text-muted-foreground tabular-nums">{list.length} حجزاً</span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-baseline gap-3">
+            <h1 className="font-serif text-3xl">الحجوزات</h1>
+            <span className="text-xs text-muted-foreground tabular-nums">{list.length} حجزاً</span>
+          </div>
+          <button
+            onClick={() => setManualOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-charcoal px-4 py-2 text-sm font-medium text-ivory hover:opacity-90 dark:bg-gold dark:text-charcoal"
+          >
+            <Plus className="h-4 w-4" /> حجز يدوي
+          </button>
         </div>
+        <ManualBookingSheet open={manualOpen} onClose={() => setManualOpen(false)} />
 
         {lastOpened && list.some((b) => b.id === lastOpened.id) && !query && filter === "all" && (
           <Link to="/dashboard/bookings/$id" params={{ id: lastOpened.id }} className="flex items-center gap-2 rounded-xl border border-dashed border-border px-4 py-2.5 text-sm text-muted-foreground hover:border-gold/40 hover:text-foreground transition-colors">
