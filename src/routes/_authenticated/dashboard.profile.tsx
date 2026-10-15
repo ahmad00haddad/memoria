@@ -9,7 +9,8 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, X, Eye, Check, ChevronDown } from "lucide-react";
+import { Upload, X, Eye, Check, ChevronDown, Link2 } from "lucide-react";
+import { splitPortfolioItem, joinPortfolioItem, safeLink, linkLabel } from "@/lib/portfolio-link";
 import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
 import { uploadProfilePhoto, uploadPortfolioPhoto, deletePortfolioPhoto, MAX_PORTFOLIO_PHOTOS } from "@/lib/upload";
@@ -216,7 +217,18 @@ function ProfilePage() {
     let undone = false;
     toast("أُزيلت الصورة", { action: { label: "تراجع", onClick: () => { undone = true; savePortfolio(before); } } });
     // بعد انتهاء مهلة التراجع نحذف الملف فعلياً من التخزين
-    setTimeout(() => { if (!undone) deletePortfolioPhoto(before[i]).catch(() => {}); }, 8000);
+    setTimeout(() => { if (!undone) deletePortfolioPhoto(splitPortfolioItem(before[i]).src).catch(() => {}); }, 8000);
+  };
+
+  // ربط صورة برابط خارجي (فيديو/ألبوم). فارغ = إزالة الرابط.
+  const editPortfolioLink = async (i: number) => {
+    const arr = [...(p.portfolio_urls ?? [])];
+    const { src, link } = splitPortfolioItem(arr[i]);
+    const input = window.prompt(g("رابط يفتح عند النقر على الصورة (يوتيوب، Drive، Behance…). اتركيه فارغاً لإزالته.", "رابط يفتح عند النقر على الصورة (يوتيوب، Drive، Behance…). اتركه فارغاً لإزالته."), link ?? "");
+    if (input === null) return;
+    if (input.trim() && !safeLink(input)) return toast.error("الرابط غير صالح");
+    arr[i] = joinPortfolioItem(src, input);
+    if (await savePortfolio(arr)) toast.success(input.trim() ? "رُبطت الصورة بالرابط" : "أُزيل الرابط");
   };
 
   const save = async () => {
@@ -360,7 +372,9 @@ function ProfilePage() {
                       exit={{ opacity: 0, scale: 0.8 }}
                       className="group relative aspect-square bg-secondary rounded-xl overflow-hidden border border-border"
                     >
-                      <img src={u} className="w-full h-full object-cover" alt="" loading="lazy" />
+                      <img src={splitPortfolioItem(u).src} className="w-full h-full object-cover" alt="" loading="lazy" />
+                      {splitPortfolioItem(u).link && <span className="absolute bottom-1.5 end-1.5 rounded-full bg-gold px-2 py-0.5 text-[10px] font-medium text-charcoal">{linkLabel(splitPortfolioItem(u).link!)}</span>}
+                      <button onClick={() => editPortfolioLink(i)} aria-label="ربط الصورة برابط" title="ربط برابط فيديو أو ألبوم" className="absolute top-1.5 end-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-gold hover:text-charcoal transition"><Link2 className="h-3.5 w-3.5" /></button>
                       {i === 0 && <span className="absolute bottom-1.5 start-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">الغلاف في البحث</span>}
                       <button onClick={() => removePortfolio(i)} aria-label="إزالة الصورة" className="absolute top-1.5 start-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-red-500 transition"><X className="h-3.5 w-3.5" /></button>
                     </motion.div>

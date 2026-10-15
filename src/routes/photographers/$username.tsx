@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { BadgeCheck, Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check } from "lucide-react";
+import { BadgeCheck, Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check, Play, ExternalLink } from "lucide-react";
+import { splitPortfolioItem, linkLabel } from "@/lib/portfolio-link";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -499,25 +500,51 @@ function PhotographerPage() {
             <h2 className="font-serif text-3xl">مختارات من الأعمال</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {profile.portfolio_urls!.slice(0, 12).map((u, i) => (
-              <motion.button
-                type="button"
-                key={i}
-                onClick={() => setLightboxIdx(i)}
-                className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in"
-                initial={intro ? { opacity: 0, y: 18 } : false}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.8, delay: (i % 4) * 0.08, ease: EASE_OUT }}
-              >
-                <ProgressiveImage src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" />
-              </motion.button>
-            ))}
+            {profile.portfolio_urls!.slice(0, 12).map((item, i) => {
+              const { src: u, link } = splitPortfolioItem(item);
+              const motionProps = {
+                initial: intro ? { opacity: 0, y: 18 } : false,
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: true, amount: 0.3 },
+                transition: { duration: 0.8, delay: (i % 4) * 0.08, ease: EASE_OUT },
+              } as const;
+              const img = <ProgressiveImage src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" />;
+              // صورة مربوطة برابط (فيديو/ألبوم) تفتح الرابط بدل العارض
+              return link ? (
+                <motion.a
+                  key={i}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  aria-label={`فتح العمل على ${linkLabel(link)}`}
+                  className="group relative block aspect-square bg-secondary rounded-sm overflow-hidden"
+                  {...motionProps}
+                >
+                  {img}
+                  <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 transition group-hover:bg-black/35">
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-white/90 text-charcoal shadow">
+                      {/youtube|vimeo/i.test(linkLabel(link)) ? <Play className="h-5 w-5 fill-current" /> : <ExternalLink className="h-5 w-5" />}
+                    </span>
+                  </span>
+                  <span className="pointer-events-none absolute bottom-2 start-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">{linkLabel(link)}</span>
+                </motion.a>
+              ) : (
+                <motion.button
+                  type="button"
+                  key={i}
+                  onClick={() => setLightboxIdx(i)}
+                  className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in"
+                  {...motionProps}
+                >
+                  {img}
+                </motion.button>
+              );
+            })}
           </div>
           <AnimatePresence>
           {lightboxIdx !== null && (
             <Lightbox
-              images={(profile.portfolio_urls ?? []).slice(0, 12)}
+              images={(profile.portfolio_urls ?? []).slice(0, 12).map((x) => splitPortfolioItem(x).src)}
               index={lightboxIdx}
               onClose={() => setLightboxIdx(null)}
             />
