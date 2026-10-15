@@ -104,7 +104,7 @@ function AdminSubs() {
   if (loading) return <PageLoader />;
 
   // دفعات زبوني غير المؤكّدة = صفحة دفع فُتحت فقط؛ نعرضها بعد المؤكّدة.
-  const unconfirmed = (r: PaymentRow) => r.method === "zbooni" && !r.payer_confirmed_at;
+  const unconfirmed = (r: PaymentRow) => (r.method === "zbooni" && !r.payer_confirmed_at) || r.method === "gateway";
   const pending = rows
     .filter((r) => r.status === "pending")
     .sort((a, b) => Number(unconfirmed(a)) - Number(unconfirmed(b)));
@@ -267,6 +267,9 @@ function PaymentCard({
         )}
         {r.payment_reference && <div className="text-xs">رمز الدفعة: <span className="font-mono" dir="ltr">{r.payment_reference}</span></div>}
         {r.email && <div className="text-xs">الإيميل: <span dir="ltr">{r.email}</span></div>}
+        {r.method === "gateway" && r.status === "pending" && (
+          <div className="text-xs text-muted-foreground">PayTabs: صفحة دفع لم تكتمل — يُحسم تلقائياً، لا تعتمدها يدوياً</div>
+        )}
         {r.method === "zbooni" && r.status === "pending" && (
           <div className={`text-xs ${r.payer_confirmed_at ? "text-emerald-600" : "text-muted-foreground"}`}>
             {r.payer_confirmed_at ? `أكّدت الدفع ${new Date(r.payer_confirmed_at).toLocaleString("ar-JO")}` : "فتحت صفحة الدفع ولم تؤكّد بعد"}

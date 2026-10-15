@@ -68,6 +68,7 @@ import { Route as AuthenticatedDashboardBookingsIdRouteImport } from './routes/_
 import { Route as ApiPublicHooksEmailRemindersRouteImport } from './routes/api/public/hooks/email-reminders'
 import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
 import { Route as ApiPublicHooksPaymentRouteImport } from './routes/api/public/hooks/payment'
+import { Route as ApiPublicHooksPaytabsRouteImport } from './routes/api/public/hooks/paytabs'
 import { Route as ApiPublicHooksWhatsappRouteImport } from './routes/api/public/hooks/whatsapp'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
 
@@ -392,6 +393,11 @@ const ApiPublicHooksPaymentRoute = ApiPublicHooksPaymentRouteImport.update({
   path: '/api/public/hooks/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksPaytabsRoute = ApiPublicHooksPaytabsRouteImport.update({
+  id: '/api/public/hooks/paytabs',
+  path: '/api/public/hooks/paytabs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksWhatsappRoute = ApiPublicHooksWhatsappRouteImport.update({
   id: '/api/public/hooks/whatsapp',
   path: '/api/public/hooks/whatsapp',
@@ -461,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
+  '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
   '/dashboard/bookings/': typeof AuthenticatedDashboardBookingsIndexRoute
@@ -520,6 +527,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
+  '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
   '/dashboard/bookings': typeof AuthenticatedDashboardBookingsIndexRoute
@@ -584,6 +592,7 @@ export interface FileRoutesById {
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
+  '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
   '/_authenticated/dashboard/bookings/': typeof AuthenticatedDashboardBookingsIndexRoute
@@ -648,6 +657,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
+    | '/api/public/hooks/paytabs'
     | '/api/public/hooks/whatsapp'
     | '/api/public/ical/$token'
     | '/dashboard/bookings/'
@@ -707,6 +717,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
+    | '/api/public/hooks/paytabs'
     | '/api/public/hooks/whatsapp'
     | '/api/public/ical/$token'
     | '/dashboard/bookings'
@@ -770,6 +781,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
+    | '/api/public/hooks/paytabs'
     | '/api/public/hooks/whatsapp'
     | '/api/public/ical/$token'
     | '/_authenticated/dashboard/bookings/'
@@ -804,6 +816,7 @@ export interface RootRouteChildren {
   ApiPublicHooksEmailRemindersRoute: typeof ApiPublicHooksEmailRemindersRoute
   ApiPublicHooksIcalSyncRoute: typeof ApiPublicHooksIcalSyncRoute
   ApiPublicHooksPaymentRoute: typeof ApiPublicHooksPaymentRoute
+  ApiPublicHooksPaytabsRoute: typeof ApiPublicHooksPaytabsRoute
   ApiPublicHooksWhatsappRoute: typeof ApiPublicHooksWhatsappRoute
   ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
@@ -1223,6 +1236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/paytabs': {
+      id: '/api/public/hooks/paytabs'
+      path: '/api/public/hooks/paytabs'
+      fullPath: '/api/public/hooks/paytabs'
+      preLoaderRoute: typeof ApiPublicHooksPaytabsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/whatsapp': {
       id: '/api/public/hooks/whatsapp'
       path: '/api/public/hooks/whatsapp'
@@ -1381,6 +1401,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksEmailRemindersRoute: ApiPublicHooksEmailRemindersRoute,
   ApiPublicHooksIcalSyncRoute: ApiPublicHooksIcalSyncRoute,
   ApiPublicHooksPaymentRoute: ApiPublicHooksPaymentRoute,
+  ApiPublicHooksPaytabsRoute: ApiPublicHooksPaytabsRoute,
   ApiPublicHooksWhatsappRoute: ApiPublicHooksWhatsappRoute,
   ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }

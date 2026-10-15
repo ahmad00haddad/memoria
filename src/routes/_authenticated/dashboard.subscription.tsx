@@ -12,6 +12,7 @@ import { CheckCircle2, Clock, AlertTriangle, CreditCard, Loader2, ExternalLink }
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { startZbooniSubscription, confirmZbooniSubscriptionPaid } from "@/lib/zbooni.functions";
+import { getPayTabsStatus, startPayTabsSubscription } from "@/lib/paytabs.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/subscription")({
   component: SubscriptionPage,
@@ -48,9 +49,11 @@ type ZbooniCheckout = { payment_id: string; reference: string | null; url: strin
 
 // دفعة زبوني مفتوحة ولم تؤكّد المصوّرة دفعها بعد — لا تُعدّ "قيد المراجعة".
 const isOpenZbooni = (p: Payment) => p.method === "zbooni" && p.status === "pending" && !p.payer_confirmed_at;
+// دفعة بطاقة (PayTabs) معلّقة = صفحة دفع فُتحت ولم تكتمل — PayTabs يحسمها تلقائياً.
+const isOpenCheckout = (p: Payment) => isOpenZbooni(p) || (p.method === "gateway" && p.status === "pending");
 
 const METHOD_LABEL: Record<Payment["method"], string> = {
-  zbooni: "زبوني", cliq: "CliQ", stripe: "بطاقة", hyperpay: "بطاقة", gateway: "بطاقة",
+  zbooni: "زبوني", cliq: "CliQ", stripe: "بطاقة", hyperpay: "بطاقة", gateway: "بطاقة · PayTabs",
 };
 
 function SubscriptionPage() {
@@ -66,6 +69,9 @@ function SubscriptionPage() {
   const [planKey, setPlanKey] = useState<PlanKey>("yearly");
   const plan = PLANS[planKey];
   const startFn = useServerFn(startZbooniSubscription);
+  const ptStatusFn = useServerFn(getPayTabsStatus);
+  const ptStartFn = useServerFn(startPayTabsSubscription);
+  const [cardEnabled, setCardEnabled] = useState(false);
   const confirmFn = useServerFn(confirmZbooniSubscriptionPaid);
 
   const load = async () => {
@@ -84,7 +90,38 @@ function SubscriptionPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => {
+    load();
+    ptStatusFn().then((r: any) => setCardEnabled(!!r?.enabled)).catch(() => {});
+    // نتيجة العودة من صفحة PayTabs
+    const u = new URL(window.location.href);
+    const result = u.searchParams.get("payment");
+    if (result) {
+      if (result === "success") toast.success("تم الدفع وتفعيل اشتراكك ✓");
+      else if (result === "failed") toast.error("لم تكتمل عملية الدفع. يمكنكِ المحاولة مجدداً.");
+      else toast.message("نتحقّق من الدفعة… سيتحدّث الاشتراك خلال دقائق.");
+      u.searchParams.delete("payment");
+      window.history.replaceState({}, "", u.toString());
+    }
+    /* eslint-disable-next-line */
+  }, []);
+
+  // الدفع بالبطاقة عبر PayTabs (صفحة مستضافة) — دفعة يدوية لكل فترة
+  const handleCardPay = async () => {
+    setStarting(true);
+    try {
+      const res: any = await ptStartFn({ data: { plan: planKey } });
+      if (!res?.configured || !res?.url) {
+        setCardEnabled(false);
+        toast.message("الدفع بالبطاقة غير متاح حالياً، استخدمي زبوني.");
+        return;
+      }
+      window.location.href = res.url;
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر فتح صفحة الدفع");
+      setStarting(false);
+    }
+  };
 
   // فتح صفحة الدفع على زبوني (تُنشئ/تعيد دفعة معلّقة برمز مرجعي)
   const handleZbooniPay = async () => {
@@ -132,7 +169,7 @@ function SubscriptionPage() {
     } else if (effectiveStatus === "active" && periodEnds && periodEnds.getTime() < Date.now()) {
       effectiveStatus = "expired";
     }
-    if (effectiveStatus !== "active" && payments.some((p) => p.status === "pending" && !isOpenZbooni(p))) {
+    if (effectiveStatus !== "active" && payments.some((p) => p.status === "pending" && !isOpenCheckout(p))) {
       effectiveStatus = "pending_review";
     }
   }
@@ -195,13 +232,23 @@ function SubscriptionPage() {
                 );
               })}
             </div>
-            <ZbooniPayCard
-              planName={plan.name}
-              planLabel={plan.label}
-              amount={plan.jod}
-              starting={starting}
-              onPay={handleZbooniPay}
-            />
+            {cardEnabled ? (
+              <CardPayCard
+                planName={plan.name}
+                planLabel={plan.label}
+                amount={plan.jod}
+                starting={starting}
+                onPay={handleCardPay}
+              />
+            ) : (
+              <ZbooniPayCard
+                planName={plan.name}
+                planLabel={plan.label}
+                amount={plan.jod}
+                starting={starting}
+                onPay={handleZbooniPay}
+              />
+            )}
 
             {(() => {
               // دفعة مفتوحة: من الجلسة الحالية أو من زيارة سابقة
@@ -263,6 +310,38 @@ function SubscriptionPage() {
         )}
       </section>
       <Footer />
+    </div>
+  );
+}
+
+function CardPayCard({ planName, planLabel, amount, starting, onPay }: {
+  planName: string; planLabel: string; amount: number; starting: boolean; onPay: () => void;
+}) {
+  return (
+    <div className="rounded-sm border border-border bg-card p-6 shadow-soft">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-serif text-xl">الدفع بالبطاقة</h3>
+        <span className="text-[10px] uppercase tracking-[0.2em] bg-secondary px-2 py-1 rounded-sm">آمن · بالدينار</span>
+      </div>
+      <div className="flex items-center gap-3 text-muted-foreground mb-4">
+        <CreditCard className="h-8 w-8 shrink-0" />
+        <div className="text-sm">Visa · Mastercard · Apple Pay</div>
+      </div>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+        باقة <span className="text-foreground font-semibold">{planName}</span> ({planLabel}) — <span className="text-foreground font-semibold">{amount} د.أ</span>.
+        يُفعَّل الاشتراك فور نجاح الدفع. دفعة لمرة واحدة، بدون أي خصم تلقائي.
+      </p>
+      <button
+        onClick={onPay}
+        disabled={starting}
+        className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory dark:bg-gold dark:text-charcoal py-3 rounded-full hover:opacity-90 active:scale-[0.98] transition disabled:opacity-60"
+      >
+        {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+        {starting ? "نجهّز صفحة الدفع…" : `ادفعي ${amount} د.أ`}
+      </button>
+      <p className="text-[11px] text-muted-foreground mt-3 text-center">
+        الدفع على صفحة PayTabs الآمنة — لا نحفظ بيانات بطاقتك.
+      </p>
     </div>
   );
 }
