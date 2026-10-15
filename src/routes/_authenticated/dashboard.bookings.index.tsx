@@ -98,6 +98,9 @@ function BookingsList() {
   }, [nav]);
 
   const handleConfirm = async (id: string) => {
+    const amount = list.find((b) => b.id === id)?.deposit_amount;
+    // الإيصالات سهلة التزوير — نطلب تأكيداً صريحاً بأنها راجعت تطبيق البنك.
+    if (!window.confirm(`تأكّدتِ من تطبيق البنك أن العربون${amount ? ` (${amount} د.أ)` : ""} وصل فعلاً لحسابك؟\nلا تعتمدي على صورة الإيصال وحدها.`)) return;
     const prev = list;
     setList((l) => l.map((b) => (b.id === id ? { ...b, status: "confirmed" } : b))); // تحديث متفائل
     try {

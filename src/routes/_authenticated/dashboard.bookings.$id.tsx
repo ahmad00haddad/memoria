@@ -367,7 +367,7 @@ function BookingDetail() {
     const eventIn = b.event_date ? daysFromToday(b.event_date) : null;
     if (b.status === "cancelled") return null;
     if (b.status === "pending_deposit" && (b.deposit_proof_url || b.deposit_sent_at)) {
-      return { title: "العربون وصل — راجعيه وأكّدي", detail: `المبلغ المتوقّع ${b.deposit_amount} د.أ`, cta: "تأكيد العربون", icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
+      return { title: "العربون وصل — راجعيه وأكّدي", detail: `تأكّدي من تطبيق البنك أن ${b.deposit_amount} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال`, cta: "تأكيد العربون", icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
     }
     if (b.status === "quote" || b.status === "pending_deposit") {
       return { title: "بانتظار العربون من العميلة", detail: `الطلب وصل ${ageLabel(b.created_at)}`, cta: "ذكّريها بواتساب", icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nلتثبيت موعدك بتاريخ ${new Date(b.event_date).toLocaleDateString("ar-JO")} يرجى إرسال العربون (${b.deposit_amount} د.أ) ورفع الإثبات من هنا:\n${trackUrl}`) };
@@ -628,7 +628,9 @@ function BookingDetail() {
                     <div className="rounded-2xl border border-border bg-card p-6 text-sm">
                       <h2 className="font-serif text-xl mb-1">إثبات العربون</h2>
                       {b.status === "pending_deposit" && (
-                        <p className="mb-3 text-xs text-muted-foreground">تأكّدي أن المبلغ في الإيصال <strong className="text-foreground">{b.deposit_amount} د.أ</strong> قبل التأكيد.</p>
+                        <p className="mb-3 rounded-xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:bg-amber-950/20 dark:text-amber-300">
+                          <strong>لا تعتمدي على صورة الإيصال.</strong> الصور سهلة التزوير — افتحي تطبيق البنك وتأكّدي أن مبلغ <strong>{b.deposit_amount} د.أ</strong> وصل فعلاً لحسابك قبل الضغط على التأكيد.
+                        </p>
                       )}
                       {(() => {
                         const lines = String(b.client_notes ?? "").split(/\r?\n/).filter((l) => /^(رقم العملية|اسم المحوِّل):/.test(l));
@@ -736,6 +738,11 @@ function BookingDetail() {
             className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4 backdrop-blur-sm"
           >
             <motion.img layoutId="proof-image" src={proofUrl} alt="إثبات تحويل العربون" className="max-h-[85vh] max-w-full rounded-xl object-contain" />
+            {b.status === "pending_deposit" && (
+              <p className="absolute top-6 inset-x-4 mx-auto max-w-md rounded-xl bg-amber-500/90 px-4 py-2 text-center text-xs text-charcoal" onClick={(e) => e.stopPropagation()}>
+                تأكّدي من تطبيق البنك أن المبلغ وصل فعلاً — الإيصال وحده لا يكفي.
+              </p>
+            )}
             <div className="absolute bottom-6 inset-x-0 flex justify-center gap-3" onClick={(e) => e.stopPropagation()}>
               <a href={proofUrl} target="_blank" rel="noreferrer" className="rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur hover:bg-white/20">فتح في نافذة</a>
               {b.status === "pending_deposit" && (
