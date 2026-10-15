@@ -354,7 +354,7 @@ function SearchPage() {
           </fieldset>
 
           {/* Unified Mobile Quick Filters */}
-          <div className="sm:hidden mt-4 -mx-4 px-4 overflow-x-auto pb-2 no-scrollbar">
+          <div className="sm:hidden mt-4 -mx-4 px-4 overflow-x-auto pb-2 scrollbar-none">
             <div className="flex gap-2 w-max items-center">
               <button
                 type="button"

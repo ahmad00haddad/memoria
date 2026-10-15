@@ -280,7 +280,7 @@ function Landing() {
             variants={fadeUp}
             initial="hidden"
             animate="visible"
-            className="flex items-center gap-4 text-muted-foreground mb-10 lg:mb-14"
+            className="flex items-center gap-4 text-muted-foreground mb-6 sm:mb-10 lg:mb-14"
           >
             <span className="eyebrow">Memoria</span>
             <DrawRule onMount delay={0.3} duration={1.1} className="h-px flex-1 max-w-24 bg-gold/40" />
@@ -288,9 +288,9 @@ function Landing() {
             <span className="hidden sm:inline font-serif italic text-sm text-muted-foreground/70" dir="ltr">Wedding photography, booked beautifully</span>
           </motion.div>
 
-          <div className="grid gap-14 lg:grid-cols-12 items-end">
+          <div className="grid gap-12 sm:gap-14 lg:grid-cols-12 items-end">
             <motion.div
-              className="order-2 lg:order-1 lg:col-span-7 space-y-8"
+              className="order-1 lg:col-span-7 space-y-6 sm:space-y-8"
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
@@ -300,10 +300,10 @@ function Landing() {
               </motion.p>
               <motion.h1
                 variants={fadeUp}
-                className="font-serif text-[2.9rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]"
+                className="font-serif text-[2.4rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]"
               >
                 من النقرة الأولى
-                <span className="block font-script text-gold text-[3.4rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
+                <span className="block font-script text-gold text-[2.8rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
                   <Shimmer onMount delay={2.4}>إلى الذكرى الأبدية</Shimmer>
                 </span>
               </motion.h1>
@@ -383,7 +383,7 @@ function Landing() {
             </motion.div>
 
             <motion.div
-              className="group/hero order-1 lg:order-2 lg:col-span-5 relative mx-auto w-full max-w-[420px] lg:max-w-none"
+              className="group/hero order-2 lg:col-span-5 relative mx-auto w-full max-w-[300px] sm:max-w-[420px] lg:max-w-none"
               variants={scaleIn}
               initial="hidden"
               animate="visible"
