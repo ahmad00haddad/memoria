@@ -4,6 +4,8 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
+  // مزامنة Google Calendar التلقائية (src/server.ts → scheduled)
+  "triggers": { "crons": ["*/30 * * * *"] },
   // Public values only. Secrets (SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY, ...)
   // go in `wrangler secret put`.
   "vars": {

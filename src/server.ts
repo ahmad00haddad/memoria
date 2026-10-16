@@ -67,6 +67,17 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 }
 
 export default {
+  // Cloudflare Cron (wrangler.jsonc triggers): مزامنة تقاويم Google كل 30 دقيقة.
+  // يمرّ عبر نفس المسار الداخلي، محمياً بسرّ CRON_SECRET.
+  async scheduled(_event: unknown, env: { CRON_SECRET?: string; PUBLIC_APP_URL?: string }, ctx: { waitUntil(p: Promise<unknown>): void }) {
+    if (!env.CRON_SECRET) return;
+    const req = new Request(`${env.PUBLIC_APP_URL ?? 'https://memoria.local'}/api/public/hooks/ical-sync`, {
+      method: 'POST',
+      headers: { 'x-cron-secret': env.CRON_SECRET },
+    });
+    ctx.waitUntil(this.fetch(req, env, ctx).then((r) => r.text()).then((t) => console.log('[cron] ical-sync', t.slice(0, 500))));
+  },
+
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();

@@ -11,7 +11,7 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { X, RefreshCw, Copy, Check, Download, Upload, RefreshCcw } from "lucide-react";
-import { syncExternalIcal } from "@/lib/ical-sync.functions";
+import { syncExternalIcal, getIcalStatus, type IcalStatus } from "@/lib/ical-sync.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -52,6 +52,9 @@ function CalendarPage() {
   const [exportToken, setExportToken] = useState<string | null>(cachedCalendarData?.exportToken ?? null);
   const [copied, setCopied] = useState(false);
   const runSync = useServerFn(syncExternalIcal);
+  const fetchStatus = useServerFn(getIcalStatus);
+  const [status, setStatus] = useState<IcalStatus | null>(null);
+  useEffect(() => { fetchStatus().then(setStatus).catch(() => {}); }, []);
 
   const load = async (id: string) => {
     const [{ data: u }, { data: b }, { data: p }] = await Promise.all([
@@ -154,12 +157,6 @@ function CalendarPage() {
     load(uid);
   };
 
-  const saveIcalUrl = async () => {
-    const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: icalUrl || null, external_ical_auto_sync: autoSync }, { onConflict: "user_id" });
-    if (error) return toast.error(error.message);
-    toast.success("تم الحفظ");
-  };
-
   const toggleAutoSync = async (val: boolean) => {
     setAutoSync(val);
     const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: icalUrl || null, external_ical_auto_sync: val }, { onConflict: "user_id" });
@@ -169,6 +166,8 @@ function CalendarPage() {
 
   const exportUrl = exportToken ? `${typeof window !== "undefined" ? window.location.origin : ""}/api/public/ical/${exportToken}` : "";
   const webcalUrl = exportUrl.replace(/^https?:/, "webcal:");
+  const googleSubscribeUrl = exportUrl ? `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcalUrl)}` : "#";
+  const outlookSubscribeUrl = exportUrl ? `https://outlook.live.com/calendar/0/addfromweb?url=${encodeURIComponent(exportUrl)}&name=${encodeURIComponent("Memoria")}` : "#";
   const copyExport = async () => {
     if (!exportUrl) return;
     try {
@@ -178,16 +177,33 @@ function CalendarPage() {
     } catch { toast.error("تعذّر النسخ"); }
   };
 
-  const doSync = async () => {
-    if (!icalUrl) return toast.error(g("ألصقي رابط iCal من Google أولاً", "ألصق رابط iCal من Google أولاً"));
+  // «ربط»: يحفظ الرابط ويفعّل المزامنة التلقائية ويزامن فوراً — نقرة واحدة بدل ثلاث.
+  const connectGoogle = async () => {
+    const url = icalUrl.trim();
+    if (!url) return toast.error(g("ألصقي رابط iCal من Google أولاً", "ألصق رابط iCal من Google أولاً"));
     setSyncing(true);
     try {
+      const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: url, external_ical_auto_sync: true }, { onConflict: "user_id" });
+      if (error) throw error;
+      setAutoSync(true);
       const r = await runSync();
-      toast.success(`تمت المزامنة: ${r.inserted} حدث`);
+      toast.success(`تم الربط — ${r.blocked} يوماً مشغولاً من Google`);
       load(uid);
     } catch (e: any) {
       toast.error(e?.message || "تعذّرت المزامنة");
-    } finally { setSyncing(false); }
+    } finally {
+      setSyncing(false);
+      fetchStatus().then(setStatus).catch(() => {});
+    }
+  };
+
+  const disconnectGoogle = async () => {
+    const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: null, external_ical_auto_sync: false }, { onConflict: "user_id" });
+    if (error) return toast.error(error.message);
+    await supabase.from("photographer_unavailability").delete().eq("photographer_id", uid).like("reason", "Google:%");
+    setIcalUrl(""); setAutoSync(false); setStatus(null); setLastSync(null);
+    toast.success("أُلغي الربط");
+    load(uid);
   };
 
   if (loading) return <PageLoader />;
@@ -259,85 +275,96 @@ function CalendarPage() {
             {g("اختاري الطريقة الأنسب لكِ. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.", "اختر الطريقة الأنسب لك. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.")}
           </p>
 
-          {/* خيار 1: تصدير إلى تقويمك */}
-          <div className="rounded-sm border border-border p-5 mb-5 bg-background/50">
-            <div className="flex items-center gap-2 mb-2">
+          {/* الخطوة ١: إظهار الحجوزات في تقويمها — اشتراك بنقرة واحدة */}
+          <div className="rounded-xl border border-border p-5 mb-5 bg-background/50">
+            <div className="flex items-center gap-2 mb-1">
               <Download className="h-5 w-5 text-gold" />
-              <h3 className="font-serif text-lg">الخيار ١ — تصدير حجوزاتي إلى تقويمي الشخصي</h3>
+              <h3 className="font-serif text-lg">١. إظهار حجوزاتي في تقويم الهاتف</h3>
             </div>
-            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-              <strong>{g("الأنسب لكِ إذا:", "الأنسب لك إذا:")}</strong> {g("تريدين رؤية الحجوزات والأيام المحجوبة داخل Google/Apple Calendar الخاص بكِ مباشرة", "تريد رؤية الحجوزات والأيام المحجوبة داخل Google/Apple Calendar الخاص بك مباشرة")} (للقراءة فقط).
-              أي حجز جديد أو تعديل سيظهر تلقائياً في تقويمك خلال دقائق دون أي إعداد إضافي.
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+              {g("نقرة واحدة واختاري تطبيقكِ. الحجوزات والأيام المحجوبة تظهر كتقويم «Memoria» منفصل للقراءة فقط.", "نقرة واحدة واختر تطبيقك. الحجوزات والأيام المحجوبة تظهر كتقويم «Memoria» منفصل للقراءة فقط.")}
             </p>
-            <p className="text-xs text-muted-foreground mb-3">
-              <strong>الطريقة:</strong> {g("انسخي الرابط أدناه ثم في Google Calendar → إضافة تقويم → من URL → الصقي الرابط.", "انسخ الرابط أدناه ثم في Google Calendar → إضافة تقويم → من URL → الصق الرابط.")} في iPhone: الإعدادات → التقويم → الحسابات → اشتراك بتقويم.
-            </p>
-            <div className="flex flex-wrap gap-2 items-center">
-              <input readOnly value={exportUrl} className="border border-border rounded-sm px-3 py-2 bg-secondary/30 flex-1 min-w-[260px] text-xs ltr:font-mono active:scale-95 transition-transform duration-200" dir="ltr" />
-              <button onClick={copyExport} className="inline-flex items-center gap-2 border border-border px-3 py-2 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {copied ? "تم النسخ" : "نسخ"}
-              </button>
-              <a href={webcalUrl} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-3 py-2 rounded-sm hover:opacity-90 text-sm active:scale-95 transition-transform duration-200">
-                فتح في تطبيق التقويم
+            <div className="grid gap-2 sm:grid-cols-3">
+              <a href={googleSubscribeUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-charcoal px-4 text-sm text-ivory hover:opacity-90 active:scale-95 transition dark:bg-gold dark:text-charcoal">
+                Google Calendar
+              </a>
+              <a href={webcalUrl} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border px-4 text-sm hover:bg-secondary active:scale-95 transition">
+                iPhone / Apple
+              </a>
+              <a href={outlookSubscribeUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border px-4 text-sm hover:bg-secondary active:scale-95 transition">
+                Outlook
               </a>
             </div>
-          </div>
-
-          {/* خيار 2: استيراد يدوي */}
-          <div className="rounded-sm border border-border p-5 mb-5 bg-background/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Upload className="h-5 w-5 text-gold" />
-              <h3 className="font-serif text-lg">الخيار ٢ — استيراد مشاغلي من Google يدوياً</h3>
-            </div>
-            <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-              <strong>{g("الأنسب لكِ إذا:", "الأنسب لك إذا:")}</strong> {g("تريدين منع العميل من حجز يوم لديكِ فيه ارتباط شخصي مسجّل في Google Calendar.", "تريد منع العميل من حجز يوم لديك فيه ارتباط شخصي مسجّل في Google Calendar.")}
-              {g("تضغطين زر «مزامنة الآن» متى ما أحببتِ، وسنحجب الأيام التي عليها فعاليات.", "تضغط زر «مزامنة الآن» متى ما أحببت، وسنحجب الأيام التي عليها فعاليات.")}
-            </p>
-            <p className="text-xs text-muted-foreground mb-3">
-              <strong>الطريقة:</strong> Google Calendar → إعدادات التقويم → العنوان السرّي بتنسيق iCal → {g("انسخي الرابط والصقيه هنا.", "انسخ الرابط والصقه هنا.")}
-            </p>
-            <div className="flex flex-wrap gap-2 items-end">
-              <input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://calendar.google.com/calendar/ical/.../basic.ics" className="border border-border rounded-sm px-3 py-2 bg-background flex-1 min-w-[260px] text-xs" dir="ltr" />
-              <button onClick={saveIcalUrl} className="border border-border px-4 py-2 rounded-sm hover:bg-secondary text-sm active:scale-95 transition-transform duration-200">حفظ</button>
-              <button onClick={doSync} disabled={syncing || !icalUrl} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-4 py-2 rounded-sm disabled:opacity-60 text-sm active:scale-95 transition-transform duration-200">
-                <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> مزامنة الآن
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <button onClick={copyExport} className="inline-flex items-center gap-1.5 underline-offset-2 hover:underline">
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? "تم النسخ" : "نسخ الرابط يدوياً"}
               </button>
+              <span>·</span>
+              <span>Google يحدّث التقاويم المشترَكة كل بضع ساعات، وiPhone كل ساعة تقريباً.</span>
             </div>
-            {lastSync && <p className="text-xs text-muted-foreground mt-2">آخر مزامنة: {new Date(lastSync).toLocaleString("ar-JO")}</p>}
           </div>
 
-          {/* خيار 3: مزامنة تلقائية */}
-          <div className="rounded-sm border-2 border-gold/40 p-5 bg-gold/5">
-            <div className="flex items-center gap-2 mb-2">
+          {/* الخطوة ٢: سحب المشاغل من Google لمنع الحجز في الأيام المشغولة */}
+          <div className="rounded-xl border-2 border-gold/40 p-5 bg-gold/5">
+            <div className="flex items-center gap-2 mb-1">
               <RefreshCcw className="h-5 w-5 text-gold" />
-              <h3 className="font-serif text-lg">الخيار ٣ — مزامنة تلقائية ثنائية الاتجاه (موصى به)</h3>
-              <span className="ml-auto text-[10px] px-2 py-0.5 bg-gold text-charcoal rounded-sm font-medium">الأقوى</span>
+              <h3 className="font-serif text-lg">٢. منع الحجز في أيامي المشغولة على Google</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-              <strong>{g("الأنسب لكِ إذا:", "الأنسب لك إذا:")}</strong> {g("تريدين كل شيء يحصل من نفسه دون أي تدخّل يومي.", "تريد كل شيء يحصل من نفسه دون أي تدخّل يومي.")}
-              نقوم بسحب {g("مشاغلكِ", "مشاغلك")} من Google كل <strong>٣٠ دقيقة</strong> تلقائياً، وفي نفس الوقت تكون حجوزاتك ظاهرة في تقويم Google عبر رابط الخيار ١.
+              {g("نقرأ تقويم Google الخاص بكِ كل ٣٠ دقيقة ونحجب الأيام التي فيها مواعيد، فلا تحجزها عروس بالخطأ. المواعيد المعلَّمة «متاح» في Google لا تُحجب.", "نقرأ تقويم Google الخاص بك كل ٣٠ دقيقة ونحجب الأيام التي فيها مواعيد، فلا تحجزها عروس بالخطأ. المواعيد المعلَّمة «متاح» في Google لا تُحجب.")}
             </p>
-            <p className="text-xs text-muted-foreground mb-3">
-              <strong>الطريقة:</strong> {g("فعّلي الزرّ أدناه + استخدمي رابط الخيار ١", "فعّل الزرّ أدناه + استخدم رابط الخيار ١")} في تقويمك = مزامنة كاملة في الاتجاهين.
-            </p>
-            <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
-              <div>
-                <div className="text-sm font-medium">المزامنة التلقائية كل ٣٠ دقيقة</div>
-                <div className="text-xs text-muted-foreground">يجب أن يكون رابط iCal في الخيار ٢ محفوظاً</div>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={autoSync}
-                onClick={() => toggleAutoSync(!autoSync)}
-                disabled={!icalUrl}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${autoSync ? "bg-gold" : "bg-secondary"}`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoSync ? "translate-x-6" : "translate-x-1"}`} />
+            <ol className="mb-3 space-y-1 text-xs text-muted-foreground list-decimal ps-5">
+              <li>
+                <a href="https://calendar.google.com/calendar/r/settings" target="_blank" rel="noopener noreferrer" className="text-gold underline">{g("افتحي إعدادات Google Calendar", "افتح إعدادات Google Calendar")}</a>
+                {" "}← {g("اختاري تقويمكِ من القائمة الجانبية", "اختر تقويمك من القائمة الجانبية")}.
+              </li>
+              <li>{g("انزلي إلى «العنوان السرّي بتنسيق iCal» وانسخيه (ينتهي بـ basic.ics).", "انزل إلى «العنوان السرّي بتنسيق iCal» وانسخه (ينتهي بـ basic.ics).")}</li>
+              <li>{g("الصقيه هنا واضغطي «ربط».", "الصقه هنا واضغط «ربط».")}</li>
+            </ol>
+            <div className="flex flex-wrap gap-2 items-center">
+              <input value={icalUrl} onChange={(e) => setIcalUrl(e.target.value)} placeholder="https://calendar.google.com/calendar/ical/.../private-.../basic.ics" className="min-h-11 border border-border rounded-full px-4 bg-background flex-1 min-w-[240px] text-xs" dir="ltr" />
+              <button onClick={connectGoogle} disabled={syncing || !icalUrl.trim()} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-charcoal px-5 text-sm text-ivory disabled:opacity-60 active:scale-95 transition dark:bg-gold dark:text-charcoal">
+                <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} /> {status?.ok || lastSync ? "مزامنة الآن" : "ربط"}
               </button>
             </div>
-            {!icalUrl && <p className="text-xs text-destructive mt-2">{g("احفظي رابط iCal أولاً في الخيار ٢ لتفعيل المزامنة التلقائية.", "احفظ رابط iCal أولاً في الخيار ٢ لتفعيل المزامنة التلقائية.")}</p>}
+            {icalUrl.trim() && !/\/private-[^/]+\/basic\.ics/i.test(icalUrl) && /calendar\.google\.com/i.test(icalUrl) && (
+              <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{g("يبدو أن هذا العنوان العام وليس السرّي — العنوان السرّي يحتوي على «private-».", "يبدو أن هذا العنوان العام وليس السرّي — العنوان السرّي يحتوي على «private-».")}</p>
+            )}
+
+            {/* حالة الربط */}
+            {(status || lastSync) && (
+              <div className={`mt-4 rounded-xl border p-3 text-sm ${status && !status.ok ? "border-destructive/40 bg-destructive/10" : "border-emerald-300/60 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"}`}>
+                {status && !status.ok ? (
+                  <>
+                    <div className="font-medium text-destructive">فشلت آخر مزامنة</div>
+                    <div className="text-xs text-destructive/90 mt-0.5">{status.error}</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="font-medium text-emerald-800 dark:text-emerald-300">✓ مربوط ويعمل</div>
+                    <div className="text-xs text-emerald-800/80 dark:text-emerald-300/80 mt-0.5">
+                      {typeof status?.blocked === "number" && <>{status.blocked} يوماً محجوباً من Google · </>}
+                      آخر مزامنة {new Date(status?.at ?? lastSync!).toLocaleString("ar-JO", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
+                    </div>
+                  </>
+                )}
+                <label className="mt-3 flex items-center justify-between gap-3 text-xs">
+                  <span>المزامنة التلقائية كل ٣٠ دقيقة</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={autoSync}
+                    aria-label="المزامنة التلقائية"
+                    onClick={() => toggleAutoSync(!autoSync)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoSync ? "bg-gold" : "bg-secondary"}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoSync ? "translate-x-6" : "translate-x-1"}`} />
+                  </button>
+                </label>
+                <button onClick={disconnectGoogle} className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline">إلغاء الربط وفتح الأيام المستوردة</button>
+              </div>
+            )}
           </div>
           </div>
         </details>

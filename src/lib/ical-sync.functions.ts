@@ -1,38 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-// مزامنة بسيطة لـ iCal من Google Calendar: نقرأ الفعاليات اليومية (VALUE=DATE)
-// والفعاليات بساعات محددة، ونحجب الأيام الموافقة لها في photographer_unavailability.
-export function parseIcalDates(ics: string): { date: string; summary: string }[] {
-  const events: { date: string; summary: string }[] = [];
-  const blocks = ics.split(/BEGIN:VEVENT/i).slice(1);
-  for (const raw of blocks) {
-    const block = raw.split(/END:VEVENT/i)[0] ?? "";
-    const sumMatch = /SUMMARY:([^\r\n]+)/i.exec(block);
-    const summary = (sumMatch?.[1] ?? "Google event").trim().slice(0, 120);
-    // DTSTART;VALUE=DATE:YYYYMMDD  أو  DTSTART:YYYYMMDDTHHMMSSZ
-    const dStart = /DTSTART[^:\r\n]*:([0-9TZ:+-]+)/i.exec(block);
-    const dEnd = /DTEND[^:\r\n]*:([0-9TZ:+-]+)/i.exec(block);
-    if (!dStart) continue;
-    const toDate = (s: string) => {
-      const m = /^(\d{4})(\d{2})(\d{2})/.exec(s);
-      return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
-    };
-    const start = toDate(dStart[1]);
-    const end = dEnd ? toDate(dEnd[1]) : start;
-    if (!start) continue;
-    const s = new Date(start + "T00:00:00Z");
-    const e = new Date((end ?? start) + "T00:00:00Z");
-    for (let d = new Date(s); d <= e; d.setUTCDate(d.getUTCDate() + 1)) {
-      if (d.getTime() === e.getTime() && (dEnd && /T/.test(dEnd[1]) === false)) break; // DTEND حصري لليوم الكامل
-      events.push({
-        date: `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`,
-        summary,
-      });
-    }
-  }
-  return events;
-}
+export { parseIcalDates, expandRule } from "./ical-parse";
+import { parseIcalDates } from "./ical-parse";
 
 export function assertSafeIcalUrl(raw: string): string {
   const fetchUrl = raw.replace(/^webcal:\/\//i, "https://");
@@ -68,45 +38,85 @@ export const syncExternalIcal = createServerFn({ method: "POST" })
       .from("photographer_private").select("external_ical_url").eq("user_id", userId).maybeSingle();
     const url = profile?.external_ical_url?.trim();
     if (!url) throw new Error("لم يتم تعيين رابط Google Calendar iCal بعد.");
-    return await runIcalSyncForUser(userId, url);
+    return await syncAndRecord(userId, url);
   });
+
+/** آخر نتيجة مزامنة لصاحب الحساب (تُعرض في صفحة التقويم). */
+export const getIcalStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.auth.admin.getUserById(context.userId);
+    return (data.user?.app_metadata?.ical_status ?? null) as IcalStatus | null;
+  });
+
+export type IcalStatus = { ok: boolean; error?: string; blocked?: number; at: string };
+
+/** يحفظ نتيجة آخر مزامنة في app_metadata (لا يحتاج عموداً، ولا يستطيع المستخدم تعديله). */
+async function recordIcalStatus(userId: string, status: Omit<IcalStatus, "at">) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.auth.admin.getUserById(userId);
+  await supabaseAdmin.auth.admin.updateUserById(userId, {
+    app_metadata: { ...(data.user?.app_metadata ?? {}), ical_status: { ...status, at: new Date().toISOString() } },
+  });
+}
+
+export async function syncAndRecord(userId: string, url: string) {
+  try {
+    const out = await runIcalSyncForUser(userId, url);
+    await recordIcalStatus(userId, { ok: true, blocked: out.blocked }).catch(() => {});
+    return out;
+  } catch (e: any) {
+    await recordIcalStatus(userId, { ok: false, error: e?.message || "sync failed" }).catch(() => {});
+    throw e;
+  }
+}
 
 export async function runIcalSyncForUser(userId: string, url: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const fetchUrl = assertSafeIcalUrl(url);
-    const res = await fetch(fetchUrl, {
-      headers: { Accept: "text/calendar" },
-      redirect: "error",
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!res.ok) throw new Error(`تعذّر جلب التقويم: ${res.status}`);
-    const ics = await res.text();
-    if (ics.length > 2_000_000) throw new Error("الملف كبير جدًا");
-    const events = parseIcalDates(ics);
+  const res = await fetch(fetchUrl, {
+    headers: { Accept: "text/calendar" },
+    redirect: "error",
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (res.status === 404 || res.status === 403) {
+    throw new Error("Google رفض الرابط — استخدمي «العنوان السرّي بتنسيق iCal» وليس العنوان العام");
+  }
+  if (!res.ok) throw new Error(`تعذّر جلب التقويم: ${res.status}`);
+  const ics = await res.text();
+  if (ics.length > 2_000_000) throw new Error("الملف كبير جدًا");
+  if (!/BEGIN:VCALENDAR/i.test(ics)) throw new Error("الرابط لا يعيد تقويماً بصيغة iCal");
+  const events = parseIcalDates(ics);
 
-    const { data: existing } = await supabaseAdmin
-      .from("photographer_unavailability").select("date,reason").eq("photographer_id", userId);
-    const existingByDate = new Map((existing ?? []).map((r: any) => [r.date, r.reason as string | null]));
-    // امسحي القديم القادم من Google ثم أعيدي الإدراج (لتحديث الحذف من جانب Google)
-    const googleDates = (existing ?? []).filter((r: any) => (r.reason ?? "").startsWith("Google:")).map((r: any) => r.date);
-    if (googleDates.length) {
-      await supabaseAdmin.from("photographer_unavailability").delete()
-        .eq("photographer_id", userId).in("date", googleDates);
-    }
-    const seen = new Set<string>();
-    const rows = events
-      .filter((e) => {
-        if (seen.has(e.date)) return false;
-        seen.add(e.date);
-        // لا تكتبي فوق حجب يدوي
-        const prev = existingByDate.get(e.date);
-        return !prev || prev.startsWith("Google:");
-      })
-      .map((e) => ({ photographer_id: userId, date: e.date, reason: `Google: ${e.summary}` }));
-    if (rows.length) {
-      const { error } = await supabaseAdmin.from("photographer_unavailability").insert(rows);
-      if (error) throw error;
-    }
-    await supabaseAdmin.from("photographer_private").update({ external_ical_synced_at: new Date().toISOString() }).eq("user_id", userId);
-    return { inserted: rows.length };
+  const { data: existing } = await supabaseAdmin
+    .from("photographer_unavailability").select("date,reason").eq("photographer_id", userId);
+  const existingByDate = new Map((existing ?? []).map((r: any) => [r.date, r.reason as string | null]));
+  const seen = new Set<string>();
+  const fresh = events.filter((e) => {
+    if (seen.has(e.date)) return false;
+    seen.add(e.date);
+    // لا نكتب فوق حجب يدوي
+    const prev = existingByDate.get(e.date);
+    return !prev || prev.startsWith("Google:");
+  });
+  const freshDates = new Set(fresh.map((e) => e.date));
+
+  // نضيف الجديد أولاً ثم نحذف ما لم يعد في Google، كي لا تنفتح الأيام إن فشل أحد الطلبين.
+  const rows = fresh
+    .filter((e) => !existingByDate.has(e.date))
+    .map((e) => ({ photographer_id: userId, date: e.date, reason: `Google: ${e.summary}` }));
+  if (rows.length) {
+    const { error } = await supabaseAdmin.from("photographer_unavailability").insert(rows);
+    if (error) throw error;
+  }
+  const stale = (existing ?? [])
+    .filter((r: any) => (r.reason ?? "").startsWith("Google:") && !freshDates.has(r.date))
+    .map((r: any) => r.date);
+  if (stale.length) {
+    await supabaseAdmin.from("photographer_unavailability").delete()
+      .eq("photographer_id", userId).in("date", stale);
+  }
+  await supabaseAdmin.from("photographer_private").update({ external_ical_synced_at: new Date().toISOString() }).eq("user_id", userId);
+  return { inserted: rows.length, removed: stale.length, blocked: freshDates.size };
 }
