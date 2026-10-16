@@ -77,9 +77,11 @@ export async function runIcalSyncForUser(userId: string, url: string) {
   const fetchUrl = assertSafeIcalUrl(url);
   const res = await fetch(fetchUrl, {
     headers: { Accept: "text/calendar" },
-    redirect: "error",
+    // Workers لا تدعم redirect: "error"؛ نمنع التحويل يدوياً (حماية SSRF)
+    redirect: "manual",
     signal: AbortSignal.timeout(10_000),
   });
+  if (res.status >= 300 && res.status < 400) throw new Error("الرابط يحوّل إلى عنوان آخر — استخدمي رابط iCal المباشر");
   if (res.status === 404 || res.status === 403) {
     throw new Error("Google رفض الرابط — استخدمي «العنوان السرّي بتنسيق iCal» وليس العنوان العام");
   }
