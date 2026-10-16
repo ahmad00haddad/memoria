@@ -199,7 +199,7 @@ function CalendarPage() {
   };
 
   const disconnectGoogle = async () => {
-    const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: null, external_ical_auto_sync: false }, { onConflict: "user_id" });
+    const { error } = await supabase.from("photographer_private").upsert({ user_id: uid, external_ical_url: null, external_ical_auto_sync: false, external_ical_synced_at: null }, { onConflict: "user_id" });
     if (error) return toast.error(error.message);
     await supabase.from("photographer_unavailability").delete().eq("photographer_id", uid).like("reason", "Google:%");
     setIcalUrl(""); setAutoSync(false); setStatus(null); setLastSync(null);
@@ -337,7 +337,7 @@ function CalendarPage() {
             )}
 
             {/* حالة الربط */}
-            {(status || lastSync) && (
+            {icalUrl.trim() && (status || lastSync) && (
               <div className={`mt-4 rounded-xl border p-3 text-sm ${status && !status.ok ? "border-destructive/40 bg-destructive/10" : "border-emerald-300/60 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30"}`}>
                 {status && !status.ok ? (
                   <>
