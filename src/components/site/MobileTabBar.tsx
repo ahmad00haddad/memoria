@@ -38,6 +38,9 @@ export function MobileTabBar() {
   // إخفاء الشريط السفلي في صفحات الملف الشخصي للمصورات لترك مساحة لزر الحجز
   if (currentPath.startsWith("/photographers/") && currentPath !== "/photographers/join") return null;
 
+  // داخل الداشبورد يعرض الـ layout شريطه الخاص (MobileBottomNav): نتجنب تراكب شريطين في القاع
+  if (currentPath === "/dashboard" || currentPath.startsWith("/dashboard/")) return null;
+
   // المصوّرة المسجّلة: أدوات عملها اليومية بدل صفحات التسويق
   if (authed && isPhotographer) {
     const tabs = [

@@ -9,17 +9,17 @@ import { createFileRoute } from "@tanstack/react-router";
 // Idempotency: uses email_log to skip recipients that already received the
 // same template in the last 20 hours.
 //
-// استدعاء من pg_cron أو Cloudflare Cron Triggers:
+// يُستدعى من Cloudflare Cron فقط (src/server.ts → scheduled) بسرّ CRON_SECRET.
 //   curl -X POST https://{domain}/api/public/hooks/email-reminders \
-//        -H "apikey: {SUPABASE_PUBLISHABLE_KEY}"
+//        -H "x-cron-secret: {CRON_SECRET}"
 
 export const Route = createFileRoute("/api/public/hooks/email-reminders")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // التحقق من أن النداء يأتي من مصدر موثوق
-        const apikey = request.headers.get("apikey") || request.headers.get("x-api-key");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+        // مفتاح Supabase العام لا يصلح للتحقق: هو منشور في الواجهة وwrangler.jsonc
+        const secret = process.env.CRON_SECRET;
+        if (!secret || request.headers.get("x-cron-secret") !== secret) {
           return new Response("Unauthorized", { status: 401 });
         }
 
