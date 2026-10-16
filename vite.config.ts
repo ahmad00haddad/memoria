@@ -13,5 +13,6 @@ export default defineConfig({
     server: { entry: "server" },
   },
   // Cloudflare Cron → مزامنة Google Calendar (انظري src/nitro/cron.ts)
-  nitro: { plugins: ["./src/nitro/cron.ts"] },
+  // plugins مدعوم في Nitro لكنه غير مذكور في أنواع إعدادات Lovable
+  nitro: { plugins: ["./src/nitro/cron.ts"] } as any,
 });
