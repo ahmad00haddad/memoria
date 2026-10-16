@@ -12,4 +12,6 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  // Cloudflare Cron → مزامنة Google Calendar (انظري src/nitro/cron.ts)
+  nitro: { plugins: ["./src/nitro/cron.ts"] },
 });
