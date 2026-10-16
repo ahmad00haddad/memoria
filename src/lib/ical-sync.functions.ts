@@ -90,6 +90,17 @@ export async function runIcalSyncForUser(userId: string, url: string) {
   if (ics.length > 2_000_000) throw new Error("الملف كبير جدًا");
   if (!/BEGIN:VCALENDAR/i.test(ics)) throw new Error("الرابط لا يعيد تقويماً بصيغة iCal");
   const events = parseIcalDates(ics);
+  const out = await applyExternalDays(userId, events);
+  await supabaseAdmin.from("photographer_private").update({ external_ical_synced_at: new Date().toISOString() }).eq("user_id", userId);
+  return out;
+}
+
+/**
+ * يطبّق أيام الانشغال القادمة من Google (iCal أو OAuth) على photographer_unavailability:
+ * لا يلمس الحجب اليدوي، ويضيف الجديد أولاً ثم يحذف ما لم يعد مشغولاً.
+ */
+export async function applyExternalDays(userId: string, events: { date: string; summary: string }[]) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   const { data: existing } = await supabaseAdmin
     .from("photographer_unavailability").select("date,reason").eq("photographer_id", userId);
@@ -119,6 +130,5 @@ export async function runIcalSyncForUser(userId: string, url: string) {
     await supabaseAdmin.from("photographer_unavailability").delete()
       .eq("photographer_id", userId).in("date", stale);
   }
-  await supabaseAdmin.from("photographer_private").update({ external_ical_synced_at: new Date().toISOString() }).eq("user_id", userId);
   return { inserted: rows.length, removed: stale.length, blocked: freshDates.size };
 }

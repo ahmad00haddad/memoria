@@ -65,6 +65,8 @@ import { Route as AuthenticatedDashboardSubscriptionRouteImport } from './routes
 import { Route as AuthenticatedDashboardWhatsappTemplatesRouteImport } from './routes/_authenticated/dashboard.whatsapp-templates'
 import { Route as AuthenticatedDashboardBookingsIndexRouteImport } from './routes/_authenticated/dashboard.bookings.index'
 import { Route as AuthenticatedDashboardBookingsIdRouteImport } from './routes/_authenticated/dashboard.bookings.$id'
+import { Route as ApiPublicGoogleCallbackRouteImport } from './routes/api/public/google/callback'
+import { Route as ApiPublicHooksBookingChangedRouteImport } from './routes/api/public/hooks/booking-changed'
 import { Route as ApiPublicHooksEmailRemindersRouteImport } from './routes/api/public/hooks/email-reminders'
 import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
 import { Route as ApiPublicHooksPaymentRouteImport } from './routes/api/public/hooks/payment'
@@ -377,6 +379,17 @@ const AuthenticatedDashboardBookingsIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedDashboardBookingsRoute,
   } as any)
+const ApiPublicGoogleCallbackRoute = ApiPublicGoogleCallbackRouteImport.update({
+  id: '/api/public/google/callback',
+  path: '/api/public/google/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksBookingChangedRoute =
+  ApiPublicHooksBookingChangedRouteImport.update({
+    id: '/api/public/hooks/booking-changed',
+    path: '/api/public/hooks/booking-changed',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksEmailRemindersRoute =
   ApiPublicHooksEmailRemindersRouteImport.update({
     id: '/api/public/hooks/email-reminders',
@@ -464,6 +477,8 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
+  '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
+  '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
@@ -524,6 +539,8 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
+  '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
+  '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
@@ -589,6 +606,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
+  '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
+  '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
@@ -654,6 +673,8 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/dashboard/bookings/$id'
+    | '/api/public/google/callback'
+    | '/api/public/hooks/booking-changed'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
@@ -714,6 +735,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/dashboard/bookings/$id'
+    | '/api/public/google/callback'
+    | '/api/public/hooks/booking-changed'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
@@ -778,6 +801,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/bookings/$id'
+    | '/api/public/google/callback'
+    | '/api/public/hooks/booking-changed'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
@@ -813,6 +838,8 @@ export interface RootRouteChildren {
   PhotographersJoinRoute: typeof PhotographersJoinRoute
   ReviewTokenRoute: typeof ReviewTokenRoute
   TrackTokenRoute: typeof TrackTokenRoute
+  ApiPublicGoogleCallbackRoute: typeof ApiPublicGoogleCallbackRoute
+  ApiPublicHooksBookingChangedRoute: typeof ApiPublicHooksBookingChangedRoute
   ApiPublicHooksEmailRemindersRoute: typeof ApiPublicHooksEmailRemindersRoute
   ApiPublicHooksIcalSyncRoute: typeof ApiPublicHooksIcalSyncRoute
   ApiPublicHooksPaymentRoute: typeof ApiPublicHooksPaymentRoute
@@ -1215,6 +1242,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardBookingsIdRouteImport
       parentRoute: typeof AuthenticatedDashboardBookingsRoute
     }
+    '/api/public/google/callback': {
+      id: '/api/public/google/callback'
+      path: '/api/public/google/callback'
+      fullPath: '/api/public/google/callback'
+      preLoaderRoute: typeof ApiPublicGoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/booking-changed': {
+      id: '/api/public/hooks/booking-changed'
+      path: '/api/public/hooks/booking-changed'
+      fullPath: '/api/public/hooks/booking-changed'
+      preLoaderRoute: typeof ApiPublicHooksBookingChangedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/email-reminders': {
       id: '/api/public/hooks/email-reminders'
       path: '/api/public/hooks/email-reminders'
@@ -1398,6 +1439,8 @@ const rootRouteChildren: RootRouteChildren = {
   PhotographersJoinRoute: PhotographersJoinRoute,
   ReviewTokenRoute: ReviewTokenRoute,
   TrackTokenRoute: TrackTokenRoute,
+  ApiPublicGoogleCallbackRoute: ApiPublicGoogleCallbackRoute,
+  ApiPublicHooksBookingChangedRoute: ApiPublicHooksBookingChangedRoute,
   ApiPublicHooksEmailRemindersRoute: ApiPublicHooksEmailRemindersRoute,
   ApiPublicHooksIcalSyncRoute: ApiPublicHooksIcalSyncRoute,
   ApiPublicHooksPaymentRoute: ApiPublicHooksPaymentRoute,

@@ -19,6 +19,7 @@ import { CalendarIcon } from "lucide-react";
 import { ar } from "date-fns/locale";
 import { format } from "date-fns";
 import { MonthGrid } from "@/components/dashboard/MonthGrid";
+import { GoogleConnectCard } from "@/components/dashboard/GoogleConnectCard";
 import { hapticVibrate } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
@@ -274,6 +275,9 @@ function CalendarPage() {
           <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
             {g("اختاري الطريقة الأنسب لكِ. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.", "اختر الطريقة الأنسب لك. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook.")}
           </p>
+
+          <GoogleConnectCard onChanged={() => uid && load(uid)} />
+          <p className="mb-3 text-xs text-muted-foreground">أو بدون تسجيل دخول (Apple / Outlook / رابط iCal):</p>
 
           {/* الخطوة ١: إظهار الحجوزات في تقويمها — اشتراك بنقرة واحدة */}
           <div className="rounded-xl border border-border p-5 mb-5 bg-background/50">

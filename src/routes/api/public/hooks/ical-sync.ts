@@ -30,7 +30,20 @@ export const Route = createFileRoute("/api/public/hooks/ical-sync")({
             }
           }
         }));
-        return new Response(JSON.stringify({ processed: results.length, results }), {
+        // مربوطات Google مباشرة (OAuth): سحب الانشغال + كتابة الحجوزات
+        const g = await import("@/lib/google-calendar.server");
+        const google: { user_id: string; ok: boolean; error?: string }[] = [];
+        if (g.isGoogleConfigured()) {
+          const { data: links } = await supabaseAdmin.from("google_calendar_links" as any).select("user_id");
+          const q2 = [...((links ?? []) as any[])];
+          await Promise.all(Array.from({ length: 5 }, async () => {
+            for (let r = q2.shift(); r; r = q2.shift()) {
+              try { await g.syncGoogleUser(r.user_id); google.push({ user_id: r.user_id, ok: true }); }
+              catch (e: any) { google.push({ user_id: r.user_id, ok: false, error: e?.message }); }
+            }
+          }));
+        }
+        return new Response(JSON.stringify({ processed: results.length, results, google }), {
           status: 200,
           headers: { "Content-Type": "application/json" },
         });
