@@ -1,13 +1,16 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { startTour } from "@/components/ClientTour";
 import { DrawRule } from "@/components/site/Reveal";
 
 export function Footer() {
   const { loading: authLoading, authed, isPhotographer } = useAuthState();
+  // داخل أدوات العمل على الهاتف لا نعرض تذييل التسويق: يضيف شاشة تمرير كاملة بلا فائدة
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const inApp = /^\/(dashboard|admin|notifications|onboarding)/.test(pathname);
 
   return (
-    <footer className="relative mt-12 sm:mt-24 bg-background">
+    <footer className={`relative mt-12 sm:mt-24 bg-background ${inApp ? "hidden sm:block" : ""}`}>
       <DrawRule className="absolute inset-x-0 top-0 h-px bg-border/60" duration={1.8} />
       <div className="container-editorial py-12 grid gap-8 sm:grid-cols-4 text-sm">
         <div>

@@ -58,6 +58,13 @@ function BookingsList() {
   const [lastOpened, setLastOpened] = useState<{ id: string; name: string } | null>(null);
   const [showSwipeHint, setShowSwipeHint] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  // ?new=1 من زر «+» في الشريط السفلي يفتح نموذج الحجز اليدوي مباشرة
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") {
+      setManualOpen(true);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     try {

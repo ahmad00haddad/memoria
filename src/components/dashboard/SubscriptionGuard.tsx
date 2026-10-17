@@ -64,7 +64,7 @@ export function SubscriptionGuard() {
 
   return (
     <div className={`border-b ${expired ? "border-destructive/40 bg-destructive/10" : "border-amber-500/40 bg-amber-50 dark:bg-amber-950/30"}`}>
-      <div className="container-editorial flex flex-wrap items-start gap-3 py-3">
+      <div className="container-editorial flex flex-wrap items-center gap-3 py-2.5 sm:items-start sm:py-3">
         {expired
           ? <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
           : <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />}
@@ -74,7 +74,8 @@ export function SubscriptionGuard() {
               ? "اشتراكك منتهي — ملفك مخفي الآن عن العرائس"
               : `${s.trial ? "تجربتك المجانية تنتهي" : "اشتراكك ينتهي"} ${when}`}
           </div>
-          <div className="text-foreground/80">
+          {/* على الهاتف يكفي العنوان والزر؛ التفاصيل للشاشات الأكبر */}
+          <div className={`text-foreground/80 ${expired ? "" : "hidden sm:block"}`}>
             {expired ? (
               <>رابط ملفك{s.username ? <> <span dir="ltr" className="font-mono">@{s.username}</span></> : null} متوقّف، ولن تصلك طلبات حجز جديدة حتى التجديد.</>
             ) : (
@@ -87,7 +88,7 @@ export function SubscriptionGuard() {
         </div>
         <Link
           to="/dashboard/subscription"
-          className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${expired ? "bg-destructive text-destructive-foreground" : "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal"}`}
+          className={`shrink-0 inline-flex min-h-10 items-center rounded-full px-4 text-sm font-medium ${expired ? "bg-destructive text-destructive-foreground" : "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal"}`}
         >
           {expired ? g("جدّدي الآن", "جدّد الآن") : g("جدّدي الاشتراك", "جدّد الاشتراك")}
         </Link>
