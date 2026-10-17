@@ -37,7 +37,16 @@ function NotFoundComponent() {
         <p className="mt-2 text-sm text-muted-foreground">
           الصفحة التي تبحثين عنها غير موجودة أو تم نقلها.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <div className="mt-6 overflow-hidden rounded-md border border-border">
+          <iframe
+            src="/game/"
+            title="ضاعت العروس — لعبة ميموريا"
+            loading="lazy"
+            className="block h-[260px] w-full border-0"
+          />
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">العبي بينما نلاقي الصفحة</p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-sm bg-charcoal px-5 py-2.5 text-sm font-medium text-ivory transition-colors hover:opacity-90"
