@@ -24,6 +24,16 @@ const STATIC_PAGES = [
   { path: "/terms",            priority: "0.4", changefreq: "yearly"  },
 ];
 
+import { CITIES, OCCASIONS } from "@/content/seo";
+import { BLOG_POSTS } from "@/content/blog";
+
+const CONTENT_PAGES = [
+  { path: "/blog", priority: "0.6", changefreq: "weekly" },
+  ...CITIES.map((c) => ({ path: `/wedding-photographer/${c.slug}`, priority: "0.7", changefreq: "monthly" })),
+  ...OCCASIONS.map((o) => ({ path: `/occasion/${o.slug}`, priority: "0.7", changefreq: "monthly" })),
+  ...BLOG_POSTS.map((b) => ({ path: `/blog/${b.slug}`, priority: "0.6", changefreq: "monthly" })),
+];
+
 function escapeXml(s: string) {
   return s.replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]!)
@@ -49,7 +59,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         const today = new Date().toISOString().slice(0, 10);
 
-        const staticEntries = STATIC_PAGES.map((p) =>
+        const staticEntries = [...STATIC_PAGES, ...CONTENT_PAGES].map((p) =>
           urlEntry(`${BASE_URL}${p.path}`, today, p.changefreq, p.priority)
         );
 

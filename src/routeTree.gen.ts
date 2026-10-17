@@ -33,12 +33,16 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
+import { Route as OccasionTypeRouteImport } from './routes/occasion.$type'
 import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as ReviewTokenRouteImport } from './routes/review.$token'
 import { Route as TrackTokenRouteImport } from './routes/track.$token'
+import { Route as WeddingPhotographerCityRouteImport } from './routes/wedding-photographer.$city'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminAuditLogRouteImport } from './routes/_authenticated/admin.audit-log'
 import { Route as AuthenticatedAdminBookingsRouteImport } from './routes/_authenticated/admin.bookings'
@@ -197,9 +201,24 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContractsTokenRoute = ContractsTokenRouteImport.update({
   id: '/contracts/$token',
   path: '/contracts/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OccasionTypeRoute = OccasionTypeRouteImport.update({
+  id: '/occasion/$type',
+  path: '/occasion/$type',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OfferTokenRoute = OfferTokenRouteImport.update({
@@ -225,6 +244,11 @@ const ReviewTokenRoute = ReviewTokenRouteImport.update({
 const TrackTokenRoute = TrackTokenRouteImport.update({
   id: '/track/$token',
   path: '/track/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WeddingPhotographerCityRoute = WeddingPhotographerCityRouteImport.update({
+  id: '/wedding-photographer/$city',
+  path: '/wedding-photographer/$city',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
@@ -466,12 +490,16 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/contracts/$token': typeof ContractsTokenRoute
+  '/occasion/$type': typeof OccasionTypeRoute
   '/offer/$token': typeof OfferTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
   '/track/$token': typeof TrackTokenRoute
+  '/wedding-photographer/$city': typeof WeddingPhotographerCityRoute
+  '/blog/': typeof BlogIndexRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/admin/contact-messages': typeof AuthenticatedAdminContactMessagesRoute
@@ -532,12 +560,16 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/contracts/$token': typeof ContractsTokenRoute
+  '/occasion/$type': typeof OccasionTypeRoute
   '/offer/$token': typeof OfferTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
   '/track/$token': typeof TrackTokenRoute
+  '/wedding-photographer/$city': typeof WeddingPhotographerCityRoute
+  '/blog': typeof BlogIndexRoute
   '/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/admin/contact-messages': typeof AuthenticatedAdminContactMessagesRoute
@@ -601,12 +633,16 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/contracts/$token': typeof ContractsTokenRoute
+  '/occasion/$type': typeof OccasionTypeRoute
   '/offer/$token': typeof OfferTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
   '/track/$token': typeof TrackTokenRoute
+  '/wedding-photographer/$city': typeof WeddingPhotographerCityRoute
+  '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/audit-log': typeof AuthenticatedAdminAuditLogRoute
   '/_authenticated/admin/bookings': typeof AuthenticatedAdminBookingsRoute
   '/_authenticated/admin/contact-messages': typeof AuthenticatedAdminContactMessagesRoute
@@ -671,12 +707,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/notifications'
     | '/onboarding'
+    | '/blog/$slug'
     | '/contracts/$token'
+    | '/occasion/$type'
     | '/offer/$token'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
     | '/track/$token'
+    | '/wedding-photographer/$city'
+    | '/blog/'
     | '/admin/audit-log'
     | '/admin/bookings'
     | '/admin/contact-messages'
@@ -737,12 +777,16 @@ export interface FileRouteTypes {
     | '/terms'
     | '/notifications'
     | '/onboarding'
+    | '/blog/$slug'
     | '/contracts/$token'
+    | '/occasion/$type'
     | '/offer/$token'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
     | '/track/$token'
+    | '/wedding-photographer/$city'
+    | '/blog'
     | '/admin/audit-log'
     | '/admin/bookings'
     | '/admin/contact-messages'
@@ -805,12 +849,16 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
+    | '/blog/$slug'
     | '/contracts/$token'
+    | '/occasion/$type'
     | '/offer/$token'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
     | '/track/$token'
+    | '/wedding-photographer/$city'
+    | '/blog/'
     | '/_authenticated/admin/audit-log'
     | '/_authenticated/admin/bookings'
     | '/_authenticated/admin/contact-messages'
@@ -871,12 +919,16 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   ContractsTokenRoute: typeof ContractsTokenRoute
+  OccasionTypeRoute: typeof OccasionTypeRoute
   OfferTokenRoute: typeof OfferTokenRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
   ReviewTokenRoute: typeof ReviewTokenRoute
   TrackTokenRoute: typeof TrackTokenRoute
+  WeddingPhotographerCityRoute: typeof WeddingPhotographerCityRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicGoogleCallbackRoute: typeof ApiPublicGoogleCallbackRoute
   ApiPublicHooksBookingChangedRoute: typeof ApiPublicHooksBookingChangedRoute
   ApiPublicHooksEmailRemindersRoute: typeof ApiPublicHooksEmailRemindersRoute
@@ -1057,11 +1109,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contracts/$token': {
       id: '/contracts/$token'
       path: '/contracts/$token'
       fullPath: '/contracts/$token'
       preLoaderRoute: typeof ContractsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/occasion/$type': {
+      id: '/occasion/$type'
+      path: '/occasion/$type'
+      fullPath: '/occasion/$type'
+      preLoaderRoute: typeof OccasionTypeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/offer/$token': {
@@ -1097,6 +1170,13 @@ declare module '@tanstack/react-router' {
       path: '/track/$token'
       fullPath: '/track/$token'
       preLoaderRoute: typeof TrackTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wedding-photographer/$city': {
+      id: '/wedding-photographer/$city'
+      path: '/wedding-photographer/$city'
+      fullPath: '/wedding-photographer/$city'
+      preLoaderRoute: typeof WeddingPhotographerCityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -1498,12 +1578,16 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  BlogSlugRoute: BlogSlugRoute,
   ContractsTokenRoute: ContractsTokenRoute,
+  OccasionTypeRoute: OccasionTypeRoute,
   OfferTokenRoute: OfferTokenRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
   ReviewTokenRoute: ReviewTokenRoute,
   TrackTokenRoute: TrackTokenRoute,
+  WeddingPhotographerCityRoute: WeddingPhotographerCityRoute,
+  BlogIndexRoute: BlogIndexRoute,
   ApiPublicGoogleCallbackRoute: ApiPublicGoogleCallbackRoute,
   ApiPublicHooksBookingChangedRoute: ApiPublicHooksBookingChangedRoute,
   ApiPublicHooksEmailRemindersRoute: ApiPublicHooksEmailRemindersRoute,

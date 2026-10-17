@@ -12,7 +12,7 @@ export function Footer() {
   return (
     <footer className={`relative mt-12 sm:mt-24 bg-background ${inApp ? "hidden sm:block" : ""}`}>
       <DrawRule className="absolute inset-x-0 top-0 h-px bg-border/60" duration={1.8} />
-      <div className="container-editorial py-12 grid gap-8 sm:grid-cols-4 text-sm">
+      <div className="container-editorial py-12 grid gap-8 sm:grid-cols-5 text-sm">
         <div>
           <div className="font-serif text-xl mb-2">Memoria <span className="text-muted-foreground text-base">· ميموريا</span></div>
           <p className="text-muted-foreground leading-relaxed">ذاكرة يومكِ، محفوظة بأمان. شركة أردنية مسجلة (ذ.م.م) متخصّصة في حجز وتوثيق خدمات التصوير.</p>
@@ -36,6 +36,17 @@ export function Footer() {
             <li><Link to="/for-photographers" className="hover:text-gold">مزايا للمصوّرات</Link></li>
             <li><Link to="/pricing" className="hover:text-gold">باقات المصوّرين</Link></li>
             <li><Link to={authed ? "/dashboard" : "/login"} className="hover:text-gold">{authed ? "لوحة التحكم" : "تسجيل الدخول"}</Link></li>
+          </ul>
+        </div>
+        <div>
+          <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">مدن ومناسبات</div>
+          <ul className="space-y-2">
+            <li><a href="/wedding-photographer/amman" className="hover:text-gold">مصورة أعراس في عمّان</a></li>
+            <li><a href="/wedding-photographer/irbid" className="hover:text-gold">مصورة أعراس في إربد</a></li>
+            <li><a href="/wedding-photographer/aqaba" className="hover:text-gold">مصورة أعراس في العقبة</a></li>
+            <li><a href="/occasion/engagement" className="hover:text-gold">مصورة خطوبة</a></li>
+            <li><a href="/occasion/henna" className="hover:text-gold">مصورة حنّاء</a></li>
+            <li><a href="/blog" className="hover:text-gold">المدوّنة</a></li>
           </ul>
         </div>
         <div>

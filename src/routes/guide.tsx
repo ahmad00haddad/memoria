@@ -340,6 +340,10 @@ function GuidePage() {
                 <Link to="/pricing" className="text-sm font-semibold text-primary hover:underline">الاشتراك للمصورين</Link>
                 <span className="text-muted-foreground">·</span>
                 <Link to="/search" className="text-sm font-semibold text-primary hover:underline">تصفح المصورين</Link>
+                <span className="text-muted-foreground">·</span>
+                <a href="/blog" className="text-sm font-semibold text-primary hover:underline">المدوّنة</a>
+                <span className="text-muted-foreground">·</span>
+                <a href="/wedding-photographer/amman" className="text-sm font-semibold text-primary hover:underline">مصورة أعراس في عمّان</a>
               </div>
             </div>
           </div>

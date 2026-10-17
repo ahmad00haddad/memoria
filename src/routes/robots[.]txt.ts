@@ -15,6 +15,9 @@ Allow: /guide
 Allow: /pricing
 Allow: /for-clients
 Allow: /for-photographers
+Allow: /wedding-photographer/
+Allow: /occasion/
+Allow: /blog
 
 # Private routes — لا تفهرس
 Disallow: /dashboard/
@@ -28,9 +31,6 @@ Disallow: /review/
 Disallow: /api/
 
 Sitemap: ${BASE_URL}/sitemap.xml
-
-# crawl-delay لتجنّب الضغط على الخادم
-Crawl-delay: 2
 `;
         return new Response(content, {
           headers: {
