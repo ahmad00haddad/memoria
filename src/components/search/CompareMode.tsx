@@ -123,7 +123,7 @@ function CompareTable({ usernames, onRemove }: { usernames: string[]; onRemove: 
                     <img src={d.avatar_url || "/brand/mark.svg"} alt="" className="h-14 w-14 rounded-full border border-border object-cover" />
                     <div className="font-serif text-base font-semibold leading-tight">{d.display_name}</div>
                     <div className="text-xs text-muted-foreground">{d.city || "الأردن"}</div>
-                    {d.is_demo && <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground">نسخة تجريبية</span>}
+                    {d.is_demo && <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">نسخة تجريبية</span>}
                   </div>
                 </th>
               ))}
@@ -145,7 +145,7 @@ function CompareTable({ usernames, onRemove }: { usernames: string[]; onRemove: 
                     >
                       {c.cell(d)}
                       {best.has(d.username) && (
-                        <span className="mt-1 block text-[10px] font-semibold uppercase tracking-wider text-gold">الأفضل</span>
+                        <span className="mt-1 block text-[11px] font-semibold uppercase tracking-wider text-gold">الأفضل</span>
                       )}
                     </td>
                   ))}

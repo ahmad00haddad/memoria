@@ -148,7 +148,8 @@ export function ClientTour() {
     });
   };
 
-  const hidden = HIDDEN_PREFIXES.some((p) => pathname.startsWith(p));
+  // تظهر فقط في صفحتي البحث وملف المصوّرة — لا فوق الرئيسية أو الأسعار أو الصفحات الأخرى
+  const hidden = HIDDEN_PREFIXES.some((p) => pathname.startsWith(p)) || !(pathname.startsWith("/search") || pathname.startsWith("/photographers/"));
   if (state.status !== "active" || hidden || gateOpen) return null;
 
   const s = STEPS[state.step];
@@ -186,11 +187,11 @@ export function ClientTour() {
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <h2 className="font-serif text-base leading-snug text-foreground">{s.title}</h2>
-                <button onClick={() => finish(true)} aria-label="إغلاق الجولة" className="p-1 text-muted-foreground hover:text-foreground">
+                <button onClick={() => finish(true)} aria-label="إغلاق الجولة" className="-m-2 grid h-11 w-11 shrink-0 place-items-center text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{s.desc}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{s.desc}</p>
             </div>
           </div>
 
@@ -201,12 +202,12 @@ export function ClientTour() {
           </div>
 
           <div className="mt-3 flex items-center justify-between gap-3">
-            <button onClick={() => finish(true)} className="text-xs text-muted-foreground hover:text-foreground">
+            <button onClick={() => finish(true)} className="min-h-11 px-1 text-xs text-muted-foreground hover:text-foreground">
               تخطّي الجولة
             </button>
             <button
               onClick={onCta}
-              className="inline-flex items-center gap-2 rounded-sm bg-charcoal px-4 py-2 text-xs font-medium text-ivory hover:opacity-90"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-charcoal px-5 text-sm font-medium text-ivory hover:opacity-90 dark:bg-gold dark:text-charcoal"
             >
               {s.cta} {s.to && pathname !== s.to ? <ArrowLeft className="h-3.5 w-3.5" /> : null}
             </button>

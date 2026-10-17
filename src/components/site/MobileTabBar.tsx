@@ -65,12 +65,12 @@ export function MobileTabBar() {
                   </motion.span>
                 )}
               </span>
-              <span className="text-[10px]">{t.label}</span>
+              <span className="text-[11px] font-medium">{t.label}</span>
             </Link>
           ))}
           <button onClick={openCommandPalette} className="flex flex-col items-center justify-center w-full h-full gap-1 text-muted-foreground">
             <Search className="h-5 w-5" strokeWidth={1.8} />
-            <span className="text-[10px]">بحث</span>
+            <span className="text-[11px] font-medium">بحث</span>
           </button>
         </div>
       </div>
@@ -89,7 +89,7 @@ export function MobileTabBar() {
           }`}
         >
           <Home className="h-5 w-5" />
-          <span className="text-[10px]">الرئيسية</span>
+          <span className="text-[11px] font-medium">الرئيسية</span>
         </Link>
 
         {/* الروابط الديناميكية حسب الدور */}
@@ -102,7 +102,7 @@ export function MobileTabBar() {
               }`}
             >
               <Search className="h-5 w-5" />
-              <span className="text-[10px]">البحث</span>
+              <span className="text-[11px] font-medium">البحث</span>
             </Link>
             <Link
               to="/guide"
@@ -111,7 +111,7 @@ export function MobileTabBar() {
               }`}
             >
               <HelpCircle className="h-5 w-5" />
-              <span className="text-[10px]">كيف يعمل</span>
+              <span className="text-[11px] font-medium">كيف يعمل</span>
             </Link>
           </>
         ) : (visitorRole === "photographer" || isPhotographer) ? (
@@ -123,7 +123,7 @@ export function MobileTabBar() {
               }`}
             >
               <Briefcase className="h-5 w-5" />
-              <span className="text-[10px]">المميزات</span>
+              <span className="text-[11px] font-medium">المميزات</span>
             </Link>
             {!authed && (
               <Link
@@ -133,7 +133,7 @@ export function MobileTabBar() {
                 }`}
               >
                 <Tag className="h-5 w-5" />
-                <span className="text-[10px]">الأسعار</span>
+                <span className="text-[11px] font-medium">الأسعار</span>
               </Link>
             )}
           </>
@@ -148,7 +148,7 @@ export function MobileTabBar() {
             }`}
           >
             <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[10px]">لوحتي</span>
+            <span className="text-[11px] font-medium">لوحتي</span>
           </Link>
         ) : (visitorRole === "photographer") ? (
           <Link
@@ -158,7 +158,7 @@ export function MobileTabBar() {
             }`}
           >
             <PlusCircle className="h-5 w-5" />
-            <span className="text-[10px]">انضمي</span>
+            <span className="text-[11px] font-medium">انضمي</span>
           </Link>
         ) : (
           <Link
@@ -168,7 +168,7 @@ export function MobileTabBar() {
             }`}
           >
             <User className="h-5 w-5" />
-            <span className="text-[10px]">دخول</span>
+            <span className="text-[11px] font-medium">دخول</span>
           </Link>
         )}
       </div>

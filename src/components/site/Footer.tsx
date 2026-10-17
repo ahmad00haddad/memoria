@@ -7,7 +7,7 @@ export function Footer() {
   const { loading: authLoading, authed, isPhotographer } = useAuthState();
 
   return (
-    <footer className="relative mt-24 bg-background">
+    <footer className="relative mt-12 sm:mt-24 bg-background">
       <DrawRule className="absolute inset-x-0 top-0 h-px bg-border/60" duration={1.8} />
       <div className="container-editorial py-12 grid gap-8 sm:grid-cols-4 text-sm">
         <div>
@@ -62,6 +62,8 @@ export function Footer() {
           </a>
         </div>
       </div>
+      {/* مساحة للشريط السفلي الثابت على الهاتف كي لا يغطي آخر سطر */}
+      <div aria-hidden className="h-[calc(4.5rem+env(safe-area-inset-bottom))] sm:hidden" />
     </footer>
   );
 }

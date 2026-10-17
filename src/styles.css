@@ -155,7 +155,7 @@
 
   p { text-wrap: pretty; }
   h1, h2, h3 { text-wrap: balance; }
-  html { scroll-behavior: smooth; }
+  /* لا scroll-behavior: smooth عام: كان يجعل كل انتقال بين الصفحات يتمرّر ببطء للأعلى. التمرير الناعم للروابط الداخلية يتم بـ scrollIntoView. */
   ::selection { background: color-mix(in oklab, var(--gold) 35%, transparent); }
 }
 
@@ -398,4 +398,13 @@
 [data-sonner-toast] {
   transition-duration: 550ms !important;
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+/* iOS يكبّر الصفحة تلقائياً عند التركيز على حقل خطّه أصغر من 16px — نمنع ذلك على الهاتف */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }

@@ -331,7 +331,11 @@ function RootComponent() {
   // The soft page entrances play on every visit to public pages. Inside the app
   // (dashboard/admin), used many times a day, they play on the first visit only.
   const appArea = /^\/(dashboard|admin|notifications)/.test(pathname);
-  const playEntrances = intro || !appArea;
+  // على الهاتف: حركات الدخول في أول زيارة فقط — تكرارها مع كل تنقّل يجعل الصفحات تبدو بطيئة.
+  // يُقرأ بعد التركيب (لا أثناء الرسم) كي يطابق الخادمَ في أول تحميل؛ يسري على التنقّلات التالية.
+  const [isPhone, setIsPhone] = useState(false);
+  useEffect(() => { setIsPhone(window.matchMedia("(max-width: 639px)").matches); }, []);
+  const playEntrances = intro || (!appArea && !isPhone);
   // The big one-time opening runs on public pages only (not the app, not
   // tracking/contract links people open from WhatsApp). When its arch opens,
   // bumping the epoch remounts the page so its own entrance builds in view.

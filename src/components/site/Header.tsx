@@ -142,7 +142,7 @@ export function Header() {
           <img src="/favicon.svg" alt="" width={36} height={36} className="h-9 w-9 transition-transform duration-700 ease-out group-hover:rotate-[25deg] group-hover:scale-105" />
           <div className="leading-tight">
             <div className="font-serif text-lg tracking-wide">Memoria <span className="text-muted-foreground text-sm">ميموريا</span></div>
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
           </div>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
@@ -200,7 +200,7 @@ export function Header() {
               <Link to="/dashboard" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="الرسائل">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 {unreadMsgs > 0 && (
-                  <span className="absolute -top-1 -left-1 bg-blue-600 text-white text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadMsgs}</span>
+                  <span className="absolute -top-1 -left-1 bg-blue-600 text-white text-[11px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadMsgs}</span>
                 )}
               </Link>
               <Link to="/notifications" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors group" aria-label="إشعارات">
@@ -211,7 +211,7 @@ export function Header() {
                   // a new notification pops the badge in and sends out one ring
                   <motion.span
                     key={unreadNotifs}
-                    className="absolute -top-1 -left-1 bg-red-600 text-white text-[10px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1"
+                    className="absolute -top-1 -left-1 bg-red-600 text-white text-[11px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1"
                     initial={{ scale: 0.4 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 520, damping: 14 }}

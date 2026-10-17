@@ -138,6 +138,7 @@ function PhotographerPage() {
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [showAllPkgs, setShowAllPkgs] = useState(false);
   const fetchDeposit = useServerFn(getPublicDepositInfo);
   const fetchProfileData = useServerFn(getPhotographerProfileData);
 
@@ -287,7 +288,7 @@ function PhotographerPage() {
       {/* HERO — Editorial Magazine layout */}
       <section className="relative bg-charcoal text-ivory grain-overlay overflow-hidden pt-14 sm:pt-0">
         {/* Top meta strip: ISSUE / DATE / FEATURE — like a magazine masthead */}
-        <div className="container-editorial pt-8 pb-4 border-b border-ivory/10 flex flex-wrap items-center gap-x-8 gap-y-2 text-[10px] uppercase tracking-[0.35em] opacity-70">
+        <div className="container-editorial pt-8 pb-4 border-b border-ivory/10 flex flex-wrap items-center gap-x-8 gap-y-2 text-[11px] uppercase tracking-[0.35em] opacity-70">
           <span>Memoria · العدد ٠١</span>
           <span className="hidden sm:inline">{new Date().toLocaleDateString("ar-JO", { year: "numeric", month: "long" })}</span>
           <span className="ms-auto inline-flex items-center gap-2">
@@ -313,7 +314,7 @@ function PhotographerPage() {
                   نسخة تجريبية للمصوّرات فقط، لتري كيف سيبدو حسابك. الحجز يعمل بشكل طبيعي، أما التحويل فغير متاح.
                 </div>
               )}
-              <div className="text-[10px] uppercase tracking-[0.5em] text-gold mb-4">
+              <div className="text-[11px] uppercase tracking-[0.5em] text-gold mb-4">
                 {profile.tagline || "WEDDING PHOTOGRAPHY"}
               </div>
               {profile.avatar_url && (
@@ -351,12 +352,12 @@ function PhotographerPage() {
                   </span>
                 )}
                 {profile.is_featured && (
-                  <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30">
+                  <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30">
                     <Star className="h-3 w-3 fill-gold" /> اختيار المحرّر
                   </span>
                 )}
                 {/* ⚡ تلميح: سرعة الرد */}
-                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.25em] bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30" title="هذه المصورة ترد بسرعة على طلبات الحجز">
+                <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30" title="هذه المصورة ترد بسرعة على طلبات الحجز">
                   <span className="text-emerald-400">⚡</span> ترد سريعاً
                 </span>
               </div>
@@ -370,7 +371,7 @@ function PhotographerPage() {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => scrollTo("book")}
-                  className="group relative overflow-hidden bg-ivory text-charcoal px-8 py-3.5 rounded-sm font-medium transition before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-gold/40 before:to-transparent before:transition-transform before:duration-700"
+                  className="hidden sm:inline-flex group relative overflow-hidden bg-ivory text-charcoal px-8 py-3.5 rounded-sm font-medium transition before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-gold/40 before:to-transparent before:transition-transform before:duration-700"
                 >
                   <span className="relative">احجزي الآن</span>
                 </motion.button>
@@ -378,7 +379,7 @@ function PhotographerPage() {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => scrollTo("packages")}
-                  className="border border-ivory/40 text-ivory px-8 py-3.5 rounded-sm hover:bg-ivory/10 transition"
+                  className="w-full sm:w-auto border border-ivory/40 text-ivory px-8 py-3.5 rounded-sm hover:bg-ivory/10 transition"
                 >
                   الباقات
                 </motion.button>
@@ -413,7 +414,7 @@ function PhotographerPage() {
             {/* Floating editorial caption */}
             <div className="absolute bottom-4 end-4 sm:bottom-6 sm:end-6 max-w-[260px]">
               <div className="bg-ivory/95 text-charcoal backdrop-blur-sm border border-border rounded-sm p-4 shadow-elegant">
-                <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
+                <div className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
                   مختارة من المعرض
                 </div>
                 <div className="font-serif text-base leading-snug">
@@ -448,12 +449,14 @@ function PhotographerPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 relative">
             {pricing.filter((p) => p.package !== "addon").map((p, idx, arr) => {
               const isPopular = arr.length >= 3 && idx === 1;
+              // على الهاتف نعرض أول ٣ باقات فقط حتى تضغط «عرض كل الباقات»
+              const collapsed = !showAllPkgs && idx >= 3;
               const features = parseFeatures(p.description);
               return (
-                <RiseIn key={p.id} index={idx} className="h-full">
+                <RiseIn key={p.id} index={idx} className={`h-full ${collapsed ? "hidden sm:block" : ""}`}>
                 <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${isPopular ? 'border-gold border-2 ring-1 ring-gold/20 shadow-[0_0_20px_rgba(201,162,39,0.15)]' : 'border-border'}`}>
                   {isPopular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-charcoal px-3 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider">
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-charcoal px-3 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider">
                       الباقة الأكثر طلباً
                     </span>
                   )}
@@ -489,6 +492,15 @@ function PhotographerPage() {
               <span className="animate-pulse">🔥</span> <strong>طلب عالي:</strong> تم حجز هذه المصوّرة مرات عديدة مؤخراً. سارعي بتأكيد حجزكِ!
             </span>
           </div>
+        )}
+        {!showAllPkgs && pricing.filter((p) => p.package !== "addon").length > 3 && (
+          <button
+            type="button"
+            onClick={() => setShowAllPkgs(true)}
+            className="sm:hidden mt-4 w-full min-h-12 rounded-full border border-border text-sm hover:bg-secondary"
+          >
+            عرض كل الباقات ({pricing.filter((p) => p.package !== "addon").length})
+          </button>
         )}
       </section>
 
@@ -526,7 +538,7 @@ function PhotographerPage() {
                       {/youtube|vimeo/i.test(linkLabel(link)) ? <Play className="h-5 w-5 fill-current" /> : <ExternalLink className="h-5 w-5" />}
                     </span>
                   </span>
-                  <span className="pointer-events-none absolute bottom-2 start-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-white">{linkLabel(link)}</span>
+                  <span className="pointer-events-none absolute bottom-2 start-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white">{linkLabel(link)}</span>
                 </motion.a>
               ) : (
                 <motion.button
@@ -576,7 +588,7 @@ function PhotographerPage() {
         <section className="container-editorial pb-12">
           <h2 className="font-serif text-2xl mb-2 text-center">آراء العملاء</h2>
           <div className="flex justify-center mb-4">
-            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] bg-gold/10 text-gold px-3 py-1 rounded-full border border-gold/30">
+            <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] bg-gold/10 text-gold px-3 py-1 rounded-full border border-gold/30">
               <CheckCircle2 className="h-3 w-3" /> تقييمات من حجوزات مكتملة فقط
             </span>
           </div>
@@ -595,7 +607,7 @@ function PhotographerPage() {
       )}
 
       {/* CONTACT FOOTER */}
-      <section className="container-editorial pb-16 text-center">
+      <section className="container-editorial pb-8 sm:pb-16 text-center">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">للاستفسار والتواصل</div>
         <div className="flex justify-center gap-3">
           {profile.instagram && (
@@ -626,7 +638,7 @@ function PhotographerPage() {
 function Stat({ label, value, sub }: { label: string; value: React.ReactNode; sub?: string }) {
   return (
     <div className="group">
-      <div className="text-[10px] uppercase tracking-[0.3em] text-gold/80 mb-1 flex items-center gap-1">
+      <div className="text-[11px] uppercase tracking-[0.3em] text-gold/80 mb-1 flex items-center gap-1">
         {label === "الموقع" && <MapPin className="h-3 w-3 group-hover:animate-bounce" />}
         {label}
       </div>
@@ -674,7 +686,7 @@ function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profi
             <it.icon className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{it.label}</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{it.label}</div>
             <div className="font-serif text-base truncate">{it.value}</div>
           </div>
         </div>
@@ -956,11 +968,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         )}
         <div className="grid grid-cols-2 gap-3 mb-5 text-start">
           <div className="rounded-sm border border-border bg-secondary/40 p-3">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">رقم الحجز</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">رقم الحجز</div>
             <div className="font-mono text-lg font-semibold mt-1">#{bookingRef}</div>
           </div>
           <div className="rounded-sm border border-border bg-secondary/40 p-3">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">الرد المتوقّع</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">الرد المتوقّع</div>
             <div className="font-serif text-lg mt-1">خلال 24 ساعة</div>
           </div>
         </div>
@@ -1108,7 +1120,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         </div>
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">الباقة الأساسية</label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 md:gap-4 mt-2">
               {mainPackages.map((r, idx) => {
                 const isSelected = f.package_id === r.id;
                 // Same single anchor as the public price card ("الأكثر طلباً").
@@ -1118,14 +1130,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                     key={r.id}
                     type="button"
                     onClick={() => onSelectPackage(r.id)}
-                    className={`relative text-start rounded-xl border p-4 transition-all duration-300 flex flex-col focus:outline-none ${
+                    className={`relative text-start rounded-xl border p-3.5 md:p-4 transition-all duration-300 flex flex-col focus:outline-none ${
                       isSelected 
                         ? (isVIP ? "border-gold bg-gold/5 shadow-[0_0_15px_rgba(201,162,39,0.2)] md:-translate-y-2 ring-1 ring-gold" : "border-gold bg-gold/5 ring-1 ring-gold md:-translate-y-1") 
                         : (isVIP ? "border-gold/50 bg-background hover:-translate-y-1 hover:border-gold shadow-sm" : "border-border bg-background hover:-translate-y-1 hover:border-foreground/30")
                     }`}
                   >
                     {isVIP && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-white text-[10px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm z-10">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-white text-[11px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm z-10">
                         👑 الخيار المفضل
                       </div>
                     )}
@@ -1136,12 +1148,12 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                       </div>
                     </div>
                     
-                    <div className="text-xl font-bold mb-3">
+                    <div className="text-xl font-bold md:mb-3">
                       {r.price} <span className="text-xs font-normal text-muted-foreground">د.أ</span>
                     </div>
                     
                     {r.description && (
-                      <div className="text-[11px] text-muted-foreground leading-relaxed mt-auto whitespace-pre-line border-t border-border pt-2">
+                      <div className={`text-xs text-muted-foreground leading-relaxed mt-2 md:mt-auto whitespace-pre-line border-t border-border pt-2 ${isSelected ? "" : "hidden md:block"}`}>
                         {r.description}
                       </div>
                     )}
@@ -1164,7 +1176,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           <div className="sm:col-span-2">
             <div className="flex items-center gap-2">
               <label className="text-sm text-muted-foreground">إضافات اختيارية</label>
-              <span className="text-[10px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">يتم الاتفاق على تفاصيلها لاحقاً</span>
+              <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">يتم الاتفاق على تفاصيلها لاحقاً</span>
             </div>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {addonPackages.map((a) => {
@@ -1336,7 +1348,7 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
         )}
         {cliqAlias && (
           <div className="bg-ivory/10 rounded-sm p-3 group">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1 flex items-center justify-between">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-ivory/60 mb-1 flex items-center justify-between">
               <span>CliQ Alias</span>
               <span className="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">
                 {copied ? "تم النسخ بنجاح" : "الدفع لحساب المصوّرة مباشرة"}
@@ -1366,7 +1378,7 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
         )}
         {bankInfo && (
           <div className="bg-ivory/10 rounded-sm p-3">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-ivory/60 mb-1">تحويل بنكي</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-ivory/60 mb-1">تحويل بنكي</div>
             <div className="whitespace-pre-line">{bankInfo}</div>
           </div>
         )}

@@ -1,3 +1,4 @@
+import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { forwardRef, useEffect, useMemo, useState } from "react";
 import { Search, MapPin, Star, X, SlidersHorizontal, BadgeCheck, Heart } from "lucide-react";
@@ -39,6 +40,7 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
+  const barHidden = useHideOnScroll();
   const [q, setQ] = useState("");
   const [city, setCity] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -209,7 +211,7 @@ function SearchPage() {
             if (direct && !/\s/.test(direct))
               navigate({ to: "/photographers/$username", params: { username: direct.toLowerCase() } });
           }}
-          className="sm:rounded-md sm:border sm:border-border bg-card p-3 sm:p-4 md:p-5 mb-4 sm:mb-6 md:mb-8 sm:shadow-soft sticky top-0 z-30 sm:relative sm:top-auto sm:z-auto border-b border-border sm:border-b-0 -mx-4 sm:mx-0 px-4 sm:px-4"
+          className={`sm:rounded-md sm:border sm:border-border bg-card p-3 sm:p-4 md:p-5 mb-4 sm:mb-6 md:mb-8 sm:shadow-soft sticky top-0 z-30 transition-transform duration-300 ease-out ${barHidden ? "-translate-y-full sm:translate-y-0" : ""} sm:relative sm:top-auto sm:z-auto border-b border-border sm:border-b-0 -mx-4 sm:mx-0 px-4 sm:px-4`}
         >
       <fieldset className="grid gap-3 md:grid-cols-12" aria-label="فلاتر البحث الأساسية">
             <div className="md:col-span-4 relative flex items-center gap-2">
@@ -359,7 +361,7 @@ function SearchPage() {
               <button
                 type="button"
                 onClick={() => { hapticVibrate("light"); setVerifiedOnly((v) => !v); }}
-                className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
+                className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
                   verifiedOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"
                 }`}
               >
@@ -369,7 +371,7 @@ function SearchPage() {
               <button
                 type="button"
                 onClick={() => { hapticVibrate("light"); setMinRating((r) => (r === 4.5 ? 0 : 4.5)); }}
-                className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
+                className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
                   minRating === 4.5 ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"
                 }`}
               >
@@ -380,7 +382,7 @@ function SearchPage() {
                 <button
                   type="button"
                   onClick={() => { hapticVibrate("light"); setFavsOnly((v) => !v); }}
-                  className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${favsOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
+                  className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${favsOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
                 >
                   <Heart className="h-3.5 w-3.5" />
                   مفضّلتي ({favs.length})
@@ -390,7 +392,7 @@ function SearchPage() {
               <button
                 type="button"
                 onClick={() => setCity("")}
-                className={`px-4 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors touch-card ${!city ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
+                className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors touch-card ${!city ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
               >
                 كل المدن
               </button>
@@ -399,7 +401,7 @@ function SearchPage() {
                   key={c}
                   type="button"
                   onClick={() => setCity(c)}
-                  className={`px-4 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors touch-card ${city === c ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
+                  className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors touch-card ${city === c ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
                 >
                   {c}
                 </button>
@@ -730,7 +732,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
                 return [...prev, p];
               });
             }}
-            className={`absolute top-3 end-14 z-20 h-9 px-3 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center transition shadow-sm text-xs font-medium ${compareList.find(c => c.username === p.username) ? 'bg-gold text-charcoal' : 'hover:bg-background/80 text-foreground'}`}
+            className={`absolute top-3 end-[3.75rem] z-20 h-10 px-3 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center transition shadow-sm text-xs font-medium ${compareList.find(c => c.username === p.username) ? 'bg-gold text-charcoal' : 'hover:bg-background/80 text-foreground'}`}
           >
             <BarChart2 className="w-3 h-3 me-1" /> {compareList.find(c => c.username === p.username) ? 'مقارنة' : 'قارني'}
           </button>
@@ -738,7 +740,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
           <button
             onClick={toggleFav}
             aria-label={isFav ? "إزالة من المفضّلة" : "إضافة للمفضّلة"}
-            className="absolute top-3 end-3 z-20 h-9 w-9 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-background/80 transition shadow-sm"
+            className="absolute top-3 end-3 z-20 h-10 w-10 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-background/80 transition shadow-sm"
           >
             <motion.div
               initial={false}
@@ -805,14 +807,14 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
           </div>
 
           {p.is_demo && (
-            <div className="absolute top-3 left-3 text-[10px] bg-black/60 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
+            <div className={`absolute ${p.is_featured ? "top-11" : "top-3"} start-3 z-10 text-[11px] bg-black/60 text-white px-2.5 py-1 rounded-full backdrop-blur-sm`}>
               نسخة تجريبية للمصوّرات
             </div>
           )}
 
           {/* Featured badge */}
           {p.is_featured && (
-            <div className="absolute top-3 right-3 text-[10px] uppercase
+            <div className="absolute top-3 right-3 text-[11px] uppercase
                             tracking-widest bg-gold/90 text-white px-2 py-0.5
                             rounded-full backdrop-blur-sm">
               مميّز ✦

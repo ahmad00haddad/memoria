@@ -1,3 +1,4 @@
+import { getTourState, saveTourState } from "@/components/ClientTour";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useIntro } from "@/lib/intro";
 import { useServerFn } from "@tanstack/react-start";
@@ -57,7 +58,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
         </div>
         <div>
           <div className="font-serif text-xl tracking-wide">Memoria <span className="text-muted-foreground text-base">ميموريا</span></div>
-          <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
         </div>
       </div>
 
@@ -260,7 +261,8 @@ function Landing() {
     } else if (role === "client") {
       setTimeout(() => navigate({ to: "/search" }), 250);
     }
-    // if guest, just close the gate and stay on landing page
+    // «سأستكشف بنفسي» = لا جولات تلقائية بعدها
+    else saveTourState({ ...getTourState(), status: "skipped", completedAt: new Date().toISOString() });
   };
 
   return (
@@ -444,7 +446,7 @@ function Landing() {
               >
                 <div className="flex items-center justify-between mb-1.5 gap-3">
                   <div className="text-xs text-muted-foreground">سعر فوري</div>
-                  <span className="text-[10px] text-gold border border-gold/30 px-1.5 py-0.5 rounded-sm">مثال تقديري</span>
+                  <span className="text-[11px] text-gold border border-gold/30 px-1.5 py-0.5 rounded-sm">مثال تقديري</span>
                 </div>
                 <div className="font-serif text-3xl tabular-nums">~<CountTo onMount from={200} to={320} delay={1.1} duration={1.8} /> <span className="text-sm text-muted-foreground">د.أ</span></div>
                 <div className="text-xs text-muted-foreground leading-relaxed mt-1">٤ ساعات تصوير + ٥٠ صورة معدّلة — الأسعار تختلف حسب المصوّر</div>
