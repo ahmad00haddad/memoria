@@ -22,8 +22,7 @@
 <canvas id="c"></canvas>
 <div id="bar">
   <span>مسافة / ↑ : قفز (اضغطي مطولاً لقفزة أعلى)</span>
-  <span>↓ : انحناء</span>
-  <span>موبايل: المسي الأعلى للقفز والأسفل للانحناء</span>
+  <span>موبايل: المسي الشاشة للقفز</span>
   <button id="mute">الصوت: تشغيل</button>
   <button id="share" hidden style="background:#ff7aa8;border-color:#ff7aa8;font-weight:bold">شاركي نتيجتك على انستغرام</button>
 </div>
@@ -123,7 +122,7 @@ let st,last=0;
 function reset(state){
   st={
     state:state||'ready',t:0,dist:0,speed:380,gap:250,
-    bride:{y:GY,vy:0,air:false,duck:false,hold:false,stun:0,inv:0,ph:0},
+    bride:{y:GY,vy:0,air:false,hold:false,stun:0,inv:0,ph:0},
     groom:{y:GY,vy:0,air:false,stun:0,ph:0,say:'',sayT:0,nextSay:3},
     obs:[],nextAt:700,
     parts:[],shake:0,flash:0,
@@ -136,29 +135,25 @@ const score=()=>Math.floor(st.dist/12);
 function say(m,t){st.msg=m;st.msgT=t||1.6;}
 
 /* ============ الإدخال ============ */
-function press(duckHint){
+function press(){
   initAudio();
   if(st.state==='ready'){const keep=st.t;reset('run');st.t=keep;startMusic();}
   else if(st.state==='over'){if(st.overT<.8)return;reset('run');startMusic();}
   const b=st.bride;
-  if(duckHint){b.duck=true;return;}
   if(!b.air){b.vy=JUMPV;b.air=true;sfx.jump();burst(BX,GY,6,'dust');}
   b.hold=true;
 }
-function releaseAll(){st.bride.hold=false;st.bride.duck=false;}
+function releaseAll(){st.bride.hold=false;}
 addEventListener('keydown',e=>{
-  if(['Space','ArrowUp','KeyW'].includes(e.code)){e.preventDefault();if(!e.repeat)press(false);}
-  else if(['ArrowDown','KeyS'].includes(e.code)){e.preventDefault();if(st.state==='run')st.bride.duck=true;else if(!e.repeat)press(false);}
+  if(['Space','ArrowUp','KeyW'].includes(e.code)){e.preventDefault();if(!e.repeat)press();}
   else if(e.code==='KeyM'){muteBtn.click();}
 });
 addEventListener('keyup',e=>{
   if(['Space','ArrowUp','KeyW'].includes(e.code))st.bride.hold=false;
-  if(['ArrowDown','KeyS'].includes(e.code))st.bride.duck=false;
 });
 cv.addEventListener('pointerdown',e=>{
   e.preventDefault();
-  const r=cv.getBoundingClientRect();
-  press(st.state==='run'&&(e.clientY-r.top)/r.height>.62);
+  press();
 });
 addEventListener('pointerup',releaseAll);
 addEventListener('pointercancel',releaseAll);
@@ -330,7 +325,6 @@ function drawObs(c){
 function drawBride(c,x,y,o){
   const ph=o.ph,air=o.air;
   c.save();c.translate(x,y);
-  if(o.duck){c.scale(1.12,.6);}
   if(o.stun>0)c.rotate(Math.sin(o.t*38)*.14*Math.min(1,o.stun*2));
   if(o.inv>0&&((o.t*14)|0)%2===0)c.globalAlpha=.55;
   const run=!air&&o.moving;
@@ -613,7 +607,7 @@ function update(dt){
     const rec=Math.max(3,12-score()/220);
     st.gap=Math.min(300,st.gap+rec*dt);
     /* العروس */
-    const gr=b.hold&&b.vy<0?GRAV*.55:(b.duck&&b.air?GRAV*3:GRAV);
+    const gr=b.hold&&b.vy<0?GRAV*.55:GRAV;
     const was=b.air;
     b.vy+=gr*dt;b.y+=b.vy*dt;
     if(b.y>=GY){b.y=GY;b.vy=0;b.air=false;if(was){sfx.land();burst(BX,GY,7,'dust');}}
@@ -621,7 +615,7 @@ function update(dt){
     if(b.stun>0)b.stun-=dt;if(b.inv>0)b.inv-=dt;
     /* العقبات */
     if(st.dist>=st.nextAt)spawn();
-    const hb={l:BX-17,r:BX+17,t:b.y-(b.duck&&!b.air?52:100),b:b.y};
+    const hb={l:BX-17,r:BX+17,t:b.y-100,b:b.y};
     for(const o of st.obs){
       o.age+=dt;o.x-=spd*dt;o.flashFx=Math.max(0,o.flashFx-dt*5);
       if(o.kind==='photog'&&!o.flashed&&o.x<BX+330){o.flashed=true;o.flashFx=1;st.flash=.22;sfx.flash();}
@@ -746,7 +740,7 @@ function draw(){
   const gx=BX-st.gap;
   const moving=st.state!=='over';
   drawGroom(c,gx,gm.y,{ph:gm.ph,air:gm.air,stun:gm.stun,sweat:gm.sweat,t:st.t});
-  drawBride(c,BX,b.y,{ph:b.ph,air:b.air,duck:b.duck&&!b.air,stun:b.stun,inv:b.inv,t:st.t,moving,fear:st.gap<130});
+  drawBride(c,BX,b.y,{ph:b.ph,air:b.air,stun:b.stun,inv:b.inv,t:st.t,moving,fear:st.gap<130});
   if(gm.sayT>0&&st.state!=='ready')bubble(c,gx+10,GY-140,gm.say);
   drawParts(c);
   c.restore();
@@ -773,7 +767,7 @@ function makeShareImage(){
   x.fillStyle='rgba(255,255,255,.2)';rr(x,60,860,W2-120,640,40);x.fill();
   x.save();x.translate(540,1380);x.scale(3.4,3.4);
   drawGroom(x,-52,0,{ph:1.2,air:false,stun:0,sweat:true,t:2});
-  drawBride(x,40,0,{ph:.4,air:false,duck:false,stun:0,inv:0,t:2,moving:true,fear:true});
+  drawBride(x,40,0,{ph:.4,air:false,stun:0,inv:0,t:2,moving:true,fear:true});
   x.restore();
   x.fillStyle='#fff';x.font='bold 66px "Segoe UI",Tahoma,Arial';x.fillText('هل تقدرين تكسرين رقمي؟',W2/2,1620);
   x.font='bold 54px "Segoe UI",Tahoma,Arial';x.fillStyle='#ffe0ec';x.fillText(SITE_NAME,W2/2,1740);
