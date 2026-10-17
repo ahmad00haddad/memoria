@@ -297,7 +297,7 @@ function spawn(){
   if(sc>240&&Math.random()<Math.min(.4,.2+stg*.04))kind='drone';
   else{const pool=stg>=1?GROUND_KINDS.concat(GROUND_KINDS2):GROUND_KINDS;kind=pool[Math.random()*pool.length|0];}
   const d=DEFS[kind];
-  const o={kind,x:LW+60,age:0,flashed:false,flashFx:0,groomPlan:Math.random()<.12?'trip':'jump',gDone:false};
+  const o={kind,x:LW+60,age:0,flashed:false,flashFx:0,groomPlan:(st.trips||0)<2&&Math.random()<.08?'trip':'jump',gDone:false};
   st.obs.push(o);
   let span=d.w;
   if(kind!=='drone'&&Math.random()<.2){
@@ -641,7 +641,7 @@ function update(dt){
       const dx=o.x-gx, d=DEFS[o.kind];
       if(o.kind==='drone'){ if(dx<0)o.gDone=true; continue; }
       if(dx<d.w/2+78&&dx>d.w/2-20&&!gw.air&&gw.stun<=0){
-        if(o.groomPlan==='trip'&&dx<d.w/2+30){o.gDone=true;gw.stun=.7;st.gap=Math.min(300,st.gap+55);sfx.trip();burst(gx,GY-30,8,'star');groomSay(nextTrip(),2);}
+        if(o.groomPlan==='trip'&&dx<d.w/2+30){o.gDone=true;gw.stun=.7;st.gap=Math.min(300,st.gap+55);sfx.trip();burst(gx,GY-30,8,'star');st.trips=(st.trips||0)+1;if(gw.sayT<=0)say(nextTrip(),2.2);}
         else if(o.groomPlan==='jump'){o.gDone=true;gw.vy=-850;gw.air=true;}
       }
       if(dx<-d.w)o.gDone=true;
