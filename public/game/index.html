@@ -58,6 +58,7 @@ function ell(c,x,y,rx,ry,col,rot){c.fillStyle=col;c.beginPath();c.ellipse(x,y,rx
 
 /* ============ المراحل ============ */
 const STAGE_LEN=600;
+const CARRY_T=1.9;   // مدة حمل العروس والركض خارج الإطار قبل إظهار النتيجة
 const STAGES=[
   {name:'حديقة الورد',top:'#ffd7e8',bot:'#fff1d9',sun:'#ffcf8a',hill1:'#f3b0c8',hill2:'#e590b0',lights:0,night:0,grass:'#9fe2a6',path:'#f6e3d0',deco:'arch'},
   {name:'شاطئ الغروب',top:'#ff9a8b',bot:'#ffd29a',sun:'#fff2b0',hill1:'#d77aa3',hill2:'#b95b8a',lights:.5,night:0,grass:'#ecd9a6',path:'#f0d3c0',deco:'beach'},
@@ -138,7 +139,7 @@ function say(m,t){st.msg=m;st.msgT=t||1.6;}
 function press(){
   initAudio();
   if(st.state==='ready'){const keep=st.t;reset('run');st.t=keep;startMusic();}
-  else if(st.state==='over'){if(st.overT<.8)return;reset('run');startMusic();}
+  else if(st.state==='over'){if(st.overT<CARRY_T+.8)return;reset('run');startMusic();}
   const b=st.bride;
   if(!b.air){b.vy=JUMPV;b.air=true;sfx.jump();burst(BX,GY,6,'dust');}
   b.hold=true;
@@ -661,7 +662,8 @@ function update(dt){
     for(const o of st.obs)o.x-=spd*dt;
   }else if(st.state==='over'){
     st.overT+=dt;st.groom.sayT-=dt;
-    st.gap=lerp(st.gap,34,Math.min(1,dt*6));
+    /* العريس يحمل العروس ويركض خارج الإطار بسرعة متزايدة */
+    if(st.overT<CARRY_T){st.carryX=st.overT*st.overT*900;gm.ph+=dt*16;b.ph+=dt*16;}
     if(Math.random()<dt*8)burst(BX-10,b.y-110,1,'heart');
   }
   if(st.msgT>0)st.msgT-=dt;
@@ -671,7 +673,7 @@ function update(dt){
   updParts(dt);
 }
 function caught(){
-  st.state='over';st.overT=0;stopMusic();sfx.caught();
+  st.state='over';st.overT=0;st.carryX=0;stopMusic();sfx.caught();
   const s=score();if(s>best){best=s;st.newBest=true;try{localStorage.setItem('bride_best_v2',best);}catch(e){}}
   burst(BX-20,GY-60,14,'heart');
   st.groom.say=nextCaught();st.groom.sayT=4;
@@ -714,15 +716,16 @@ function overlay(c){
     c.fillText('دوسي مسافة أو المسي الشاشة للبدء',LW/2,170);c.globalAlpha=1;
     if(best){c.font='15px "Segoe UI",Tahoma,Arial';c.fillStyle='#ffd1e0';c.fillText('أفضل نتيجة: '+best+' متر',LW/2,196);}
   }
-  if(st.state==='over'){
+  if(st.state==='over'&&st.overT>=CARRY_T){
+    const ot=st.overT-CARRY_T;
     c.fillStyle='rgba(40,12,45,.55)';c.fillRect(0,0,LW,LH);
     c.shadowColor='rgba(0,0,0,.5)';c.shadowBlur=14;
-    const pop=Math.min(1,st.overT*3);
+    const pop=Math.min(1,ot*3);
     c.save();c.translate(LW/2,100);c.scale(.6+.4*pop,.6+.4*pop);
-    c.fillStyle='#fff';c.font='bold 52px "Segoe UI",Tahoma,Arial';c.fillText('مسكِك العريس!',0,0);c.restore();
+    c.fillStyle='#fff';c.font='bold 52px "Segoe UI",Tahoma,Arial';c.fillText('العريس خطفك!',0,0);c.restore();
     c.shadowBlur=0;
     c.fillStyle='#ffd1e0';c.font='24px "Segoe UI",Tahoma,Arial';c.fillText('ركضتِ '+score()+' متر'+(st.newBest?'  —  رقم قياسي جديد!':''),LW/2,142);
-    if(st.overT>.8){const a=.6+.4*Math.sin(st.t*4);c.globalAlpha=a;c.fillStyle='#fff';c.font='bold 20px "Segoe UI",Tahoma,Arial';c.fillText('دوسي للهرب من جديد',LW/2,182);c.globalAlpha=1;}
+    if(ot>.8){const a=.6+.4*Math.sin(st.t*4);c.globalAlpha=a;c.fillStyle='#fff';c.font='bold 20px "Segoe UI",Tahoma,Arial';c.fillText('دوسي للهرب من جديد',LW/2,182);c.globalAlpha=1;}
   }
   if(st.banner>0&&st.state==='run'){const a=clamp(Math.min(st.banner,2.8-st.banner)*3,0,1);c.globalAlpha=a;c.shadowColor='rgba(0,0,0,.5)';c.shadowBlur=12;c.fillStyle='#fff';c.font='bold 38px "Segoe UI",Tahoma,Arial';c.fillText(st.bannerText,LW/2,128);c.globalAlpha=1;}
   if(st.msgT>0&&st.state==='run'){c.globalAlpha=clamp(st.msgT*2,0,1);c.fillStyle='#fff';c.shadowColor='rgba(0,0,0,.5)';c.shadowBlur=8;c.font='bold 26px "Segoe UI",Tahoma,Arial';c.fillText(st.msg,LW/2,Math.max(70,st.banner>0?170:92));}
@@ -739,9 +742,12 @@ function draw(){
   const gm=st.groom,b=st.bride;
   const gx=BX-st.gap;
   const moving=st.state!=='over';
-  drawGroom(c,gx,gm.y,{ph:gm.ph,air:gm.air,stun:gm.stun,sweat:gm.sweat,t:st.t});
-  drawBride(c,BX,b.y,{ph:b.ph,air:b.air,stun:b.stun,inv:b.inv,t:st.t,moving,fear:st.gap<130});
-  if(gm.sayT>0&&st.state!=='ready')bubble(c,gx+10,GY-140,gm.say);
+  const carry=st.state==='over'&&st.overT<CARRY_T;
+  const cx=carry?(st.carryX||0):0;
+  drawGroom(c,gx+cx,gm.y,{ph:gm.ph,air:gm.air,stun:gm.stun,sweat:gm.sweat,t:st.t});
+  if(carry)drawBride(c,gx+cx+14,GY-22,{ph:b.ph,air:false,stun:0,inv:0,t:st.t,moving:true,fear:true});
+  else drawBride(c,BX,b.y,{ph:b.ph,air:b.air,stun:b.stun,inv:b.inv,t:st.t,moving,fear:st.gap<130});
+  if(gm.sayT>0&&st.state!=='ready')bubble(c,gx+cx+10,GY-140,gm.say);
   drawParts(c);
   c.restore();
   if(st.flash>0){c.fillStyle=`rgba(255,255,255,${st.flash*1.4})`;c.fillRect(0,0,LW,LH);}
