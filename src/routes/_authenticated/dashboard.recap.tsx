@@ -15,6 +15,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/recap")({ compon
 const MONTHS = ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"];
 const DAYS = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 const ar = (n: number) => n.toLocaleString("ar-JO");
+const yr = (n: number) => n.toLocaleString("ar-JO", { useGrouping: false });
 
 /** البطاقات التي تظهر في الصفحة وفي صورة الستوري — أرقام عامة فقط، بلا مبالغ. */
 function facts(r: YearRecap) {
@@ -84,7 +85,7 @@ function RecapPage() {
         <div className="mt-2 flex items-end justify-between gap-3">
           <div>
             <div className="text-xs tracking-[0.3em] text-gold">ملخّص السنة</div>
-            <h1 className="font-serif text-4xl">سنتي {ar(r.year)}</h1>
+            <h1 className="font-serif text-4xl">سنتي {yr(r.year)}</h1>
           </div>
           <select
             value={year}
@@ -98,7 +99,7 @@ function RecapPage() {
 
         {r.events === 0 ? (
           <p className="mt-10 rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
-            لا مناسبات مؤكَّدة في {ar(r.year)} بعد. سيمتلئ ملخّصك مع أول حجز.
+            لا مناسبات مؤكَّدة في {yr(r.year)} بعد. سيمتلئ ملخّصك مع أول حجز.
           </p>
         ) : (
           <>
@@ -174,7 +175,7 @@ function drawStory(c: HTMLCanvasElement, r: YearRecap, list: { value: string; la
   ctx.fillText("ملخّص السنة", W / 2, 230);
   ctx.fillStyle = ivory;
   ctx.font = `700 150px ${serif}`;
-  ctx.fillText(`سنتي ${r.year.toLocaleString("ar-JO")}`, W / 2, 400);
+  ctx.fillText(`سنتي ${yr(r.year)}`, W / 2, 400);
   ctx.fillStyle = muted;
   ctx.font = `400 46px ${sans}`;
   ctx.fillText(r.name, W / 2, 490);
