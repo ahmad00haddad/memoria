@@ -1,3 +1,4 @@
+import { arCount } from "@/lib/ar-count";
 import { useEffect, useState } from "react";
 import { g } from "@/hooks/use-gender";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -80,7 +81,7 @@ export function SubscriptionGuard() {
               <>بعدها يختفي ملفك من البحث ويتوقف رابط البايو وطلبات الحجز الجديدة.</>
             )}
             {s.upcoming > 0 && (
-              <> لديك <strong>{s.upcoming} {s.upcoming === 1 ? "حجز قادم" : "حجوزات قادمة"}</strong> — تبقى متابعتها تعمل كالمعتاد.</>
+              <> لديك <strong>{arCount(s.upcoming, "حجز قادم", "حجزان قادمان", "حجوزات قادمة", "حجزاً قادماً")}</strong> — تبقى متابعتها تعمل كالمعتاد.</>
             )}
           </div>
         </div>
