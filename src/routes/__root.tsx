@@ -24,6 +24,7 @@ import { PhotographerCommandPalette } from "@/components/CommandPalette";
 import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
+import { GameHint } from "@/components/site/GameHint";
 import { ClientTour } from "@/components/ClientTour";
 import { IntroContext, markIntroSeen, readIntro } from "@/lib/intro";
 import { FirstVisitIntro } from "@/components/site/FirstVisitIntro";
@@ -388,6 +389,7 @@ function RootComponent() {
             <MobileTabBar />
             <PhotographerCommandPalette />
             <PwaInstallPrompt />
+            <GameHint />
             <ClientTour />
             <Toaster position="top-center" richColors closeButton />
            </MotionConfig>
