@@ -214,7 +214,7 @@ function BookingDetail() {
     setActionLoading("link");
     try {
       await saveDeliveryFn({ data: { booking_id: id, link } });
-      toast.success("حُفظ رابط التسليم ووصل إشعار للعميلة");
+      toast.success("سُلّمت الصور 🤍 وصل الرابط للعميلة");
       load();
     } catch (e: any) {
       toast.error(e.message || "فشل حفظ الرابط");
@@ -245,7 +245,7 @@ function BookingDetail() {
       try { await confirmFn({ data: { booking_id: id } }); }
       catch (e: any) { setActionLoading(null); hapticVibrate("error"); return toast.error(e?.message || "تعذّر التأكيد"); }
       hapticVibrate("success");
-      toast.success("تأكّد الحجز ووصل إشعار للعميلة");
+      toast.success("حجز جديد مؤكَّد 🎉 أبلغنا العميلة");
       await load();
       const { data: existing } = await supabase.from("contracts").select("id").eq("booking_id", id).maybeSingle();
       if (!existing) {

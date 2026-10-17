@@ -95,6 +95,7 @@ function QuickActions({ open, onClose }: { open: boolean; onClose: () => void })
     { icon: Plus, label: "حجز جديد", hint: g("لعميلة تواصلت معكِ خارج المنصّة", "لعميلة تواصلت معك خارج المنصّة"), run: () => go("/dashboard/bookings?new=1") },
     { icon: CalendarX, label: "حجب يوم", hint: "سفر أو ارتباط آخر", run: () => go("/dashboard/calendar") },
     { icon: Link2, label: "مشاركة رابط ملفّي", hint: "للبايو أو الواتساب", run: copyLink },
+    { icon: MessageCircle, label: "عروض الأسعار", hint: "أسعار اقترحتها العرائس", run: () => go("/dashboard/offers") },
     { icon: MessageCircle, label: "قوالب واتساب", hint: "رسائل جاهزة للعميلات", run: () => go("/dashboard/whatsapp-templates") },
     { icon: Clapperboard, label: "متابعة الإنتاج", hint: "من التصوير إلى التسليم", run: () => go("/dashboard/production") },
   ];

@@ -13,6 +13,8 @@ import { ar } from "date-fns/locale";
 import { format } from "date-fns";
 import confetti from "canvas-confetti";
 import { useServerFn } from "@tanstack/react-start";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { submitPriceOffer } from "@/lib/negotiation.functions";
 import { submitBookingRequest, getPublicDepositInfo, getBookingByToken } from "@/lib/booking.functions";
 import { VerifyBookingPanel, type VerifyInfo } from "@/components/VerifyBookingPanel";
 import { getPhotographerProfileData } from "@/lib/profile.functions";
@@ -342,15 +344,7 @@ function PhotographerPage() {
                 <RevealWords lines={[profile.display_name]} delay={0.35} step={0.14} />
               </h1>
               <div className="flex flex-wrap items-center gap-2 mb-6">
-                {profile.verification_status === "verified" && (
-                  <span
-                    className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/60 bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-200"
-                    title="راجع فريق ميموريا هذا الملف وتأكّد أن الأعمال والهوية حقيقية"
-                  >
-                    <BadgeCheck className="h-4 w-4 text-sky-400" />
-                    مصوّرة موثّقة من ميموريا
-                  </span>
-                )}
+                {profile.verification_status === "verified" && <VerifiedBadge />}
                 {profile.is_featured && (
                   <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30">
                     <Star className="h-3 w-3 fill-gold" /> اختيار المحرّر
@@ -749,6 +743,12 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [shake, setShake] = useState(false);
   const [copied, setCopied] = useState(false);
   const askConfirm = useConfirm();
+  // اقتراح سعر: لا يُنشأ حجز ولا يُحجز الموعد قبل موافقة المصوّرة
+  const offerFn = useServerFn(submitPriceOffer);
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [offerPrice, setOfferPrice] = useState("");
+  const [offerSending, setOfferSending] = useState(false);
+  const [offerSent, setOfferSent] = useState<string | null>(null);
 
   // A sent request survives refresh/leaving the page, so the bride can always copy her tracking link again
   const successKey = `memoria.booking-success.${profile.username}`;
@@ -910,6 +910,42 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     }
   };
 
+  const sendOffer = async () => {
+    if (!selected) return;
+    const listed = Number(selected.price);
+    const price = Number(offerPrice);
+    const minPrice = Math.ceil(listed * 0.5);
+    if (!f.client_name.trim() || !f.client_phone || !f.client_email || !f.event_date || !f.start_time || !f.end_time) {
+      return toast.error("املئي الاسم والهاتف والإيميل والتاريخ ووقت البداية والنهاية أولاً");
+    }
+    if (!normalizePhone(f.client_phone)) return toast.error(PHONE_HINT);
+    if (!isEmail(f.client_email)) return toast.error(EMAIL_HINT);
+    if (!Number.isFinite(price) || price < minPrice || price >= listed) {
+      return toast.error(`اقترحي سعراً بين ${minPrice.toLocaleString("ar-JO")} و${(listed - 1).toLocaleString("ar-JO")} د.أ`);
+    }
+    if (toMin(f.end_time) <= toMin(f.start_time)) return toast.error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
+    if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
+    if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
+    setOfferSending(true);
+    try {
+      const res = await offerFn({
+        data: {
+          photographer_id: profile.id, rule_id: selected.id, offered_price: price,
+          client_name: f.client_name, client_email: f.client_email.trim(), client_phone: f.client_phone,
+          event_date: f.event_date, start_time: f.start_time, end_time: f.end_time,
+          venue_address: f.venue_address || null, client_notes: f.client_notes || null,
+        },
+      });
+      setOfferSent(res.token);
+      hapticVibrate("success");
+    } catch (e: any) {
+      hapticVibrate("error");
+      toast.error(e.message || "فشل إرسال العرض");
+    } finally {
+      setOfferSending(false);
+    }
+  };
+
   // Idea 4: Dynamic Page Title — must stay above the early return below, or
   // React throws "rendered fewer hooks" the moment the booking succeeds.
   useEffect(() => {
@@ -925,6 +961,18 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [f, success]);
+
+  if (offerSent) {
+    return (
+      <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
+        <div className="mb-3 flex justify-center"><CheckCircle2 className="h-14 w-14 text-emerald-600" /></div>
+        <h2 className="font-serif text-2xl mb-2">تم إرسال عرضكِ للمصوّرة</h2>
+        <p className="text-muted-foreground mb-5">تم إرسال عرضكِ للمصوّرة. لن يُحجز الموعد إلا بعد موافقتها، وسنراسلكِ على بريدكِ وواتساب.</p>
+        <Link to="/offer/$token" params={{ token: offerSent }} className="block bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90">متابعة حالة العرض</Link>
+        <button onClick={() => { setOfferSent(null); setOfferOpen(false); setOfferPrice(""); }} className="mt-4 text-xs text-muted-foreground underline underline-offset-2">رجوع للنموذج</button>
+      </div>
+    );
+  }
 
   if (success) {
     const trackUrl = `/track/${success.token}`;
@@ -1296,6 +1344,31 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         )}
       </div>
       
+      {selected && selected.package !== "addon" && (
+        <div className="mt-4 border-t border-border pt-4">
+          {!offerOpen ? (
+            <button type="button" onClick={() => setOfferOpen(true)} className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-sm py-2.5 hover:bg-secondary">
+              اقترحي سعراً مختلفاً
+            </button>
+          ) : (
+            <div className="rounded-sm border border-border bg-secondary/40 p-4 space-y-3 text-sm">
+              <div className="font-medium">اقترحي سعراً</div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                السعر المعلن لباقة «{selected.label}»: {Number(selected.price).toLocaleString("ar-JO")} د.أ. أقل سعر يمكن اقتراحه: {Math.ceil(Number(selected.price) * 0.5).toLocaleString("ar-JO")} د.أ.
+                نستخدم الاسم والهاتف والإيميل والتاريخ والوقت التي ملأتِها. لن يُحجز الموعد إلا بعد موافقة المصوّرة.
+              </p>
+              <Field label="السعر المقترح (د.أ)" type="number" v={offerPrice} on={setOfferPrice} />
+              <div className="flex gap-2">
+                <button type="button" onClick={sendOffer} disabled={offerSending} className="flex-1 bg-charcoal text-ivory py-2.5 rounded-sm disabled:opacity-60 inline-flex items-center justify-center gap-2">
+                  {offerSending ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري الإرسال…</> : "إرسال العرض"}
+                </button>
+                <button type="button" onClick={() => setOfferOpen(false)} className="px-4 rounded-sm border border-border hover:bg-secondary">إلغاء</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Idea 3: Late Night Hint */}
       {step === 3 && (new Date().getHours() >= 0 && new Date().getHours() <= 7) && (
         <div className="mt-4 text-xs text-indigo-800 bg-indigo-50 border border-indigo-200 p-2.5 rounded-sm flex items-start gap-2">

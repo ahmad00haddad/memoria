@@ -1,6 +1,7 @@
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { forwardRef, useEffect, useMemo, useState } from "react";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { Search, MapPin, Star, X, SlidersHorizontal, BadgeCheck, Heart } from "lucide-react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { Header } from "@/components/site/Header";
@@ -777,7 +778,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
             <h3 className="font-serif text-lg sm:text-xl text-white leading-tight truncate flex items-center gap-2">
               {p.display_name ?? p.username}
               {p.verification_status === 'verified' && (
-                <BadgeCheck className="w-5 h-5 text-sky-400 shrink-0" aria-label="موثّقة" />
+                <VerifiedBadge variant="icon" />
               )}
             </h3>
             {p.city && (

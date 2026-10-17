@@ -116,7 +116,7 @@ function BookingsList() {
     try {
       await confirmFn({ data: { booking_id: id } });
       hapticVibrate("success");
-      toast.success("تأكّد الحجز ووصل إشعار للعميلة");
+      toast.success("حجز جديد مؤكَّد 🎉 أبلغنا العميلة");
     } catch (e: any) {
       setList(prev);
       hapticVibrate("error");

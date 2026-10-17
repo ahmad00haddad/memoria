@@ -34,6 +34,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
+import { Route as OfferTokenRouteImport } from './routes/offer.$token'
 import { Route as PhotographersUsernameRouteImport } from './routes/photographers/$username'
 import { Route as PhotographersJoinRouteImport } from './routes/photographers/join'
 import { Route as ReviewTokenRouteImport } from './routes/review.$token'
@@ -56,9 +57,11 @@ import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedDashboardBookingsRouteImport } from './routes/_authenticated/dashboard.bookings'
 import { Route as AuthenticatedDashboardCalendarRouteImport } from './routes/_authenticated/dashboard.calendar'
 import { Route as AuthenticatedDashboardContractsRouteImport } from './routes/_authenticated/dashboard.contracts'
+import { Route as AuthenticatedDashboardOffersRouteImport } from './routes/_authenticated/dashboard.offers'
 import { Route as AuthenticatedDashboardPricingRouteImport } from './routes/_authenticated/dashboard.pricing'
 import { Route as AuthenticatedDashboardProductionRouteImport } from './routes/_authenticated/dashboard.production'
 import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard.profile'
+import { Route as AuthenticatedDashboardRecapRouteImport } from './routes/_authenticated/dashboard.recap'
 import { Route as AuthenticatedDashboardReferralsRouteImport } from './routes/_authenticated/dashboard.referrals'
 import { Route as AuthenticatedDashboardReportsRouteImport } from './routes/_authenticated/dashboard.reports'
 import { Route as AuthenticatedDashboardSubscriptionRouteImport } from './routes/_authenticated/dashboard.subscription'
@@ -199,6 +202,11 @@ const ContractsTokenRoute = ContractsTokenRouteImport.update({
   path: '/contracts/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OfferTokenRoute = OfferTokenRouteImport.update({
+  id: '/offer/$token',
+  path: '/offer/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PhotographersUsernameRoute = PhotographersUsernameRouteImport.update({
   id: '/photographers/$username',
   path: '/photographers/$username',
@@ -325,6 +333,12 @@ const AuthenticatedDashboardContractsRoute =
     path: '/contracts',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardOffersRoute =
+  AuthenticatedDashboardOffersRouteImport.update({
+    id: '/offers',
+    path: '/offers',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedDashboardPricingRoute =
   AuthenticatedDashboardPricingRouteImport.update({
     id: '/pricing',
@@ -341,6 +355,12 @@ const AuthenticatedDashboardProfileRoute =
   AuthenticatedDashboardProfileRouteImport.update({
     id: '/profile',
     path: '/profile',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
+const AuthenticatedDashboardRecapRoute =
+  AuthenticatedDashboardRecapRouteImport.update({
+    id: '/recap',
+    path: '/recap',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
 const AuthenticatedDashboardReferralsRoute =
@@ -447,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/contracts/$token': typeof ContractsTokenRoute
+  '/offer/$token': typeof OfferTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -467,9 +488,11 @@ export interface FileRoutesByFullPath {
   '/dashboard/bookings': typeof AuthenticatedDashboardBookingsRouteWithChildren
   '/dashboard/calendar': typeof AuthenticatedDashboardCalendarRoute
   '/dashboard/contracts': typeof AuthenticatedDashboardContractsRoute
+  '/dashboard/offers': typeof AuthenticatedDashboardOffersRoute
   '/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
   '/dashboard/production': typeof AuthenticatedDashboardProductionRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
   '/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
@@ -510,6 +533,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/contracts/$token': typeof ContractsTokenRoute
+  '/offer/$token': typeof OfferTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -529,9 +553,11 @@ export interface FileRoutesByTo {
   '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
   '/dashboard/calendar': typeof AuthenticatedDashboardCalendarRoute
   '/dashboard/contracts': typeof AuthenticatedDashboardContractsRoute
+  '/dashboard/offers': typeof AuthenticatedDashboardOffersRoute
   '/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
   '/dashboard/production': typeof AuthenticatedDashboardProductionRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
   '/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
@@ -576,6 +602,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/contracts/$token': typeof ContractsTokenRoute
+  '/offer/$token': typeof OfferTokenRoute
   '/photographers/$username': typeof PhotographersUsernameRoute
   '/photographers/join': typeof PhotographersJoinRoute
   '/review/$token': typeof ReviewTokenRoute
@@ -596,9 +623,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/bookings': typeof AuthenticatedDashboardBookingsRouteWithChildren
   '/_authenticated/dashboard/calendar': typeof AuthenticatedDashboardCalendarRoute
   '/_authenticated/dashboard/contracts': typeof AuthenticatedDashboardContractsRoute
+  '/_authenticated/dashboard/offers': typeof AuthenticatedDashboardOffersRoute
   '/_authenticated/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
   '/_authenticated/dashboard/production': typeof AuthenticatedDashboardProductionRoute
   '/_authenticated/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/_authenticated/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/_authenticated/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/_authenticated/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
   '/_authenticated/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
@@ -643,6 +672,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/contracts/$token'
+    | '/offer/$token'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
@@ -663,9 +693,11 @@ export interface FileRouteTypes {
     | '/dashboard/bookings'
     | '/dashboard/calendar'
     | '/dashboard/contracts'
+    | '/dashboard/offers'
     | '/dashboard/pricing'
     | '/dashboard/production'
     | '/dashboard/profile'
+    | '/dashboard/recap'
     | '/dashboard/referrals'
     | '/dashboard/reports'
     | '/dashboard/subscription'
@@ -706,6 +738,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/onboarding'
     | '/contracts/$token'
+    | '/offer/$token'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
@@ -725,9 +758,11 @@ export interface FileRouteTypes {
     | '/admin/subscriptions'
     | '/dashboard/calendar'
     | '/dashboard/contracts'
+    | '/dashboard/offers'
     | '/dashboard/pricing'
     | '/dashboard/production'
     | '/dashboard/profile'
+    | '/dashboard/recap'
     | '/dashboard/referrals'
     | '/dashboard/reports'
     | '/dashboard/subscription'
@@ -771,6 +806,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/contracts/$token'
+    | '/offer/$token'
     | '/photographers/$username'
     | '/photographers/join'
     | '/review/$token'
@@ -791,9 +827,11 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/bookings'
     | '/_authenticated/dashboard/calendar'
     | '/_authenticated/dashboard/contracts'
+    | '/_authenticated/dashboard/offers'
     | '/_authenticated/dashboard/pricing'
     | '/_authenticated/dashboard/production'
     | '/_authenticated/dashboard/profile'
+    | '/_authenticated/dashboard/recap'
     | '/_authenticated/dashboard/referrals'
     | '/_authenticated/dashboard/reports'
     | '/_authenticated/dashboard/subscription'
@@ -834,6 +872,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   ContractsTokenRoute: typeof ContractsTokenRoute
+  OfferTokenRoute: typeof OfferTokenRoute
   PhotographersUsernameRoute: typeof PhotographersUsernameRoute
   PhotographersJoinRoute: typeof PhotographersJoinRoute
   ReviewTokenRoute: typeof ReviewTokenRoute
@@ -1025,6 +1064,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContractsTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/offer/$token': {
+      id: '/offer/$token'
+      path: '/offer/$token'
+      fullPath: '/offer/$token'
+      preLoaderRoute: typeof OfferTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/photographers/$username': {
       id: '/photographers/$username'
       path: '/photographers/$username'
@@ -1179,6 +1225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardContractsRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/offers': {
+      id: '/_authenticated/dashboard/offers'
+      path: '/offers'
+      fullPath: '/dashboard/offers'
+      preLoaderRoute: typeof AuthenticatedDashboardOffersRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/dashboard/pricing': {
       id: '/_authenticated/dashboard/pricing'
       path: '/pricing'
@@ -1198,6 +1251,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/dashboard/profile'
       preLoaderRoute: typeof AuthenticatedDashboardProfileRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
+    '/_authenticated/dashboard/recap': {
+      id: '/_authenticated/dashboard/recap'
+      path: '/recap'
+      fullPath: '/dashboard/recap'
+      preLoaderRoute: typeof AuthenticatedDashboardRecapRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
     '/_authenticated/dashboard/referrals': {
@@ -1361,9 +1421,11 @@ interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardBookingsRoute: typeof AuthenticatedDashboardBookingsRouteWithChildren
   AuthenticatedDashboardCalendarRoute: typeof AuthenticatedDashboardCalendarRoute
   AuthenticatedDashboardContractsRoute: typeof AuthenticatedDashboardContractsRoute
+  AuthenticatedDashboardOffersRoute: typeof AuthenticatedDashboardOffersRoute
   AuthenticatedDashboardPricingRoute: typeof AuthenticatedDashboardPricingRoute
   AuthenticatedDashboardProductionRoute: typeof AuthenticatedDashboardProductionRoute
   AuthenticatedDashboardProfileRoute: typeof AuthenticatedDashboardProfileRoute
+  AuthenticatedDashboardRecapRoute: typeof AuthenticatedDashboardRecapRoute
   AuthenticatedDashboardReferralsRoute: typeof AuthenticatedDashboardReferralsRoute
   AuthenticatedDashboardReportsRoute: typeof AuthenticatedDashboardReportsRoute
   AuthenticatedDashboardSubscriptionRoute: typeof AuthenticatedDashboardSubscriptionRoute
@@ -1377,10 +1439,12 @@ const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
       AuthenticatedDashboardBookingsRouteWithChildren,
     AuthenticatedDashboardCalendarRoute: AuthenticatedDashboardCalendarRoute,
     AuthenticatedDashboardContractsRoute: AuthenticatedDashboardContractsRoute,
+    AuthenticatedDashboardOffersRoute: AuthenticatedDashboardOffersRoute,
     AuthenticatedDashboardPricingRoute: AuthenticatedDashboardPricingRoute,
     AuthenticatedDashboardProductionRoute:
       AuthenticatedDashboardProductionRoute,
     AuthenticatedDashboardProfileRoute: AuthenticatedDashboardProfileRoute,
+    AuthenticatedDashboardRecapRoute: AuthenticatedDashboardRecapRoute,
     AuthenticatedDashboardReferralsRoute: AuthenticatedDashboardReferralsRoute,
     AuthenticatedDashboardReportsRoute: AuthenticatedDashboardReportsRoute,
     AuthenticatedDashboardSubscriptionRoute:
@@ -1435,6 +1499,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   ContractsTokenRoute: ContractsTokenRoute,
+  OfferTokenRoute: OfferTokenRoute,
   PhotographersUsernameRoute: PhotographersUsernameRoute,
   PhotographersJoinRoute: PhotographersJoinRoute,
   ReviewTokenRoute: ReviewTokenRoute,

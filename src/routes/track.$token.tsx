@@ -17,6 +17,7 @@ import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, CalendarPlus, LockKeyhole, Unlock, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, CreditCard, XCircle } from "lucide-react";
 import { Lightbox } from "@/components/Lightbox";
+import { WeddingCountdown } from "@/components/WeddingCountdown";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -140,7 +141,7 @@ function TrackingPage() {
     const u = new URL(window.location.href);
     const status = u.searchParams.get("payment");
     if (status === "success") {
-      toast.success("تم استلام دفعتك. يتم تأكيد الحجز خلال لحظات…");
+      toast.success("استلمنا دفعتكِ 🤍 نثبّت موعدكِ الآن…");
       u.searchParams.delete("payment");
       window.history.replaceState({}, "", u.toString());
     } else if (status === "cancelled") {
@@ -276,7 +277,7 @@ function TrackingPage() {
     if (!newNote.trim()) return;
     try {
       await addNote({ data: { token, note: newNote.trim() } });
-      toast.success("تمت إضافة الملاحظة");
+      toast.success("وصلت ملاحظتكِ للمصوّرة");
       setNewNote("");
       load();
     } catch (e: any) { toast.error(e.message); }
@@ -286,7 +287,7 @@ function TrackingPage() {
     if (!(await confirm({ title: "تأكيد الاستلام", description: "هل تأكدتِ من استلام جميع الصور؟", confirmText: "تأكيد" }))) return;
     try {
       await markReceived({ data: { token } });
-      toast.success("شكرًا! تم تأكيد الاستلام.");
+      toast.success("مبروك على صوركِ 🤍 ذكرى تبقى معكِ");
       load();
     } catch (e: any) { toast.error(e.message); }
   };
@@ -313,7 +314,7 @@ function TrackingPage() {
     try {
       const res: any = await reconcileFn({ data: { token } });
       if (res?.updated) {
-        toast.success("تم تأكيد الدفع وتحديث حالة الحجز بنجاح! تحديث الصفحة…");
+        toast.success("مبروك! موعدكِ محجوز 🤍");
         setTimeout(() => load(), 1500);
       } else if (res?.status === "already_confirmed") {
         toast.success("الحجز مؤكّد مسبقاً.");
@@ -438,6 +439,20 @@ function TrackingPage() {
             </div>
           );
         })()}
+
+        {b.status !== "cancelled" && !b.verify && b.event_date && (
+          <WeddingCountdown
+            eventDate={b.event_date}
+            startTime={b.start_time}
+            photographerName={ph.display_name}
+            steps={[
+              { label: "إرسال العربون", done: !!b.deposit_sent_at, target: "deposit-step" },
+              { label: "تأكيد المصوّرة للحجز", done: !!b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status) },
+              ...(b.contract?.sign_token ? [{ label: "توقيع العقد", done: b.contract.status === "signed", target: "contract-step" }] : []),
+              { label: "إخبار المصوّرة بتفاصيل يومكِ", done: !!b.client_notes, target: "chat-step" },
+            ]}
+          />
+        )}
 
         {/* رابط تسليم الصور الخارجي (Drive / WeTransfer / Dropbox) */}
         {b.delivery_link && (
@@ -704,7 +719,7 @@ function TrackingPage() {
         </div>
 
         {b.contract?.sign_token && b.status !== "cancelled" && (
-          <a href={`/contracts/${b.contract.sign_token}`} className={`mb-6 flex items-center justify-between gap-3 rounded-2xl border p-5 text-sm ${b.contract.status === "signed" ? "border-border bg-card" : "border-gold bg-gold/10"}`}>
+          <a id="contract-step" href={`/contracts/${b.contract.sign_token}`} className={`scroll-mt-24 mb-6 flex items-center justify-between gap-3 rounded-2xl border p-5 text-sm ${b.contract.status === "signed" ? "border-border bg-card" : "border-gold bg-gold/10"}`}>
             <div>
               <div className="font-semibold">{b.contract.status === "signed" ? "✅ عقد التصوير موقَّع" : "✍️ وقّعي عقد التصوير"}</div>
               <div className="text-xs text-muted-foreground mt-1">{b.contract.status === "signed" ? "اضغطي لعرض العقد." : "اقرئي شروط الحجز ووقّعي العقد إلكترونياً — يحمي حقّكِ وحقّ المصوّرة."}</div>
@@ -991,7 +1006,7 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
 
   return (
     <div className="mt-8 rounded-sm border border-border bg-card p-5">
-      <h2 className="font-serif text-xl mb-4 flex items-center gap-2"><MessageSquare className="h-5 w-5 text-gold" /> المحادثة مع المصوّرة</h2>
+      <h2 id="chat-step" className="scroll-mt-24 font-serif text-xl mb-4 flex items-center gap-2"><MessageSquare className="h-5 w-5 text-gold" /> المحادثة مع المصوّرة</h2>
       <div className="space-y-2 max-h-96 overflow-y-auto mb-4">
         {msgs.length === 0 && <p className="text-sm text-muted-foreground">ابدئي المحادثة بإرسال رسالة.</p>}
         {msgs.map((m) => {

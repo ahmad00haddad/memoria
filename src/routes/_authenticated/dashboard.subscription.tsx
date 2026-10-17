@@ -98,7 +98,7 @@ function SubscriptionPage() {
     const u = new URL(window.location.href);
     const result = u.searchParams.get("payment");
     if (result) {
-      if (result === "success") toast.success("تم الدفع وتفعيل اشتراكك ✓");
+      if (result === "success") toast.success("اشتراكك فعّال ✓ شكراً لثقتك بميموريا");
       else if (result === "failed") toast.error(g("لم تكتمل عملية الدفع. يمكنكِ المحاولة مجدداً.", "لم تكتمل عملية الدفع. يمكنك المحاولة مجدداً."));
       else toast.message("نتحقّق من الدفعة… سيتحدّث الاشتراك خلال دقائق.");
       u.searchParams.delete("payment");

@@ -106,7 +106,7 @@ function CalendarPage() {
     if (!date) return;
     const { error } = await supabase.from("photographer_unavailability").insert({ photographer_id: uid, date, reason });
     if (error) return toast.error(error.message);
-    setDate(""); setReason(""); toast.success("تم حجب اليوم");
+    setDate(""); setReason(""); toast.success("حُجب اليوم — لن يظهر متاحاً للعرائس");
     load(uid);
   };
   const unblock = async (id: string) => {

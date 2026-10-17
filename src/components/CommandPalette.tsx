@@ -22,6 +22,7 @@ const PAGES = [
   { label: "تعديل ملفي", to: "/dashboard/profile", icon: User, keywords: "profile صور نبذة cliq" },
   { label: "التقارير المالية", to: "/dashboard/reports", icon: TrendingUp, keywords: "reports إيرادات csv" },
   { label: "العقود", to: "/dashboard/contracts", icon: FileText, keywords: "contracts توقيع" },
+  { label: "عروض الأسعار", to: "/dashboard/offers", icon: FileText, keywords: "offers تفاوض سعر مقترح" },
   { label: "قوالب واتساب", to: "/dashboard/whatsapp-templates", icon: MessageCircle, keywords: "whatsapp رسائل" },
   { label: "الاشتراك", to: "/dashboard/subscription", icon: CreditCard, keywords: "subscription دفع تجديد" },
   { label: "الإشعارات", to: "/notifications", icon: Bell, keywords: "notifications تنبيهات" },

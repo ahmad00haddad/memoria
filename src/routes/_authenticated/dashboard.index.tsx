@@ -564,9 +564,11 @@ function Dashboard() {
     { key: "profile", title: "ملفي", to: "/dashboard/profile", icon: <Star />, badge: (!profile?.avatar_url || !profile?.cover_url) ? "ناقص" : undefined, attention: !profile?.avatar_url, hint: "الصور والنبذة وبيانات الدفع" },
     { key: "reports", title: "التقارير", to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? `${stats.monthRevenue} د.أ هذا الشهر` : "الإيرادات وتصدير CSV" },
     { key: "contracts", title: "العقود", to: "/dashboard/contracts", icon: <Link2 />, hint: "توقيع إلكتروني" },
+    { key: "offers", title: "عروض الأسعار", to: "/dashboard/offers", icon: <MessageCircle />, hint: "أسعار اقترحتها العرائس" },
     { key: "whatsapp", title: "رسائل واتساب", to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: `${arCount(templatesCount, "قالب واحد", "قالبان", "قوالب", "قالباً")} جاهزة` },
     { key: "subscription", title: "الاشتراك", to: "/dashboard/subscription", icon: <LogOut />, badge: subStatus === "expired" ? "منتهي" : subStatus === "trial" ? "تجريبي" : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? "نشط" : "التجديد وإثبات الدفع" },
     { key: "notifications", title: "الإشعارات", to: "/notifications", icon: <Bell />, hint: "كل التنبيهات" },
+    { key: "recap", title: "سنتي", to: "/dashboard/recap", icon: <Sparkles />, hint: "ملخّص للمشاركة على إنستغرام" },
     { key: "referrals", title: "الإحالة", to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: "١٤ يوماً مجاناً عن كل زميلة" },
     { key: "public", title: "ملفي العام", to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ArrowLeft />, hint: "كما تراه العرائس" },
   ];

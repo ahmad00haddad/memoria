@@ -39,7 +39,7 @@ export function VerifyBookingPanel({ token, verify, onVerified, onRecheck }: {
     setBusy(true);
     try {
       await verifyFn({ data: { token, code } });
-      toast.success("تم تأكيد طلبك ✅");
+      toast.success("وصل طلبكِ للمصوّرة 🤍 ستصلكِ رسالة فور ردّها");
       onVerified();
     } catch (e: any) {
       toast.error(e?.message || "تعذّر التأكيد");
@@ -51,7 +51,7 @@ export function VerifyBookingPanel({ token, verify, onVerified, onRecheck }: {
     setChecking(true);
     try {
       const done = await onRecheck();
-      if (done) { toast.success("تم تأكيد طلبك ✅"); onVerified(); }
+      if (done) { toast.success("وصل طلبكِ للمصوّرة 🤍 ستصلكِ رسالة فور ردّها"); onVerified(); }
       else toast("لم تصلنا الرسالة بعد — تأكدي أنكِ ضغطتِ إرسال في واتساب");
     } finally { setChecking(false); }
   };

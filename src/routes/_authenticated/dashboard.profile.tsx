@@ -156,7 +156,7 @@ function ProfilePage() {
       setOriginalP((o: any) => ({ ...o, avatar_url: url }));
       const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", uid);
       if (error) return toast.error(error.message);
-      toast.success("تم رفع الصورة وحفظها");
+      toast.success("صورتك الجديدة ظاهرة الآن");
     } else {
       toast.error(res.userMessage);
     }
@@ -170,7 +170,7 @@ function ProfilePage() {
       setOriginalP((o: any) => ({ ...o, cover_url: url }));
       const { error } = await supabase.from("profiles").update({ cover_url: url }).eq("id", uid);
       if (error) return toast.error(error.message);
-      toast.success("تم رفع الغلاف وحفظه");
+      toast.success("الغلاف الجديد ظاهر الآن");
     } else {
       toast.error(res.userMessage);
     }
