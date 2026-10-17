@@ -1,3 +1,5 @@
+import { g } from "@/hooks/use-gender";
+import { arCount } from "@/lib/ar-count";
 // يحسب "مهام اليوم" للمصوّرة من بيانات الحجوزات والاشتراك.
 // كل مهمة لها أولوية؛ الأعلى يظهر كـ"مهمة اليوم" والباقي في قائمة مطويّة.
 
@@ -55,7 +57,7 @@ export function ageLabel(iso: string) {
   if (hours < 1) return "الآن";
   if (hours < 24) return `منذ ${hours} ساعة`;
   const d = Math.floor(hours / 24);
-  return d === 1 ? "منذ يوم" : `منذ ${d} أيام`;
+  return `منذ ${arCount(d, "يوم", "يومين", "أيام", "يوماً")}`;
 }
 
 export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem[] {
@@ -71,8 +73,8 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
       items.push({
         id: `proof-${b.id}`, tone: "urgent", priority: 100,
         title: `عربون ${name} وصل`,
-        detail: `${b.deposit_amount ? `${b.deposit_amount} د.أ · ` : ""}أُرسل ${ageLabel(b.deposit_sent_at ?? b.created_at)} — راجعي الإثبات وأكّدي الحجز`,
-        cta: "راجعي الإثبات", ...link,
+        detail: `${b.deposit_amount ? `${b.deposit_amount} د.أ · ` : ""}أُرسل ${ageLabel(b.deposit_sent_at ?? b.created_at)} — ${g("راجعي الإثبات وأكّدي الحجز", "راجع الإثبات وأكّد الحجز")}`,
+        cta: g("راجعي الإثبات", "راجع الإثبات"), ...link,
       });
       continue;
     }
@@ -83,9 +85,9 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
       if (d < 0) {
         items.push({
           id: `late-${b.id}`, tone: "urgent", priority: 90 + Math.min(9, -d),
-          title: `تسليم ${name} متأخر ${-d === 1 ? "يوماً" : `${-d} أيام`}`,
-          detail: "حدّثي مرحلة الإنتاج أو تواصلي مع العميلة بموعد جديد",
-          cta: "افتحي الحجز", ...link,
+          title: `تسليم ${name} متأخر ${arCount(-d, "يوماً", "يومين", "أيام", "يوماً")}`,
+          detail: g("حدّثي مرحلة الإنتاج أو تواصلي مع العميلة بموعد جديد", "حدّث مرحلة الإنتاج أو تواصل مع العميلة بموعد جديد"),
+          cta: g("افتحي الحجز", "افتح الحجز"), ...link,
         });
         continue;
       }
@@ -98,7 +100,7 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
         items.push({
           id: `event-${b.id}`, tone: d <= 1 ? "urgent" : "soon", priority: 80 - d,
           title: `تصوير ${name} ${relativeDay(d)}`,
-          detail: "راجعي ملاحظات العميلة وقائمة اللقطات قبل اليوم",
+          detail: g("راجعي ملاحظات العميلة وقائمة اللقطات قبل اليوم", "راجع ملاحظات العميلة وقائمة اللقطات قبل اليوم"),
           cta: "تفاصيل الحجز", ...link,
         });
         continue;
@@ -113,7 +115,7 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
           id: `new-${b.id}`, tone: ageDays > 2 ? "soon" : "info", priority: 60 + Math.min(9, Math.floor(ageDays * 2)),
           title: `طلب حجز من ${name}`,
           detail: `وصل ${ageLabel(b.created_at)} · بانتظار العربون`,
-          cta: "افتحي الطلب", ...link,
+          cta: g("افتحي الطلب", "افتح الطلب"), ...link,
         });
         continue;
       }
@@ -126,7 +128,7 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
         items.push({
           id: `due-${b.id}`, tone: d <= 2 ? "soon" : "info", priority: 50 - d,
           title: `تسليم ${name} ${relativeDay(d)}`,
-          detail: "تابعي التحرير في لوحة الإنتاج",
+          detail: g("تابعي التحرير في لوحة الإنتاج", "تابع التحرير في لوحة الإنتاج"),
           cta: "لوحة الإنتاج", to: "/dashboard/production",
         });
         continue;
@@ -139,7 +141,7 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
         id: `final-${b.id}`, tone: "info", priority: 30,
         title: `الدفعة النهائية من ${name} لم تصل`,
         detail: "المعرض سيبقى بعلامة مائية حتى تسجيل الدفعة",
-        cta: "سجّلي الدفعة", ...link,
+        cta: g("سجّلي الدفعة", "سجّل الدفعة"), ...link,
       });
     }
   }
@@ -153,8 +155,8 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
         items.push({
           id: "sub", tone: d <= 3 ? "urgent" : "soon", priority: 70,
           title: sub.status === "trial" ? `الفترة التجريبية تنتهي ${relativeDay(d)}` : `اشتراكك ينتهي ${relativeDay(d)}`,
-          detail: "جدّدي الآن ليبقى ملفك ظاهراً للعرائس دون انقطاع",
-          cta: "جدّدي", to: "/dashboard/subscription",
+          detail: g("جدّدي الآن ليبقى ملفك ظاهراً للعرائس دون انقطاع", "جدّد الآن ليبقى ملفك ظاهراً للعرائس دون انقطاع"),
+          cta: g("جدّدي", "جدّد"), to: "/dashboard/subscription",
         });
       }
     }

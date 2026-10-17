@@ -1,3 +1,4 @@
+import { arCount } from "@/lib/ar-count";
 import { Lightbulb } from "lucide-react";
 import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -556,14 +557,14 @@ function Dashboard() {
   })();
 
   const tools: Tool[] = [
-    { key: "bookings", title: "الحجوزات", to: "/dashboard/bookings", icon: <Calendar />, badge: stats.pending > 0 ? `${stats.pending} جديد` : undefined, attention: stats.pending > 0, hint: `${totalBookings} حجزاً` },
+    { key: "bookings", title: "الحجوزات", to: "/dashboard/bookings", icon: <Calendar />, badge: stats.pending > 0 ? `${stats.pending} جديد` : undefined, attention: stats.pending > 0, hint: arCount(totalBookings, "حجز واحد", "حجزان", "حجوزات", "حجزاً") },
     { key: "production", title: "متابعة الإنتاج", to: "/dashboard/production", icon: <Sparkles />, badge: stats.deliveriesDueSoon > 0 ? `${stats.deliveriesDueSoon} قريب` : undefined, attention: stats.deliveriesDueSoon > 0, hint: "من التصوير إلى التسليم" },
     { key: "calendar", title: "التقويم", to: "/dashboard/calendar", icon: <Calendar />, hint: stats.upcoming30 > 0 ? `${stats.upcoming30} مناسبات خلال ٣٠ يوماً` : "حجب الأيام والتوفّر" },
-    { key: "pricing", title: "الأسعار", to: "/dashboard/pricing", icon: <Package />, badge: pricingCount === 0 ? "فارغة" : undefined, attention: pricingCount === 0, hint: `${pricingCount} باقات` },
+    { key: "pricing", title: "الأسعار", to: "/dashboard/pricing", icon: <Package />, badge: pricingCount === 0 ? "فارغة" : undefined, attention: pricingCount === 0, hint: arCount(pricingCount, "باقة واحدة", "باقتان", "باقات", "باقة") },
     { key: "profile", title: "ملفي", to: "/dashboard/profile", icon: <Star />, badge: (!profile?.avatar_url || !profile?.cover_url) ? "ناقص" : undefined, attention: !profile?.avatar_url, hint: "الصور والنبذة وبيانات الدفع" },
     { key: "reports", title: "التقارير", to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? `${stats.monthRevenue} د.أ هذا الشهر` : "الإيرادات وتصدير CSV" },
     { key: "contracts", title: "العقود", to: "/dashboard/contracts", icon: <Link2 />, hint: "توقيع إلكتروني" },
-    { key: "whatsapp", title: "رسائل واتساب", to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: `${templatesCount} قوالب جاهزة` },
+    { key: "whatsapp", title: "رسائل واتساب", to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: `${arCount(templatesCount, "قالب واحد", "قالبان", "قوالب", "قالباً")} جاهزة` },
     { key: "subscription", title: "الاشتراك", to: "/dashboard/subscription", icon: <LogOut />, badge: subStatus === "expired" ? "منتهي" : subStatus === "trial" ? "تجريبي" : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? "نشط" : "التجديد وإثبات الدفع" },
     { key: "notifications", title: "الإشعارات", to: "/notifications", icon: <Bell />, hint: "كل التنبيهات" },
     { key: "referrals", title: "الإحالة", to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: "١٤ يوماً مجاناً عن كل زميلة" },
@@ -644,7 +645,7 @@ function Dashboard() {
                 cta="إدارة الأسعار"
                 to="/dashboard/pricing"
                 urgent={pricingCount === 0}
-                badgeText={pricingCount === 0 ? g("ابدئي من هنا", "ابدأ من هنا") : `${pricingCount} باقات`}
+                badgeText={pricingCount === 0 ? g("ابدئي من هنا", "ابدأ من هنا") : arCount(pricingCount, "باقة واحدة", "باقتان", "باقات", "باقة")}
                 quickAction={{ label: "إضافة باقة سريعة", to: "/dashboard/pricing" }}
                 icon={<Package className="h-6 w-6" />}
               />

@@ -147,7 +147,13 @@ export function Header() {
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
           {/* ── روابط تكيّفية حسب دور الزائر ── */}
-          {authed ? (
+          {authed && isPhotographer ? (
+            // ── مصوّرة مسجّلة: أدوات عملها بدل روابط العرائس ──
+            <>
+              <NavLink to="/dashboard/bookings" className="hidden sm:inline-flex">الحجوزات</NavLink>
+              <NavLink to="/dashboard/calendar" className="hidden md:inline-flex">التقويم</NavLink>
+            </>
+          ) : authed ? (
             // ── مسجّل دخول: عرض الروابط الكاملة ──
             <>
               <NavLink to="/search" className="hidden sm:inline-flex">ابحث عن مصوّر</NavLink>

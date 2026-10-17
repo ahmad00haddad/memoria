@@ -242,9 +242,8 @@ function Landing() {
     try {
       const r = localStorage.getItem(VISITOR_ROLE_KEY) as "client" | "photographer" | "guest" | null;
       setVisitorRole(r);
-      if (!authLoading && !authed && !r) {
-        setShowRoleGate(true);
-      }
+      // لا نعرض شاشة «من أنت؟» المنبثقة: كانت تظهر بعد ثوانٍ فوق محتوى بدأت الزائرة بقراءته.
+      // الواجهة نفسها تخدم الطرفين (بحث للعروس + «مصوّرة؟ انضمي» للمصوّرة).
     } catch {}
   }, [authLoading, authed]);
 

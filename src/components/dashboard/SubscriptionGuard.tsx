@@ -59,7 +59,7 @@ export function SubscriptionGuard() {
   if (s.kind === "ending" && dismissed) return null;
 
   const expired = s.kind === "expired";
-  const when = s.daysLeft === 0 ? "اليوم" : s.daysLeft === 1 ? "بكرا" : `خلال ${s.daysLeft} أيام`;
+  const when = s.daysLeft === 0 ? "اليوم" : s.daysLeft === 1 ? "غداً" : s.daysLeft === 2 ? "بعد يومين" : `بعد ${s.daysLeft} أيام`;
 
   return (
     <div className={`border-b ${expired ? "border-destructive/40 bg-destructive/10" : "border-amber-500/40 bg-amber-50 dark:bg-amber-950/30"}`}>
@@ -71,16 +71,16 @@ export function SubscriptionGuard() {
           <div className={`font-semibold ${expired ? "text-destructive" : "text-amber-800 dark:text-amber-300"}`}>
             {expired
               ? "اشتراكك منتهي — ملفك مخفي الآن عن العرائس"
-              : `${s.trial ? "تجربتك المجانية" : "اشتراكك"} بينتهي ${when}`}
+              : `${s.trial ? "تجربتك المجانية تنتهي" : "اشتراكك ينتهي"} ${when}`}
           </div>
           <div className="text-foreground/80">
             {expired ? (
-              <>رابط ملفك{s.username ? <> <span dir="ltr" className="font-mono">@{s.username}</span></> : null} متوقّف، وما في طلبات حجز جديدة رح توصلك. كل يوم بدون اشتراك = عرائس بيحجزوا مع غيرك.</>
+              <>رابط ملفك{s.username ? <> <span dir="ltr" className="font-mono">@{s.username}</span></> : null} متوقّف، ولن تصلك طلبات حجز جديدة حتى التجديد.</>
             ) : (
-              <>بعدها ملفك بيختفي من البحث، رابط البايو بيوقف يشتغل، وطلبات الحجز الجديدة بتوقف.</>
+              <>بعدها يختفي ملفك من البحث ويتوقف رابط البايو وطلبات الحجز الجديدة.</>
             )}
             {s.upcoming > 0 && (
-              <> عندك <strong>{s.upcoming} {s.upcoming === 1 ? "حجز قادم" : "حجوزات قادمة"}</strong> — عميلاتك بيتابعوا معك من خلال المنصة.</>
+              <> لديك <strong>{s.upcoming} {s.upcoming === 1 ? "حجز قادم" : "حجوزات قادمة"}</strong> — تبقى متابعتها تعمل كالمعتاد.</>
             )}
           </div>
         </div>
@@ -88,7 +88,7 @@ export function SubscriptionGuard() {
           to="/dashboard/subscription"
           className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ${expired ? "bg-destructive text-destructive-foreground" : "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal"}`}
         >
-          {expired ? g("جدّدي الآن", "جدّد الآن") : g("جدّدي قبل ما يختفي ملفك", "جدّد قبل ما يختفي ملفك")}
+          {expired ? g("جدّدي الآن", "جدّد الآن") : g("جدّدي الاشتراك", "جدّد الاشتراك")}
         </Link>
         {!expired && (
           <button

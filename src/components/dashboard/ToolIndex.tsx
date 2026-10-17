@@ -38,7 +38,7 @@ function markVisited(key: string) {
 
 /**
  * فهرس أدوات مضغوط بدل ١٢ بطاقة كبيرة.
- * نقطة ذهبية g("لم تجرّبيها", "لم تجرّبها") على الأداة التي لم تُفتح من قبل، تختفي بعد أول زيارة.
+ * نقطة ذهبية صغيرة على الأداة التي لم تُفتح من قبل، تختفي بعد أول زيارة.
  */
 export function ToolIndex({ tools }: { tools: Tool[] }) {
   const [visited, setVisited] = useState<Set<string> | null>(null);
@@ -64,10 +64,8 @@ export function ToolIndex({ tools }: { tools: Tool[] }) {
                   {t.badge}
                 </span>
               ) : isNew ? (
-                <span className="flex items-center gap-1 text-[10px] text-gold" title={g("لم تفتحيها بعد", "لم تفتحها بعد")}>
-                  <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-                  {g("جديد عليكِ", "جديد عليك")}
-                </span>
+                // نقطة فقط بلا نص: ٨ شارات «جديد» في شاشة واحدة كانت ضجيجاً
+                <span className="mt-1 h-2 w-2 rounded-full bg-gold" aria-label={g("لم تفتحيها بعد", "لم تفتحها بعد")} />
               ) : null}
             </div>
             <div className="mt-4 flex items-center justify-between gap-2">
