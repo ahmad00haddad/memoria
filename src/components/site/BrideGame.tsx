@@ -69,10 +69,14 @@ export function BrideGame() {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") exitFull(); };
+    // على iOS تجاهل overflow:hidden، فنمنع سحب الصفحة باللمس مباشرة
+    const noScroll = (e: TouchEvent) => { e.preventDefault(); };
     window.addEventListener("keydown", onKey);
+    document.addEventListener("touchmove", noScroll, { passive: false });
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
+      document.removeEventListener("touchmove", noScroll);
     };
   }, [full]);
 
@@ -153,6 +157,7 @@ const GAME_CSS = `
   @media (orientation:portrait) and (max-width:700px){.bride-game #rot{display:block}}
   .bride-game #bar button{font:inherit;color:inherit;background:transparent;border:1px solid hsl(var(--border));border-radius:999px;padding:6px 16px;cursor:pointer;font-size:13px}
   .bride-game #bar button:hover{background:hsl(var(--accent))}
+  .bride-game[data-full]{touch-action:none;overscroll-behavior:none;overflow:hidden}
   .bride-game [data-full] #bar,.bride-game [data-full] #rot{display:none!important}
   .bride-game #share{background:hsl(var(--gold, 40 60% 50%));color:#fff;border-color:transparent;font-weight:bold}
 `;
