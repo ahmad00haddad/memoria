@@ -12,7 +12,8 @@ function fit(){
   const dpr=Math.min(window.devicePixelRatio||1,2);
   /* في وضع ملء الشاشة نكبّر حسب الارتفاع أيضاً */
   const fsMode=!!document.querySelector('[data-full]');
-  let w=fsMode?Math.min(innerWidth-8,(innerHeight-8)*LW/LH):Math.min((cv.parentElement?cv.parentElement.clientWidth:innerWidth)-2,1180),h=w*LH/LW;
+  const box=cv.parentElement;
+  let w=fsMode?Math.min(box.clientWidth-8,(box.clientHeight-8)*LW/LH):Math.min((box?box.clientWidth:innerWidth)-2,1180),h=w*LH/LW;
   cv.style.width=w+'px';cv.style.height=h+'px';
   cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
   scale=cv.width/LW;

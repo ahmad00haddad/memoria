@@ -16,6 +16,7 @@ type GameId = (typeof GAMES)[number]["id"];
 export function BrideGame() {
   const [order, setOrder] = useState<GameId[]>(["bride", "traps"]);
   const [full, setFull] = useState(false);
+  const [portrait, setPortrait] = useState(false);
   const nativeFull = useRef(false);
   const active = order[0];
   const game = GAMES.find((g) => g.id === active)!;
@@ -54,6 +55,14 @@ export function BrideGame() {
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(orientation: portrait)");
+    const upd = () => setPortrait(mq.matches);
+    upd();
+    mq.addEventListener("change", upd);
+    return () => mq.removeEventListener("change", upd);
+  }, []);
+
   // قفل التمرير أثناء ملء الشاشة + Esc للخروج
   useEffect(() => {
     if (!full) return;
@@ -67,22 +76,28 @@ export function BrideGame() {
     };
   }, [full]);
 
-  const body = active === "bride" ? <CanvasGame /> : <TrapsGame full={full} />;
+  const body = active === "bride" ? <CanvasGame full={full} /> : <TrapsGame full={full} />;
 
   if (full) {
+    // على الهاتف العمودي نلف الشاشة 90 درجة لتصير اللعبة أفقية وتملأ الشاشة
+    const boxStyle: React.CSSProperties = portrait
+      ? { position: "fixed", top: 0, left: "100vw", width: "100dvh", height: "100vw", transform: "rotate(90deg)", transformOrigin: "top left" }
+      : { position: "fixed", top: 0, left: 0, width: "100vw", height: "100dvh" };
     return (
-      <div data-full className="bride-game fixed inset-0 z-[80] flex items-center justify-center bg-charcoal p-2" dir="rtl">
+      <>
         <style>{GAME_CSS}</style>
+        <div data-full className="bride-game z-[80] bg-[#1d0e22]" style={boxStyle} dir="rtl">
+          {body}
+        </div>
         <button
           type="button"
           onClick={exitFull}
           aria-label="خروج من ملء الشاشة"
-          className="absolute top-2 right-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-ivory/15 text-ivory"
+          className="fixed top-3 right-3 z-[90] flex h-10 w-10 items-center justify-center rounded-full bg-ivory/20 text-ivory"
         >
           ✕
         </button>
-        <div className="flex h-full w-full items-center justify-center">{body}</div>
-      </div>
+      </>
     );
   }
 
@@ -138,10 +153,11 @@ const GAME_CSS = `
   @media (orientation:portrait) and (max-width:700px){.bride-game #rot{display:block}}
   .bride-game #bar button{font:inherit;color:inherit;background:transparent;border:1px solid hsl(var(--border));border-radius:999px;padding:6px 16px;cursor:pointer;font-size:13px}
   .bride-game #bar button:hover{background:hsl(var(--accent))}
+  .bride-game [data-full] #bar,.bride-game [data-full] #rot{display:none!important}
   .bride-game #share{background:hsl(var(--gold, 40 60% 50%));color:#fff;border-color:transparent;font-weight:bold}
 `;
 
-function CanvasGame() {
+function CanvasGame({ full }: { full: boolean }) {
   useEffect(() => {
     const ac = new AbortController();
     (window as any).__brideAbort = ac;
@@ -157,7 +173,7 @@ function CanvasGame() {
   }, []);
 
   return (
-    <div className="w-full flex flex-col items-center gap-4">
+    <div className={full ? "w-full h-full flex items-center justify-center" : "w-full flex flex-col items-center gap-4"}>
       <div id="rot">📱↻ أدِيري الهاتف أفقياً لتجربة أفضل</div>
       <canvas id="c"></canvas>
       <div id="bar" className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
@@ -176,7 +192,7 @@ function TrapsGame({ full }: { full: boolean }) {
       <iframe
         src="/game/traps.html"
         title="طريق مليان فخاخ"
-        className="block h-full w-full max-h-full border-0"
+        className="block h-full w-full border-0"
         allow="autoplay; fullscreen"
       />
     );
