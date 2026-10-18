@@ -454,12 +454,12 @@
   mask-size: 260% 100%;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
-  -webkit-mask-position: 100% 0;
-  mask-position: 100% 0;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
   transition: -webkit-mask-position var(--cw-dur, 1.8s) cubic-bezier(0.65, 0, 0.35, 1) var(--cw-delay, 0s),
     mask-position var(--cw-dur, 1.8s) cubic-bezier(0.65, 0, 0.35, 1) var(--cw-delay, 0s);
 }
-.calligraphy-write[data-on="true"] { -webkit-mask-position: 0 0; mask-position: 0 0; }
+.calligraphy-write[data-on="true"] { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
 @media (prefers-reduced-motion: reduce) {
   .calligraphy-write { -webkit-mask-image: none; mask-image: none; transition: none; }
 }
