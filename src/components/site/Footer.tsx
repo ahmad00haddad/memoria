@@ -26,7 +26,7 @@ export function Footer() {
             <li><Link to="/faq" className="hover:text-gold">الأسئلة الشائعة</Link></li>
             <li><Link to="/app" className="hover:text-gold">حمّل التطبيق</Link></li>
             <li><Link to="/guide" className="hover:text-gold">كيف يعمل النظام</Link></li>
-            <li><a href="/game/" className="hover:text-gold">العبي: ضاعت العروس</a></li>
+            <li><a href="/game/" className="hover:text-gold">العبي: اهربي يا عروس</a></li>
             <li><button onClick={() => startTour()} className="hover:text-gold text-right">أعد الجولة التعريفية</button></li>
           </ul>
         </div>

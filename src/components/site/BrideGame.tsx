@@ -7,8 +7,8 @@ import { motion } from "framer-motion";
    عند مغادرة اللعبة نلغي المستمعين عبر AbortController حتى لا تسرق المفاتيح في باقي الصفحات. */
 
 const GAMES = [
-  { id: "bride", name: "ضاعت العروس", icon: "👰", bg: "linear-gradient(145deg,#ffc2d9,#c0589b 70%,#7a2f6e)" },
-  { id: "traps", name: "فخاخ العروس", icon: "🪤", bg: "linear-gradient(145deg,#5a2d63,#2b1630 75%)" },
+  { id: "bride", name: "اهربي يا عروس", icon: "👰", bg: "linear-gradient(145deg,#ffc2d9,#c0589b 70%,#7a2f6e)" },
+  { id: "traps", name: "طريق مليان فخاخ", icon: "🪤", bg: "linear-gradient(145deg,#5a2d63,#2b1630 75%)" },
 ] as const;
 type GameId = (typeof GAMES)[number]["id"];
 
@@ -100,7 +100,7 @@ function TrapsGame() {
     <div className="w-full flex flex-col items-center gap-4">
       <iframe
         src="/game/traps.html"
-        title="فخاخ العروس"
+        title="طريق مليان فخاخ"
         className="block w-full max-w-[1100px] border-0 rounded-[18px] shadow-elegant"
         style={{ aspectRatio: "960 / 520" }}
         allow="autoplay"

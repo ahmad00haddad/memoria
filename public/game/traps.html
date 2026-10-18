@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>فخاخ العروس</title>
+<title>طريق مليان فخاخ</title>
 <style>
   :root{--ink:#fff3f6;--accent:#ff7aa8}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
@@ -774,7 +774,7 @@ function hideOv(){ov.style.display='none';}
 function menu(){
   G.state='menu';skipBtn.style.display='none';
   let g='';for(let i=1;i<=NLEV;i++)g+='<button data-a="lvl" data-n="'+i+'"'+(i>save.unlocked?' disabled':'')+'>'+i+'</button>';
-  showOv('<h1>فخاخ العروس</h1><p>اوصلي لباب القاعة... إذا قدرتي! كل شي فيها فخ: العريس والمصوّرين والمصوّرات والحماة وحتى الكيك. ستموتين كثيراً وسنضحك عليكي.</p><div id="grid">'+g+'</div><p>إجمالي ميتاتك: '+save.deaths+(save.unlocked>1?' • وصلتي للمرحلة '+save.unlocked:'')+'</p><div class="row"><button class="main" data-a="lvl" data-n="'+Math.min(save.unlocked,NLEV)+'">'+(save.unlocked>1?'كمّلي':'ابدأي')+'</button></div>');
+  showOv('<h1>طريق مليان فخاخ</h1><p>اوصلي لباب القاعة... إذا قدرتي! كل شي فيها فخ: العريس والمصوّرين والمصوّرات والحماة وحتى الكيك. ستموتين كثيراً وسنضحك عليكي.</p><div id="grid">'+g+'</div><p>إجمالي ميتاتك: '+save.deaths+(save.unlocked>1?' • وصلتي للمرحلة '+save.unlocked:'')+'</p><div class="row"><button class="main" data-a="lvl" data-n="'+Math.min(save.unlocked,NLEV)+'">'+(save.unlocked>1?'كمّلي':'ابدأي')+'</button></div>');
 }
 ov.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;initAudio();
@@ -813,7 +813,7 @@ function makeShareImage(){
   const g=x.createLinearGradient(0,0,0,H2);g.addColorStop(0,'#ffb3cf');g.addColorStop(.55,'#a14a92');g.addColorStop(1,'#2e1240');x.fillStyle=g;x.fillRect(0,0,W2,H2);
   for(let i=0;i<26;i++)heart(x,(i*211)%W2,(i*397)%H2,2+(i%4),'rgba(255,255,255,.18)');
   x.fillStyle='#fff';x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=18;
-  x.font='bold 96px "Segoe UI",Tahoma,Arial';x.fillText('فخاخ العروس',W2/2,230);
+  x.font='bold 96px "Segoe UI",Tahoma,Arial';x.fillText('طريق مليان فخاخ',W2/2,230);
   x.font='bold 70px "Segoe UI",Tahoma,Arial';x.fillText('متّ بالفخاخ',W2/2,420);
   x.font='bold 340px "Segoe UI",Tahoma,Arial';x.fillText(String(save.deaths),W2/2,760);
   x.font='bold 90px "Segoe UI",Tahoma,Arial';x.fillText('مرة!',W2/2,880);
@@ -825,7 +825,7 @@ function makeShareImage(){
   return c;
 }
 async function shareDeaths(){
-  const c=makeShareImage(),text='متّ '+save.deaths+' مرة في فخاخ العروس! جرّبي: '+SITE_URL;
+  const c=makeShareImage(),text='متّ '+save.deaths+' مرة في طريق مليان فخاخ! جرّبي: '+SITE_URL;
   c.toBlob(async blob=>{if(!blob)return;const file=new File([blob],'fokhakh.png',{type:'image/png'});
     if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],text,title:SITE_NAME});return;}catch(e){if(e&&e.name==='AbortError')return;}}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fokhakh.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);},'image/png');

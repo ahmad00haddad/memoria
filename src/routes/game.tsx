@@ -6,9 +6,9 @@ import { BrideGame } from "@/components/site/BrideGame";
 export const Route = createFileRoute("/game")({
   head: () => ({
     meta: [
-      { title: "ضاعت العروس — Memoria · ميموريا" },
+      { title: "اهربي يا عروس — Memoria · ميموريا" },
       { name: "description", content: "لعبة ميموريا: اهربي من العريس واكسري رقمك القياسي، ثم شاركي نتيجتك." },
-      { property: "og:title", content: "ضاعت العروس — Memoria" },
+      { property: "og:title", content: "اهربي يا عروس — Memoria" },
       { property: "og:description", content: "اهربي من العريس واكسري رقمك القياسي." },
     ],
   }),

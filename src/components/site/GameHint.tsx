@@ -59,7 +59,7 @@ export function GameHint() {
           <Gamepad2 className="h-5 w-5 text-gold shrink-0" />
           <div className="flex-1 text-sm">
             <div className="font-serif font-bold">قبل ما تروحي… جرّبي تهربي من العريس!</div>
-            <a href="/game/" className="text-gold underline underline-offset-2">العبي «ضاعت العروس»</a>
+            <a href="/game/" className="text-gold underline underline-offset-2">العبي «اهربي يا عروس»</a>
           </div>
           <button onClick={() => setShow(false)} aria-label="إغلاق" className="text-ivory/70 hover:text-ivory">
             <X className="h-4 w-4" />
