@@ -20,9 +20,7 @@ function GamePage() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container-editorial py-12 max-w-4xl">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">استراحة</div>
-        <h1 className="font-serif text-4xl sm:text-5xl mb-3">ضاعت العروس!</h1>
-        <p className="text-muted-foreground mb-8">اقفزي فوق العقبات واهربي من العريس، وشاركي نتيجتك مع أصحابك.</p>
+        <div className="text-center text-xs uppercase tracking-[0.3em] text-gold mb-6">استراحة</div>
         <BrideGame />
       </main>
       <Footer />
