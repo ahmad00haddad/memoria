@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { Mail, MessageCircle, Clock, MapPin, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -112,8 +112,9 @@ function ContactPage() {
               </div>
               <Field name="email" label="البريد الإلكتروني" type="email" required />
               <div>
-                <label className="text-sm mb-1 block">الرسالة</label>
+                <label htmlFor="contact-message" className="text-sm mb-1 block">الرسالة</label>
                 <textarea
+                  id="contact-message"
                   name="message"
                   required
                   rows={5}
@@ -155,10 +156,12 @@ function Item({ icon: Icon, label, children }: { icon: typeof Mail; label: strin
 }
 
 function Field({ name, label, type = "text", required }: { name: string; label: string; type?: string; required?: boolean }) {
+  const id = useId();
   return (
     <div>
-      <label className="text-sm mb-1 block">{label}</label>
+      <label htmlFor={id} className="text-sm mb-1 block">{label}</label>
       <input
+        id={id}
         name={name}
         type={type}
         required={required}

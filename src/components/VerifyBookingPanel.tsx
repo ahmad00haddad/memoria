@@ -108,9 +108,10 @@ export function VerifyBookingPanel({ token, verify, onVerified, onRecheck }: {
       {emailOn && (
         <div className="space-y-2">
           {waHref && <div className="text-center text-[11px] text-muted-foreground">أو</div>}
-          <label className="flex items-center gap-1.5 text-sm"><Mail className="h-4 w-4" /> أدخلي الرمز المرسل لإيميلك</label>
+          <label htmlFor="verify-code" className="flex items-center gap-1.5 text-sm"><Mail className="h-4 w-4" /> أدخلي الرمز المرسل لإيميلك</label>
           <div className="flex gap-2">
             <input
+              id="verify-code"
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={6}

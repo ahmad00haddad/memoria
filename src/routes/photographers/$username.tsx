@@ -279,6 +279,8 @@ function PhotographerPage() {
       {/* شريط التنقل العلوي للموبايل (App-like Top Bar) */}
       <div className="sm:hidden fixed top-0 inset-x-0 z-40 bg-charcoal/80 backdrop-blur-md border-b border-ivory/10 h-14 flex items-center px-4 pt-[env(safe-area-inset-top)]">
         <button
+          type="button"
+          aria-label="رجوع"
           onClick={() => window.history.back()}
           className="h-8 w-8 bg-ivory/10 rounded-full flex items-center justify-center text-ivory hover:bg-ivory/20"
         >
@@ -605,12 +607,14 @@ function PhotographerPage() {
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">للاستفسار والتواصل</div>
         <div className="flex justify-center gap-3">
           {profile.instagram && (
-            <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
+            <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label="إنستغرام" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
           )}
           {profile.whatsapp && (
-            <a href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي..")}`} target="_blank" rel="noreferrer" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
+            <a href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي..")}`} target="_blank" rel="noreferrer" aria-label="واتساب" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
           )}
           <button
+            type="button"
+            aria-label="مشاركة الملف"
             onClick={() => {
               const url = typeof window !== "undefined" ? window.location.href : "";
               if (navigator.share) navigator.share({ title: profile.display_name, url }).catch(() => {});
@@ -1256,8 +1260,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           <Field label="الرصيد المتبقي (اختياري)" v={f.remaining_note} on={(v) => setF({ ...f, remaining_note: v })} />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-sm text-muted-foreground">معلومات إضافية</label>
-          <textarea value={f.client_notes} onChange={(e) => setF({ ...f, client_notes: e.target.value })} rows={3} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
+          <label htmlFor="client-notes" className="text-sm text-muted-foreground">معلومات إضافية</label>
+          <textarea id="client-notes" value={f.client_notes} onChange={(e) => setF({ ...f, client_notes: e.target.value })} rows={3} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
         </div>
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">مستوى الخصوصية</label>

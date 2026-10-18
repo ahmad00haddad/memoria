@@ -247,8 +247,9 @@ function SearchPage() {
                       <div className="px-4 pb-6 space-y-4 max-h-[80vh] overflow-y-auto">
                         <h2 className="text-base font-semibold mb-2">الفلاتر</h2>
                         <div className="space-y-2">
-                          <label className="text-xs text-muted-foreground">تاريخ العرس — نعرض المتاحات فيه فقط</label>
+                          <label htmlFor="search-date" className="text-xs text-muted-foreground">تاريخ العرس — نعرض المتاحات فيه فقط</label>
                           <input
+                            id="search-date"
                             type="date"
                             value={date}
                             min={new Date().toISOString().slice(0, 10)}
@@ -280,8 +281,8 @@ function SearchPage() {
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs text-muted-foreground">الترتيب</label>
-                          <select value={sort} onChange={(e) => setSort(e.target.value as any)} className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm">
+                          <label htmlFor="search-sort-m" className="text-xs text-muted-foreground">الترتيب</label>
+                          <select id="search-sort-m" value={sort} onChange={(e) => setSort(e.target.value as any)} className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm">
                             <option value="featured">الأبرز</option>
                             <option value="rating">الأعلى تقييماً</option>
                             <option value="price_asc">الأقل سعراً</option>
@@ -411,8 +412,9 @@ function SearchPage() {
           </div>
 
           <div className="hidden sm:flex flex-wrap items-center gap-3 mt-3">
-            <label className="text-xs text-muted-foreground">ترتيب:</label>
+            <label htmlFor="search-sort" className="text-xs text-muted-foreground">ترتيب:</label>
             <select
+              id="search-sort"
               value={sort}
               onChange={(e) => setSort(e.target.value as SearchSort)}
               className="rounded-sm border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gold/60"

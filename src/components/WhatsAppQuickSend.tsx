@@ -148,8 +148,9 @@ export function WhatsAppQuickSend({ booking }: { booking: Booking }) {
                   </div>
 
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">نص الرسالة (يمكنك تعديلها قبل الإرسال)</label>
+                    <label htmlFor="wa-body" className="text-xs text-muted-foreground mb-2 block">نص الرسالة (يمكنك تعديلها قبل الإرسال)</label>
                     <textarea
+                      id="wa-body"
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
                       rows={10}
