@@ -58,6 +58,22 @@ export function Shimmer({ children, delay = 0, onMount = false }: { children: Re
   );
 }
 
+/** Arabic script that "writes itself": a soft pen-edge wipe from right to left (letters stay joined). */
+export function Calligraphy({ children, delay = 0, duration = 1.8, onMount = false }: { children: ReactNode; delay?: number; duration?: number; onMount?: boolean }) {
+  const [ref, on] = useSeen<HTMLSpanElement>(0.6, onMount);
+  const intro = useIntro();
+  return (
+    <span
+      ref={ref}
+      className={intro ? "calligraphy-write" : undefined}
+      data-on={on ? "true" : "false"}
+      style={{ ["--cw-delay" as string]: `${delay}s`, ["--cw-dur" as string]: `${duration}s` }}
+    >
+      {children}
+    </span>
+  );
+}
+
 /** Characters that appear one after another (for short Latin captions). */
 export function TypeIn({ text, delay = 0, step = 0.045, onMount = false }: { text: string; delay?: number; step?: number; onMount?: boolean }) {
   const [ref, on] = useSeen<HTMLSpanElement>(0.8, onMount);

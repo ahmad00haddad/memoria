@@ -442,3 +442,24 @@
     font-size: 16px !important;
   }
 }
+
+/* Arabic calligraphy "writes itself": mask wipes right→left with a soft pen edge */
+.calligraphy-write {
+  display: inline-block;
+  padding-block: 0.25em;
+  margin-block: -0.25em;
+  -webkit-mask-image: linear-gradient(to left, #000 0 45%, transparent 55%);
+  mask-image: linear-gradient(to left, #000 0 45%, transparent 55%);
+  -webkit-mask-size: 260% 100%;
+  mask-size: 260% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: 100% 0;
+  mask-position: 100% 0;
+  transition: -webkit-mask-position var(--cw-dur, 1.8s) cubic-bezier(0.65, 0, 0.35, 1) var(--cw-delay, 0s),
+    mask-position var(--cw-dur, 1.8s) cubic-bezier(0.65, 0, 0.35, 1) var(--cw-delay, 0s);
+}
+.calligraphy-write[data-on="true"] { -webkit-mask-position: 0 0; mask-position: 0 0; }
+@media (prefers-reduced-motion: reduce) {
+  .calligraphy-write { -webkit-mask-image: none; mask-image: none; transition: none; }
+}

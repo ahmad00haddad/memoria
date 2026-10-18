@@ -13,7 +13,7 @@ import heroImg from "@/assets/hero-bride.jpg";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import { CountTo, DrawFrame, DrawIcon, DrawRule, RiseImg, SettleIn, Shimmer, TypeIn, useSeen, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
+import { Calligraphy, CountTo, DrawFrame, DrawIcon, DrawRule, RiseImg, SettleIn, Shimmer, TypeIn, useSeen, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -305,7 +305,7 @@ function Landing() {
               >
                 من النقرة الأولى
                 <span className="block font-script text-gold text-[2.8rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
-                  <Shimmer onMount delay={2.4}>إلى الذكرى الأبدية</Shimmer>
+                  <Calligraphy onMount delay={0.9} duration={2}><Shimmer onMount delay={3.2}>إلى الذكرى الأبدية</Shimmer></Calligraphy>
                 </span>
               </motion.h1>
               <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-md leading-loose">
@@ -528,7 +528,7 @@ function Landing() {
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-28">
               <div className="eyebrow mb-3">سير العمل</div>
-              <h2 className="font-serif text-4xl sm:text-5xl mb-4">حلّ كامل<br /><span className="font-script text-gold"><Shimmer delay={0.4}>لكل مشكلة</Shimmer></span></h2>
+              <h2 className="font-serif text-4xl sm:text-5xl mb-4">حلّ كامل<br /><span className="font-script text-gold"><Calligraphy delay={0.2}><Shimmer delay={2.2}>لكل مشكلة</Shimmer></Calligraphy></span></h2>
               <p className="text-muted-foreground leading-loose max-w-xs">كل ما كان يضيع في محادثات الواتساب، صار في مكانه الصحيح.</p>
             </div>
           </div>
