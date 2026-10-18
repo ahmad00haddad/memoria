@@ -48,7 +48,7 @@ export function BrideGame() {
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
               <span
-                className={`flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center rounded-[26px] text-5xl shadow-elegant transition-shadow ${isActive ? "ring-2 ring-gold ring-offset-2 ring-offset-background" : "opacity-80 hover:opacity-100"}`}
+                className={`flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl text-2xl shadow-elegant transition-shadow ${isActive ? "ring-2 ring-gold ring-offset-2 ring-offset-background" : "opacity-80 hover:opacity-100"}`}
                 style={{ background: g.bg }}
               >
                 {g.icon}
