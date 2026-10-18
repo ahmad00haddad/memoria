@@ -97,12 +97,19 @@ function CanvasGame() {
 
 function TrapsGame() {
   return (
-    <iframe
-      src="/game/traps.html"
-      title="فخاخ العروس"
-      className="w-full max-w-5xl rounded-xl border-0 shadow-elegant bg-charcoal"
-      style={{ height: "min(78vh, 600px)" }}
-      allow="autoplay"
-    />
+    <div className="w-full flex flex-col items-center gap-4">
+      <iframe
+        src="/game/traps.html"
+        title="فخاخ العروس"
+        className="block w-full max-w-[1100px] border-0 rounded-[18px] shadow-elegant"
+        style={{ aspectRatio: "960 / 520" }}
+        allow="autoplay"
+      />
+      <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
+        <span>← → أو A D للمشي</span>
+        <span>مسافة / ↑ للقفز</span>
+        <span>R لإعادة المحاولة</span>
+      </div>
+    </div>
   );
 }
