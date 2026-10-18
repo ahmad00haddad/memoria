@@ -18,7 +18,7 @@ const LS_KEY = "memoria.gender";
 let current: Gender = "female";
 try {
   if (typeof window !== "undefined" && localStorage.getItem(LS_KEY) === "male") current = "male";
-} catch {}
+} catch { /* ignore */ }
 export function g(female: string, male: string) {
   return current === "male" ? male : female;
 }
@@ -37,7 +37,7 @@ export function GenderProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const saved: Gender = session?.user.user_metadata?.gender === "male" ? "male" : "female";
-      try { localStorage.setItem(LS_KEY, saved); } catch {}
+      try { localStorage.setItem(LS_KEY, saved); } catch { /* ignore */ }
       if (saved !== current) {
         current = saved;
         setG(saved);
@@ -50,7 +50,7 @@ export function GenderProvider({ children }: { children: ReactNode }) {
   const setGender = useCallback(async (next: Gender) => {
     current = next;
     setG(next);
-    try { localStorage.setItem(LS_KEY, next); } catch {}
+    try { localStorage.setItem(LS_KEY, next); } catch { /* ignore */ }
     await supabase.auth.updateUser({ data: { gender: next } });
   }, []);
 

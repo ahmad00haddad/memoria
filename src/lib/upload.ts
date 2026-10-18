@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 import React from "react";
-import imageCompression from 'browser-image-compression';
 import { supabase } from "@/integrations/supabase/client";
 // ============================================================================
 // upload.ts — مساعد رفع الملفات الشامل (مُصلَح)
@@ -211,7 +210,7 @@ export async function uploadFile(
         // JPEG دائماً للصور غير الشفافة — أصغر بكثير من PNG
         fileType: 'image/jpeg',
       };
-      finalFile = await imageCompression(file, options);
+      finalFile = await (await import("browser-image-compression")).default(file, options);
     } catch (e) {
       console.warn("Image compression failed, falling back to original:", e);
     }

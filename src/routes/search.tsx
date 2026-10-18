@@ -532,7 +532,7 @@ function SearchPage() {
         {!date && displayResults.length > 0 && (
           <p className="mb-4 text-xs text-muted-foreground">
             لديكِ تاريخ للعرس؟{" "}
-            <button type="button" onClick={() => setDrawerOpen(true)} className="sm:hidden text-gold hover:underline">أضيفيه</button>
+            <button type="button" onClick={() => setDrawerOpen(true)} className="sm:hidden text-gold hover:underline py-2 px-1">أضيفيه</button>
             <span className="hidden sm:inline">أضيفيه في خانة التاريخ</span>
             {" "}لنعرض المتاحات فيه فقط.
           </p>
@@ -674,7 +674,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
     try {
       const favs = JSON.parse(localStorage.getItem("memoria_favs") || "[]");
       setIsFav(favs.includes(p.username));
-    } catch {}
+    } catch { /* ignore */ }
   }, [p.username]);
 
   const toggleFav = (e: React.MouseEvent) => {
@@ -693,7 +693,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
       localStorage.setItem("memoria_favs", JSON.stringify(newFavs));
       hapticVibrate(newFavs.length > favs.length ? "success" : "light");
       window.dispatchEvent(new Event("memoria-favs-change"));
-    } catch {}
+    } catch { /* ignore */ }
   };
 
   const ease = [0.22, 1, 0.36, 1] as const;

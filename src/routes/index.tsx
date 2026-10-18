@@ -244,7 +244,7 @@ function Landing() {
       setVisitorRole(r);
       // لا نعرض شاشة «من أنت؟» المنبثقة: كانت تظهر بعد ثوانٍ فوق محتوى بدأت الزائرة بقراءته.
       // الواجهة نفسها تخدم الطرفين (بحث للعروس + «مصوّرة؟ انضمي» للمصوّرة).
-    } catch {}
+    } catch { /* ignore */ }
   }, [authLoading, authed]);
 
   useEffect(() => {
@@ -252,7 +252,7 @@ function Landing() {
   }, [showRoleGate]);
 
   const handleRoleSelect = (role: "client" | "photographer" | "guest") => {
-    try { localStorage.setItem(VISITOR_ROLE_KEY, role); } catch {}
+    try { localStorage.setItem(VISITOR_ROLE_KEY, role); } catch { /* ignore */ }
     setShowRoleGate(false);
     
     if (role === "photographer") {

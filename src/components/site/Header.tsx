@@ -38,7 +38,7 @@ export function Header() {
     try {
       const r = localStorage.getItem("memoria_visitor_role") as "client" | "photographer" | "guest" | null;
       setVisitorRole(r);
-    } catch {}
+    } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {
@@ -166,7 +166,7 @@ export function Header() {
               <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
               <button
                 onClick={() => { 
-                  try { localStorage.setItem("memoria_visitor_role", "photographer"); } catch {} 
+                  try { localStorage.setItem("memoria_visitor_role", "photographer"); } catch { /* ignore */ } 
                   setVisitorRole("photographer");
                   navigate({ to: "/photographers/join" });
                 }}
@@ -184,7 +184,7 @@ export function Header() {
               <NavLink to="/pricing" className="hidden md:inline-flex">الأسعار</NavLink>
               <button
                 onClick={() => { 
-                  try { localStorage.setItem("memoria_visitor_role", "client"); } catch {} 
+                  try { localStorage.setItem("memoria_visitor_role", "client"); } catch { /* ignore */ } 
                   setVisitorRole("client");
                   navigate({ to: "/search" });
                 }}
@@ -269,7 +269,7 @@ export function Header() {
                   <button
                     onClick={() => {
                       const newRole = visitorRole === "client" ? "photographer" : "client";
-                      try { localStorage.setItem("memoria_visitor_role", newRole); } catch {}
+                      try { localStorage.setItem("memoria_visitor_role", newRole); } catch { /* ignore */ }
                       setVisitorRole(newRole);
                       setOpenMenu(false);
                       if (newRole === "photographer") {

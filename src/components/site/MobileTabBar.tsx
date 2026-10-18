@@ -16,7 +16,7 @@ export function MobileTabBar() {
     try {
       const r = localStorage.getItem("memoria_visitor_role") as "client" | "photographer" | "guest" | null;
       setVisitorRole(r);
-    } catch {}
+    } catch { /* ignore */ }
   }, []);
 
   const isActive = (path: string) => {

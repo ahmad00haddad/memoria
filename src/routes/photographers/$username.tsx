@@ -54,7 +54,8 @@ export const Route = createFileRoute("/photographers/$username")({
     const name = p?.display_name || params.username;
     const city = p?.city ? ` في ${p.city}` : "";
     const desc = p?.bio?.slice(0, 155) || `استعرض أعمال وأسعار المصوّرة ${name}${city} واحجز موعدك مباشرة عبر Memoria.`;
-    const image = p?.cover_url || p?.avatar_url || undefined;
+    const rawImage = p?.cover_url || p?.avatar_url || undefined;
+    const image = rawImage && rawImage.startsWith("/") ? `https://memoria-production.ahmad000haddad.workers.dev${rawImage}` : rawImage;
     const url = `https://memoria-production.ahmad000haddad.workers.dev/photographers/${params.username}`;
     const meta: Array<Record<string, string>> = [
       { title: `${name} — مصوّرة أعراس${city} | Memoria` },
@@ -186,7 +187,7 @@ function PhotographerPage() {
         try {
           const dep = await fetchDeposit({ data: { username: normalizedUsername } });
           setDeposit(dep);
-        } catch {}
+        } catch { /* ignore */ }
       }
      } catch (e) {
       console.error("[photographer] load failed", e);
@@ -714,7 +715,7 @@ const MY_BOOKINGS_KEY = "memoria.my-bookings";
 function SavedBookingsBanner() {
   const [items, setItems] = useState<{ token: string; photographer?: string; date?: string }[]>([]);
   useEffect(() => {
-    try { setItems(JSON.parse(window.localStorage.getItem(MY_BOOKINGS_KEY) || "[]")); } catch {}
+    try { setItems(JSON.parse(window.localStorage.getItem(MY_BOOKINGS_KEY) || "[]")); } catch { /* ignore */ }
   }, []);
   if (items.length === 0) return null;
   return (
@@ -758,7 +759,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const successKey = `memoria.booking-success.${profile.username}`;
   const saveSuccess = (v: { token: string; verify: VerifyInfo | null } | null) => {
     setSuccess(v);
-    try { v ? window.localStorage.setItem(successKey, JSON.stringify(v)) : window.localStorage.removeItem(successKey); } catch {}
+    try { v ? window.localStorage.setItem(successKey, JSON.stringify(v)) : window.localStorage.removeItem(successKey); } catch { /* ignore */ }
   };
 
   // Restore draft from localStorage on mount
@@ -775,7 +776,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       if (draft?.step) setStep(draft.step);
       if (typeof draft?.consent === "boolean") setConsent(draft.consent);
       if (draft?.f?.event_date || draft?.f?.package_id || draft?.f?.client_name) setRestoredDraft(true);
-    } catch {}
+    } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -784,12 +785,12 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     if (typeof window === "undefined" || success) return;
     try {
       window.localStorage.setItem(storageKey, JSON.stringify({ f, addonQty, step, consent }));
-    } catch {}
+    } catch { /* ignore */ }
   }, [f, addonQty, step, consent, success, storageKey]);
 
   const clearDraft = () => {
     setF(initial); setAddonQty({}); setStep(1); setConsent(false); setRestoredDraft(false);
-    try { window.localStorage.removeItem(storageKey); } catch {}
+    try { window.localStorage.removeItem(storageKey); } catch { /* ignore */ }
     toast.success("تم مسح المسودة");
   };
   const navigate = useNavigate();
@@ -894,7 +895,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         const list = JSON.parse(window.localStorage.getItem(MY_BOOKINGS_KEY) || "[]");
         const next = [{ token: res.tracking_token, photographer: profile.display_name, date: f.event_date }, ...list.filter((x: any) => x?.token !== res.tracking_token)].slice(0, 10);
         window.localStorage.setItem(MY_BOOKINGS_KEY, JSON.stringify(next));
-      } catch {}
+      } catch { /* ignore */ }
       hapticVibrate("success");
       
       // Idea 1: Confetti on Booking Submit
@@ -905,7 +906,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         colors: ['#C9A227', '#E5E7EB', '#111827', '#FFFFFF']
       });
       
-      try { window.localStorage.removeItem(storageKey); } catch {}
+      try { window.localStorage.removeItem(storageKey); } catch { /* ignore */ }
     } catch (e: any) {
       hapticVibrate("error");
       toast.error(e.message || "فشل إرسال الطلب");

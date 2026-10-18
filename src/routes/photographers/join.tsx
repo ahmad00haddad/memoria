@@ -51,7 +51,7 @@ function JoinPage() {
     if (ref) {
       setRefCode(ref);
       // Persist referral code for OAuth flow (Google signup)
-      try { sessionStorage.setItem("pending_referral_code", ref); } catch {}
+      try { sessionStorage.setItem("pending_referral_code", ref); } catch { /* ignore */ }
     }
     
     // Idea 5: Smart Autofill Hint
@@ -159,7 +159,7 @@ function JoinPage() {
     }
     // Record referral via secure server function (idempotent, no-op if no session yet).
     if (refCode && signUpData.user) {
-      try { await referralFn({ data: { referral_code: refCode } }); } catch {}
+      try { await referralFn({ data: { referral_code: refCode } }); } catch { /* ignore */ }
     }
     // If email confirmation is required, the session will be null.
     if (signUpData.session) {

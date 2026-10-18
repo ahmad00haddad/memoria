@@ -21,7 +21,7 @@ export function NotificationPermission() {
       if (localStorage.getItem("memoria_notif_dismissed") === "1") {
         setDismissed(true);
       }
-    } catch {}
+    } catch { /* ignore */ }
   }, []);
 
   const requestPermission = async () => {
@@ -41,7 +41,7 @@ export function NotificationPermission() {
     setDismissed(true);
     try {
       localStorage.setItem("memoria_notif_dismissed", "1");
-    } catch {}
+    } catch { /* ignore */ }
   };
 
   // لا تعرض إذا تم التفعيل أو الرفض أو الإخفاء أو عدم الدعم

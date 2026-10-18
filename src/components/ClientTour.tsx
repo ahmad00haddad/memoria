@@ -19,7 +19,7 @@ export function getTourState(): TourState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch { /* ignore */ }
   return { status: "idle", step: 0, startedAt: null, completedAt: null, userId: null };
 }
 
@@ -28,7 +28,7 @@ export function saveTourState(state: TourState) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     window.dispatchEvent(new Event("tour-state-change"));
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 export function resetTour() {

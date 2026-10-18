@@ -88,7 +88,7 @@ function QuickActions({ open, onClose }: { open: boolean; onClose: () => void })
         await navigator.clipboard.writeText(url);
         toast.success("نُسخ رابط ملفّك");
       }
-    } catch {}
+    } catch { /* ignore */ }
   };
 
   const actions = [

@@ -131,7 +131,7 @@ function TrackingPage() {
   // اكتشف ما إذا كانت بوّابة الدفع الإلكترونية مهيّأة (لإظهار زر الدفع أونلاين)
   useEffect(() => {
     (async () => {
-      try { const r: any = await isPayEnabledFn(); setPayEnabled(!!r?.enabled); } catch {}
+      try { const r: any = await isPayEnabledFn(); setPayEnabled(!!r?.enabled); } catch { /* ignore */ }
     })();
     /* eslint-disable-next-line */
   }, []);
@@ -987,7 +987,7 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
   const [sending, setSending] = useState(false);
 
   const load = async () => {
-    try { const r = await fetchM({ data: { token } }); setMsgs(r.messages); } catch {}
+    try { const r = await fetchM({ data: { token } }); setMsgs(r.messages); } catch { /* ignore */ }
   };
   useEffect(() => {
     load();

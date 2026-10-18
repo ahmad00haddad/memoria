@@ -120,7 +120,7 @@ export async function saveLink(userId: string, tokens: { refresh_token?: string;
   let email: string | null = null;
   try {
     email = JSON.parse(atob(tokens.id_token!.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))).email ?? null;
-  } catch {}
+  } catch { /* ignore */ }
   const cal = await gapi(tokens.access_token, "/calendars", {
     method: "POST",
     body: JSON.stringify({ summary: "Memoria — الحجوزات", timeZone: TZ, description: "حجوزات ميموريا (تُحدَّث تلقائياً)" }),

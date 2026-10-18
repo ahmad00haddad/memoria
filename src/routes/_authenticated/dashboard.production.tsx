@@ -190,13 +190,13 @@ function ProductionBoard() {
               await updateStageFn({ data: { booking_id: b.id, stage: prevStage } });
               toast.success("تم التراجع بنجاح");
               logMoveFn({ data: { bookingId: b.id, fromStage: next.key, toStage: prevStage } }).catch(() => {});
-              try { await load(uid); } catch {}
+              try { await load(uid); } catch { /* ignore */ }
             } catch (undoErr: any) {
               // fallback
               const { error } = await supabase.from("bookings").update(previousState).eq("id", b.id).eq("photographer_id", uid);
               if (!error) {
                 toast.success("تم التراجع بنجاح");
-                try { await load(uid); } catch {}
+                try { await load(uid); } catch { /* ignore */ }
               } else {
                 toast.error(g("تعذّر التراجع، حاولي يدوياً.", "تعذّر التراجع، حاول يدوياً."));
               }

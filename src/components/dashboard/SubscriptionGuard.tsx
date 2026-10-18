@@ -32,7 +32,7 @@ export function SubscriptionGuard() {
   useEffect(() => {
     try {
       setDismissed(sessionStorage.getItem(DISMISS_KEY) === new Date().toDateString());
-    } catch {}
+    } catch { /* ignore */ }
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -95,7 +95,7 @@ export function SubscriptionGuard() {
         {!expired && (
           <button
             aria-label="إخفاء لليوم"
-            onClick={() => { try { sessionStorage.setItem(DISMISS_KEY, new Date().toDateString()); } catch {} setDismissed(true); }}
+            onClick={() => { try { sessionStorage.setItem(DISMISS_KEY, new Date().toDateString()); } catch { /* ignore */ } setDismissed(true); }}
             className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-black/5"
           >
             <X className="h-4 w-4" />

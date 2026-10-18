@@ -17,7 +17,7 @@ function readInitialTheme(): Theme {
     const stored = localStorage.getItem("theme");
     if (stored === "dark" || stored === "light") return stored;
     if (window.matchMedia?.("(prefers-color-scheme: dark)").matches) return "dark";
-  } catch {}
+  } catch { /* ignore */ }
   return "light";
 }
 
@@ -28,7 +28,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     if (theme === "dark") root.classList.add("dark");
     else root.classList.remove("dark");
-    try { localStorage.setItem("theme", theme); } catch {}
+    try { localStorage.setItem("theme", theme); } catch { /* ignore */ }
   }, [theme]);
 
   const value: ThemeContextValue = {

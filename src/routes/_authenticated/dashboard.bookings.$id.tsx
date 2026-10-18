@@ -8,7 +8,6 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus, Star, Info, MoreHorizontal, ArrowLeft, ArrowRight, MessageSquare, ListChecks, LayoutGrid, Lightbulb, X } from "lucide-react";
-import imageCompression from 'browser-image-compression';
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { buildClientWhatsAppMessage } from "@/components/dashboard/ManualBookingSheet";
@@ -1024,7 +1023,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
         // Compression to prevent massive files from exhausting storage
         if (rawFile.type.startsWith('image/') && rawFile.type !== 'image/gif' && rawFile.type !== 'image/svg+xml') {
           try {
-            f = await imageCompression(rawFile, {
+            f = await (await import("browser-image-compression")).default(rawFile, {
               maxSizeMB: 0.5,
               maxWidthOrHeight: 2048,
               useWebWorker: true,

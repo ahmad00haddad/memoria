@@ -16,48 +16,48 @@ export function Footer() {
         <div>
           <div className="font-serif text-xl mb-2">Memoria <span className="text-muted-foreground text-base">· ميموريا</span></div>
           <p className="text-muted-foreground leading-relaxed">ذاكرة يومكِ، محفوظة بأمان. شركة أردنية مسجلة (ذ.م.م) متخصّصة في حجز وتوثيق خدمات التصوير.</p>
-          <p className="text-xs text-muted-foreground mt-3">للدعم: <a href="mailto:ahmad000haddad@gmail.com" className="hover:text-gold">ahmad000haddad@gmail.com</a></p>
+          <p className="text-xs text-muted-foreground mt-3">للدعم: <a href="mailto:ahmad000haddad@gmail.com" className="inline-block py-1.5 hover:text-gold">ahmad000haddad@gmail.com</a></p>
         </div>
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">للعملاء</div>
           <ul className="space-y-2">
-            <li><Link to="/search" className="hover:text-gold">ابحث عن مصوّر</Link></li>
-            <li><Link to="/for-clients" className="hover:text-gold">لماذا ميموريا</Link></li>
-            <li><Link to="/faq" className="hover:text-gold">الأسئلة الشائعة</Link></li>
-            <li><Link to="/app" className="hover:text-gold">حمّل التطبيق</Link></li>
-            <li><Link to="/guide" className="hover:text-gold">كيف يعمل النظام</Link></li>
-            <li><a href="/game/" className="hover:text-gold">العبي: اهربي يا عروس</a></li>
-            <li><button onClick={() => startTour()} className="hover:text-gold text-right">أعد الجولة التعريفية</button></li>
+            <li><Link to="/search" className="inline-block py-1.5 hover:text-gold">ابحث عن مصوّر</Link></li>
+            <li><Link to="/for-clients" className="inline-block py-1.5 hover:text-gold">لماذا ميموريا</Link></li>
+            <li><Link to="/faq" className="inline-block py-1.5 hover:text-gold">الأسئلة الشائعة</Link></li>
+            <li><Link to="/app" className="inline-block py-1.5 hover:text-gold">حمّل التطبيق</Link></li>
+            <li><Link to="/guide" className="inline-block py-1.5 hover:text-gold">كيف يعمل النظام</Link></li>
+            <li><a href="/game/" className="inline-block py-1.5 hover:text-gold">العبي: اهربي يا عروس</a></li>
+            <li><button onClick={() => startTour()} className="inline-block py-1.5 hover:text-gold text-right">أعد الجولة التعريفية</button></li>
           </ul>
         </div>
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">للمصوّرين</div>
           <ul className="space-y-2">
-            {!authLoading && !authed && !isPhotographer && <li><Link to="/photographers/join" className="hover:text-gold">انضم إلى المنصة</Link></li>}
-            <li><Link to="/for-photographers" className="hover:text-gold">مزايا للمصوّرات</Link></li>
-            <li><Link to="/pricing" className="hover:text-gold">باقات المصوّرين</Link></li>
-            <li><Link to={authed ? "/dashboard" : "/login"} className="hover:text-gold">{authed ? "لوحة التحكم" : "تسجيل الدخول"}</Link></li>
+            {!authLoading && !authed && !isPhotographer && <li><Link to="/photographers/join" className="inline-block py-1.5 hover:text-gold">انضم إلى المنصة</Link></li>}
+            <li><Link to="/for-photographers" className="inline-block py-1.5 hover:text-gold">مزايا للمصوّرات</Link></li>
+            <li><Link to="/pricing" className="inline-block py-1.5 hover:text-gold">باقات المصوّرين</Link></li>
+            <li><Link to={authed ? "/dashboard" : "/login"} className="inline-block py-1.5 hover:text-gold">{authed ? "لوحة التحكم" : "تسجيل الدخول"}</Link></li>
           </ul>
         </div>
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">مدن ومناسبات</div>
           <ul className="space-y-2">
-            <li><a href="/wedding-photographer/amman" className="hover:text-gold">مصورة أعراس في عمّان</a></li>
-            <li><a href="/wedding-photographer/irbid" className="hover:text-gold">مصورة أعراس في إربد</a></li>
-            <li><a href="/wedding-photographer/aqaba" className="hover:text-gold">مصورة أعراس في العقبة</a></li>
-            <li><a href="/occasion/engagement" className="hover:text-gold">مصورة خطوبة</a></li>
-            <li><a href="/occasion/henna" className="hover:text-gold">مصورة حنّاء</a></li>
-            <li><a href="/blog" className="hover:text-gold">المدوّنة</a></li>
+            <li><a href="/wedding-photographer/amman" className="inline-block py-1.5 hover:text-gold">مصورة أعراس في عمّان</a></li>
+            <li><a href="/wedding-photographer/irbid" className="inline-block py-1.5 hover:text-gold">مصورة أعراس في إربد</a></li>
+            <li><a href="/wedding-photographer/aqaba" className="inline-block py-1.5 hover:text-gold">مصورة أعراس في العقبة</a></li>
+            <li><a href="/occasion/engagement" className="inline-block py-1.5 hover:text-gold">مصورة خطوبة</a></li>
+            <li><a href="/occasion/henna" className="inline-block py-1.5 hover:text-gold">مصورة حنّاء</a></li>
+            <li><a href="/blog" className="inline-block py-1.5 hover:text-gold">المدوّنة</a></li>
           </ul>
         </div>
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">المنصة</div>
           <ul className="space-y-2">
-            <li><Link to="/about" className="hover:text-gold">من نحن</Link></li>
-            <li><Link to="/contact" className="hover:text-gold">تواصلي معنا</Link></li>
-            <li><Link to="/refund-policy" className="hover:text-gold">سياسة الإلغاء والاسترداد</Link></li>
-            <li><Link to="/privacy" className="hover:text-gold">سياسة الخصوصية</Link></li>
-            <li><Link to="/terms" className="hover:text-gold">الشروط والأحكام</Link></li>
+            <li><Link to="/about" className="inline-block py-1.5 hover:text-gold">من نحن</Link></li>
+            <li><Link to="/contact" className="inline-block py-1.5 hover:text-gold">تواصلي معنا</Link></li>
+            <li><Link to="/refund-policy" className="inline-block py-1.5 hover:text-gold">سياسة الإلغاء والاسترداد</Link></li>
+            <li><Link to="/privacy" className="inline-block py-1.5 hover:text-gold">سياسة الخصوصية</Link></li>
+            <li><Link to="/terms" className="inline-block py-1.5 hover:text-gold">الشروط والأحكام</Link></li>
           </ul>
         </div>
       </div>
@@ -71,7 +71,7 @@ export function Footer() {
             href="https://haddad-dev.lovable.app/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gold transition-colors duration-200 underline underline-offset-2"
+            className="inline-block py-1.5 hover:text-gold transition-colors duration-200 underline underline-offset-2"
           >
             أحمد حداد
           </a>
