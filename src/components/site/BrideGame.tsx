@@ -71,7 +71,7 @@ export function BrideGame() {
 
   if (full) {
     return (
-      <div className="bride-game fixed inset-0 z-[80] flex items-center justify-center bg-charcoal p-2" dir="rtl">
+      <div data-full className="bride-game fixed inset-0 z-[80] flex items-center justify-center bg-charcoal p-2" dir="rtl">
         <style>{GAME_CSS}</style>
         <button
           type="button"
