@@ -426,6 +426,8 @@ function Landing() {
               >
                 <motion.img
                   src={heroImg}
+                  fetchPriority="high"
+                  decoding="async"
                   alt="عروس في إطلالة سينمائية"
                   width={598}
                   height={1420}

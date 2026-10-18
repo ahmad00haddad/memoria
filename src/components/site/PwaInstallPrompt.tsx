@@ -76,10 +76,10 @@ export function PwaInstallPrompt() {
           className="fixed bottom-[72px] sm:bottom-6 left-4 right-4 z-50 bg-charcoal text-ivory rounded-lg p-4 shadow-elegant flex items-center justify-between gap-3"
         >
           <div className="flex-1">
-            <h4 className="font-serif text-sm font-bold flex items-center gap-2">
+            <h2 className="font-serif text-sm font-bold flex items-center gap-2">
               <Download className="h-4 w-4 text-gold" />
               أضيفي ميموريا لهاتفك
-            </h4>
+            </h2>
             {isIOS ? (
               <p className="text-[11px] text-ivory/80 mt-1 leading-tight flex items-center gap-1 flex-wrap">
                 لأفضل تجربة، اضغطي على زر <Share className="h-3 w-3 inline" /> ثم <span className="font-bold">إضافة للشاشة الرئيسية ➕</span>
