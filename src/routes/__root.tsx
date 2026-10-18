@@ -25,6 +25,7 @@ import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from 
 import { MobileTabBar } from "@/components/site/MobileTabBar";
 import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { GameHint } from "@/components/site/GameHint";
+import { BrideGame } from "@/components/site/BrideGame";
 import { ClientTour } from "@/components/ClientTour";
 import { IntroContext, markIntroSeen, readIntro } from "@/lib/intro";
 import { FirstVisitIntro } from "@/components/site/FirstVisitIntro";
@@ -38,15 +39,10 @@ function NotFoundComponent() {
         <p className="mt-2 text-sm text-muted-foreground">
           الصفحة التي تبحثين عنها غير موجودة أو تم نقلها.
         </p>
-        <div className="mt-6 overflow-hidden rounded-md border border-border">
-          <iframe
-            src="/game/"
-            title="ضاعت العروس — لعبة ميموريا"
-            loading="lazy"
-            className="block h-[260px] w-full border-0"
-          />
+        <div className="mt-6">
+          <p className="mb-3 text-xs text-muted-foreground">العبي بينما نلاقي الصفحة</p>
+          <BrideGame />
         </div>
-        <p className="mt-2 text-xs text-muted-foreground">العبي بينما نلاقي الصفحة</p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <Link
             to="/"

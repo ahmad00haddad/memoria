@@ -18,6 +18,7 @@ import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ForClientsRouteImport } from './routes/for-clients'
 import { Route as ForPhotographersRouteImport } from './routes/for-photographers'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as GameRouteImport } from './routes/game'
 import { Route as GuideRouteImport } from './routes/guide'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -123,6 +124,11 @@ const ForPhotographersRoute = ForPhotographersRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GameRoute = GameRouteImport.update({
+  id: '/game',
+  path: '/game',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GuideRoute = GuideRouteImport.update({
@@ -475,6 +481,7 @@ export interface FileRoutesByFullPath {
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/game': typeof GameRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -547,6 +554,7 @@ export interface FileRoutesByTo {
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/game': typeof GameRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -618,6 +626,7 @@ export interface FileRoutesById {
   '/for-clients': typeof ForClientsRoute
   '/for-photographers': typeof ForPhotographersRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/game': typeof GameRoute
   '/guide': typeof GuideRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -692,6 +701,7 @@ export interface FileRouteTypes {
     | '/for-clients'
     | '/for-photographers'
     | '/forgot-password'
+    | '/game'
     | '/guide'
     | '/login'
     | '/pricing'
@@ -764,6 +774,7 @@ export interface FileRouteTypes {
     | '/for-clients'
     | '/for-photographers'
     | '/forgot-password'
+    | '/game'
     | '/guide'
     | '/login'
     | '/pricing'
@@ -834,6 +845,7 @@ export interface FileRouteTypes {
     | '/for-clients'
     | '/for-photographers'
     | '/forgot-password'
+    | '/game'
     | '/guide'
     | '/login'
     | '/pricing'
@@ -908,6 +920,7 @@ export interface RootRouteChildren {
   ForClientsRoute: typeof ForClientsRoute
   ForPhotographersRoute: typeof ForPhotographersRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  GameRoute: typeof GameRoute
   GuideRoute: typeof GuideRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
@@ -1002,6 +1015,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/game': {
+      id: '/game'
+      path: '/game'
+      fullPath: '/game'
+      preLoaderRoute: typeof GameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/guide': {
@@ -1567,6 +1587,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForClientsRoute: ForClientsRoute,
   ForPhotographersRoute: ForPhotographersRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  GameRoute: GameRoute,
   GuideRoute: GuideRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,

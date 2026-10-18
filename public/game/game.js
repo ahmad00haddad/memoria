@@ -1,34 +1,8 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>اهربي أيتها العروس</title>
-<style>
-  :root{--bg:#2b1630;--ink:#fff3f6;--accent:#ff7aa8}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
-  html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 30%,#4a2150,#1d0e22);color:var(--ink);font-family:"Segoe UI",Tahoma,Arial,sans-serif;overflow:hidden}
-  body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
-  canvas{display:block;border-radius:18px;box-shadow:0 12px 50px rgba(0,0,0,.55),0 0 0 3px rgba(255,170,200,.35);touch-action:none;cursor:pointer}
-  #bar{display:flex;gap:14px;align-items:center;font-size:13px;opacity:.85;flex-wrap:wrap;justify-content:center;padding:0 10px}
-  button{font:inherit;color:var(--ink);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 14px;cursor:pointer}
-  button:hover{background:rgba(255,255,255,.22)}
-  #rot{display:none;background:#ffd166;color:#4a2150;font-weight:bold;padding:8px 16px;border-radius:12px;font-size:14px;text-align:center;margin:0 12px}
-  @media (orientation:portrait) and (max-width:700px){#rot{display:block}}
-</style>
-</head>
-<body>
-<div id="rot">📱↻ أدِيري الهاتف أفقياً لتجربة أفضل</div>
-<canvas id="c"></canvas>
-<div id="bar">
-  <span>مسافة / ↑ : قفز (اضغطي مطولاً لقفزة أعلى)</span>
-  <span>موبايل: المسي الشاشة للقفز</span>
-  <button id="mute">الصوت: تشغيل</button>
-  <button id="share" hidden style="background:#ff7aa8;border-color:#ff7aa8;font-weight:bold">شاركي نتيجتك على انستغرام</button>
-</div>
-<script>
 (()=>{
 'use strict';
+/* ربط مستمعي النافذة بإشارة إلغاء: عند مغادرة الصفحة تتوقف اللعبة ولا تسرق المفاتيح */
+const SIG=window.__brideAbort.signal;
+function addEventListener(t,f,o){window.addEventListener(t,f,Object.assign({},o||{},{signal:SIG}));}
 /* ============ إعدادات عامة ============ */
 const LW=960,LH=360,GY=300,BX=480;           // عرض/ارتفاع منطقي، خط الأرض، موضع العروس (المنتصف)
 const GRAV=2700,JUMPV=-930;
@@ -36,9 +10,7 @@ const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 let scale=1;
 function fit(){
   const dpr=Math.min(window.devicePixelRatio||1,2);
-  let w=Math.min(innerWidth-16,1180),h=w*LH/LW;
-  const maxH=innerHeight-70;
-  if(h>maxH){h=Math.max(maxH,120);w=h*LW/LH;}
+  let w=Math.min((cv.parentElement?cv.parentElement.clientWidth:innerWidth)-2,1180),h=w*LH/LW;
   cv.style.width=w+'px';cv.style.height=h+'px';
   cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);
   scale=cv.width/LW;
@@ -796,15 +768,13 @@ async function shareScore(){
 shareBtn.addEventListener('click',e=>{e.stopPropagation();shareScore();});
 let shareShown=false;
 function loop(ts){
+  if(SIG.aborted){clearInterval(sched);musicOn=false;return;}
   const dt=Math.min(.033,(ts-last)/1000||0);last=ts;
   update(dt);draw();
-  const want=st.state==='over'&&st.overT>.8;
+  const want=st.state==='over'&&st.overT>CARRY_T+.8;
   if(want!==shareShown){shareShown=want;shareBtn.hidden=!want;}
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
 window.__game={get st(){return st},press,caught,shareImg:()=>makeShareImage().toDataURL("image/png")};
 })();
-</script>
-</body>
-</html>
