@@ -144,13 +144,14 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
                 aria-label="تبديل الحالة"
               >
                 {item.status === "done" ? (
-                  <Check className="h-5 w-5 text-emerald-600" />
+                  <Check className="h-5 w-5 text-emerald-600 animate-pop" />
                 ) : (
                   <Circle className="h-5 w-5 text-muted-foreground" />
                 )}
               </button>
               <span
-                className={`flex-1 text-sm ${item.status === "done" ? "line-through text-muted-foreground" : ""}`}
+                data-done={item.status === "done"}
+                className={`strike-anim flex-1 text-sm ${item.status === "done" ? "text-muted-foreground" : ""}`}
               >
                 {item.title}
               </span>

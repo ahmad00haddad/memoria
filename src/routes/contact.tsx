@@ -91,7 +91,7 @@ function ContactPage() {
 
           {sent ? (
             <div className="rounded-2xl border border-border/60 bg-card p-8 flex flex-col items-center justify-center text-center gap-4">
-              <CheckCircle className="h-12 w-12 text-green-500" />
+              <CheckCircle className="h-12 w-12 text-green-500 animate-pop check-draw" />
               <h2 className="font-serif text-2xl">تم إرسال رسالتك!</h2>
               <p className="text-muted-foreground text-sm">
                 وصلت رسالتك بنجاح. سنتواصل معكِ على البريد الإلكتروني خلال 24 ساعة.

@@ -337,13 +337,47 @@
 .animate-shake {
   animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
 }
-@keyframes shimmer {
+@keyframes shimmer-x {
   100% {
     transform: translateX(100%);
   }
 }
 .animate-shimmer {
-  animation: shimmer 2s infinite;
+  animation: shimmer-x 2s infinite;
+}
+
+/* Success / state micro-interactions */
+@keyframes pop-in {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.animate-pop { animation: pop-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes check-draw { to { stroke-dashoffset: 0; } }
+.check-draw path, .check-draw polyline, .check-draw circle {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: check-draw 0.6s cubic-bezier(0.65, 0, 0.35, 1) 0.1s forwards;
+}
+@keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.animate-fade-up { animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.stagger > * { animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
+.stagger > *:nth-child(n+7) { animation-delay: 360ms; }
+
+/* Smooth strike-through for completed items */
+.strike-anim { text-decoration: none; background: linear-gradient(currentColor, currentColor) no-repeat 100% 55% / 0 1px; transition: background-size 0.3s ease, color 0.3s ease; }
+.strike-anim[data-done="true"] { background-size: 100% 1px; background-position: 0 55%; }
+
+/* Safety net: no motion for users who ask for none */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop, .animate-fade-up, .stagger > *, .animate-shake, .skeleton { animation: none !important; }
+  .check-draw path, .check-draw polyline, .check-draw circle { animation: none; stroke-dashoffset: 0; }
 }
 
 /* Self-drawing gold lines (framer pathLength) show fully drawn for reduced motion */
