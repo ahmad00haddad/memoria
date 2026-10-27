@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Mail, Send, CheckCircle2, Smartphone, Loader2 } from "lucide-react";
 import { getNotifyChannels, getTelegramLinkUrl, unlinkTelegram, sendTelegramTest, type NotifyChannels } from "@/lib/telegram.functions";
 import { CopyButton } from "@/components/ui/copy-button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { t } from "@/i18n";
 
 // قنوات إشعارات الحجوزات: الإيميل دائماً مفعّل ولا يمكن إيقافه، وتيليغرام يُربط بخطوات واضحة.
@@ -13,6 +14,7 @@ export function NotifyChannelsCard({ promptOnly = false }: { promptOnly?: boolea
   const linkUrl = useServerFn(getTelegramLinkUrl);
   const unlink = useServerFn(unlinkTelegram);
   const test = useServerFn(sendTelegramTest);
+  const confirm = useConfirm();
   const [c, setC] = useState<NotifyChannels | null>(null);
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState<{ url: string; code: string; bot: string } | null>(null);
@@ -67,7 +69,17 @@ export function NotifyChannelsCard({ promptOnly = false }: { promptOnly?: boolea
           <span className="flex gap-2">
             <button disabled={busy} onClick={() => run(async () => { await test(); toast.success(t("أُرسلت رسالة تجربة — شوفي تيليغرام")); })} className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-secondary">{t("رسالة تجربة")}</button>
             {!promptOnly && (
-              <button disabled={busy} onClick={() => run(async () => { await unlink(); await refresh(); })} className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary">{t("فصل")}</button>
+              <button disabled={busy} onClick={async () => {
+                const ok = await confirm({
+                  title: t("متأكدة بدك تفصلي تيليغرام؟"),
+                  description: t("بعد الفصل ما رح يوصلك أي طلب حجز أو إثبات عربون أو تذكير على تيليغرام — بس على الإيميل. إذا ما انتبهتي لطلب خلال 24 ساعة بيلغى تلقائياً وبتخسري العروس. بتقدري ترجعي تربطي بأي وقت."),
+                  confirmText: t("نعم، افصلي"),
+                  cancelText: t("خلّيه مربوط"),
+                  destructive: true,
+                });
+                if (!ok) return;
+                await run(async () => { await unlink(); await refresh(); toast.success(t("فُصل تيليغرام — الطلبات بتوصلك على الإيميل فقط")); });
+              }} className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-secondary">{t("فصل")}</button>
             )}
           </span>
         </div>
