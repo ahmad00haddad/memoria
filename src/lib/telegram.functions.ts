@@ -30,12 +30,15 @@ export const getTelegramLinkUrl = createServerFn({ method: "POST" })
     if (!isTelegramConfigured()) throw new Error(t("إشعارات تيليغرام غير مفعّلة بعد على المنصّة"));
     await ensureTelegramWebhook();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const bytes = crypto.getRandomValues(new Uint8Array(12));
-    const code = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    // رمز قصير بلا أحرف ملتبسة (0/O، 1/I/L) حتى تكتبه المصوّرة يدوياً إن لم يفتح الرابط
+    const ABC = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    const bytes = crypto.getRandomValues(new Uint8Array(8));
+    const code = Array.from(bytes, (b) => ABC[b % ABC.length]).join("");
     const { error } = await (supabaseAdmin as any).from("photographer_private")
       .upsert({ user_id: context.userId, telegram_link_code: code }, { onConflict: "user_id" });
     if (error) throw new Error(error.message);
-    return { url: `https://t.me/${telegramBotUsername()}?start=${code}` };
+    const bot = telegramBotUsername()!;
+    return { url: `https://t.me/${bot}?start=${code}`, code, bot };
   });
 
 export const unlinkTelegram = createServerFn({ method: "POST" })

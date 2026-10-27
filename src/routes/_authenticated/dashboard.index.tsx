@@ -39,6 +39,7 @@ import { useIntro } from "@/lib/intro";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { CopyButton } from "@/components/ui/copy-button";
 import { TodayFocus } from "@/components/dashboard/TodayFocus";
+import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
 import { ToolIndex, Sparkline, type Tool } from "@/components/dashboard/ToolIndex";
 import { computeFocusItems } from "@/components/dashboard/focus";
 import { openCommandPalette } from "@/components/CommandPalette";
@@ -674,6 +675,8 @@ function Dashboard() {
         ) : (
           <>
             <TodayFocus items={stats.focus ?? []} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
+
+            <NotifyChannelsCard promptOnly />
 
             {!hasAnyStats && profile?.is_published && profile?.username && (
               <div className="mb-10 rounded-2xl border border-gold/30 bg-gold/5 p-5 text-sm leading-relaxed flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
