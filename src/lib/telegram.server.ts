@@ -11,7 +11,32 @@
 // ============================================================================
 
 export function isTelegramConfigured(): boolean {
-  return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_BOT_USERNAME);
+  return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_BOT_USERNAME && process.env.TELEGRAM_WEBHOOK_SECRET);
+}
+
+let webhookReady = false;
+
+/** يسجّل webhook البوت على هذا الموقع إن لم يكن مسجّلاً (idempotent، مرة لكل isolate). */
+export async function ensureTelegramWebhook(): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (webhookReady || !token || !secret) return;
+  const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
+  const url = `${base}/api/public/hooks/telegram`;
+  try {
+    const info: any = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`).then((r) => r.json());
+    if (info?.result?.url !== url) {
+      const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, secret_token: secret, allowed_updates: ["message"] }),
+      });
+      if (!res.ok) { console.error("[telegram] setWebhook", res.status); return; }
+    }
+    webhookReady = true;
+  } catch (e) {
+    console.error("[telegram] ensureWebhook failed", e);
+  }
 }
 
 export function telegramBotUsername(): string | null {

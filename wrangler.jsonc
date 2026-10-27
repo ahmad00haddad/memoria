@@ -13,6 +13,9 @@
     // domain is verified. Booking verification falls back to auto when it fails.
     "EMAIL_FROM": "onboarding@resend.dev",
     "PUBLIC_APP_URL": "https://memoria-production.ahmad000haddad.workers.dev",
+    // Telegram bot for photographer notifications; TELEGRAM_BOT_TOKEN and
+    // TELEGRAM_WEBHOOK_SECRET are Worker secrets.
+    "TELEGRAM_BOT_USERNAME": "MemoriaJoBot",
     "SUPABASE_URL": "https://qrpkfanblpjiqgkufnrb.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_dMDE64mY-OTPE7PXzJ-SsA_lpt3mIDW"
   }

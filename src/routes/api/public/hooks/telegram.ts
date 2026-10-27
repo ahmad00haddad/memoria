@@ -3,8 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 // ============================================================================
 // /api/public/hooks/telegram — webhook بوت تيليغرام
 // ----------------------------------------------------------------------------
-// يُسجَّل مرة واحدة:
-//   https://api.telegram.org/bot<TOKEN>/setWebhook?url=<APP>/api/public/hooks/telegram&secret_token=<TELEGRAM_WEBHOOK_SECRET>
+// يُسجَّل تلقائياً عند أول ضغطة «ربط تيليغرام» (ensureTelegramWebhook).
 // تيليغرام يرسل الترويسة X-Telegram-Bot-Api-Secret-Token ونرفض أي طلب بدونها.
 // "/start <code>" يربط المحادثة بحساب المصوّرة صاحبة الرمز.
 // نعيد 200 دائماً بعد التحقق حتى لا يعيد تيليغرام الإرسال.

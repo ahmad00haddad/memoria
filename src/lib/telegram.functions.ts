@@ -26,8 +26,9 @@ export const getNotifyChannels = createServerFn({ method: "GET" })
 export const getTelegramLinkUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { isTelegramConfigured, telegramBotUsername } = await import("@/lib/telegram.server");
+    const { isTelegramConfigured, telegramBotUsername, ensureTelegramWebhook } = await import("@/lib/telegram.server");
     if (!isTelegramConfigured()) throw new Error(t("إشعارات تيليغرام غير مفعّلة بعد على المنصّة"));
+    await ensureTelegramWebhook();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const bytes = crypto.getRandomValues(new Uint8Array(12));
     const code = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
