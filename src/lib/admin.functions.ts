@@ -353,7 +353,7 @@ export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" }
 
     const { data: payment, error: pErr } = await supabaseAdmin
       .from("subscription_payments")
-      .select("id, photographer_id, status")
+      .select("id, photographer_id, status, tier")
       .eq("id", data.payment_id)
       .single();
     if (pErr || !payment) throw new Error(t("الدفعة غير موجودة"));
@@ -387,6 +387,7 @@ export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" }
       .upsert({
         photographer_id: payment.photographer_id,
         status: "active",
+        tier: (payment as any).tier ?? "pro",
         current_period_start: now.toISOString(),
         current_period_end: end.toISOString(),
         trial_ends_at: (sub as any)?.trial_ends_at ?? now.toISOString(),

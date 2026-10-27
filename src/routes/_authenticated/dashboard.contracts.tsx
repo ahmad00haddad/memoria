@@ -77,7 +77,7 @@ function normalizeWa(phone?: string | null) {
 }
 
 function Contracts() {
-  const { isLocked, lockLoading } = useSubscriptionLock();
+  const { isLocked, lockReason, lockLoading } = useSubscriptionLock();
 
   const nav = useNavigate();
   const [uid, setUid] = useState("");
@@ -149,13 +149,14 @@ function Contracts() {
   const shown = contracts.filter((c) => filter === "all" || (filter === "signed" ? c.status === "signed" : c.status !== "signed"));
   const missingCancel = body.trim().length > 0 && !/إلغاء|الإلغاء/.test(body);
 
-  if (loading) return <PageLoader />;
+  if (loading || lockLoading) return <PageLoader />;
   if (loadError) return <div className="min-h-screen grid place-items-center px-4 text-sm text-destructive">{friendlyError(loadError)}</div>;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12">
+      <section className="container-editorial py-12 relative">
+        {isLocked && <PremiumLock reason={lockReason} />}
         <div className="mb-4"><BackToDashboard /></div>
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{tr("العقود")}</div>
         <h1 className="font-serif text-4xl mb-8">{tr("قوالب وعقود التصوير")}</h1>

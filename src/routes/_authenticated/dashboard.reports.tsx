@@ -20,7 +20,7 @@ import { t, tx } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/dashboard/reports")({ component: ReportsPage });
 
 function ReportsPage() {
-  const { isLocked, lockLoading } = useSubscriptionLock();
+  const { isLocked, lockReason, lockLoading } = useSubscriptionLock();
 
   const nav = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -95,7 +95,7 @@ function ReportsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [range]);
 
-  if (loading) return <PageLoader />;
+  if (loading || lockLoading) return <PageLoader />;
   if (err || !stats) return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -114,7 +114,8 @@ function ReportsPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12">
+      <section className="container-editorial py-12 relative">
+        {isLocked && <PremiumLock reason={lockReason} />}
         <BackToDashboard />
         <div className="flex flex-wrap items-end justify-between gap-3 mt-2 mb-8">
           <div>

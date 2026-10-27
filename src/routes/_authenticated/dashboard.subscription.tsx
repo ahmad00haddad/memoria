@@ -21,17 +21,34 @@ export const Route = createFileRoute("/_authenticated/dashboard/subscription")({
   component: SubscriptionPage,
 });
 
-// الأسعار بالدينار. السنوي = شهران مجاناً (70 بدل 84).
-const PLANS = {
-  monthly: { months: 1, jod: 7, name: "Flex", label: "شهري", per: "شهريًا" },
-  yearly: { months: 12, jod: 70, name: "Signature", label: "سنوي", per: "سنويًا" },
-} as const;
-type PlanKey = keyof typeof PLANS;
+import { PRICES, LEGACY_PRICES, PERIOD_MONTHS, TIER_NAME, BASIC_LIMITS, PRO_PHOTOS, isLegacy, priceFor, type Period, type Tier } from "@/lib/plans";
+
+const PERIOD_LABEL: Record<Period, string> = { monthly: "شهري", yearly: "سنوي" };
+
+// ما يميّز كل باقة — نفس ما هو مفروض فعلاً في المنصّة (لا وعود غير منفّذة).
+const TIER_FEATURES: Record<Tier, string[]> = {
+  basic: [
+    "صفحتك العامة واستقبال الحجوزات والعربون",
+    "التقويم والحجوزات اليدوية",
+    "إشعارات الإيميل وتيليغرام",
+    `حتى ${BASIC_LIMITS.packages} باقات و${BASIC_LIMITS.photos} صورة`,
+  ],
+  pro: [
+    "كل ما في Basic",
+    "شارة التوثيق ✓ تظهر للعرائس",
+    "ظهور أعلى في نتائج البحث",
+    `باقات بلا حد وحتى ${PRO_PHOTOS} صورة`,
+    "العقود الرقمية وعروض الأسعار",
+    "قوالب واتساب والتقارير",
+  ],
+};
 
 type Sub = {
   id: string;
   status: "trial" | "active" | "pending_review" | "expired" | "canceled";
   plan: string;
+  tier: Tier;
+  legacy_price_until: string | null;
   trial_ends_at: string;
   current_period_end: string | null;
 };
@@ -69,8 +86,8 @@ function SubscriptionPage() {
   const [zb, setZb] = useState<ZbooniCheckout | null>(null);
   const [starting, setStarting] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [planKey, setPlanKey] = useState<PlanKey>("yearly");
-  const plan = PLANS[planKey];
+  const [tier, setTier] = useState<Tier>("pro");
+  const [period, setPeriod] = useState<Period>("yearly");
   const startFn = useServerFn(startZbooniSubscription);
   const ptStatusFn = useServerFn(getPayTabsStatus);
   const ptStartFn = useServerFn(startPayTabsSubscription);
@@ -113,7 +130,7 @@ function SubscriptionPage() {
   const handleCardPay = async () => {
     setStarting(true);
     try {
-      const res: any = await ptStartFn({ data: { plan: planKey } });
+      const res: any = await ptStartFn({ data: { tier, period } });
       if (!res?.configured || !res?.url) {
         setCardEnabled(false);
         toast.message(g(t("الدفع بالبطاقة غير متاح حالياً، استخدمي زبوني."), t("الدفع بالبطاقة غير متاح حالياً، استخدم زبوني.")));
@@ -132,7 +149,7 @@ function SubscriptionPage() {
     const win = window.open("", "_blank");
     setStarting(true);
     try {
-      const res = (await startFn({ data: { plan: planKey } })) as ZbooniCheckout;
+      const res = (await startFn({ data: { tier, period } })) as ZbooniCheckout;
       setZb(res);
       if (win) win.location.href = res.url;
       else window.location.href = res.url;
@@ -178,6 +195,9 @@ function SubscriptionPage() {
   }
 
   const isActive = effectiveStatus === "active" || effectiveStatus === "trial";
+  const legacy = isLegacy(sub?.legacy_price_until);
+  const legacyEnds = sub?.legacy_price_until ? new Date(sub.legacy_price_until).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long", year: "numeric" }) : "";
+  const amount = priceFor(tier, period, sub?.legacy_price_until);
   const endsAt = effectiveStatus === "trial" ? trialEnds : periodEnds;
   const daysLeft = endsAt ? Math.max(0, Math.ceil((endsAt.getTime() - Date.now()) / 86400000)) : 0;
   // الدفع يظهر عند الانتهاء أو قرب الانتهاء، وإلا يبقى خلف زر "ادفعي مبكراً"
@@ -206,48 +226,67 @@ function SubscriptionPage() {
         {/* Payment methods */}
         {showPayment && effectiveStatus !== "pending_review" && (
           <div className="mt-10">
-            <h2 className="font-serif text-2xl mb-1">{g(t("اختاري خطتك"), t("اختر خطتك"))}</h2>
-            <p className="text-sm text-muted-foreground mb-4">{t("السنوي أوفر — ودفعة واحدة فقط في السنة.")}</p>
-            <div className="grid grid-cols-2 gap-3 mb-8" role="radiogroup" aria-label={t("مدة الاشتراك")}>
-              {(Object.keys(PLANS) as PlanKey[]).map((k) => {
-                const p = PLANS[k];
-                const active = planKey === k;
-                const saving = PLANS.monthly.jod * p.months - p.jod;
+            <h2 className="font-serif text-2xl mb-1">{g(t("اختاري باقتك"), t("اختر باقتك"))}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{t("السنوي بـPro أوفر 40 د.أ — ودفعة واحدة بالسنة.")}</p>
+            {legacy && (
+              <div className="mb-4 rounded-sm border border-gold/40 bg-gold/5 p-3 text-sm">
+                {g(t("أنتِ من أوائل المشتركات: باقة Pro بسعرك القديم ({0} د.أ شهري / {1} د.أ سنوي) حتى {2}.", [LEGACY_PRICES.monthly, LEGACY_PRICES.yearly, legacyEnds]), t("أنت من أوائل المشتركين: باقة Pro بسعرك القديم ({0} د.أ شهري / {1} د.أ سنوي) حتى {2}.", [LEGACY_PRICES.monthly, LEGACY_PRICES.yearly, legacyEnds]))}
+              </div>
+            )}
+            <div className="mb-4 inline-flex rounded-full border border-border p-1" role="radiogroup" aria-label={t("مدة الاشتراك")}>
+              {(["monthly", "yearly"] as Period[]).map((k) => (
+                <button key={k} type="button" role="radio" aria-checked={period === k} onClick={() => setPeriod(k)}
+                  className={`rounded-full px-5 py-1.5 text-sm transition ${period === k ? "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal" : "text-muted-foreground"}`}>
+                  {tx(PERIOD_LABEL[k])}
+                </button>
+              ))}
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3 mb-8" role="radiogroup" aria-label={t("الباقة")}>
+              {(["basic", "pro"] as Tier[]).map((k) => {
+                const active = tier === k;
+                const price = priceFor(k, period, sub?.legacy_price_until);
+                const saving = period === "yearly" ? priceFor(k, "monthly", sub?.legacy_price_until) * 12 - price : 0;
                 return (
                   <button
                     key={k}
                     type="button"
                     role="radio"
                     aria-checked={active}
-                    onClick={() => setPlanKey(k)}
+                    onClick={() => setTier(k)}
                     className={`relative rounded-sm border p-4 text-start transition ${active ? "border-gold bg-gold/5 ring-1 ring-gold" : "border-border bg-card hover:border-foreground/30"}`}
                   >
-                    {saving > 0 && (
-                      <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">{g(t("وفّري"), t("وفّر"))} {t("{0} د.أ", [saving])}</span>
+                    {k === "pro" && (
+                      <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">
+                        {saving > 0 ? `${g(t("وفّري"), t("وفّر"))} ${t("{0} د.أ", [saving])}` : t("الأكثر اختياراً")}
+                      </span>
                     )}
-                    <div className="font-serif text-lg leading-tight">{tx(p.name)}</div>
-                    <div className="text-xs text-muted-foreground">{tx(p.label)}</div>
-                    <div className="font-serif text-3xl mt-1">{tx(p.jod)} <span className="text-sm font-sans">{t("د.أ")}</span></div>
+                    <div className="font-serif text-lg leading-tight">{TIER_NAME[k]}</div>
+                    <div className="font-serif text-3xl mt-1">{tx(price)} <span className="text-sm font-sans">{t("د.أ")}</span> <span className="text-xs text-muted-foreground font-sans">{period === "yearly" ? t("/ سنة") : t("/ شهر")}</span></div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {p.months === 12 ? t("≈ {0} د.أ للشهر · 12 شهراً", [(p.jod / 12).toFixed(1)]) : t("دفعة لشهر كامل")}
+                      {period === "yearly" ? t("≈ {0} د.أ للشهر", [(price / 12).toFixed(1)]) : t("دفعة لشهر كامل")}
                     </div>
+                    <ul className="mt-3 space-y-1 text-xs">
+                      {TIER_FEATURES[k].map((f) => (
+                        <li key={f} className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-gold mt-0.5" />{tx(f)}</li>
+                      ))}
+                    </ul>
                   </button>
                 );
               })}
             </div>
             {cardEnabled ? (
               <CardPayCard
-                planName={plan.name}
-                planLabel={plan.label}
-                amount={plan.jod}
+                planName={TIER_NAME[tier]}
+                planLabel={PERIOD_LABEL[period]}
+                amount={amount}
                 starting={starting}
                 onPay={handleCardPay}
               />
             ) : (
               <ZbooniPayCard
-                planName={plan.name}
-                planLabel={plan.label}
-                amount={plan.jod}
+                planName={TIER_NAME[tier]}
+                planLabel={PERIOD_LABEL[period]}
+                amount={amount}
                 starting={starting}
                 onPay={handleZbooniPay}
               />
@@ -409,7 +448,11 @@ function StatusCard({ sub, effectiveStatus, isActive, trialDaysLeft, periodEnds 
         {tx(config.icon)}
         <div className="flex-1">
           <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-1">{t("حالة الاشتراك")}</div>
-          <div className={`font-serif text-2xl ${config.color} mb-2`}>{tx(config.label)}</div>
+          <div className={`font-serif text-2xl ${config.color} mb-2`}>
+            {tx(config.label)}
+            {effectiveStatus === "active" && <span className="ms-2 align-middle rounded-full border border-gold/40 px-2 py-0.5 text-xs font-sans text-gold">{TIER_NAME[sub.tier] ?? "Pro"}</span>}
+            {effectiveStatus === "trial" && <span className="ms-2 align-middle rounded-full border border-gold/40 px-2 py-0.5 text-xs font-sans text-gold">{t("كل ميزات Pro")}</span>}
+          </div>
           {effectiveStatus === "trial" && (
             <div className="text-sm">
               {t("متبقّي")}{" "}<span className="font-semibold">{t("{0} يومًا", [trialDaysLeft])}</span>{" "}{t("من تجربتك المجانية.")}

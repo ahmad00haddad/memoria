@@ -116,7 +116,7 @@ export async function settleSubscriptionPayment(tranRef: string): Promise<{ stat
   if (!/^[0-9a-f-]{36}$/i.test(cartId)) return { status: "unknown" };
   const { data: row } = await (supabaseAdmin as any)
     .from("subscription_payments")
-    .select("id, photographer_id, amount, currency, period_months, status, method")
+    .select("id, photographer_id, amount, currency, period_months, status, method, tier")
     .eq("id", cartId)
     .maybeSingle();
   if (!row || row.method !== "gateway") return { status: "unknown" };
@@ -172,6 +172,7 @@ export async function settleSubscriptionPayment(tranRef: string): Promise<{ stat
   const { error: e2 } = await supabaseAdmin.from("subscriptions").upsert({
     photographer_id: row.photographer_id,
     status: "active",
+    tier: row.tier ?? "pro",
     current_period_start: now.toISOString(),
     current_period_end: end.toISOString(),
     trial_ends_at: (sub as any)?.trial_ends_at ?? now.toISOString(),

@@ -16,7 +16,10 @@ import { Upload, X, Eye, Check, ChevronDown, Link2 } from "lucide-react";
 import { splitPortfolioItem, joinPortfolioItem, safeLink, linkLabel } from "@/lib/portfolio-link";
 import { useServerFn } from "@tanstack/react-start";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
-import { uploadProfilePhoto, uploadPortfolioPhoto, deletePortfolioPhoto, MAX_PORTFOLIO_PHOTOS } from "@/lib/upload";
+import { uploadProfilePhoto, uploadPortfolioPhoto, deletePortfolioPhoto } from "@/lib/upload";
+import { usePlan } from "@/hooks/use-plan";
+import { BASIC_LIMITS, PRO_PHOTOS } from "@/lib/plans";
+import { BasicLimitNote } from "@/components/dashboard/BasicLimitNote";
 import { getMyVerification, requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 import { startTour, useTourState, resetTour } from "@/components/ClientTour";
 import { locale } from "@/i18n";
@@ -43,6 +46,8 @@ function ProfilePage() {
   const [uid, setUid] = useState("");
   const [p, setP] = useState<any>({});
   const [previewOpen, setPreviewOpen] = useState(false);
+  const { isBasic } = usePlan();
+  const MAX_PORTFOLIO_PHOTOS = isBasic ? BASIC_LIMITS.photos : PRO_PHOTOS;
   const fileRef = useRef<HTMLInputElement>(null);
   const portfolioRef = useRef<HTMLInputElement>(null);
   const tourState = useTourState();
@@ -125,6 +130,9 @@ function ProfilePage() {
   };
 
   const onPortfolio = async (files: FileList) => {
+    if (isBasic && (p.portfolio_urls ?? []).length >= MAX_PORTFOLIO_PHOTOS) {
+      return toast.error(g(tr("وصلتِ لحد باقة Basic ({0} صورة). رقّي لـPro لحتى {1} صورة.", [MAX_PORTFOLIO_PHOTOS, PRO_PHOTOS]), tr("وصلت لحد باقة Basic ({0} صورة). رقّ لـPro لحتى {1} صورة.", [MAX_PORTFOLIO_PHOTOS, PRO_PHOTOS])));
+    }
     const room = MAX_PORTFOLIO_PHOTOS - (p.portfolio_urls ?? []).length;
     if (room <= 0) return toast.error(g(tr("وصلتِ للحد الأقصى ({0} صورة). احذفي صورة لإضافة أخرى.", [MAX_PORTFOLIO_PHOTOS]), tr("وصلت للحد الأقصى ({0} صورة). احذف صورة لإضافة أخرى.", [MAX_PORTFOLIO_PHOTOS])));
     const picked = Array.from(files);
@@ -309,6 +317,7 @@ function ProfilePage() {
                 <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{tx(portfolioCount)}/{tx(MAX_PORTFOLIO_PHOTOS)} {portfolioCount < 5 ? g(tr("· أضيفي {0} لتظهري في البحث", [5 - portfolioCount]), tr("· أضف {0} لتظهر في البحث", [5 - portfolioCount])) : tr("صورة")}</span>
               </div>
               <p className="mb-3 text-xs text-muted-foreground">{tr("الصورة الأولى هي ما تراه العروس في نتائج البحث.")}</p>
+              {isBasic && <BasicLimitNote used={portfolioCount} max={BASIC_LIMITS.photos} what={tr("صور المعرض")} />}
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                 <AnimatePresence initial={false}>
                   {(p.portfolio_urls ?? []).map((u: string, i: number) => (

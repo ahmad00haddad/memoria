@@ -21,6 +21,7 @@ type PaymentRow = {
   photographer_id: string;
   amount: number;
   period_months?: number | null;
+  tier?: string | null;
   method: string;
   status: string;
   proof_url: string | null;
@@ -263,7 +264,7 @@ function PaymentCard({
         {r.cliq_reference && <div className="text-xs">{t("المرجع:")}{" "}<span className="font-mono">{tx(r.cliq_reference)}</span></div>}
         {r.method === "zbooni" && (
           <div className="text-xs font-semibold text-gold">
-            {r.period_months === 12 ? t("Signature · سنوي") : t("Flex · شهري")}{" "}{t("— طابِق طلب زبوني بقيمة {0} JOD ومنتج «", [r.amount])}{r.period_months === 12 ? t("اشتراك سنوي") : t("اشتراك شهري")}»
+            {r.tier === "basic" ? "Basic" : "Pro"} · {r.period_months === 12 ? t("سنوي") : t("شهري")}{" "}{t("— طابِق طلب زبوني بقيمة {0} JOD ومنتج «", [r.amount])}{r.period_months === 12 ? t("اشتراك سنوي") : t("اشتراك شهري")}»
           </div>
         )}
         {r.payment_reference && <div className="text-xs">{t("رمز الدفعة:")}{" "}<span className="font-mono" dir="ltr">{tx(r.payment_reference)}</span></div>}

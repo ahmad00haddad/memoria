@@ -108,6 +108,7 @@ export const Route = createFileRoute("/photographers/$username")({
 type Profile = {
   id: string; username: string; display_name: string;
   verification_status?: string | null; verified_at?: string | null;
+  is_pro?: boolean;
   bio: string | null; city: string | null; base_location: string | null;
   phone: string | null; instagram: string | null; whatsapp: string | null;
   avatar_url: string | null; cover_url: string | null; equipment: string | null;
@@ -169,7 +170,9 @@ function PhotographerPage() {
       setProfile(mergedProfile);
       if (mergedProfile) {
         const pid = mergedProfile.id;
-        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc, responseHours: rh } = await fetchProfileData({ data: { pid } });
+        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc, responseHours: rh, isPro } = await fetchProfileData({ data: { pid } });
+        // شارة التوثيق وعروض الأسعار لباقة Pro فقط
+        setProfile(isPro ? { ...mergedProfile, is_pro: true } : { ...mergedProfile, is_pro: false, verification_status: null });
         setResponseHours(rh);
         setPricing(p as Pricing[]);
         setReviews(r);
@@ -1355,7 +1358,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         )}
       </div>
       
-      {selected && selected.package !== "addon" && (
+      {selected && selected.package !== "addon" && profile.is_pro !== false && (
         <div className="mt-4 border-t border-border pt-4">
           {!offerOpen ? (
             <button type="button" onClick={() => setOfferOpen(true)} className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-sm py-2.5 hover:bg-secondary">

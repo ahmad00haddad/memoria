@@ -24,7 +24,7 @@ function waLink(phone: string, text: string) {
 }
 
 function OffersPage() {
-  const { isLocked, lockLoading } = useSubscriptionLock();
+  const { isLocked, lockReason, lockLoading } = useSubscriptionLock();
   const list = useServerFn(listMyOffers);
   const respond = useServerFn(respondToOffer);
   const [offers, setOffers] = useState<any[] | null>(null);
@@ -58,7 +58,7 @@ function OffersPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12 relative">
-        {isLocked && <PremiumLock />}
+        {isLocked && <PremiumLock reason={lockReason} />}
         <div className="mb-4"><BackToDashboard /></div>
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{t("عروض الأسعار")}</div>
         <h1 className="font-serif text-4xl mb-2">{t("عروض العرائس")}</h1>

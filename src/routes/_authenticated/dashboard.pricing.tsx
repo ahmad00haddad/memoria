@@ -14,6 +14,9 @@ import { Plus, Trash2, Copy, Check, X, CircleCheck, Star, Zap } from "lucide-rea
 import { parseFeatures, serializeFeatures, type Feature, type FeatureKind } from "@/lib/packageFeatures";
 import { hapticVibrate } from "@/lib/utils";
 import { t, tx } from "@/i18n";
+import { usePlan } from "@/hooks/use-plan";
+import { BasicLimitNote } from "@/components/dashboard/BasicLimitNote";
+import { BASIC_LIMITS } from "@/lib/plans";
 
 export const Route = createFileRoute("/_authenticated/dashboard/pricing")({ component: PricingMgr });
 
@@ -32,6 +35,7 @@ const KIND_META_ = (): Record<FeatureKind, { icon: typeof Star; title: string }>
 });
 
 function PricingMgr() {
+  const { isBasic } = usePlan();
   const nav = useNavigate();
   const [uid, setUid] = useState("");
   const [rules, setRules] = useState<Rule[]>([]);
@@ -176,6 +180,9 @@ function PricingMgr() {
         <BackToDashboard />
         <h1 className="font-serif text-4xl mt-2 mb-2">{t("إدارة الأسعار")}</h1>
         <p className="text-sm text-muted-foreground mb-3">{t("باقات التصوير والفيديو والإضافات كما تظهر للعرائس في ملفك العام.")}</p>
+        {isBasic && (
+          <BasicLimitNote used={rules.filter((r) => r.id && r.package !== "addon").length} max={BASIC_LIMITS.packages} what={t("باقات")} />
+        )}
         {rules.length > 0 && rules.length < 3 && (
           <p className="mb-6 flex items-center gap-2 text-xs text-muted-foreground"><Lightbulb className="h-3.5 w-3.5 text-gold" />{" "}{t("ثلاث باقات (أساسية، متوسطة، فاخرة) تسهّل على العروس الاختيار.")}</p>
         )}

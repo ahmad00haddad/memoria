@@ -10,11 +10,7 @@ import { t } from "@/i18n";
 // إن لم تُضبط مفاتيح PayTabs نعيد configured=false ويبقى مسار زبوني اليدوي.
 // ============================================================================
 
-const PLANS = {
-  monthly: { months: 1, jod: 7, name: "Flex" },
-  yearly: { months: 12, jod: 70, name: "Signature" },
-} as const;
-type PlanKey = keyof typeof PLANS;
+import { isPlanInput, type Period, type Tier } from "@/lib/plans";
 
 export const getPayTabsStatus = createServerFn({ method: "GET" }).handler(async () => {
   const { isPayTabsConfigured } = await import("@/lib/paytabs.server");
@@ -23,8 +19,8 @@ export const getPayTabsStatus = createServerFn({ method: "GET" }).handler(async 
 
 export const startPayTabsSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { plan: PlanKey }) => {
-    if (!d || !(d.plan in PLANS)) throw new Error("invalid plan");
+  .inputValidator((d: { tier: Tier; period: Period }) => {
+    if (!isPlanInput(d)) throw new Error("invalid plan");
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -33,7 +29,8 @@ export const startPayTabsSubscription = createServerFn({ method: "POST" })
     if (!isPayTabsConfigured()) return { configured: false as const };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const plan = PLANS[data.plan];
+    const { resolvePlan } = await import("@/lib/plans.server");
+    const plan = await resolvePlan(userId, data.tier, data.period);
 
     const [{ data: prof }, { data: u }] = await Promise.all([
       supabaseAdmin.from("profiles").select("display_name, username").eq("id", userId).maybeSingle(),
@@ -49,6 +46,7 @@ export const startPayTabsSubscription = createServerFn({ method: "POST" })
         amount: plan.jod,
         currency: "JOD",
         period_months: plan.months,
+        tier: plan.tier,
         method: "gateway",
         status: "pending",
         notes: `PayTabs · ${plan.name}`,

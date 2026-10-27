@@ -1176,6 +1176,7 @@ export type Database = {
           reviewed_by: string | null
           session_id: string | null
           status: Database["public"]["Enums"]["payment_status"]
+          tier: string | null
           stripe_payment_intent_id: string | null
         }
         Insert: {
@@ -1194,6 +1195,7 @@ export type Database = {
           reviewed_by?: string | null
           session_id?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
+          tier?: string | null
           stripe_payment_intent_id?: string | null
         }
         Update: {
@@ -1212,6 +1214,7 @@ export type Database = {
           reviewed_by?: string | null
           session_id?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
+          tier?: string | null
           stripe_payment_intent_id?: string | null
         }
         Relationships: []
@@ -1223,6 +1226,8 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          legacy_price_until: string | null
+          tier: string
           photographer_id: string
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
@@ -1237,6 +1242,8 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          legacy_price_until?: string | null
+          tier?: string
           photographer_id: string
           plan?: Database["public"]["Enums"]["subscription_plan"]
           status?: Database["public"]["Enums"]["subscription_status"]
@@ -1251,6 +1258,8 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          legacy_price_until?: string | null
+          tier?: string
           photographer_id?: string
           plan?: Database["public"]["Enums"]["subscription_plan"]
           status?: Database["public"]["Enums"]["subscription_status"]
@@ -1532,6 +1541,14 @@ export type Database = {
       is_subscription_active: {
         Args: { _photographer_id: string }
         Returns: boolean
+      }
+      photographer_tier: {
+        Args: { _pid: string }
+        Returns: string
+      }
+      pro_photographers: {
+        Args: { _ids: string[] }
+        Returns: string[]
       }
       log_audit:
         | {

@@ -15,18 +15,19 @@ import { t } from "@/i18n";
 // صفحات المنتجين على متجر cShop (ZBOONI_STORE_URL).
 // ============================================================================
 
-const PLANS = {
-  monthly: { months: 1, jod: 7, name: "Flex" },
-  yearly: { months: 12, jod: 70, name: "Signature" },
-} as const;
-type PlanKey = keyof typeof PLANS;
+import { isPlanInput, type Period, type Tier } from "@/lib/plans";
 
-function planUrl(plan: PlanKey): string {
+// منتج زبوني سعره ثابت، فكل سعر يحتاج منتجاً خاصاً به. المنتجان القديمان
+// (7 / 70) لسعر المؤسِّسات فقط؛ الأسعار الجديدة من env:
+// ZBOONI_BASIC_MONTHLY_URL · ZBOONI_BASIC_YEARLY_URL · ZBOONI_PRO_MONTHLY_URL · ZBOONI_PRO_YEARLY_URL
+function planUrl(tier: Tier, period: Period, legacy: boolean): string | null {
   const store = process.env.ZBOONI_STORE_URL || "https://ahmad-haddad.zbooni.com";
-  const url = plan === "yearly"
-    ? process.env.ZBOONI_SIGNATURE_URL || `${store}/products/shtrk-snwy-12-months`
-    : process.env.ZBOONI_FLEX_URL || `${store}/products/shtrk-shhry-1840056`;
-  return url;
+  if (legacy) {
+    return period === "yearly"
+      ? process.env.ZBOONI_SIGNATURE_URL || `${store}/products/shtrk-snwy-12-months`
+      : process.env.ZBOONI_FLEX_URL || `${store}/products/shtrk-shhry-1840056`;
+  }
+  return process.env[`ZBOONI_${tier.toUpperCase()}_${period.toUpperCase()}_URL`] || null;
 }
 
 function newReference(): string {
@@ -38,14 +39,17 @@ function newReference(): string {
 
 export const startZbooniSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { plan: PlanKey }) => {
-    if (!d || !(d.plan in PLANS)) throw new Error("invalid plan");
+  .inputValidator((d: { tier: Tier; period: Period }) => {
+    if (!isPlanInput(d)) throw new Error("invalid plan");
     return d;
   })
   .handler(async ({ data, context }) => {
     const { userId } = context as any;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const plan = PLANS[data.plan];
+    const { resolvePlan } = await import("@/lib/plans.server");
+    const plan = await resolvePlan(userId, data.tier, data.period);
+    const url = planUrl(plan.tier, plan.period, plan.legacy);
+    if (!url) throw new Error(t("الدفع عبر زبوني غير متاح لهذه الباقة حالياً — ادفعي بالبطاقة"));
 
     // إعادة استخدام دفعة مفتوحة لنفس الباقة (آخر 24 ساعة) بدل تكديس صفوف.
     const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
@@ -56,6 +60,7 @@ export const startZbooniSubscription = createServerFn({ method: "POST" })
       .eq("method", "zbooni")
       .eq("status", "pending")
       .eq("period_months", plan.months)
+      .eq("tier", plan.tier)
       .is("payer_confirmed_at", null)
       .gte("created_at", since)
       .order("created_at", { ascending: false })
@@ -75,6 +80,7 @@ export const startZbooniSubscription = createServerFn({ method: "POST" })
             amount: plan.jod,
             currency: "JOD",
             period_months: plan.months,
+            tier: plan.tier,
             method: "zbooni",
             status: "pending",
             payment_reference: reference,
@@ -92,7 +98,7 @@ export const startZbooniSubscription = createServerFn({ method: "POST" })
     return {
       payment_id: paymentId,
       reference,
-      url: planUrl(data.plan),
+      url,
       email: u?.user?.email ?? null,
       amount: plan.jod,
       months: plan.months,
@@ -117,7 +123,7 @@ export const confirmZbooniSubscriptionPaid = createServerFn({ method: "POST" })
       .eq("photographer_id", userId)
       .eq("method", "zbooni")
       .eq("status", "pending")
-      .select("id, amount, period_months, payment_reference")
+      .select("id, amount, period_months, payment_reference, tier")
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error(t("الدفعة غير موجودة أو تمت معالجتها"));
@@ -129,7 +135,7 @@ export const confirmZbooniSubscriptionPaid = createServerFn({ method: "POST" })
         supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
       ]);
       const name = (prof as any)?.display_name || (prof as any)?.username || t("مصوّرة");
-      const plan = row.period_months === 12 ? t("Signature · سنوي") : t("Flex · شهري");
+      const plan = `${row.tier === "basic" ? "Basic" : "Pro"} · ${row.period_months === 12 ? t("سنوي") : t("شهري")}`;
       const title = t("💳 دفعة زبوني بانتظار المطابقة");
       const body = t("{0} أكّدت دفع {1} د.أ ({2}) عبر زبوني — المرجع {3}.", [name, row.amount, plan, row.payment_reference]);
       if (admins?.length) {

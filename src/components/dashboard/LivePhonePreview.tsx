@@ -18,6 +18,7 @@ export function LivePhonePreview({ p }: { p: any }) {
   const [pricing, setPricing] = useState<Pkg[]>([]);
   const [responseHours, setResponseHours] = useState<number | null>(null);
   const [ratings, setRatings] = useState<number[]>([]);
+  const [isPro, setIsPro] = useState(true);
 
   useEffect(() => {
     if (!p?.id) return;
@@ -25,7 +26,7 @@ export function LivePhonePreview({ p }: { p: any }) {
       .then(({ data }) => setPricing((data as Pkg[]) ?? []));
     supabase.from("reviews").select("rating").eq("photographer_id", p.id).eq("is_published", true)
       .then(({ data }) => setRatings(((data as any[]) ?? []).map((r) => r.rating)));
-    fetchProfileData({ data: { pid: p.id } }).then((r) => setResponseHours(r.responseHours)).catch(() => {});
+    fetchProfileData({ data: { pid: p.id } }).then((r) => { setResponseHours(r.responseHours); setIsPro(r.isPro); }).catch(() => {});
   }, [p?.id]);
 
   const mains = pricing.filter((x) => x.package !== "addon");
@@ -58,7 +59,7 @@ export function LivePhonePreview({ p }: { p: any }) {
           <h2 className="display-serif text-4xl leading-none mb-3">{p.display_name || tr("اسم المصورة")}</h2>
 
           <div className="flex flex-wrap gap-1.5 mb-3">
-            {p.verification_status === "verified" && <VerifiedBadge />}
+            {p.verification_status === "verified" && isPro && <VerifiedBadge />}
             {p.is_featured && (
               <span className="inline-flex items-center gap-1 text-[9px] bg-gold/15 text-gold px-2 py-1 rounded-full border border-gold/30">
                 <Star className="h-2.5 w-2.5 fill-gold" />{" "}{tr("اختيار المحرّر")}
@@ -70,6 +71,10 @@ export function LivePhonePreview({ p }: { p: any }) {
               </span>
             )}
           </div>
+
+          {p.verification_status === "verified" && !isPro && (
+            <div className={`${hint} mb-3`}>{g(tr("تلميح لكِ فقط: شارة التوثيق مخفية عن العروس لأنها ضمن باقة Pro."), tr("تلميح لك فقط: شارة التوثيق مخفية عن العروس لأنها ضمن باقة Pro."))}</div>
+          )}
 
           {p.bio ? (
             <p className="text-xs leading-relaxed opacity-85 whitespace-pre-line mb-4">{tx(p.bio)}</p>

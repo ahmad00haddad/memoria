@@ -43,11 +43,13 @@ export const getCompareDetails = createServerFn({ method: "GET" })
     const ps = (profiles ?? []) as any[];
     if (!ps.length) return [];
     const ids = ps.map((p) => p.id);
-    const [pricing, reviews, completed] = await Promise.all([
+    const [pricing, reviews, completed, proIds] = await Promise.all([
       supabaseAdmin.from("pricing_rules").select("photographer_id, label, price, service, package").in("photographer_id", ids),
       supabaseAdmin.from("reviews").select("photographer_id, rating").in("photographer_id", ids).eq("is_published", true),
       supabaseAdmin.from("bookings").select("photographer_id").in("photographer_id", ids).eq("status", "completed").is("deleted_at", null),
+      supabaseAdmin.rpc("pro_photographers", { _ids: ids }),
     ]);
+    const pro = new Set((proIds.data ?? []) as string[]);
 
     const out = ps.map((p): CompareDetails => {
       const pk = ((pricing.data ?? []) as any[])
@@ -63,7 +65,7 @@ export const getCompareDetails = createServerFn({ method: "GET" })
         display_name: p.display_name,
         city: p.city,
         avatar_url: p.avatar_url,
-        verified: p.verification_status === "verified",
+        verified: p.verification_status === "verified" && pro.has(p.id),
         is_demo: !!p.is_demo,
         member_since: p.created_at,
         packages: pk,

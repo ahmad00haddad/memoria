@@ -365,7 +365,7 @@ export async function uploadProfilePhoto(
  * مضغوطة إلى 1400px / ~200KB لتخفيف استهلاك التخزين.
  */
 /** الحد الأقصى لصور معرض الأعمال لكل مصوّرة (مطبّق أيضاً في قاعدة البيانات). */
-export const MAX_PORTFOLIO_PHOTOS = 20;
+export const MAX_PORTFOLIO_PHOTOS = 20; // Basic؛ Pro حتى 60 (plans.ts)
 
 /** يحذف ملف معرض الأعمال من التخزين عبر رابطه العام (لا يترك ملفات يتيمة). */
 export async function deletePortfolioPhoto(publicUrl: string) {

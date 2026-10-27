@@ -60,7 +60,7 @@ const VARIABLES = [
 ];
 
 function TemplatesPage() {
-  const { isLocked, lockLoading } = useSubscriptionLock();
+  const { isLocked, lockReason, lockLoading } = useSubscriptionLock();
 
   const nav = useNavigate();
   const [uid, setUid] = useState<string>("");
@@ -142,12 +142,13 @@ function TemplatesPage() {
     setItems((prev) => prev.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   };
 
-  if (loading) return <PageLoader />;
+  if (loading || lockLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12">
+      <section className="container-editorial py-12 relative">
+        {isLocked && <PremiumLock reason={lockReason} />}
         <BackToDashboard />
         <div className="flex items-end justify-between mt-2 mb-6">
           <div>

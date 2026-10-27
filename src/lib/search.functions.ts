@@ -78,6 +78,7 @@ export const searchPhotographers = createServerFn({ method: "POST" })
 
     const names = (rows ?? []).map((r: any) => r.username);
     const demo = new Set<string>();
+    const pro = new Set<string>();
     const startFrom = new Map<string, number>();
     if (names.length) {
       const { data: profs } = await supabase.from("profiles").select("id, username, is_demo").in("username", names);
@@ -87,6 +88,9 @@ export const searchPhotographers = createServerFn({ method: "POST" })
         if (f.is_demo) demo.add(f.username);
       }
       if (byId.size) {
+        // باقة Pro: شارة التوثيق وترتيب أعلى بالبحث
+        const { data: proIds } = await supabase.rpc("pro_photographers", { _ids: [...byId.keys()] });
+        for (const id of (proIds ?? []) as string[]) pro.add(byId.get(id)!);
         const { data: rules } = await supabase
           .from("pricing_rules")
           .select("photographer_id, price, package")
@@ -111,7 +115,7 @@ export const searchPhotographers = createServerFn({ method: "POST" })
       avatar_url: r.avatar_url,
       cover_url: r.cover_url,
       is_featured: !!r.is_featured,
-      verification_status: r.verification_status ?? null,
+      verification_status: pro.has(r.username) ? r.verification_status ?? null : null,
       min_price: startFrom.get(r.username) ?? null,
       avg_rating: r.avg_rating != null ? Number(Number(r.avg_rating).toFixed(1)) : 0,
       review_count: r.review_count != null ? Number(r.review_count) : 0,
@@ -119,6 +123,9 @@ export const searchPhotographers = createServerFn({ method: "POST" })
 
     if (data.min_price != null) out = out.filter((r) => r.min_price != null && r.min_price >= data.min_price!);
     if (data.max_price != null) out = out.filter((r) => r.min_price != null && r.min_price <= data.max_price!);
+    if (!priceSorted && (data.sort || "featured") === "featured") {
+      out = [...out.filter((r) => pro.has(r.username)), ...out.filter((r) => !pro.has(r.username))];
+    }
     if (priceSorted) {
       const dir = data.sort === "price_asc" ? 1 : -1;
       out.sort((a, b) => (a.min_price == null ? 1 : b.min_price == null ? -1 : (a.min_price - b.min_price) * dir));

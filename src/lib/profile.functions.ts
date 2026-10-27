@@ -7,11 +7,14 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
     const { pid } = data;
 
     // Use the RPC to fetch all data bypassing RLS (since we don't have Service Role Key)
-    const { data: result, error } = await (supabase as any).rpc("get_public_profile_data", { p_id: pid });
+    const [{ data: result, error }, { data: tier }] = await Promise.all([
+      (supabase as any).rpc("get_public_profile_data", { p_id: pid }),
+      supabase.rpc("photographer_tier", { _pid: pid }),
+    ]);
     
     if (error || !result) {
       console.error("RPC Error:", error);
-      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0, responseHours: null as number | null };
+      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0, responseHours: null as number | null, isPro: tier === "pro" };
     }
 
     // The RPC returns a JSON object with the keys we need
@@ -23,6 +26,8 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
       bookedSlots: r.bookedSlots ?? [],
       completedCount: r.completedCount ?? 0,
       responseHours: (r.responseHours ?? null) as number | null,
+      // شارة التوثيق تظهر لباقة Pro فقط
+      isPro: tier === "pro",
     };
   });
 

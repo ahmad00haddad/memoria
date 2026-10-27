@@ -92,6 +92,8 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
 
     const { data: subActive } = await admin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
     if (!subActive) throw new Error(tr("نعتذر، لا يمكن إرسال العرض لأن اشتراك المصورة غير نشط حالياً."));
+    const { data: tier } = await admin.rpc("photographer_tier", { _pid: data.photographer_id });
+    if (tier !== "pro") throw new Error(tr("هذه المصوّرة لا تستقبل عروض أسعار — احجزي بسعر الباقة مباشرة."));
 
     const { data: rule } = await admin
       .from("pricing_rules").select("id, photographer_id, label, price, service, package")
