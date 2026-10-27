@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 // ============================================================================
 // zbooni.functions.ts — دفع الاشتراكات عبر زبوني (المرحلة الأولى)
@@ -84,7 +85,7 @@ export const startZbooniSubscription = createServerFn({ method: "POST" })
         if (error && (error as any).code !== "23505") throw new Error(error.message);
         paymentId = row?.id ?? null;
       }
-      if (!paymentId) throw new Error("تعذّر إنشاء الدفعة، حاولي مجدداً");
+      if (!paymentId) throw new Error(t("تعذّر إنشاء الدفعة، حاولي مجدداً"));
     }
 
     const { data: u } = await supabaseAdmin.auth.admin.getUserById(userId);
@@ -119,7 +120,7 @@ export const confirmZbooniSubscriptionPaid = createServerFn({ method: "POST" })
       .select("id, amount, period_months, payment_reference")
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!row) throw new Error("الدفعة غير موجودة أو تمت معالجتها");
+    if (!row) throw new Error(t("الدفعة غير موجودة أو تمت معالجتها"));
 
     // تنبيه الأدمن (داخلي + إيميل) — لا يمنع المصوّرة عند الفشل.
     try {
@@ -127,10 +128,10 @@ export const confirmZbooniSubscriptionPaid = createServerFn({ method: "POST" })
         supabaseAdmin.from("profiles").select("display_name, username").eq("id", userId).maybeSingle(),
         supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
       ]);
-      const name = (prof as any)?.display_name || (prof as any)?.username || "مصوّرة";
-      const plan = row.period_months === 12 ? "Signature · سنوي" : "Flex · شهري";
-      const title = "💳 دفعة زبوني بانتظار المطابقة";
-      const body = `${name} أكّدت دفع ${row.amount} د.أ (${plan}) عبر زبوني — المرجع ${row.payment_reference}.`;
+      const name = (prof as any)?.display_name || (prof as any)?.username || t("مصوّرة");
+      const plan = row.period_months === 12 ? t("Signature · سنوي") : t("Flex · شهري");
+      const title = t("💳 دفعة زبوني بانتظار المطابقة");
+      const body = t("{0} أكّدت دفع {1} د.أ ({2}) عبر زبوني — المرجع {3}.", [name, row.amount, plan, row.payment_reference]);
       if (admins?.length) {
         await supabaseAdmin.from("notifications").insert(
           admins.map((a: any) => ({ user_id: a.user_id, type: "system", title, body, link: "/admin/subscriptions" })),
@@ -146,11 +147,7 @@ export const confirmZbooniSubscriptionPaid = createServerFn({ method: "POST" })
             subject: title,
             template: "admin_subscription_payment",
             related_user_id: userId,
-            html: `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.8">
-              <h2 style="margin:0 0 8px">${title}</h2>
-              <p>${body.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!)}</p>
-              <p>طابِق الدفعة في لوحة زبوني ثم اعتمدها: <a href="${base}/admin/subscriptions">${base}/admin/subscriptions</a></p>
-            </div>`,
+            html: t("<div dir=\"rtl\" style=\"font-family:Tahoma,Arial,sans-serif;line-height:1.8\"> <h2 style=\"margin:0 0 8px\">{0}</h2> <p>{1}</p> <p>طابِق الدفعة في لوحة زبوني ثم اعتمدها: <a href=\"{2}/admin/subscriptions\">{3}/admin/subscriptions</a></p> </div>", [title, body.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!), base, base]),
           }).catch(() => {});
         }
       }

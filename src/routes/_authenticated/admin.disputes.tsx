@@ -5,6 +5,8 @@ import { listDisputesAdmin, adminResolveDispute } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import { AlertTriangle, Check, X, RefreshCw, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/disputes")({
   component: AdminDisputesPage,
@@ -41,7 +43,7 @@ function AdminDisputesPage() {
       const data = await getDisputes();
       setDisputes((data as DisputeRow[]) ?? []);
     } catch (e: any) {
-      toast.error(e.message || "فشل تحميل النزاعات");
+      toast.error(e.message || t("فشل تحميل النزاعات"));
     } finally {
       setLoading(false);
     }
@@ -55,7 +57,7 @@ function AdminDisputesPage() {
     e.preventDefault();
     if (!resolvingDispute) return;
     if (!resolutionText.trim()) {
-      toast.error("يرجى كتابة تفاصيل الحل.");
+      toast.error(t("يرجى كتابة تفاصيل الحل."));
       return;
     }
 
@@ -68,12 +70,12 @@ function AdminDisputesPage() {
           resolution: resolutionText.trim(),
         },
       });
-      toast.success("تم تحديث حالة النزاع بنجاح");
+      toast.success(t("تم تحديث حالة النزاع بنجاح"));
       setResolvingDispute(null);
       setResolutionText("");
       load();
     } catch (e: any) {
-      toast.error(e.message || "فشل حل النزاع");
+      toast.error(e.message || t("فشل حل النزاع"));
     } finally {
       setSubmitting(false);
     }
@@ -84,24 +86,24 @@ function AdminDisputesPage() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-serif text-2xl">إدارة نزاعات الحجوزات ({disputes.length})</h2>
+        <h2 className="font-serif text-2xl">{t("إدارة نزاعات الحجوزات ({0})", [disputes.length])}</h2>
         <button onClick={load} className="text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
-          <RefreshCw className="h-3.5 w-3.5" /> تحديث
+          <RefreshCw className="h-3.5 w-3.5" />{" "}{t("تحديث")}
         </button>
       </div>
 
       <div className="overflow-x-auto rounded-sm border border-border bg-card">
         <table className="w-full text-sm">
-          <caption className="sr-only">جدول النزاعات</caption>
+          <caption className="sr-only">{t("جدول النزاعات")}</caption>
           <thead className="bg-secondary text-xs uppercase tracking-wider">
             <tr>
-              <th className="text-start p-3">النزاع</th>
-              <th className="text-start p-3">الحجز المتأثر</th>
-              <th className="text-start p-3">مرفوع من</th>
-              <th className="text-start p-3">السبب</th>
-              <th className="text-start p-3">الحالة</th>
-              <th className="text-start p-3">الحل / القرار</th>
-              <th className="text-start p-3">إجراءات</th>
+              <th className="text-start p-3">{t("النزاع")}</th>
+              <th className="text-start p-3">{t("الحجز المتأثر")}</th>
+              <th className="text-start p-3">{t("مرفوع من")}</th>
+              <th className="text-start p-3">{t("السبب")}</th>
+              <th className="text-start p-3">{t("الحالة")}</th>
+              <th className="text-start p-3">{t("الحل / القرار")}</th>
+              <th className="text-start p-3">{t("إجراءات")}</th>
             </tr>
           </thead>
           <tbody>
@@ -109,14 +111,14 @@ function AdminDisputesPage() {
               <tr key={d.id} className="border-t border-border hover:bg-secondary/30">
                 <td className="p-3">
                   <div className="font-medium text-xs text-muted-foreground">{d.id.slice(0, 8)}...</div>
-                  <div className="text-[11px]">{new Date(d.created_at).toLocaleString("ar-JO")}</div>
+                  <div className="text-[11px]">{new Date(d.created_at).toLocaleString(locale("ar-JO"))}</div>
                 </td>
                 <td className="p-3">
                   {d.booking ? (
                     <div>
-                      <div className="font-medium">عميل: {d.booking.client_name}</div>
+                      <div className="font-medium">{t("عميل: {0}", [d.booking.client_name])}</div>
                       {d.photographer && (
-                        <div className="text-xs text-gold">مصورة: {d.photographer.display_name}</div>
+                        <div className="text-xs text-gold">{t("مصورة: {0}", [d.photographer.display_name])}</div>
                       )}
                     </div>
                   ) : (
@@ -129,16 +131,16 @@ function AdminDisputesPage() {
                     d.raised_by_role === "photographer" ? "bg-purple-50 text-purple-700 border-purple-100" :
                     "bg-secondary text-muted-foreground"
                   }`}>
-                    {d.raised_by_role === "client" ? "عميل" : d.raised_by_role === "photographer" ? "مصوّرة" : "أدمن"}
+                    {d.raised_by_role === "client" ? t("عميل") : d.raised_by_role === "photographer" ? t("مصوّرة") : t("أدمن")}
                   </span>
                 </td>
-                <td className="p-3 max-w-[200px] truncate" title={d.reason}>{d.reason}</td>
+                <td className="p-3 max-w-[200px] truncate" title={tx(d.reason)}>{tx(d.reason)}</td>
                 <td className="p-3">
                   <DisputeStatusBadge status={d.status} />
                 </td>
                 <td className="p-3 max-w-[200px] truncate text-xs" title={d.resolution ?? ""}>
                   {d.resolution ? (
-                    <span className="text-muted-foreground">{d.resolution}</span>
+                    <span className="text-muted-foreground">{tx(d.resolution)}</span>
                   ) : (
                     <span className="text-muted-foreground italic">—</span>
                   )}
@@ -152,7 +154,7 @@ function AdminDisputesPage() {
                       }}
                       className="text-xs px-2.5 py-1.5 rounded-sm bg-charcoal text-ivory hover:opacity-90 inline-flex items-center gap-1"
                     >
-                      <CheckCircle2 className="h-3 w-3" /> حل النزاع
+                      <CheckCircle2 className="h-3 w-3" />{" "}{t("حل النزاع")}
                     </button>
                   )}
                 </td>
@@ -160,7 +162,7 @@ function AdminDisputesPage() {
             ))}
             {disputes.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-muted-foreground">لا توجد نزاعات مفتوحة أو مسجلة</td>
+                <td colSpan={7} className="p-8 text-center text-muted-foreground">{t("لا توجد نزاعات مفتوحة أو مسجلة")}</td>
               </tr>
             )}
           </tbody>
@@ -170,17 +172,17 @@ function AdminDisputesPage() {
       {resolvingDispute && (
         <div className="fixed inset-0 bg-black/40 grid place-items-center z-50 p-4" onClick={() => setResolvingDispute(null)}>
           <div className="bg-card border border-border rounded-sm p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-serif text-xl mb-1">حل النزاع</h3>
-            <p className="text-xs text-muted-foreground mb-4">المعرف: {resolvingDispute.id}</p>
+            <h3 className="font-serif text-xl mb-1">{t("حل النزاع")}</h3>
+            <p className="text-xs text-muted-foreground mb-4">{t("المعرف: {0}", [resolvingDispute.id])}</p>
 
             <form onSubmit={handleResolveSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-1">السبب المرفوع</label>
-                <div className="p-3 bg-secondary rounded-sm text-sm text-foreground">{resolvingDispute.reason}</div>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-1">{t("السبب المرفوع")}</label>
+                <div className="p-3 bg-secondary rounded-sm text-sm text-foreground">{tx(resolvingDispute.reason)}</div>
               </div>
 
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-1">القرار والنتيجة</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-1">{t("القرار والنتيجة")}</label>
                 <div className="flex gap-2">
                   <button
                     type="button"
@@ -191,7 +193,7 @@ function AdminDisputesPage() {
                         : "border-border hover:bg-secondary"
                     }`}
                   >
-                    تحديد كمحلول (Resolved)
+                    {t("تحديد كمحلول (Resolved)")}
                   </button>
                   <button
                     type="button"
@@ -202,17 +204,17 @@ function AdminDisputesPage() {
                         : "border-border hover:bg-secondary"
                     }`}
                   >
-                    حفظ / تجاهل (Dismissed)
+                    {t("حفظ / تجاهل (Dismissed)")}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-1">تفاصيل الحل المكتوب</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-1">{t("تفاصيل الحل المكتوب")}</label>
                 <textarea
                   value={resolutionText}
                   onChange={(e) => setResolutionText(e.target.value)}
-                  placeholder="اكتب تفاصيل القرار أو التسوية هنا..."
+                  placeholder={t("اكتب تفاصيل القرار أو التسوية هنا...")}
                   rows={4}
                   className="w-full text-sm p-2.5 border border-border bg-background rounded-sm focus:outline-none focus:border-gold"
                   required
@@ -225,14 +227,14 @@ function AdminDisputesPage() {
                   disabled={submitting}
                   className="flex-1 py-2 text-xs bg-charcoal text-ivory hover:opacity-90 rounded-sm disabled:opacity-50"
                 >
-                  {submitting ? "جاري الإرسال..." : "حفظ القرار"}
+                  {submitting ? t("جاري الإرسال...") : t("حفظ القرار")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setResolvingDispute(null)}
                   className="flex-1 py-2 text-xs border border-border hover:bg-secondary rounded-sm"
                 >
-                  إلغاء
+                  {t("إلغاء")}
                 </button>
               </div>
             </form>
@@ -245,15 +247,15 @@ function AdminDisputesPage() {
 
 function DisputeStatusBadge({ status }: { status: DisputeRow["status"] }) {
   const map: Record<DisputeRow["status"], { cls: string; icon: React.ReactNode; label: string }> = {
-    open: { cls: "bg-amber-50 text-amber-700 border-amber-200", icon: <AlertCircle className="h-3 w-3" />, label: "مفتوح" },
-    under_review: { cls: "bg-blue-50 text-blue-700 border-blue-200", icon: <Clock className="h-3 w-3" />, label: "تحت المراجعة" },
-    resolved: { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: <CheckCircle2 className="h-3 w-3" />, label: "محلول" },
-    dismissed: { cls: "bg-secondary text-muted-foreground border-border", icon: <X className="h-3 w-3" />, label: "مرفوض" },
+    open: { cls: "bg-amber-50 text-amber-700 border-amber-200", icon: <AlertCircle className="h-3 w-3" />, label: t("مفتوح") },
+    under_review: { cls: "bg-blue-50 text-blue-700 border-blue-200", icon: <Clock className="h-3 w-3" />, label: t("تحت المراجعة") },
+    resolved: { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: <CheckCircle2 className="h-3 w-3" />, label: t("محلول") },
+    dismissed: { cls: "bg-secondary text-muted-foreground border-border", icon: <X className="h-3 w-3" />, label: t("مرفوض") },
   };
   const c = map[status] ?? map.open;
   return (
     <span className={`inline-flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full border ${c.cls}`}>
-      {c.icon} {c.label}
+      {tx(c.icon)} {tx(c.label)}
     </span>
   );
 }

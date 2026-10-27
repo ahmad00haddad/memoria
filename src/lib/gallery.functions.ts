@@ -244,10 +244,10 @@ export const sendMessageByToken = createServerFn({ method: "POST" })
       .is("sender_id", null)
       .gte("created_at", sinceIso);
     if ((count ?? 0) >= 10) {
-      throw new Error("أرسلتِ رسائل كثيرة في وقت قصير، الرجاء الانتظار قليلاً.");
+      throw new Error(t("أرسلتِ رسائل كثيرة في وقت قصير، الرجاء الانتظار قليلاً."));
     }
     const { error } = await supabaseAdmin.from("messages").insert({
-      booking_id: bk.id, sender_id: null, sender_name: bk.client_name || "العميل", body: data.body,
+      booking_id: bk.id, sender_id: null, sender_name: bk.client_name || t("العميل"), body: data.body,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -257,6 +257,7 @@ export const sendMessageByToken = createServerFn({ method: "POST" })
 // Photographer-side gallery management
 // ============================================================================
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 export const ensureGallery = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -271,7 +272,7 @@ export const ensureGallery = createServerFn({ method: "POST" })
     const { data: existing } = await supabase.from("delivery_galleries").select("*").eq("booking_id", data.booking_id).maybeSingle();
     if (existing) return existing;
     const { data: created, error } = await supabase.from("delivery_galleries").insert({
-      booking_id: data.booking_id, photographer_id: userId, title: `صور ${bk.client_name}`,
+      booking_id: data.booking_id, photographer_id: userId, title: t("صور {0}", [bk.client_name]),
     }).select("*").single();
     if (error) throw new Error(error.message);
     return created;

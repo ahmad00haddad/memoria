@@ -23,30 +23,30 @@ function validateInput(d: SubmitInput): SubmitInput {
   const isTime = (s: any) => typeof s === "string" && /^\d{2}:\d{2}(:\d{2})?$/.test(s);
   if (!d || typeof d !== "object") throw new Error("invalid payload");
   if (!isUuid(d.photographer_id)) throw new Error("invalid photographer_id");
-  if (!d.client_name || d.client_name.length > 120) throw new Error("اكتبي اسمكِ الكامل");
+  if (!d.client_name || d.client_name.length > 120) throw new Error(tr("اكتبي اسمكِ الكامل"));
   if (!isEmail(d.client_email)) throw new Error(EMAIL_HINT);
   d.client_email = d.client_email.trim();
   const phone = normalizePhone(d.client_phone ?? "");
   if (!phone) throw new Error(PHONE_HINT);
   d.client_phone = phone;
-  if (!isDate(d.event_date)) throw new Error("اختاري تاريخ المناسبة");
-  if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error("اختاري وقت البداية والنهاية");
+  if (!isDate(d.event_date)) throw new Error(tr("اختاري تاريخ المناسبة"));
+  if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error(tr("اختاري وقت البداية والنهاية"));
   const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
   const duration = toMin(d.end_time) - toMin(d.start_time);
-  if (duration <= 0) throw new Error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
-  if (duration < 30) throw new Error("الحد الأدنى لمدة الحجز هو 30 دقيقة");
+  if (duration <= 0) throw new Error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
+  if (duration < 30) throw new Error(tr("الحد الأدنى لمدة الحجز هو 30 دقيقة"));
   // التاريخ يجب أن يكون اليوم أو في المستقبل
   // اليوم بتوقيت الأردن (UTC+3) وليس UTC، لتفادي رفض/قبول يوم كامل بالخطأ قرب منتصف الليل
   const todayStr = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().split("T")[0];
-  if (d.event_date < todayStr) throw new Error("لا يمكن اختيار تاريخ في الماضي");
-  if (!Array.isArray(d.items) || d.items.length === 0 || d.items.length > 30) throw new Error("اختاري باقة");
+  if (d.event_date < todayStr) throw new Error(tr("لا يمكن اختيار تاريخ في الماضي"));
+  if (!Array.isArray(d.items) || d.items.length === 0 || d.items.length > 30) throw new Error(tr("اختاري باقة"));
   for (const it of d.items) {
     if (!isUuid(it.rule_id)) throw new Error("invalid item rule_id");
     if (!Number.isInteger(it.qty) || it.qty < 1 || it.qty > 50) throw new Error("invalid item qty");
   }
   if (d.privacy_level !== "public" && d.privacy_level !== "private_only") throw new Error("invalid privacy_level");
-  if (d.venue_address && d.venue_address.length > 500) throw new Error("عنوان المكان طويل جداً");
-  if (d.client_notes && d.client_notes.length > 4000) throw new Error("الملاحظات طويلة جداً");
+  if (d.venue_address && d.venue_address.length > 500) throw new Error(tr("عنوان المكان طويل جداً"));
+  if (d.client_notes && d.client_notes.length > 4000) throw new Error(tr("الملاحظات طويلة جداً"));
   return d;
 }
 
@@ -58,7 +58,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       // Validate photographer subscription status
       const { data: subActive } = await supabaseAdmin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
       if (!subActive) {
-        throw new Error("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً.");
+        throw new Error(tr("نعتذر، لا يمكن إتمام الحجز لأن اشتراك المصورة غير نشط حالياً."));
       }
 
 
@@ -73,12 +73,12 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     for (const it of data.items) {
       const r = ruleMap.get(it.rule_id);
       if (!r || r.photographer_id !== data.photographer_id) {
-        throw new Error("باقة غير صالحة");
+        throw new Error(tr("باقة غير صالحة"));
       }
     }
 
     const mainItem = data.items.find((i) => (ruleMap.get(i.rule_id) as any)!.package !== "addon");
-    if (!mainItem) throw new Error("يجب اختيار باقة أساسية");
+    if (!mainItem) throw new Error(tr("يجب اختيار باقة أساسية"));
     const mainRule: any = ruleMap.get(mainItem.rule_id);
 
     const items = data.items.map((it) => {
@@ -101,14 +101,14 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       .select("id, display_name, username, fixed_deposit, deposit_percent, min_session_minutes")
       .eq("id", data.photographer_id)
       .single();
-    if (profErr || !profile) throw new Error("المصوّرة غير موجودة");
+    if (profErr || !profile) throw new Error(tr("المصوّرة غير موجودة"));
 
     // احترام الحد الأدنى لمدة الجلسة الذي حدّدته المصوّرة
     const toMinutes = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
     const bookedMinutes = toMinutes(data.end_time) - toMinutes(data.start_time);
     const minMinutes = Number(profile.min_session_minutes ?? 0);
     if (minMinutes > 0 && bookedMinutes < minMinutes) {
-      throw new Error(`الحد الأدنى لمدة الجلسة لدى هذه المصوّرة هو ${Math.round(minMinutes / 60 * 10) / 10} ساعة`);
+      throw new Error(tr("الحد الأدنى لمدة الجلسة لدى هذه المصوّرة هو {0} ساعة", [Math.round(minMinutes / 60 * 10) / 10]));
     }
 
     const deposit = total > 0
@@ -117,7 +117,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
           : Math.round(total * (Number(profile.deposit_percent ?? 25) / 100)))
       : 0;
 
-    const summaryLabel = `${mainRule.label}${items.length > 1 ? ` +${items.length - 1} إضافات` : ""}`;
+    const summaryLabel = `${mainRule.label}${items.length > 1 ? tr("+{0} إضافات", [items.length - 1]) : ""}`;
 
     // Atomic, conflict-guarded, idempotent booking creation (see migration
     // 20260621120000_phase0_booking_integrity.sql). Re-checks availability on
@@ -146,8 +146,8 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
 
     if (error) {
       const msg = error.message || "";
-      if (msg.includes("SLOT_CONFLICT")) throw new Error("هذا الوقت محجوز، يرجى اختيار وقت آخر");
-      if (msg.includes("DAY_UNAVAILABLE")) throw new Error("هذا اليوم غير متاح، يرجى اختيار يوم آخر");
+      if (msg.includes("SLOT_CONFLICT")) throw new Error(tr("هذا الوقت محجوز، يرجى اختيار وقت آخر"));
+      if (msg.includes("DAY_UNAVAILABLE")) throw new Error(tr("هذا اليوم غير متاح، يرجى اختيار يوم آخر"));
       throw new Error(msg);
     }
 
@@ -257,7 +257,7 @@ export const verifyBookingEmailCode = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string; code: string }) => {
     if (!d || typeof d.token !== "string" || !TOKEN_RE.test(d.token)) throw new Error("invalid token");
     const code = String(d.code ?? "").replace(/\D/g, "");
-    if (code.length !== 6) throw new Error("الرمز يتكوّن من 6 أرقام");
+    if (code.length !== 6) throw new Error(tr("الرمز يتكوّن من 6 أرقام"));
     return { token: d.token, code };
   })
   .handler(async ({ data }) => {
@@ -266,15 +266,15 @@ export const verifyBookingEmailCode = createServerFn({ method: "POST" })
       .select("id, phone_verified_at, verify_code_email, verify_expires_at, verify_attempts")
       .eq("client_tracking_token", data.token).is("deleted_at", null).maybeSingle();
     const bk: any = b;
-    if (!bk) throw new Error("الحجز غير موجود أو انتهت مهلته");
+    if (!bk) throw new Error(tr("الحجز غير موجود أو انتهت مهلته"));
     if (bk.phone_verified_at) return { ok: true };
-    if (bk.verify_attempts >= 5) throw new Error("تجاوزتِ عدد المحاولات. احجزي من جديد.");
+    if (bk.verify_attempts >= 5) throw new Error(tr("تجاوزتِ عدد المحاولات. احجزي من جديد."));
     if (bk.verify_expires_at && new Date(bk.verify_expires_at).getTime() < Date.now()) {
-      throw new Error("انتهت صلاحية الرمز. اطلبي رمزاً جديداً.");
+      throw new Error(tr("انتهت صلاحية الرمز. اطلبي رمزاً جديداً."));
     }
     if (!bk.verify_code_email || bk.verify_code_email !== data.code) {
       await supabaseAdmin.from("bookings").update({ verify_attempts: bk.verify_attempts + 1 } as any).eq("id", bk.id);
-      throw new Error("الرمز غير صحيح");
+      throw new Error(tr("الرمز غير صحيح"));
     }
     const { markBookingVerified } = await import("@/lib/verification.server");
     await markBookingVerified(bk.id, "email");
@@ -294,10 +294,10 @@ export const resendBookingEmailCode = createServerFn({ method: "POST" })
       .select("id, client_name, client_email, phone_verified_at, updated_at")
       .eq("client_tracking_token", data.token).is("deleted_at", null).maybeSingle();
     const bk: any = b;
-    if (!bk) throw new Error("الحجز غير موجود أو انتهت مهلته");
+    if (!bk) throw new Error(tr("الحجز غير موجود أو انتهت مهلته"));
     if (bk.phone_verified_at) return { ok: true };
-    if (!v.isEmailConfigured()) throw new Error("الإرسال بالإيميل غير متاح حالياً");
-    if (Date.now() - new Date(bk.updated_at).getTime() < 55_000) throw new Error("انتظري دقيقة قبل طلب رمز جديد");
+    if (!v.isEmailConfigured()) throw new Error(tr("الإرسال بالإيميل غير متاح حالياً"));
+    if (Date.now() - new Date(bk.updated_at).getTime() < 55_000) throw new Error(tr("انتظري دقيقة قبل طلب رمز جديد"));
     const code = v.sixDigits();
     await supabaseAdmin.from("bookings").update({
       verify_code_email: code, verify_attempts: 0, updated_at: new Date().toISOString(),
@@ -320,11 +320,11 @@ export async function isDemoBookingToken(admin: any, token: string): Promise<boo
 export const clientMarkDepositSent = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string; proof_path?: string | null; reference?: string | null; note?: string | null }) => {
     if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
-    if (typeof d.proof_path !== "string" || !d.proof_path || d.proof_path.length > 500) throw new Error("ارفعي صورة إيصال التحويل");
-    if (typeof d.reference !== "string" || d.reference.trim().length < 3) throw new Error("اكتبي رقم العملية المرجعي");
-    if (typeof d.note !== "string" || d.note.trim().length < 3) throw new Error("اكتبي اسم صاحب الحساب المحوِّل");
-    if (d.reference && (typeof d.reference !== "string" || d.reference.length > 200)) throw new Error("رقم الحوالة طويل جداً");
-    if (d.note && (typeof d.note !== "string" || d.note.length > 2000)) throw new Error("الملاحظة طويلة جداً");
+    if (typeof d.proof_path !== "string" || !d.proof_path || d.proof_path.length > 500) throw new Error(tr("ارفعي صورة إيصال التحويل"));
+    if (typeof d.reference !== "string" || d.reference.trim().length < 3) throw new Error(tr("اكتبي رقم العملية المرجعي"));
+    if (typeof d.note !== "string" || d.note.trim().length < 3) throw new Error(tr("اكتبي اسم صاحب الحساب المحوِّل"));
+    if (d.reference && (typeof d.reference !== "string" || d.reference.length > 200)) throw new Error(tr("رقم الحوالة طويل جداً"));
+    if (d.note && (typeof d.note !== "string" || d.note.length > 2000)) throw new Error(tr("الملاحظة طويلة جداً"));
     return d;
   })
   .handler(async ({ data }) => {
@@ -337,9 +337,9 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
       _note: (data.note ?? null) as any,
     });
     if (error) {
-      if (error.message.includes("EXPIRED_BOOKING")) throw new Error("انتهت مهلة الحجز وحُجز الموعد لعميلة أخرى. تواصلي مع المصوّرة لاختيار موعد جديد.");
-      if (error.message.includes("BOOKING_NOT_VERIFIED")) throw new Error("أكّدي طلب الحجز أولاً (عبر واتساب أو رمز الإيميل) قبل إرسال العربون.");
-      if (error.message.includes("BOOKING_NOT_AWAITING_DEPOSIT")) throw new Error("هذا الحجز لم يعد بانتظار العربون.");
+      if (error.message.includes("EXPIRED_BOOKING")) throw new Error(tr("انتهت مهلة الحجز وحُجز الموعد لعميلة أخرى. تواصلي مع المصوّرة لاختيار موعد جديد."));
+      if (error.message.includes("BOOKING_NOT_VERIFIED")) throw new Error(tr("أكّدي طلب الحجز أولاً (عبر واتساب أو رمز الإيميل) قبل إرسال العربون."));
+      if (error.message.includes("BOOKING_NOT_AWAITING_DEPOSIT")) throw new Error(tr("هذا الحجز لم يعد بانتظار العربون."));
       throw new Error(error.message);
     }
     return { ok: true };
@@ -365,8 +365,8 @@ export const clientAddNote = createServerFn({ method: "POST" })
     if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) {
       throw new Error("invalid token");
     }
-    if (!d.note || typeof d.note !== "string" || d.note.trim().length === 0) throw new Error("الملاحظة مطلوبة");
-    if (d.note.length > 4000) throw new Error("الملاحظة طويلة جداً (4000 حرف كحد أقصى)");
+    if (!d.note || typeof d.note !== "string" || d.note.trim().length === 0) throw new Error(tr("الملاحظة مطلوبة"));
+    if (d.note.length > 4000) throw new Error(tr("الملاحظة طويلة جداً (4000 حرف كحد أقصى)"));
     return { token: d.token, note: d.note.trim() };
   })
   .handler(async ({ data }) => {
@@ -379,9 +379,9 @@ export const clientAddNote = createServerFn({ method: "POST" })
 export const submitReviewByToken = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string; rating: number; comment?: string | null; client_name?: string | null }) => {
     if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
-    if (!Number.isInteger(d.rating) || d.rating < 1 || d.rating > 5) throw new Error("اختاري عدد النجوم");
-    if (d.comment && d.comment.length > 2000) throw new Error("التعليق طويل جداً (الحد 2000 حرف)");
-    if (d.client_name && d.client_name.length > 120) throw new Error("الاسم طويل جداً");
+    if (!Number.isInteger(d.rating) || d.rating < 1 || d.rating > 5) throw new Error(tr("اختاري عدد النجوم"));
+    if (d.comment && d.comment.length > 2000) throw new Error(tr("التعليق طويل جداً (الحد 2000 حرف)"));
+    if (d.client_name && d.client_name.length > 120) throw new Error(tr("الاسم طويل جداً"));
     return d;
   })
   .handler(async ({ data }) => {
@@ -392,9 +392,9 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
       .eq("client_tracking_token", data.token)
       .maybeSingle();
     if (bErr) throw new Error(bErr.message);
-    if (!booking) throw new Error("الحجز غير موجود");
+    if (!booking) throw new Error(tr("الحجز غير موجود"));
     if (booking.status !== ("completed" as any)) {
-      throw new Error("لا يمكن التقييم قبل اكتمال الحجز");
+      throw new Error(tr("لا يمكن التقييم قبل اكتمال الحجز"));
     }
 
     const { error } = await supabaseAdmin
@@ -402,7 +402,7 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
       .insert({
         booking_id: booking.id,
         photographer_id: booking.photographer_id,
-        client_name: (data.client_name || booking.client_name || "عميلة").slice(0, 120),
+        client_name: (data.client_name || booking.client_name || tr("عميلة")).slice(0, 120),
         rating: data.rating,
         comment: data.comment ?? null,
         // مراجعة قبل النشر: التقييمات الجديدة تبدأ غير منشورة حتى يعتمدها الأدمن.
@@ -410,7 +410,7 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
       } as any);
     if (error) {
       if ((error as any).code === "23505" || /duplicate|unique/i.test(error.message)) {
-        throw new Error("تم تسجيل تقييم لهذا الحجز سابقًا");
+        throw new Error(tr("تم تسجيل تقييم لهذا الحجز سابقًا"));
       }
       throw new Error(error.message);
     }
@@ -465,6 +465,7 @@ export const recordReferralAfterSignup = createServerFn({ method: "POST" })
 
 // Photographer-side: confirm a booking only if deposit has been paid (server enforced).
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t as tr } from "@/i18n";
 
 export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -482,7 +483,7 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!bk) throw new Error("الحجز غير موجود");
+    if (!bk) throw new Error(tr("الحجز غير موجود"));
     if (bk.photographer_id !== userId) throw new Error("forbidden");
 
     // محاولة المصالحة التلقائية إذا كانت هناك جلسة دفع
@@ -506,11 +507,11 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     }
     if (!bk.deposit_confirmed_at && !bk.deposit_sent_at && !bk.deposit_proof_url) {
       throw new Error(bk.deposit_checkout_session_id
-        ? "الدفع الإلكتروني لم يكتمل بعد — لا يمكن تأكيد الحجز حتى يصل المبلغ"
-        : "لا يمكن تأكيد الحجز قبل وصول إثبات العربون من العميل");
+        ? tr("الدفع الإلكتروني لم يكتمل بعد — لا يمكن تأكيد الحجز حتى يصل المبلغ")
+        : tr("لا يمكن تأكيد الحجز قبل وصول إثبات العربون من العميل"));
     }
     if (bk.status !== "pending_deposit" && bk.status !== "quote") {
-      throw new Error("هذا الحجز ليس بانتظار العربون");
+      throw new Error(tr("هذا الحجز ليس بانتظار العربون"));
     }
     const patch: any = { status: "confirmed", updated_at: new Date().toISOString() };
     if (!bk.deposit_confirmed_at) patch.deposit_confirmed_at = new Date().toISOString();
@@ -541,8 +542,8 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
          await supabaseAdmin.from("notifications").insert({
           user_id: userId,
           type: "system",
-          title: "فشل توليد العقد التلقائي",
-          body: "حدث خطأ أثناء محاولة توليد العقد تلقائياً لهذا الحجز. يرجى إنشاء العقد يدوياً.",
+          title: tr("فشل توليد العقد التلقائي"),
+          body: tr("حدث خطأ أثناء محاولة توليد العقد تلقائياً لهذا الحجز. يرجى إنشاء العقد يدوياً."),
           link: `/dashboard/bookings/${data.booking_id}`
         });
       } catch (err) { console.error("[booking] failed to create contract failure notification", err); }
@@ -560,8 +561,8 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
           bk.client_phone,
           "confirmed",
           {
-            client_name: bk.client_name || "عميلتنا",
-            photographer_name: "المصورة",
+            client_name: bk.client_name || tr("عميلتنا"),
+            photographer_name: tr("المصورة"),
             event_date: String(bk.event_date ?? ""),
             total_price: bk.total_price != null ? String(bk.total_price) : undefined,
             tracking_url: trackingUrl,
@@ -576,8 +577,8 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     if (bk.client_user_id) {
       await supabase.from("notifications").insert({
         user_id: bk.client_user_id,
-        title: "تأكيد الحجز",
-        body: "تم تأكيد حجزك بعد استلام العربون.",
+        title: tr("تأكيد الحجز"),
+        body: tr("تم تأكيد حجزك بعد استلام العربون."),
         link: `/dashboard/bookings/${bk.id}`,
       });
     }
@@ -592,8 +593,8 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
         .select("display_name").eq("id", bk.photographer_id).maybeSingle();
       if (full?.client_email) {
         const t = tplDepositConfirmed({
-          client_name: full.client_name || "عميلتنا",
-          photographer_name: prof?.display_name || "المصوّرة",
+          client_name: full.client_name || tr("عميلتنا"),
+          photographer_name: prof?.display_name || tr("المصوّرة"),
           event_date: String(full.event_date),
           track_token: full.client_tracking_token!,
         });

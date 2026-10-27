@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { t } from "@/i18n";
 
 // Server functions and Supabase throw English/technical messages. Users must never
 // see those, so every toast.error passes through here once at app start.
@@ -28,10 +29,10 @@ const KNOWN: [RegExp, string][] = [
 
 export function friendlyError(msg: unknown): string {
   const text = typeof msg === "string" ? msg : msg instanceof Error ? msg.message : "";
-  if (!text) return "حدث خطأ غير متوقع. حاولي مرة أخرى.";
+  if (!text) return t("حدث خطأ غير متوقع. حاولي مرة أخرى.");
   if (/[؀-ۿ]/.test(text)) return text;
   for (const [re, ar] of KNOWN) if (re.test(text)) return ar;
-  return "حدث خطأ غير متوقع. حاولي مرة أخرى.";
+  return t("حدث خطأ غير متوقع. حاولي مرة أخرى.");
 }
 
 let installed = false;

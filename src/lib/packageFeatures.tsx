@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from "react";
+import { tx } from "@/i18n";
 
 // A package's features live in pricing_rules.description, one per line.
 // A leading "★" marks an exclusive feature, "⚡" a fast-delivery one.
@@ -38,10 +39,10 @@ export function emphasizeNumbers(text: string): ReactNode {
   return parts.map((part, i) =>
     i % 2 === 1 ? (
       <strong key={i} className="font-semibold text-foreground">
-        {part}
+        {tx(part)}
       </strong>
     ) : (
-      <Fragment key={i}>{part}</Fragment>
+      <Fragment key={i}>{tx(part)}</Fragment>
     ),
   );
 }

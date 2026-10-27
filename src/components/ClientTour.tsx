@@ -3,6 +3,7 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, Images, CalendarCheck, ShieldCheck, X, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { t, tx } from "@/i18n";
 
 const STORAGE_KEY = "client_tour_v2";
 
@@ -177,7 +178,7 @@ export function ClientTour() {
         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         className="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-md sm:bottom-6"
         role="dialog"
-        aria-label="جولة تعريفية سريعة"
+        aria-label={t("جولة تعريفية سريعة")}
       >
         <div className="rounded-sm border border-border bg-card p-4 shadow-soft backdrop-blur">
           <div className="flex items-start gap-3">
@@ -186,12 +187,12 @@ export function ClientTour() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
-                <h2 className="font-serif text-base leading-snug text-foreground">{s.title}</h2>
-                <button onClick={() => finish(true)} aria-label="إغلاق الجولة" className="-m-2 grid h-11 w-11 shrink-0 place-items-center text-muted-foreground hover:text-foreground">
+                <h2 className="font-serif text-base leading-snug text-foreground">{tx(s.title)}</h2>
+                <button onClick={() => finish(true)} aria-label={t("إغلاق الجولة")} className="-m-2 grid h-11 w-11 shrink-0 place-items-center text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{s.desc}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{tx(s.desc)}</p>
             </div>
           </div>
 
@@ -203,13 +204,13 @@ export function ClientTour() {
 
           <div className="mt-3 flex items-center justify-between gap-3">
             <button onClick={() => finish(true)} className="min-h-11 px-1 text-xs text-muted-foreground hover:text-foreground">
-              تخطّي الجولة
+              {t("تخطّي الجولة")}
             </button>
             <button
               onClick={onCta}
               className="inline-flex min-h-11 items-center gap-2 rounded-full bg-charcoal px-5 text-sm font-medium text-ivory hover:opacity-90 dark:bg-gold dark:text-charcoal"
             >
-              {s.cta} {s.to && pathname !== s.to ? <ArrowLeft className="h-3.5 w-3.5" /> : null}
+              {tx(s.cta)} {s.to && pathname !== s.to ? <ArrowLeft className="h-3.5 w-3.5" /> : null}
             </button>
           </div>
         </div>

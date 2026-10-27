@@ -6,12 +6,13 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { toast } from "sonner";
 import { recoverTrackingLinks } from "@/lib/recover.functions";
+import { t } from "@/i18n";
 
 export const Route = createFileRoute("/recover")({
   head: () => ({
     meta: [
-      { title: "استرداد رابط الحجز — Memoria" },
-      { name: "description", content: "استعيدي روابط تتبع حجوزاتك على منصة ميموريا." },
+      { title: t("استرداد رابط الحجز — Memoria") },
+      { name: "description", content: t("استعيدي روابط تتبع حجوزاتك على منصة ميموريا.") },
     ],
   }),
   component: RecoverPage,
@@ -30,7 +31,7 @@ function RecoverPage() {
     const val = String(fd.get("contact") ?? "").trim();
     
     if (!val) {
-      setErr("يرجى إدخال البريد الإلكتروني أو رقم الهاتف.");
+      setErr(t("يرجى إدخال البريد الإلكتروني أو رقم الهاتف."));
       return;
     }
     
@@ -42,7 +43,7 @@ function RecoverPage() {
       // نظهر نجاحاً في كل الحالات لأسباب أمنية
       setSuccess(true);
     } catch (error: any) {
-      setErr(error.message || "حدث خطأ غير متوقع.");
+      setErr(error.message || t("حدث خطأ غير متوقع."));
     } finally {
       setLoading(false);
     }
@@ -53,44 +54,44 @@ function RecoverPage() {
       <Header />
       <div className="container-editorial py-16 max-w-md">
         <div className="text-center mb-8">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">استرداد الحجز</div>
-          <h1 className="font-serif text-4xl">أضعتِ رابط التتبع؟</h1>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("استرداد الحجز")}</div>
+          <h1 className="font-serif text-4xl">{t("أضعتِ رابط التتبع؟")}</h1>
           <p className="text-muted-foreground mt-4 text-sm leading-relaxed">
-            لا تقلقي. أدخلي البريد الإلكتروني أو رقم الهاتف الذي حجزتِ به، وسنرسل لك روابط تتبع جميع حجوزاتك النشطة.
+            {t("لا تقلقي. أدخلي البريد الإلكتروني أو رقم الهاتف الذي حجزتِ به، وسنرسل لك روابط تتبع جميع حجوزاتك النشطة.")}
           </p>
         </div>
         
         {success ? (
           <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-sm p-6 text-center space-y-4">
-            <h3 className="font-serif text-emerald-800 dark:text-emerald-300 text-xl">تم استلام طلبك</h3>
+            <h3 className="font-serif text-emerald-800 dark:text-emerald-300 text-xl">{t("تم استلام طلبك")}</h3>
             <p className="text-sm text-emerald-700 dark:text-emerald-400">
-              إذا كان هذا الحساب مسجلاً لدينا ويحتوي على حجوزات نشطة، ستصلك رسالة قريباً تحتوي على روابط التتبع الخاصة بك.
+              {t("إذا كان هذا الحساب مسجلاً لدينا ويحتوي على حجوزات نشطة، ستصلك رسالة قريباً تحتوي على روابط التتبع الخاصة بك.")}
             </p>
             <Link to="/" className="inline-block w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 mt-4 text-sm">
-              العودة للرئيسية
+              {t("العودة للرئيسية")}
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-sm p-6 shadow-soft">
             <label className="block">
-              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">البريد الإلكتروني أو الهاتف</span>
+              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("البريد الإلكتروني أو الهاتف")}</span>
               <input
                 name="contact"
                 type="text"
-                placeholder="user@example.com أو 079XXXXXXX"
+                placeholder={t("user@example.com أو 079XXXXXXX")}
                 required
-                className="mt-2 w-full rounded-sm border border-input bg-background px-3 py-2.5 text-left direction-ltr focus:outline-none focus:ring-2 focus:ring-gold/60"
+                className="mt-2 w-full rounded-sm border border-input bg-background px-3 py-2.5 text-end direction-ltr focus:outline-none focus:ring-2 focus:ring-gold/60"
               />
             </label>
             
             {err && <p className="text-sm text-destructive">{friendlyError(err)}</p>}
             
             <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
-              {loading ? "جاري الإرسال…" : "أرسل لي روابط التتبع"}
+              {loading ? t("جاري الإرسال…") : t("أرسل لي روابط التتبع")}
             </button>
             
             <p className="text-xs text-center text-muted-foreground mt-4">
-              هل تواجهين مشكلة؟ تواصلي مع <a href="mailto:support@memoria.jo" className="underline">الدعم الفني</a>.
+              {t("هل تواجهين مشكلة؟ تواصلي مع")}{" "}<a href="mailto:support@memoria.jo" className="underline">{t("الدعم الفني")}</a>.
             </p>
           </form>
         )}

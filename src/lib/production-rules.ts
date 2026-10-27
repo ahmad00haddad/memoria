@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 // Shared business rules for Production Kanban Board
 
 export const STAGES_ORDER = [
@@ -28,7 +29,7 @@ export function canMoveBooking(
 
   // Prevent skipping stages (must move one by one)
   if (targetIndex > currentIndex + 1) {
-    return { valid: false, reason: "لا يمكن تخطي المراحل. يرجى نقل الحجز خطوة بخطوة." };
+    return { valid: false, reason: t("لا يمكن تخطي المراحل. يرجى نقل الحجز خطوة بخطوة.") };
   }
 
   // Specific rules for moving to "editing"
@@ -41,7 +42,7 @@ export function canMoveBooking(
 
   // Completed logic
   if (currentStage === "completed" || currentStage === "cancelled") {
-    return { valid: false, reason: "هذا الحجز منتهي أو ملغي ولا يمكن تغيير مرحلته." };
+    return { valid: false, reason: t("هذا الحجز منتهي أو ملغي ولا يمكن تغيير مرحلته.") };
   }
 
   return { valid: true };

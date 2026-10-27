@@ -1,4 +1,5 @@
-// ============================================================================
+
+import { locale } from "@/i18n";// ============================================================================
 // paytabs.server.ts — PayTabs (MEPS Jordan) للاشتراكات — خادمي فقط
 // ----------------------------------------------------------------------------
 // صفحة دفع مستضافة (Hosted Payment Page): بيانات البطاقة لا تمرّ على خادمنا.
@@ -194,7 +195,7 @@ export async function settleSubscriptionPayment(tranRef: string): Promise<{ stat
     user_id: row.photographer_id,
     type: "system",
     title: "تم تفعيل اشتراكك ✓",
-    body: `استلمنا دفعتك (${paidAmount} د.أ). اشتراكك فعّال حتى ${end.toLocaleDateString("ar-JO")}.`,
+    body: `استلمنا دفعتك (${paidAmount} د.أ). اشتراكك فعّال حتى ${end.toLocaleDateString(locale("ar-JO"))}.`,
     link: "/dashboard/subscription",
   } as any);
 

@@ -6,6 +6,8 @@ import { ShieldAlert, ShieldCheck, Trash2, Plus, RefreshCw } from "lucide-react"
 import { PageLoader } from "@/components/ui/loading";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { toast } from "sonner";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/roles")({
   component: AdminRoles,
@@ -37,7 +39,7 @@ function AdminRoles() {
       const data = await listFn();
       setRows((data as Row[]) ?? []);
     } catch (e: any) {
-      toast.error(e.message ?? "فشل تحميل الأدوار");
+      toast.error(e.message ?? t("فشل تحميل الأدوار"));
     }
     setLoading(false);
   };
@@ -46,34 +48,34 @@ function AdminRoles() {
 
   const grant = async () => {
     const v = newUserId.trim();
-    if (!v) { toast.error("اكتب إيميل المستخدم"); return; }
+    if (!v) { toast.error(t("اكتب إيميل المستخدم")); return; }
     const isId = /^[0-9a-f-]{36}$/i.test(v);
-    if (!isId && !v.includes("@")) { toast.error("اكتب إيميل صحيح، مثال: name@gmail.com"); return; }
+    if (!isId && !v.includes("@")) { toast.error(t("اكتب إيميل صحيح، مثال: name@gmail.com")); return; }
     setGranting(true);
     try {
       await grantFn({ data: isId ? { user_id: v, role: newRole } : { email: v, role: newRole } });
-      toast.success(`تم منح دور "${newRole}" بنجاح ✓`);
+      toast.success(t("تم منح دور \"{0}\" بنجاح ✓", [newRole]));
       setNewUserId("");
       load();
     } catch (e: any) {
-      toast.error(e.message || "فشل منح الدور");
+      toast.error(e.message || t("فشل منح الدور"));
     }
     setGranting(false);
   };
 
   const revoke = async (row: Row) => {
     if (!(await confirm({
-      title: "سحب الدور",
-      description: `هل أنت متأكد من سحب دور "${row.role}" من ${row.profile?.display_name ?? row.user_id}؟`,
-      confirmText: "سحب الدور",
+      title: t("سحب الدور"),
+      description: t("هل أنت متأكد من سحب دور \"{0}\" من {1}؟", [row.role, row.profile?.display_name ?? row.user_id]),
+      confirmText: t("سحب الدور"),
       destructive: true,
     }))) return;
     try {
       await revokeFn({ data: { user_id: row.user_id, role: row.role } });
-      toast.success("تم سحب الدور بنجاح");
+      toast.success(t("تم سحب الدور بنجاح"));
       load();
     } catch (e: any) {
-      toast.error(e.message || "فشل سحب الدور");
+      toast.error(e.message || t("فشل سحب الدور"));
     }
   };
 
@@ -83,16 +85,16 @@ function AdminRoles() {
   return (
     <section className="space-y-8">
       <div>
-        <h2 className="font-serif text-2xl mb-6">إدارة أدوار المستخدمين</h2>
+        <h2 className="font-serif text-2xl mb-6">{t("إدارة أدوار المستخدمين")}</h2>
 
         {/* ─── منح دور جديد ─── */}
         <div className="rounded-sm border border-border bg-card p-5 mb-6">
           <h3 className="font-medium mb-4 flex items-center gap-2">
-            <Plus className="h-4 w-4" /> منح دور جديد
+            <Plus className="h-4 w-4" />{" "}{t("منح دور جديد")}
           </h3>
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[220px]">
-              <label className="text-xs text-muted-foreground mb-1 block">إيميل المستخدم (أو معرّفه)</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("إيميل المستخدم (أو معرّفه)")}</label>
               <input
                 type="text"
                 value={newUserId}
@@ -103,14 +105,14 @@ function AdminRoles() {
               />
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">الدور</label>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("الدور")}</label>
               <select
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
                 className="border border-border bg-background rounded-sm px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold"
               >
-                <option value="admin">أدمن (صلاحيات كاملة)</option>
-                <option value="photographer">مصوّرة</option>
+                <option value="admin">{t("أدمن (صلاحيات كاملة)")}</option>
+                <option value="photographer">{t("مصوّرة")}</option>
               </select>
             </div>
             <button
@@ -118,7 +120,7 @@ function AdminRoles() {
               disabled={granting}
               className="bg-gold text-white px-4 py-2 rounded-sm text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
             >
-              {granting ? "جاري المنح…" : "منح الدور"}
+              {granting ? t("جاري المنح…") : t("منح الدور")}
             </button>
           </div>
         </div>
@@ -126,19 +128,19 @@ function AdminRoles() {
         {/* ─── قائمة الأدوار الحالية ─── */}
         {rows.length === 0 ? (
           <div className="rounded-sm border border-border bg-card p-6 text-muted-foreground text-sm text-center">
-            لا توجد أدوار مُخصّصة.
+            {t("لا توجد أدوار مُخصّصة.")}
           </div>
         ) : (
           <div className="overflow-x-auto rounded-sm border border-border bg-card">
             <table className="w-full text-sm">
-              <caption className="sr-only">جدول الأدوار</caption>
+              <caption className="sr-only">{t("جدول الأدوار")}</caption>
               <thead className="bg-muted/40 text-muted-foreground text-xs uppercase tracking-widest">
                 <tr>
-                  <th className="text-right px-4 py-3">المستخدم</th>
-                  <th className="text-right px-4 py-3">الدور</th>
-                  <th className="text-right px-4 py-3">معرّف المستخدم</th>
-                  <th className="text-right px-4 py-3">تاريخ المنح</th>
-                  <th className="text-right px-4 py-3">إجراء</th>
+                  <th className="text-start px-4 py-3">{t("المستخدم")}</th>
+                  <th className="text-start px-4 py-3">{t("الدور")}</th>
+                  <th className="text-start px-4 py-3">{t("معرّف المستخدم")}</th>
+                  <th className="text-start px-4 py-3">{t("تاريخ المنح")}</th>
+                  <th className="text-start px-4 py-3">{t("إجراء")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,27 +149,27 @@ function AdminRoles() {
                     <td className="px-4 py-3">
                       {r.profile ? (
                         <>
-                          <span className="font-medium">{r.profile.display_name}</span>
-                          <span className="text-muted-foreground text-xs ml-2">@{r.profile.username}</span>
+                          <span className="font-medium">{tx(r.profile.display_name)}</span>
+                          <span className="text-muted-foreground text-xs me-2">@{tx(r.profile.username)}</span>
                         </>
                       ) : null}
-                      {r.email && <div className="text-xs text-muted-foreground" dir="ltr">{r.email}</div>}
-                      {!r.profile && !r.email && <span className="text-muted-foreground text-xs">مستخدم غير معروف</span>}
+                      {r.email && <div className="text-xs text-muted-foreground" dir="ltr">{tx(r.email)}</div>}
+                      {!r.profile && !r.email && <span className="text-muted-foreground text-xs">{t("مستخدم غير معروف")}</span>}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-sm ${r.role === "admin" ? "bg-gold/20 text-gold" : "bg-blue-100 text-blue-800"}`}>
                         {r.role === "admin" ? <ShieldAlert className="h-3 w-3" /> : <ShieldCheck className="h-3 w-3" />}
-                        {r.role}
+                        {tx(r.role)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{r.user_id}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("ar-JO")}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{tx(r.user_id)}</td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString(locale("ar-JO"))}</td>
                     <td className="px-4 py-3">
                       <button
                         onClick={() => revoke(r)}
                         className="text-destructive hover:text-destructive/80 transition p-1.5 rounded-sm hover:bg-destructive/10 inline-flex items-center gap-1 text-xs"
                       >
-                        <Trash2 className="h-3.5 w-3.5" /> سحب
+                        <Trash2 className="h-3.5 w-3.5" />{" "}{t("سحب")}
                       </button>
                     </td>
                   </tr>

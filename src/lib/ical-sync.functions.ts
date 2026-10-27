@@ -3,17 +3,18 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export { parseIcalDates, expandRule } from "./ical-parse";
 import { parseIcalDates } from "./ical-parse";
+import { t } from "@/i18n";
 
 export function assertSafeIcalUrl(raw: string): string {
   const fetchUrl = raw.replace(/^webcal:\/\//i, "https://");
   let u: URL;
-  try { u = new URL(fetchUrl); } catch { throw new Error("رابط غير صالح"); }
-  if (u.protocol !== "https:") throw new Error("الرابط يجب أن يكون https");
+  try { u = new URL(fetchUrl); } catch { throw new Error(t("رابط غير صالح")); }
+  if (u.protocol !== "https:") throw new Error(t("الرابط يجب أن يكون https"));
   const host = u.hostname.toLowerCase();
   // Reject literal IPs and private/loopback/link-local ranges
   const isIPv4 = /^\d{1,3}(\.\d{1,3}){3}$/.test(host);
   const isIPv6 = host.includes(":");
-  if (isIPv6) throw new Error("عناوين IPv6 غير مسموحة");
+  if (isIPv6) throw new Error(t("عناوين IPv6 غير مسموحة"));
   if (isIPv4) {
     const [a, b] = host.split(".").map(Number);
     if (
@@ -22,10 +23,10 @@ export function assertSafeIcalUrl(raw: string): string {
       (a === 192 && b === 168) ||
       (a === 169 && b === 254) ||
       a >= 224 // multicast/reserved
-    ) throw new Error("عنوان IP داخلي غير مسموح");
+    ) throw new Error(t("عنوان IP داخلي غير مسموح"));
   }
   if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal")) {
-    throw new Error("نطاق داخلي غير مسموح");
+    throw new Error(t("نطاق داخلي غير مسموح"));
   }
   return u.toString();
 }
@@ -37,7 +38,7 @@ export const syncExternalIcal = createServerFn({ method: "POST" })
     const { data: profile } = await supabase
       .from("photographer_private").select("external_ical_url").eq("user_id", userId).maybeSingle();
     const url = profile?.external_ical_url?.trim();
-    if (!url) throw new Error("لم يتم تعيين رابط Google Calendar iCal بعد.");
+    if (!url) throw new Error(t("لم يتم تعيين رابط Google Calendar iCal بعد."));
     return await syncAndRecord(userId, url);
   });
 
@@ -81,14 +82,14 @@ export async function runIcalSyncForUser(userId: string, url: string) {
     redirect: "manual",
     signal: AbortSignal.timeout(10_000),
   });
-  if (res.status >= 300 && res.status < 400) throw new Error("الرابط يحوّل إلى عنوان آخر — استخدمي رابط iCal المباشر");
+  if (res.status >= 300 && res.status < 400) throw new Error(t("الرابط يحوّل إلى عنوان آخر — استخدمي رابط iCal المباشر"));
   if (res.status === 404 || res.status === 403) {
-    throw new Error("Google رفض الرابط — استخدمي «العنوان السرّي بتنسيق iCal» وليس العنوان العام");
+    throw new Error(t("Google رفض الرابط — استخدمي «العنوان السرّي بتنسيق iCal» وليس العنوان العام"));
   }
-  if (!res.ok) throw new Error(`تعذّر جلب التقويم: ${res.status}`);
+  if (!res.ok) throw new Error(t("تعذّر جلب التقويم: {0}", [res.status]));
   const ics = await res.text();
-  if (ics.length > 2_000_000) throw new Error("الملف كبير جدًا");
-  if (!/BEGIN:VCALENDAR/i.test(ics)) throw new Error("الرابط لا يعيد تقويماً بصيغة iCal");
+  if (ics.length > 2_000_000) throw new Error(t("الملف كبير جدًا"));
+  if (!/BEGIN:VCALENDAR/i.test(ics)) throw new Error(t("الرابط لا يعيد تقويماً بصيغة iCal"));
   const events = parseIcalDates(ics);
   const out = await applyExternalDays(userId, events);
   await supabaseAdmin.from("photographer_private").update({ external_ical_synced_at: new Date().toISOString() }).eq("user_id", userId);

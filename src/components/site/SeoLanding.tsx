@@ -5,6 +5,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { searchPhotographers } from "@/lib/search.functions";
 import { HOW_BOOKING, type Faq } from "@/content/seo";
+import { t, tx } from "@/i18n";
 
 type Crumb = { name: string; url: string };
 
@@ -37,10 +38,10 @@ export function seoHead(opts: { title: string; description: string; url: string;
         "@context": "https://schema.org",
         "@type": "Service",
         name: serviceName,
-        serviceType: "تصوير مناسبات",
+        serviceType: t("تصوير مناسبات"),
         description,
         url,
-        areaServed: areaName ? { "@type": "City", name: areaName } : { "@type": "Country", name: "الأردن" },
+        areaServed: areaName ? { "@type": "City", name: areaName } : { "@type": "Country", name: t("الأردن") },
         provider: { "@type": "Organization", name: "Memoria", url: crumbs[0]?.url },
       }),
     ],
@@ -71,25 +72,25 @@ export function SeoLanding(props: {
       <Header />
       <main>
         <article className="container-editorial max-w-3xl py-12 sm:py-20">
-          <h1 className="font-serif text-3xl sm:text-5xl leading-tight mb-5">{props.h1}</h1>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-6">{props.intro}</p>
+          <h1 className="font-serif text-3xl sm:text-5xl leading-tight mb-5">{tx(props.h1)}</h1>
+          <p className="text-lg text-muted-foreground leading-relaxed mb-6">{tx(props.intro)}</p>
           {props.paragraphs.map((p, i) => (
-            <p key={i} className="leading-loose mb-5">{p}</p>
+            <p key={i} className="leading-loose mb-5">{tx(p)}</p>
           ))}
-          <h2 className="font-serif text-2xl mt-10 mb-3">كيف يتم الحجز على Memoria</h2>
-          <p className="leading-loose mb-5">{HOW_BOOKING} للتفاصيل الكاملة اقرئي <Link to="/guide" className="text-gold underline">دليل الحجز</Link>.</p>
+          <h2 className="font-serif text-2xl mt-10 mb-3">{t("كيف يتم الحجز على Memoria")}</h2>
+          <p className="leading-loose mb-5">{t("{0} للتفاصيل الكاملة اقرئي", [HOW_BOOKING])}{" "}<Link to="/guide" className="text-gold underline">{t("دليل الحجز")}</Link>.</p>
 
-          <h2 className="font-serif text-2xl mt-10 mb-4">{props.cityLabel ? `مصوّرات في ${props.cityLabel}` : "مصوّرات منشورة"}</h2>
+          <h2 className="font-serif text-2xl mt-10 mb-4">{props.cityLabel ? t("مصوّرات في {0}", [props.cityLabel]) : t("مصوّرات منشورة")}</h2>
           {q.isLoading ? (
-            <p className="text-sm text-muted-foreground">جارٍ التحميل…</p>
+            <p className="text-sm text-muted-foreground">{t("جارٍ التحميل…")}</p>
           ) : list.length === 0 ? (
-            <p className="text-sm text-muted-foreground">لا توجد ملفات منشورة هنا حالياً. يمكنك تصفّح كل المصوّرات من صفحة البحث.</p>
+            <p className="text-sm text-muted-foreground">{t("لا توجد ملفات منشورة هنا حالياً. يمكنك تصفّح كل المصوّرات من صفحة البحث.")}</p>
           ) : (
             <ul className="grid gap-3 sm:grid-cols-2">
               {list.map((p) => (
                 <li key={p.username}>
                   <Link to="/photographers/$username" params={{ username: p.username }} className="block rounded-sm border border-border bg-card p-4 hover:border-gold/40 transition">
-                    <div className="font-serif text-lg">{p.display_name}</div>
+                    <div className="font-serif text-lg">{tx(p.display_name)}</div>
                     <div className="text-xs text-muted-foreground mt-1">{[p.city, p.tagline].filter(Boolean).join(" · ")}</div>
                   </Link>
                 </li>
@@ -97,28 +98,28 @@ export function SeoLanding(props: {
             </ul>
           )}
           <a href={searchHref} className="inline-block mt-5 bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90">
-            {props.cityLabel ? `كل المصوّرات في ${props.cityLabel}` : "ابحثي عن مصوّرة"}
+            {props.cityLabel ? t("كل المصوّرات في {0}", [props.cityLabel]) : t("ابحثي عن مصوّرة")}
           </a>
 
-          <h2 className="font-serif text-2xl mt-12 mb-4">أسئلة شائعة</h2>
+          <h2 className="font-serif text-2xl mt-12 mb-4">{t("أسئلة شائعة")}</h2>
           <div className="space-y-3">
             {props.faqs.map((f) => (
               <details key={f.q} className="rounded-sm border border-border bg-card p-4">
-                <summary className="cursor-pointer font-medium">{f.q}</summary>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
+                <summary className="cursor-pointer font-medium">{tx(f.q)}</summary>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{tx(f.a)}</p>
               </details>
             ))}
           </div>
 
-          <h2 className="font-serif text-xl mt-12 mb-3">{props.linksTitle}</h2>
+          <h2 className="font-serif text-xl mt-12 mb-3">{tx(props.linksTitle)}</h2>
           <ul className="flex flex-wrap gap-2">
             {props.links.map((l) => (
               <li key={l.to}>
-                <a href={l.to} className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{l.label}</a>
+                <a href={l.to} className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{tx(l.label)}</a>
               </li>
             ))}
-            <li><Link to="/guide" className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">دليل الحجز</Link></li>
-            <li><a href="/blog" className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">المدوّنة</a></li>
+            <li><Link to="/guide" className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{t("دليل الحجز")}</Link></li>
+            <li><a href="/blog" className="inline-block rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{t("المدوّنة")}</a></li>
           </ul>
         </article>
       </main>

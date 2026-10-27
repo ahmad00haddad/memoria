@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CITIES, SITE_URL, getCity } from "@/content/seo";
 import { SeoLanding, seoHead } from "@/components/site/SeoLanding";
+import { t } from "@/i18n";
 
 export const Route = createFileRoute("/wedding-photographer/$city")({
   loader: ({ params }) => {
@@ -16,12 +17,12 @@ export const Route = createFileRoute("/wedding-photographer/$city")({
       title: c.title,
       description: c.description,
       url,
-      serviceName: `تصوير أعراس في ${c.name}`,
+      serviceName: t("تصوير أعراس في {0}", [c.name]),
       areaName: c.name,
       faqs: c.faqs,
       crumbs: [
         { name: "Memoria", url: SITE_URL },
-        { name: "مصورات الأعراس", url: `${SITE_URL}/search` },
+        { name: t("مصورات الأعراس"), url: `${SITE_URL}/search` },
         { name: c.name, url },
       ],
     });
@@ -33,13 +34,13 @@ function CityPage() {
   const c = Route.useLoaderData();
   return (
     <SeoLanding
-      h1={`مصورة أعراس في ${c.name}`}
+      h1={t("مصورة أعراس في {0}", [c.name])}
       intro={c.intro}
       paragraphs={c.paragraphs}
       faqs={c.faqs}
       city={c.name}
       cityLabel={c.name}
-      linksTitle="مدن أخرى"
+      linksTitle={t("مدن أخرى")}
       links={CITIES.filter((x) => x.slug !== c.slug).map((x) => ({ to: `/wedding-photographer/${x.slug}`, label: x.name }))}
     />
   );

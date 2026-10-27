@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { getLang, dirOf } from "@/i18n";
 import { AnimatePresence, motion } from "framer-motion";
+import { tx, t as tr } from "@/i18n";
 
 /**
  * The one-time opening — deliberately big, unlike the soft page entrances.
@@ -139,7 +141,7 @@ export function FirstVisitIntro({ onReveal }: { onReveal: () => void }) {
         />
         {/* shockwave ring */}
         <motion.div
-          className="pointer-events-none absolute left-1/2 top-[42%] h-[40vmin] w-[40vmin] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#D8B49E]"
+          className="pointer-events-none absolute end-1/2 top-[42%] h-[40vmin] w-[40vmin] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#D8B49E]"
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: [0, 0, 5.5], opacity: [0, 1, 0] }}
           transition={{ duration: 1.3, delay: 1.2, times: [0, 0.05, 1], ease: [0.22, 1, 0.36, 1] }}
@@ -199,7 +201,7 @@ export function FirstVisitIntro({ onReveal }: { onReveal: () => void }) {
                 animate={{ y: 0, rotate: 0, opacity: 1, scale: 1 }}
                 transition={{ type: "spring", stiffness: 380, damping: 14, delay: 1.55 + i * 0.07 }}
               >
-                {ch}
+                {tx(ch)}
               </motion.span>
             ))}
           </div>
@@ -210,7 +212,7 @@ export function FirstVisitIntro({ onReveal }: { onReveal: () => void }) {
             transition={{ duration: 0.55, delay: 2.1, ease: [0.76, 0, 0.24, 1] }}
           />
           <motion.div
-            dir="rtl"
+            dir={dirOf(getLang())}
             lang="ar"
             className="mt-4 text-[clamp(1.6rem,5vmin,2.4rem)] font-bold text-[#D8B49E]"
             style={{ fontFamily: "Amiri, serif" }}
@@ -218,7 +220,7 @@ export function FirstVisitIntro({ onReveal }: { onReveal: () => void }) {
             animate={{ opacity: 1, y: 0, letterSpacing: "0em" }}
             transition={{ duration: 0.8, delay: 2.3, ease: [0.22, 1, 0.36, 1] }}
           >
-            ميموريا
+            {tr("ميموريا")}
           </motion.div>
         </div>
       </motion.div>
@@ -233,7 +235,7 @@ export function FirstVisitIntro({ onReveal }: { onReveal: () => void }) {
             exit={{ opacity: 0 }}
             transition={{ delay: 0.8, duration: 0.6 }}
           >
-            انقري للتخطّي
+            {tr("انقري للتخطّي")}
           </motion.div>
         )}
       </AnimatePresence>

@@ -9,6 +9,8 @@ import {
   adminApproveReview,
   adminRejectReview,
 } from "@/lib/admin.functions";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/reviews")({
   component: AdminReviews,
@@ -41,7 +43,7 @@ function AdminReviews() {
       const data = await listFn();
       setRows((data as Row[]) ?? []);
     } catch (e: any) {
-      toast.error(e.message || "ليست لديك صلاحية");
+      toast.error(e.message || t("ليست لديك صلاحية"));
     }
     setLoading(false);
   };
@@ -51,7 +53,7 @@ function AdminReviews() {
   const approve = async (row: Row) => {
     try {
       await approveFn({ data: { review_id: row.id } });
-      toast.success("تم نشر التقييم");
+      toast.success(t("تم نشر التقييم"));
       load();
     } catch (e: any) { toast.error(e.message); }
   };
@@ -59,24 +61,24 @@ function AdminReviews() {
   const reject = async (row: Row) => {
     try {
       await rejectFn({ data: { review_id: row.id } });
-      toast.success("تم إخفاء التقييم");
+      toast.success(t("تم إخفاء التقييم"));
       load();
     } catch (e: any) { toast.error(e.message); }
   };
 
-  if (loading) return <div className="py-12 text-center text-muted-foreground">جاري التحميل…</div>;
+  if (loading) return <div className="py-12 text-center text-muted-foreground">{t("جاري التحميل…")}</div>;
 
   const pending = rows.filter((r) => !r.is_published);
   const published = rows.filter((r) => r.is_published);
 
   return (
     <section>
-      <h2 className="font-serif text-2xl mb-4">مراجعة التقييمات</h2>
+      <h2 className="font-serif text-2xl mb-4">{t("مراجعة التقييمات")}</h2>
 
-      <h3 className="font-serif text-lg mb-3">قيد المراجعة ({pending.length})</h3>
+      <h3 className="font-serif text-lg mb-3">{t("قيد المراجعة ({0})", [pending.length])}</h3>
       {pending.length === 0 ? (
         <div className="rounded-sm border border-border bg-card p-6 text-muted-foreground text-sm mb-10">
-          لا توجد تقييمات بانتظار المراجعة.
+          {t("لا توجد تقييمات بانتظار المراجعة.")}
         </div>
       ) : (
         <div className="space-y-3 mb-10">
@@ -86,7 +88,7 @@ function AdminReviews() {
         </div>
       )}
 
-      <h3 className="font-serif text-lg mb-3">المنشورة ({published.length})</h3>
+      <h3 className="font-serif text-lg mb-3">{t("المنشورة ({0})", [published.length])}</h3>
       <div className="space-y-3">
         {published.map((r) => (
           <ReviewRow key={r.id} r={r} onReject={() => reject(r)} />
@@ -103,7 +105,7 @@ function ReviewRow({
     <div className="rounded-sm border border-border bg-card p-4 flex flex-wrap items-start gap-4">
       <div className="flex-1 min-w-[200px]">
         <div className="font-medium flex items-center gap-2">
-          {r.client_name}
+          {tx(r.client_name)}
           <span className="inline-flex items-center gap-0.5 text-gold text-xs">
             {Array.from({ length: r.rating }).map((_, i) => (
               <Star key={i} className="h-3.5 w-3.5 fill-current" />
@@ -111,24 +113,24 @@ function ReviewRow({
           </span>
         </div>
         <div className="text-xs text-muted-foreground">
-          للمصوّرة {r.profile?.display_name ?? "—"}
+          {t("للمصوّرة")}{" "}{r.profile?.display_name ?? "—"}
           {r.profile?.username ? ` @${r.profile.username}` : ""} ·{" "}
-          {new Date(r.created_at).toLocaleString("ar-JO")}
+          {new Date(r.created_at).toLocaleString(locale("ar-JO"))}
         </div>
-        {r.comment && <p className="text-sm mt-2 leading-relaxed">{r.comment}</p>}
+        {r.comment && <p className="text-sm mt-2 leading-relaxed">{tx(r.comment)}</p>}
       </div>
       <span className={`text-xs px-2 py-1 rounded-sm ${r.is_published ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
-        {r.is_published ? "منشور" : "قيد المراجعة"}
+        {r.is_published ? t("منشور") : t("قيد المراجعة")}
       </span>
       <div className="flex gap-2">
         {onApprove && (
           <button onClick={onApprove} className="bg-emerald-600 text-white px-3 py-2 rounded-sm text-xs inline-flex items-center gap-1 hover:opacity-90">
-            <Check className="h-3.5 w-3.5" /> نشر
+            <Check className="h-3.5 w-3.5" />{" "}{t("نشر")}
           </button>
         )}
         {onReject && (
           <button onClick={onReject} className="bg-destructive text-destructive-foreground px-3 py-2 rounded-sm text-xs inline-flex items-center gap-1 hover:opacity-90">
-            <X className="h-3.5 w-3.5" /> {r.is_published ? "إخفاء" : "رفض"}
+            <X className="h-3.5 w-3.5" /> {r.is_published ? t("إخفاء") : t("رفض")}
           </button>
         )}
       </div>

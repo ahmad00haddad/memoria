@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t as tr } from "@/i18n";
 
 // Called by a photographer right after uploading a subscription receipt.
 // Tells every admin (in-app notification + email) that a payment awaits review.
@@ -21,11 +22,11 @@ export const notifyAdminsOfSubscriptionPayment = createServerFn({ method: "POST"
     if (!pay || !admins?.length) return { ok: false };
 
     const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
-    const name = (prof as any)?.display_name || (prof as any)?.username || "مصوّرة";
+    const name = (prof as any)?.display_name || (prof as any)?.username || tr("مصوّرة");
     const p: any = pay;
-    const plan = p.period_months === 12 ? "سنوي" : "شهري";
-    const title = "💳 دفعة اشتراك بانتظار المراجعة";
-    const body = `${name} رفعت إثبات تحويل ${p.amount} د.أ (${plan}).`;
+    const plan = p.period_months === 12 ? tr("سنوي") : tr("شهري");
+    const title = tr("💳 دفعة اشتراك بانتظار المراجعة");
+    const body = tr("{0} رفعت إثبات تحويل {1} د.أ ({2}).", [name, p.amount, plan]);
 
     await supabaseAdmin.from("notifications").insert(
       admins.map((a: any) => ({ user_id: a.user_id, type: "system", title, body, link: "/admin/subscriptions" })),
@@ -43,11 +44,7 @@ export const notifyAdminsOfSubscriptionPayment = createServerFn({ method: "POST"
           subject: title,
           template: "admin_subscription_payment",
           related_user_id: userId,
-          html: `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.8">
-            <h2 style="margin:0 0 8px">${title}</h2>
-            <p>${esc(body)}</p>
-            <p><a href="${base}/admin/subscriptions" style="background:#111;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">راجعي الدفعة</a></p>
-          </div>`,
+          html: tr("<div dir=\"rtl\" style=\"font-family:Tahoma,Arial,sans-serif;line-height:1.8\"> <h2 style=\"margin:0 0 8px\">{0}</h2> <p>{1}</p> <p><a href=\"{2}/admin/subscriptions\" style=\"background:#111;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none\">راجعي الدفعة</a></p> </div>", [title, esc(body), base]),
         });
       } catch (e) { console.error("[admin-alert] email failed", e); }
     }

@@ -9,14 +9,16 @@ import { Footer } from "@/components/site/Footer";
 import { getContractByToken, signContract } from "@/lib/contracts.functions";
 import { toast } from "sonner";
 import { CheckCircle2, ScrollText, Printer } from "lucide-react";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/contracts/$token")({
   head: () => ({
     meta: [
-      { title: "توقيع عقد التصوير — ميموريا" },
-      { name: "description", content: "راجعي عقد جلسة التصوير ووقّعيه إلكترونياً بأمان." },
-      { property: "og:title", content: "توقيع عقد التصوير — ميموريا" },
-      { property: "og:description", content: "راجعي عقد جلسة التصوير ووقّعيه إلكترونياً بأمان." },
+      { title: t("توقيع عقد التصوير — ميموريا") },
+      { name: "description", content: t("راجعي عقد جلسة التصوير ووقّعيه إلكترونياً بأمان.") },
+      { property: "og:title", content: t("توقيع عقد التصوير — ميموريا") },
+      { property: "og:description", content: t("راجعي عقد جلسة التصوير ووقّعيه إلكترونياً بأمان.") },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -64,9 +66,9 @@ function SignPage() {
   if (!data) return (
     <div className="min-h-screen grid place-items-center px-6 text-center">
       <div className="max-w-sm space-y-3">
-        <h1 className="font-serif text-3xl">رابط العقد غير صالح</h1>
-        <p className="text-sm text-muted-foreground">قد يكون الرابط ناقصاً أو انتهت صلاحيته. اطلبي من المصوّرة إرسال رابط العقد مرة أخرى.</p>
-        <a href="/" className="inline-block rounded-sm bg-charcoal px-5 py-2 text-sm text-ivory">العودة للرئيسية</a>
+        <h1 className="font-serif text-3xl">{t("رابط العقد غير صالح")}</h1>
+        <p className="text-sm text-muted-foreground">{t("قد يكون الرابط ناقصاً أو انتهت صلاحيته. اطلبي من المصوّرة إرسال رابط العقد مرة أخرى.")}</p>
+        <a href="/" className="inline-block rounded-sm bg-charcoal px-5 py-2 text-sm text-ivory">{t("العودة للرئيسية")}</a>
       </div>
     </div>
   );
@@ -77,21 +79,21 @@ function SignPage() {
   const onSign = async () => {
     if (!agreed || !signature.trim() || !name.trim()) {
       hapticVibrate("error");
-      toast.error(!name.trim() ? "اكتبي اسمك الكامل" : !signature.trim() ? "اكتبي توقيعك" : "أكّدي الموافقة على البنود"); return;
+      toast.error(!name.trim() ? t("اكتبي اسمك الكامل") : !signature.trim() ? t("اكتبي توقيعك") : t("أكّدي الموافقة على البنود")); return;
     }
     if (signature.trim().length < 3) {
-      toast.error("التوقيع قصير جداً. يرجى كتابة 3 حروف على الأقل."); return;
+      toast.error(t("التوقيع قصير جداً. يرجى كتابة 3 حروف على الأقل.")); return;
     }
     setSubmitting(true);
     try {
       await signFn({ data: { token, signature, client_name: name } });
       hapticVibrate("success");
-      toast.success("وُقّع العقد — وصلت نسخة للمصوّرة");
+      toast.success(t("وُقّع العقد — وصلت نسخة للمصوّرة"));
       router.invalidate();
       const r = await fetchFn({ data: { token } });
       setData(r);
     } catch (e: any) {
-      toast.error(e.message ?? "تعذّر التوقيع");
+      toast.error(e.message ?? t("تعذّر التوقيع"));
     } finally { setSubmitting(false); }
   };
 
@@ -108,13 +110,13 @@ function SignPage() {
       `}</style>
       <Header />
       <section className="container-editorial py-12 max-w-3xl">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">عقد تصوير</div>
-        <h1 className="font-serif text-4xl mb-2 flex items-center gap-3"><ScrollText className="h-7 w-7 text-gold" /> {photographer?.display_name}</h1>
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{t("عقد تصوير")}</div>
+        <h1 className="font-serif text-4xl mb-2 flex items-center gap-3"><ScrollText className="h-7 w-7 text-gold" /> {tx(photographer?.display_name)}</h1>
         <div className="mb-6 flex flex-wrap gap-2 text-xs">
-          {booking?.event_date && <span className="rounded-full bg-secondary px-3 py-1">الحفل {new Date(booking.event_date).toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long" })}</span>}
+          {booking?.event_date && <span className="rounded-full bg-secondary px-3 py-1">{t("الحفل {0}", [new Date(booking.event_date).toLocaleDateString(locale("ar-JO"), { weekday: "long", day: "numeric", month: "long" })])}</span>}
           {booking?.start_time && <span className="rounded-full bg-secondary px-3 py-1 tabular-nums">{String(booking.start_time).slice(0, 5)}–{String(booking.end_time ?? "").slice(0, 5)}</span>}
-          {booking?.total_price != null && <span className="rounded-full bg-secondary px-3 py-1 tabular-nums">المجموع {booking.total_price} د.أ</span>}
-          {booking?.deposit_amount != null && <span className="rounded-full bg-secondary px-3 py-1 tabular-nums">العربون {booking.deposit_amount} د.أ</span>}
+          {booking?.total_price != null && <span className="rounded-full bg-secondary px-3 py-1 tabular-nums">{t("المجموع {0} د.أ", [booking.total_price])}</span>}
+          {booking?.deposit_amount != null && <span className="rounded-full bg-secondary px-3 py-1 tabular-nums">{t("العربون {0} د.أ", [booking.deposit_amount])}</span>}
         </div>
 
         {!signed && (
@@ -123,46 +125,46 @@ function SignPage() {
               <div className="h-full rounded-full bg-gold transition-[width] duration-200" style={{ width: `${readPct}%` }} />
             </div>
             <button onClick={() => signRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })} className="shrink-0 rounded-full border border-border px-3 py-1 text-xs hover:border-gold/50">
-              {readPct >= 95 ? "إلى التوقيع" : "تخطّي إلى التوقيع"}
+              {readPct >= 95 ? t("إلى التوقيع") : t("تخطّي إلى التوقيع")}
             </button>
           </div>
         )}
 
         <article ref={articleRef} className="border border-border rounded-2xl p-6 bg-card whitespace-pre-wrap leading-loose text-sm">
-          {contract.body}
+          {tx(contract.body)}
         </article>
 
         {signed ? (
           <div className="mt-8 border border-emerald-300 bg-emerald-50 rounded-sm p-6 flex items-center gap-3">
             <CheckCircle2 className="h-6 w-6 text-emerald-600" />
             <div className="flex-1">
-              <div className="font-semibold">تم التوقيع</div>
-              <div className="text-sm text-muted-foreground">بواسطة {contract.client_name} · {new Date(contract.signed_at).toLocaleString("ar")}</div>
-              <div className="font-serif italic text-xl mt-2">{contract.client_signature}</div>
+              <div className="font-semibold">{t("تم التوقيع")}</div>
+              <div className="text-sm text-muted-foreground">{t("بواسطة {0} · {1}", [contract.client_name, new Date(contract.signed_at).toLocaleString(locale("ar"))])}</div>
+              <div className="font-serif italic text-xl mt-2">{tx(contract.client_signature)}</div>
             </div>
             <button onClick={() => window.print()} className="print:hidden inline-flex items-center gap-2 border border-emerald-600 text-emerald-700 px-3 py-2 rounded-sm hover:bg-emerald-100 text-sm">
-              <Printer className="h-4 w-4" /> طباعة / حفظ PDF
+              <Printer className="h-4 w-4" />{" "}{t("طباعة / حفظ PDF")}
             </button>
           </div>
         ) : (
           <div ref={signRef} className="mt-8 space-y-4 border border-border rounded-2xl p-6 scroll-mt-28">
-            <h2 className="font-serif text-2xl">التوقيع الإلكتروني</h2>
-            <p className="text-xs text-muted-foreground">يُحفظ التوقيع مع التاريخ والوقت، وله نفس إلزام التوقيع الورقي.</p>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="الاسم الكامل"
+            <h2 className="font-serif text-2xl">{t("التوقيع الإلكتروني")}</h2>
+            <p className="text-xs text-muted-foreground">{t("يُحفظ التوقيع مع التاريخ والوقت، وله نفس إلزام التوقيع الورقي.")}</p>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("الاسم الكامل")}
               className="w-full border border-input rounded-sm px-3 py-2 bg-background" />
             <div className="relative">
-              <input value={signature} onChange={(e) => setSignature(e.target.value)} placeholder="اكتبي توقيعك هنا"
+              <input value={signature} onChange={(e) => setSignature(e.target.value)} placeholder={t("اكتبي توقيعك هنا")}
                 className="w-full border border-input rounded-xl px-3 pt-2 pb-6 bg-background font-script text-3xl text-gold" />
               <span className="pointer-events-none absolute inset-x-4 bottom-3 border-b border-dashed border-border" />
             </div>
             <label className="flex items-start gap-2 text-sm">
               <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-1" />
-              <span>أقرّ بأنني قرأت وفهمت جميع بنود العقد وأوافق عليها.</span>
+              <span>{t("أقرّ بأنني قرأت وفهمت جميع بنود العقد وأوافق عليها.")}</span>
             </label>
             <button onClick={onSign} disabled={submitting}
               className={`w-full inline-flex items-center justify-center gap-2 bg-gradient-gold text-charcoal font-semibold py-3 rounded-full hover:opacity-90 disabled:opacity-50 active:scale-[0.99] transition ${agreed && signature.trim().length >= 3 && name.trim() ? "" : "opacity-70"}`}>
               {submitting && <span className="h-4 w-4 animate-spin rounded-full border-2 border-charcoal/30 border-t-charcoal" />}
-              {submitting ? "نوقّع…" : "توقيع العقد"}
+              {submitting ? t("نوقّع…") : t("توقيع العقد")}
             </button>
           </div>
         )}

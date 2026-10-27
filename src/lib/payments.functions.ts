@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 // ----- Public capability check (لمعرفة ما إذا كانت بوّابة الدفع مفعّلة) -----
 export const isPaymentsEnabled = createServerFn({ method: "GET" }).handler(async () => {
@@ -48,22 +49,22 @@ export const createDepositCheckout = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (error) throw new Error(error.message);
-    if (!bk) throw new Error("الحجز غير موجود");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
 
     const { isDemoBookingToken, DEMO_PAYMENT_MESSAGE } = await import("@/lib/booking.functions");
     if (await isDemoBookingToken(supabaseAdmin, data.token)) throw new Error(DEMO_PAYMENT_MESSAGE);
 
     if (bk.deposit_confirmed_at || bk.status === "confirmed") {
-      throw new Error("تم تأكيد العربون لهذا الحجز مسبقاً");
+      throw new Error(t("تم تأكيد العربون لهذا الحجز مسبقاً"));
     }
     if (bk.status !== "pending_deposit" && bk.status !== "quote") {
-      throw new Error("لا يمكن دفع العربون في حالة الحجز الحالية");
+      throw new Error(t("لا يمكن دفع العربون في حالة الحجز الحالية"));
     }
 
     // 2) المبلغ يُؤخذ من قاعدة البيانات حصراً (لا من العميل).
     const amount = Number(bk.deposit_amount ?? 0);
     if (!(amount > 0)) {
-      throw new Error("لا يوجد مبلغ عربون مطلوب لهذا الحجز");
+      throw new Error(t("لا يوجد مبلغ عربون مطلوب لهذا الحجز"));
     }
 
     // 3) بوّابة مهيّأة؟ إن لا → no-op آمن (يبقى مسار CliQ اليدوي).
@@ -83,7 +84,7 @@ export const createDepositCheckout = createServerFn({ method: "POST" })
       booking_id: bk.id,
       amount,
       currency,
-      description: "عربون تثبيت الحجز",
+      description: t("عربون تثبيت الحجز"),
       success_url: `${trackUrl}?payment=success`,
       cancel_url: `${trackUrl}?payment=cancelled`,
       client_email: bk.client_email,
@@ -117,7 +118,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { months: number }) => {
     if (!d || !Number.isInteger(d.months) || d.months < 1 || d.months > 12) {
-      throw new Error("months يجب أن يكون بين 1 و12");
+      throw new Error(t("months يجب أن يكون بين 1 و12"));
     }
     return d;
   })
@@ -134,7 +135,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
       .eq("id", userId)
       .maybeSingle();
     if (profErr) throw new Error(profErr.message);
-    if (!profile) throw new Error("الملف الشخصي غير موجود");
+    if (!profile) throw new Error(t("الملف الشخصي غير موجود"));
 
     // بوّابة الدفع مهيّأة؟
     if (!isPaymentConfigured()) {
@@ -157,7 +158,7 @@ export const createSubscriptionCheckout = createServerFn({ method: "POST" })
       months: data.months,
       amount,
       currency,
-      description: `اشتراك Memoria — ${data.months} ${data.months === 1 ? "شهر" : "أشهر"}`,
+      description: t("اشتراك Memoria — {0} {1}", [data.months, data.months === 1 ? "شهر" : "أشهر"]),
       success_url: `${base}/dashboard/subscription?payment=success`,
       cancel_url: `${base}/dashboard/subscription?payment=cancelled`,
     });
@@ -213,16 +214,16 @@ export const processDepositRefund = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
-    if (!bk) throw new Error("الحجز غير موجود");
-    if (bk.refund_status === "refunded") throw new Error("تم معالجة الاسترداد مسبقاً");
-    if (bk.refund_status !== "pending") throw new Error("هذا الحجز لا يحتاج استرداداً");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
+    if (bk.refund_status === "refunded") throw new Error(t("تم معالجة الاسترداد مسبقاً"));
+    if (bk.refund_status !== "pending") throw new Error(t("هذا الحجز لا يحتاج استرداداً"));
 
     const maxRefund = Number(bk.refund_amount ?? 0);
     const refundAmount = data.amount ?? maxRefund;
     
     // التحقق من مبلغ الاسترداد: منع استرداد أكثر من المسموح (#6)
     if (refundAmount > maxRefund) {
-      throw new Error("لا يمكن استرداد مبلغ أكبر من القيمة المسموحة");
+      throw new Error(t("لا يمكن استرداد مبلغ أكبر من القيمة المسموحة"));
     }
 
     let providerRefundId: string | null = null;
@@ -266,7 +267,7 @@ export const processDepositRefund = createServerFn({ method: "POST" })
           }
         }
       } catch (e: any) {
-        throw new Error(`فشل الاسترداد عبر بوّابة الدفع: ${e.message}`);
+        throw new Error(t("فشل الاسترداد عبر بوّابة الدفع: {0}", [e.message]));
       }
     }
 
@@ -300,7 +301,7 @@ export const processDepositRefund = createServerFn({ method: "POST" })
       if (bk.client_email) {
         await sendEmail({
           to: bk.client_email,
-          subject: "تم استرداد العربون ✓",
+          subject: t("تم استرداد العربون ✓"),
           html: tplDepositRefunded(bk.client_name || "", refundAmount, bk.event_date || ""),
           template: "deposit_refunded",
           related_booking_id: data.booking_id,
@@ -361,7 +362,7 @@ export const reconcilePaymentStatus = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (error) throw new Error(error.message);
-    if (!bk) throw new Error("الحجز غير موجود");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
 
     // إذا كان الحجز مؤكّداً مسبقاً — لا حاجة لشيء
     if (bk.deposit_confirmed_at || bk.status === "confirmed") {

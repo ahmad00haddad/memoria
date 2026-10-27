@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { getLang, dirOf } from "@/i18n";
 import { g } from "@/hooks/use-gender";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle, X, Send, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { t as tr, tx } from "@/i18n";
 
 type Booking = {
   id: string;
@@ -88,7 +90,7 @@ export function WhatsAppQuickSend({ booking }: { booking: Booking }) {
 
   const send = () => {
     if (!booking.client_phone) {
-      toast.error("لا يوجد رقم هاتف للعميل");
+      toast.error(tr("لا يوجد رقم هاتف للعميل"));
       return;
     }
     const phone = normalizePhone(booking.client_phone);
@@ -99,7 +101,7 @@ export function WhatsAppQuickSend({ booking }: { booking: Booking }) {
 
   const copy = async () => {
     await navigator.clipboard.writeText(body);
-    toast.success("تم نسخ النص");
+    toast.success(tr("تم نسخ النص"));
   };
 
   return (
@@ -111,7 +113,7 @@ export function WhatsAppQuickSend({ booking }: { booking: Booking }) {
         className="inline-flex items-center gap-2 text-sm bg-emerald-600 text-white px-3 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-50"
       >
         <MessageCircle className="h-4 w-4" />
-        رسالة واتساب
+        {tr("رسالة واتساب")}
       </button>
 
       {open && (
@@ -120,20 +122,20 @@ export function WhatsAppQuickSend({ booking }: { booking: Booking }) {
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5 text-emerald-600" />
-                <h3 className="font-serif text-xl">إرسال رسالة واتساب</h3>
+                <h3 className="font-serif text-xl">{tr("إرسال رسالة واتساب")}</h3>
               </div>
               <button onClick={() => setOpen(false)} className="p-1 hover:bg-secondary rounded-sm"><X className="h-5 w-5" /></button>
             </div>
 
             <div className="p-4 space-y-4">
               {loading ? (
-                <div className="text-center text-muted-foreground py-8">جاري التحميل…</div>
+                <div className="text-center text-muted-foreground py-8">{tr("جاري التحميل…")}</div>
               ) : templates.length === 0 ? (
-                <div className="text-sm text-muted-foreground">لا توجد قوالب. <Link to="/dashboard/whatsapp-templates" className="text-gold underline">{g("أنشئي قالباً", "أنشئ قالباً")}</Link></div>
+                <div className="text-sm text-muted-foreground">{tr("لا توجد قوالب.")}{" "}<Link to="/dashboard/whatsapp-templates" className="text-gold underline">{g(tr("أنشئي قالباً"), tr("أنشئ قالباً"))}</Link></div>
               ) : (
                 <>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-2 block">{g("اختاري قالباً", "اختر قالباً")}</label>
+                    <label className="text-xs text-muted-foreground mb-2 block">{g(tr("اختاري قالباً"), tr("اختر قالباً"))}</label>
                     <div className="flex flex-wrap gap-2">
                       {templates.map((t) => (
                         <button
@@ -141,28 +143,28 @@ export function WhatsAppQuickSend({ booking }: { booking: Booking }) {
                           onClick={() => pickTemplate(t.id)}
                           className={`text-xs px-3 py-1.5 rounded-sm border ${selected === t.id ? "bg-charcoal text-ivory border-charcoal" : "border-border hover:bg-secondary"}`}
                         >
-                          {t.name}
+                          {tx(t.name)}
                         </button>
                       ))}
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="wa-body" className="text-xs text-muted-foreground mb-2 block">نص الرسالة (يمكنك تعديلها قبل الإرسال)</label>
+                    <label htmlFor="wa-body" className="text-xs text-muted-foreground mb-2 block">{tr("نص الرسالة (يمكنك تعديلها قبل الإرسال)")}</label>
                     <textarea
                       id="wa-body"
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
                       rows={10}
                       className="w-full text-sm border border-border bg-background rounded-sm p-3 leading-loose"
-                      dir="rtl"
+                      dir={dirOf(getLang())}
                     />
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>الإرسال إلى: {booking.client_phone || "لا يوجد رقم"}</span>
+                    <span>{tr("الإرسال إلى:")}{" "}{booking.client_phone || tr("لا يوجد رقم")}</span>
                     <Link to="/dashboard/whatsapp-templates" className="text-gold inline-flex items-center gap-1">
-                      <Sparkles className="h-3 w-3" /> إدارة القوالب
+                      <Sparkles className="h-3 w-3" />{" "}{tr("إدارة القوالب")}
                     </Link>
                   </div>
                 </>
@@ -170,10 +172,10 @@ export function WhatsAppQuickSend({ booking }: { booking: Booking }) {
             </div>
 
             <div className="flex items-center justify-end gap-2 p-4 border-t border-border">
-              <button onClick={copy} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary">نسخ النص</button>
+              <button onClick={copy} className="text-sm border border-border px-4 py-2 rounded-sm hover:bg-secondary">{tr("نسخ النص")}</button>
               <button onClick={send} disabled={!booking.client_phone} className="inline-flex items-center gap-2 text-sm bg-emerald-600 text-white px-4 py-2 rounded-sm hover:bg-emerald-700 disabled:opacity-50">
                 <Send className="h-4 w-4" />
-                فتح واتساب
+                {tr("فتح واتساب")}
               </button>
             </div>
           </div>

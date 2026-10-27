@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 export const signContract = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({
@@ -22,8 +23,8 @@ export const signContract = createServerFn({ method: "POST" })
     if (error) throw error;
     await supabaseAdmin.from("notifications").insert({
       user_id: c.photographer_id,
-      title: "تم توقيع العقد",
-      body: `وقّع ${data.client_name} العقد.`,
+      title: t("تم توقيع العقد"),
+      body: t("وقّع {0} العقد.", [data.client_name]),
       link: `/dashboard/bookings/${c.booking_id}`,
     });
     return { ok: true };

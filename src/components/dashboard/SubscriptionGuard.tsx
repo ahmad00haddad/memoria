@@ -4,6 +4,7 @@ import { g } from "@/hooks/use-gender";
 import { Link, useLocation } from "@tanstack/react-router";
 import { AlertTriangle, Clock, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { t, tx } from "@/i18n";
 
 // ============================================================================
 // SubscriptionGuard — شريط تنبيه أعلى لوحة المصوّرة عند قرب/انتهاء الاشتراك.
@@ -60,7 +61,7 @@ export function SubscriptionGuard() {
   if (s.kind === "ending" && dismissed) return null;
 
   const expired = s.kind === "expired";
-  const when = s.daysLeft === 0 ? "اليوم" : s.daysLeft === 1 ? "غداً" : s.daysLeft === 2 ? "بعد يومين" : `بعد ${s.daysLeft} أيام`;
+  const when = s.daysLeft === 0 ? t("اليوم") : s.daysLeft === 1 ? t("غداً") : s.daysLeft === 2 ? t("بعد يومين") : t("بعد {0} أيام", [s.daysLeft]);
 
   return (
     <div className={`border-b ${expired ? "border-destructive/40 bg-destructive/10" : "border-amber-500/40 bg-amber-50 dark:bg-amber-950/30"}`}>
@@ -71,18 +72,18 @@ export function SubscriptionGuard() {
         <div className="min-w-0 flex-1 text-sm leading-relaxed">
           <div className={`font-semibold ${expired ? "text-destructive" : "text-amber-800 dark:text-amber-300"}`}>
             {expired
-              ? "اشتراكك منتهي — ملفك مخفي الآن عن العرائس"
-              : `${s.trial ? "تجربتك المجانية تنتهي" : "اشتراكك ينتهي"} ${when}`}
+              ? t("اشتراكك منتهي — ملفك مخفي الآن عن العرائس")
+              : `${s.trial ? t("تجربتك المجانية تنتهي") : t("اشتراكك ينتهي")} ${when}`}
           </div>
           {/* على الهاتف يكفي العنوان والزر؛ التفاصيل للشاشات الأكبر */}
           <div className={`text-foreground/80 ${expired ? "" : "hidden sm:block"}`}>
             {expired ? (
-              <>رابط ملفك{s.username ? <> <span dir="ltr" className="font-mono">@{s.username}</span></> : null} متوقّف، ولن تصلك طلبات حجز جديدة حتى التجديد.</>
+              <>{t("رابط ملفك")}{s.username ? <> <span dir="ltr" className="font-mono">@{tx(s.username)}</span></> : null}{" "}{t("متوقّف، ولن تصلك طلبات حجز جديدة حتى التجديد.")}</>
             ) : (
-              <>بعدها يختفي ملفك من البحث ويتوقف رابط البايو وطلبات الحجز الجديدة.</>
+              <>{t("بعدها يختفي ملفك من البحث ويتوقف رابط البايو وطلبات الحجز الجديدة.")}</>
             )}
             {s.upcoming > 0 && (
-              <> لديك <strong>{arCount(s.upcoming, "حجز قادم", "حجزان قادمان", "حجوزات قادمة", "حجزاً قادماً")}</strong> — تبقى متابعتها تعمل كالمعتاد.</>
+              <>{" "}{t("لديك")}{" "}<strong>{arCount(s.upcoming, t("حجز قادم"), t("حجزان قادمان"), t("حجوزات قادمة"), t("حجزاً قادماً"))}</strong>{" "}{t("— تبقى متابعتها تعمل كالمعتاد.")}</>
             )}
           </div>
         </div>
@@ -90,11 +91,11 @@ export function SubscriptionGuard() {
           to="/dashboard/subscription"
           className={`shrink-0 inline-flex min-h-10 items-center rounded-full px-4 text-sm font-medium ${expired ? "bg-destructive text-destructive-foreground" : "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal"}`}
         >
-          {expired ? g("جدّدي الآن", "جدّد الآن") : g("جدّدي الاشتراك", "جدّد الاشتراك")}
+          {expired ? g(t("جدّدي الآن"), t("جدّد الآن")) : g(t("جدّدي الاشتراك"), t("جدّد الاشتراك"))}
         </Link>
         {!expired && (
           <button
-            aria-label="إخفاء لليوم"
+            aria-label={t("إخفاء لليوم")}
             onClick={() => { try { sessionStorage.setItem(DISMISS_KEY, new Date().toDateString()); } catch { /* ignore */ } setDismissed(true); }}
             className="shrink-0 rounded-full p-1.5 text-muted-foreground hover:bg-black/5"
           >

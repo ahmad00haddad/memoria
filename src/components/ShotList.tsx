@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Check, Circle, Plus, Trash2, ListChecks, Sparkles, X } from "lucide-react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
+import { t as tr, tx } from "@/i18n";
 
 type Item = {
   id: string;
@@ -42,7 +43,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
     setBusy(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("جلسة منتهية");
+      if (!session) throw new Error(tr("جلسة منتهية"));
       const maxOrder = items.length ? Math.max(...items.map((i) => i.sort_order)) : 0;
       const { error } = await supabase.from("shot_list_items").insert({
         booking_id: bookingId,
@@ -70,7 +71,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
   };
 
   const remove = async (id: string) => {
-    if (!(await confirm({ title: "حذف هذه اللقطة؟", confirmText: "حذف", destructive: true }))) return;
+    if (!(await confirm({ title: tr("حذف هذه اللقطة؟"), confirmText: tr("حذف"), destructive: true }))) return;
     await supabase.from("shot_list_items").delete().eq("id", id);
     await load();
   };
@@ -83,7 +84,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
         _service: service ?? "",
       });
       if (error) throw error;
-      toast.success("تم تحميل قالب اللقطات الافتراضي");
+      toast.success(tr("تم تحميل قالب اللقطات الافتراضي"));
       await load();
     } catch (e: any) {
       toast.error(e.message);
@@ -100,10 +101,10 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
     <div className="mt-8 rounded-sm border border-border bg-card p-6">
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
         <h2 className="font-serif text-xl flex items-center gap-2">
-          <ListChecks className="h-5 w-5 text-gold" /> قائمة اللقطات
+          <ListChecks className="h-5 w-5 text-gold" />{" "}{tr("قائمة اللقطات")}
           {total > 0 && (
             <span className="text-xs text-muted-foreground font-sans">
-              ({done}/{total} — {pct}%)
+              ({tx(done)}/{tx(total)} — {tx(pct)}%)
             </span>
           )}
         </h2>
@@ -114,7 +115,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
             className="inline-flex items-center gap-2 text-sm border border-border px-3 py-2 rounded-sm hover:bg-secondary disabled:opacity-60"
           >
             <Sparkles className="h-4 w-4" />
-            تحميل قالب جاهز
+            {tr("تحميل قالب جاهز")}
           </button>
         )}
       </div>
@@ -126,10 +127,10 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
       )}
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">جاري التحميل…</p>
+        <p className="text-sm text-muted-foreground">{tr("جاري التحميل…")}</p>
       ) : items.length === 0 ? (
         <p className="text-sm text-muted-foreground mb-4">
-          {g("لا توجد لقطات بعد. أضيفي قائمة لقطات لمتابعة ما تم تنفيذه خلال الجلسة.", "لا توجد لقطات بعد. أضف قائمة لقطات لمتابعة ما تم تنفيذه خلال الجلسة.")}
+          {g(tr("لا توجد لقطات بعد. أضيفي قائمة لقطات لمتابعة ما تم تنفيذه خلال الجلسة."), tr("لا توجد لقطات بعد. أضف قائمة لقطات لمتابعة ما تم تنفيذه خلال الجلسة."))}
         </p>
       ) : (
         <ul className="space-y-1 mb-4">
@@ -141,7 +142,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
               <button
                 onClick={() => toggle(item)}
                 className="shrink-0"
-                aria-label="تبديل الحالة"
+                aria-label={tr("تبديل الحالة")}
               >
                 {item.status === "done" ? (
                   <Check className="h-5 w-5 text-emerald-600 animate-pop" />
@@ -153,12 +154,12 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
                 data-done={item.status === "done"}
                 className={`strike-anim flex-1 text-sm ${item.status === "done" ? "text-muted-foreground" : ""}`}
               >
-                {item.title}
+                {tx(item.title)}
               </span>
               <button
                 onClick={() => remove(item.id)}
                 className="sm:opacity-0 sm:group-hover:opacity-100 opacity-100 text-muted-foreground hover:text-destructive transition"
-                aria-label="حذف"
+                aria-label={tr("حذف")}
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -175,7 +176,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
           onKeyDown={(e) => {
             if (e.key === "Enter") add();
           }}
-          placeholder={g("أضيفي لقطة جديدة…", "أضف لقطة جديدة…")}
+          placeholder={g(tr("أضيفي لقطة جديدة…"), tr("أضف لقطة جديدة…"))}
           maxLength={200}
           className="flex-1 border border-input bg-background px-3 py-2 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-ring"
         />
@@ -184,7 +185,7 @@ export function ShotList({ bookingId, service }: { bookingId: string; service: s
           disabled={busy || !newTitle.trim()}
           className="inline-flex items-center gap-1 bg-charcoal text-ivory px-3 py-2 rounded-sm text-sm disabled:opacity-60"
         >
-          <Plus className="h-4 w-4" /> إضافة
+          <Plus className="h-4 w-4" />{" "}{tr("إضافة")}
         </button>
       </div>
     </div>

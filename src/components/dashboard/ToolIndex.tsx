@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { staggerContainer, fadeUp } from "@/lib/animations";
+import { tx, t as tr } from "@/i18n";
 
 export type Tool = {
   key: string;
@@ -57,22 +58,22 @@ export function ToolIndex({ tools }: { tools: Tool[] }) {
           <>
             <div className="flex items-start justify-between gap-2">
               <span className="grid h-9 w-9 place-items-center rounded-lg bg-secondary text-foreground/70 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:text-gold [&_svg]:h-[18px] [&_svg]:w-[18px]">
-                {t.icon}
+                {tx(t.icon)}
               </span>
               {t.badge ? (
                 <span className={`rounded-full px-2 py-0.5 text-[11px] tabular-nums ${t.attention ? "bg-gold/15 text-gold" : "bg-secondary text-muted-foreground"}`}>
-                  {t.badge}
+                  {tx(t.badge)}
                 </span>
               ) : isNew ? (
                 // نقطة فقط بلا نص: ٨ شارات «جديد» في شاشة واحدة كانت ضجيجاً
-                <span className="mt-1 h-2 w-2 rounded-full bg-gold" aria-label={g("لم تفتحيها بعد", "لم تفتحها بعد")} />
+                <span className="mt-1 h-2 w-2 rounded-full bg-gold" aria-label={g(tr("لم تفتحيها بعد"), tr("لم تفتحها بعد"))} />
               ) : null}
             </div>
             <div className="mt-4 flex items-center justify-between gap-2">
-              <span className="text-sm font-medium">{t.title}</span>
+              <span className="text-sm font-medium">{tx(t.title)}</span>
               <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-all duration-300 group-hover:-translate-x-0.5 group-hover:text-gold group-hover:opacity-100" />
             </div>
-            {t.hint && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{t.hint}</p>}
+            {t.hint && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{tx(t.hint)}</p>}
           </>
         );
         const cls = "group block rounded-xl border border-border bg-card p-4 transition-colors duration-300 hover:border-gold/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold";
@@ -80,11 +81,11 @@ export function ToolIndex({ tools }: { tools: Tool[] }) {
         return (
           <motion.div key={t.key} variants={fadeUp}>
             {!t.to ? (
-              <div className={`${cls} cursor-not-allowed opacity-50`}>{inner}</div>
+              <div className={`${cls} cursor-not-allowed opacity-50`}>{tx(inner)}</div>
             ) : t.external ? (
-              <a href={t.to} className={cls} onClick={onClick}>{inner}</a>
+              <a href={t.to} className={cls} onClick={onClick}>{tx(inner)}</a>
             ) : (
-              <Link to={t.to as any} className={cls} onClick={onClick}>{inner}</Link>
+              <Link to={t.to as any} className={cls} onClick={onClick}>{tx(inner)}</Link>
             )}
           </motion.div>
         );

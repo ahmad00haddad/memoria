@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { OCCASIONS, SITE_URL, getOccasion } from "@/content/seo";
 import { SeoLanding, seoHead } from "@/components/site/SeoLanding";
+import { t } from "@/i18n";
 
 export const Route = createFileRoute("/occasion/$type")({
   loader: ({ params }) => {
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/occasion/$type")({
       faqs: o.faqs,
       crumbs: [
         { name: "Memoria", url: SITE_URL },
-        { name: "المناسبات", url: `${SITE_URL}/search` },
+        { name: t("المناسبات"), url: `${SITE_URL}/search` },
         { name: o.name, url },
       ],
     });
@@ -36,7 +37,7 @@ function OccasionPage() {
       intro={o.intro}
       paragraphs={o.paragraphs}
       faqs={o.faqs}
-      linksTitle="مناسبات أخرى"
+      linksTitle={t("مناسبات أخرى")}
       links={OCCASIONS.filter((x) => x.slug !== o.slug).map((x) => ({ to: `/occasion/${x.slug}`, label: x.name }))}
     />
   );

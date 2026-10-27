@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 // ============================================================================
 // production.functions.ts — دوال إدارة مراحل الإنتاج (خادمية بالكامل)
@@ -18,7 +19,7 @@ export const updateProductionStage = createServerFn({ method: "POST" })
       throw new Error("invalid booking_id");
     }
     const VALID = ["awaiting", "shooting", "selecting", "editing", "ready", "delivered"];
-    if (!VALID.includes(d.stage)) throw new Error(`stage يجب أن يكون من: ${VALID.join(", ")}`);
+    if (!VALID.includes(d.stage)) throw new Error(t("stage يجب أن يكون من: {0}", [VALID.join(", ")]));
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -31,8 +32,8 @@ export const updateProductionStage = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
-    if (!bk) throw new Error("الحجز غير موجود");
-    if (bk.photographer_id !== userId) throw new Error("غير مصرح");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
+    if (bk.photographer_id !== userId) throw new Error(t("غير مصرح"));
 
     const now = new Date().toISOString();
     const patch: any = { production_stage: data.stage, updated_at: now };
@@ -44,15 +45,15 @@ export const updateProductionStage = createServerFn({ method: "POST" })
     const isMovingBackward = toIdx < fromIdx;
 
     // حراسة خادمية للتسلسل والحالة (لا نعتمد على واجهة العميل)
-    if (bk.status === "cancelled") throw new Error("لا يمكن تغيير مرحلة حجز ملغي");
+    if (bk.status === "cancelled") throw new Error(t("لا يمكن تغيير مرحلة حجز ملغي"));
     if (bk.status !== "confirmed" && bk.status !== "completed") {
-      throw new Error("أكّدي الحجز (استلام العربون) قبل بدء مراحل الإنتاج.");
+      throw new Error(t("أكّدي الحجز (استلام العربون) قبل بدء مراحل الإنتاج."));
     }
     if (bk.status === "completed" && bk.production_stage !== "delivered") {
-      throw new Error("هذا الحجز مغلق ولا يمكن تغيير مرحلته");
+      throw new Error(t("هذا الحجز مغلق ولا يمكن تغيير مرحلته"));
     }
     if (toIdx === fromIdx) return { ok: true, stage: data.stage, unchanged: true };
-    if (toIdx > fromIdx + 1) throw new Error("لا يمكن تخطي المراحل. انقلي الحجز خطوة بخطوة.");
+    if (toIdx > fromIdx + 1) throw new Error(t("لا يمكن تخطي المراحل. انقلي الحجز خطوة بخطوة."));
 
     if (data.stage === "editing" && !bk.editing_started_at) {
       patch.editing_started_at = now;
@@ -96,7 +97,7 @@ export const updateProductionStage = createServerFn({ method: "POST" })
         .maybeSingle();
       if (adminErr) throw new Error(adminErr.message);
       if (!forced || forced.production_stage !== data.stage) {
-        throw new Error("لم يُحفظ تغيير المرحلة، حاولي مجدداً");
+        throw new Error(t("لم يُحفظ تغيير المرحلة، حاولي مجدداً"));
       }
     }
 
@@ -113,12 +114,12 @@ export const updateProductionStage = createServerFn({ method: "POST" })
           .select("display_name")
           .eq("id", userId)
           .maybeSingle();
-        const photographerName = (prof as any)?.display_name || "المصورة";
+        const photographerName = (prof as any)?.display_name || t("المصورة");
 
         // أرسل إشعاراً للعميل بمرحلة المونتاج فقط (لا نُرسل لكل مرحلة لتجنب الإزعاج)
         if (data.stage === "editing") {
           await sendWhatsAppNotification(userId, bk.client_phone, "editing", {
-            client_name: bk.client_name || "عميلتنا",
+            client_name: bk.client_name || t("عميلتنا"),
             photographer_name: photographerName,
             event_date: String(bk.event_date ?? ""),
             tracking_url: trackingUrl,
@@ -150,8 +151,8 @@ export const updateProductionStage = createServerFn({ method: "POST" })
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           await supabaseAdmin.from("notifications").insert({
             user_id: bk.client_user_id,
-            title: "صورك جاهزة! 🎉",
-            body: "تم تسليم صور حجزك. يمكنك الآن مراجعتها.",
+            title: t("صورك جاهزة! 🎉"),
+            body: t("تم تسليم صور حجزك. يمكنك الآن مراجعتها."),
             link: bk.client_tracking_token ? `/track/${bk.client_tracking_token}` : null,
           });
         } catch (e) { console.error("[production] notification failed", e); }
@@ -177,8 +178,8 @@ export const updateProductionStage = createServerFn({ method: "POST" })
             .eq("id", userId)
             .maybeSingle();
           await sendWhatsAppNotification(userId, bk.client_phone, "delivery", {
-            client_name: bk.client_name || "عميلتنا",
-            photographer_name: (profDlv as any)?.display_name || "المصورة",
+            client_name: bk.client_name || t("عميلتنا"),
+            photographer_name: (profDlv as any)?.display_name || t("المصورة"),
             event_date: String(bk.event_date ?? ""),
             tracking_url: trackingUrl,
           });
@@ -201,8 +202,8 @@ export const updateProductionStage = createServerFn({ method: "POST" })
             .eq("id", userId)
             .maybeSingle();
           await sendWhatsAppNotification(userId, bk.client_phone, "review", {
-            client_name: bk.client_name || "عميلتنا",
-            photographer_name: (profRev as any)?.display_name || "المصورة",
+            client_name: bk.client_name || t("عميلتنا"),
+            photographer_name: (profRev as any)?.display_name || t("المصورة"),
             event_date: String(bk.event_date ?? ""),
             tracking_url: reviewUrl,
           });
@@ -239,11 +240,11 @@ export const markFinalPaymentReceived = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
-    if (!bk) throw new Error("الحجز غير موجود");
-    if (bk.photographer_id !== userId) throw new Error("غير مصرح");
-    if (bk.final_paid_at) throw new Error("تم تسجيل الدفعة النهائية مسبقاً");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
+    if (bk.photographer_id !== userId) throw new Error(t("غير مصرح"));
+    if (bk.final_paid_at) throw new Error(t("تم تسجيل الدفعة النهائية مسبقاً"));
     if (bk.status !== "confirmed" && bk.status !== "completed") {
-      throw new Error("لا يمكن تسجيل الدفعة النهائية لحجز غير مؤكد أو ملغي.");
+      throw new Error(t("لا يمكن تسجيل الدفعة النهائية لحجز غير مؤكد أو ملغي."));
     }
 
     const amount = data.amount ?? Math.max(0, Number(bk.total_price ?? 0) - Number(bk.deposit_amount ?? 0));
@@ -283,7 +284,7 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
     }
     const VALID = ["quote", "pending_deposit", "completed"];
     if (!VALID.includes(d.status)) {
-      throw new Error(`status يجب أن يكون من: ${VALID.join(", ")} (استخدم confirmBookingAfterDeposit للتأكيد، وcancelBooking للإلغاء)`);
+      throw new Error(t("status يجب أن يكون من: {0} (استخدم confirmBookingAfterDeposit للتأكيد، وcancelBooking للإلغاء)", [VALID.join(", ")]));
     }
     return d;
   })
@@ -296,8 +297,8 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
-    if (!bk) throw new Error("الحجز غير موجود");
-    if (bk.photographer_id !== userId) throw new Error("غير مصرح");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
+    if (bk.photographer_id !== userId) throw new Error(t("غير مصرح"));
 
     // Only forward moves that make sense: a cancelled or unpaid booking
     // cannot jump to "completed", and a confirmed one cannot go back to quote.
@@ -307,7 +308,7 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
       confirmed: ["completed"],
     };
     if (bk.status !== data.status && !(ALLOWED[bk.status] ?? []).includes(data.status)) {
-      throw new Error("لا يمكن نقل الحجز إلى هذه الحالة من حالته الحالية.");
+      throw new Error(t("لا يمكن نقل الحجز إلى هذه الحالة من حالته الحالية."));
     }
 
     const now = new Date().toISOString();
@@ -340,10 +341,10 @@ export const saveBookingSelectionLink = createServerFn({ method: "POST" })
     if (!d || typeof d.booking_id !== "string" || !UUID_RE.test(d.booking_id)) {
       throw new Error("invalid booking_id");
     }
-    if (!d.link || typeof d.link !== "string") throw new Error("الرابط مطلوب");
-    if (d.link.length > 2000) throw new Error("الرابط طويل جداً");
+    if (!d.link || typeof d.link !== "string") throw new Error(t("الرابط مطلوب"));
+    if (d.link.length > 2000) throw new Error(t("الرابط طويل جداً"));
     // التحقق من صيغة URL
-    try { new URL(d.link); } catch { throw new Error("صيغة الرابط غير صحيحة"); }
+    try { new URL(d.link); } catch { throw new Error(t("صيغة الرابط غير صحيحة")); }
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -355,8 +356,8 @@ export const saveBookingSelectionLink = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
-    if (!bk) throw new Error("الحجز غير موجود");
-    if (bk.photographer_id !== userId) throw new Error("غير مصرح");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
+    if (bk.photographer_id !== userId) throw new Error(t("غير مصرح"));
 
     const { error: updateErr } = await supabase
       .from("bookings")
@@ -370,8 +371,8 @@ export const saveBookingSelectionLink = createServerFn({ method: "POST" })
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         await supabaseAdmin.from("notifications").insert({
           user_id: bk.client_user_id,
-          title: "رابط اختيار الصور جاهز",
-          body: "أرسل لك المصوّرة رابط لاختيار صورك المفضلة.",
+          title: t("رابط اختيار الصور جاهز"),
+          body: t("أرسل لك المصوّرة رابط لاختيار صورك المفضلة."),
           link: bk.client_tracking_token ? `/track/${bk.client_tracking_token}` : null,
         });
       } catch (e) { console.error("[production] selection link notification failed", e); }
@@ -387,9 +388,9 @@ export const saveDeliveryLink = createServerFn({ method: "POST" })
     if (!d || typeof d.booking_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.booking_id)) {
       throw new Error("invalid booking_id");
     }
-    if (!d.link || typeof d.link !== "string") throw new Error("الرابط مطلوب");
-    if (d.link.length > 2000) throw new Error("الرابط طويل جداً");
-    try { new URL(d.link); } catch { throw new Error("صيغة الرابط غير صحيحة"); }
+    if (!d.link || typeof d.link !== "string") throw new Error(t("الرابط مطلوب"));
+    if (d.link.length > 2000) throw new Error(t("الرابط طويل جداً"));
+    try { new URL(d.link); } catch { throw new Error(t("صيغة الرابط غير صحيحة")); }
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -401,8 +402,8 @@ export const saveDeliveryLink = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
-    if (!bk) throw new Error("الحجز غير موجود");
-    if (bk.photographer_id !== userId) throw new Error("غير مصرح");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
+    if (bk.photographer_id !== userId) throw new Error(t("غير مصرح"));
 
     const { error: updateErr } = await supabase
       .from("bookings")
@@ -414,8 +415,8 @@ export const saveDeliveryLink = createServerFn({ method: "POST" })
     if (bk.client_user_id) {
       await supabase.from("notifications").insert({
         user_id: bk.client_user_id,
-        title: "تم تسليم الصور",
-        body: "تم إضافة رابط تسليم الصور الخاص بك. اضغطي هنا للتحميل.",
+        title: t("تم تسليم الصور"),
+        body: t("تم إضافة رابط تسليم الصور الخاص بك. اضغطي هنا للتحميل."),
         type: "booking_update",
         link: `/tracking/${bk.client_tracking_token}`
       });

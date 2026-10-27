@@ -1,0 +1,12 @@
+src/routes/__root.tsx src/components/site/BackToDashboard.tsx
+src/components/site/BottomNav.tsx
+src/components/site/BrideGame.tsx
+src/components/site/FirstVisitIntro.tsx
+src/components/site/Footer.tsx
+src/components/site/GameHint.tsx
+src/components/site/Header.tsx
+src/components/site/MobileBottomNav.tsx
+src/components/site/MobileTabBar.tsx
+src/components/site/PwaInstallPrompt.tsx
+src/components/site/Reveal.tsx
+src/components/site/SeoLanding.tsx src/routes/index.tsx src/routes/about.tsx src/routes/pricing.tsx src/routes/faq.tsx src/routes/for-clients.tsx src/routes/for-photographers.tsx src/routes/contact.tsx src/routes/privacy.tsx src/routes/terms.tsx src/routes/refund-policy.tsx src/routes/guide.tsx src/routes/search.tsx src/routes/login.tsx src/routes/forgot-password.tsx src/routes/reset-password.tsx src/routes/recover.tsx src/routes/app.tsx src/routes/photographers/join.tsx src/components/search/CompareMode.tsx src/components/theme-toggle.tsx src/components/VerifiedBadge.tsx src/components/HeroParallax.tsx

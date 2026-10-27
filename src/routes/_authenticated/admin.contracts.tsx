@@ -5,6 +5,8 @@ import { listContractsAdmin } from "@/lib/admin.functions";
 import { FileText, CheckCircle2, Clock } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 import { toast } from "sonner";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/contracts")({
   component: AdminContracts,
@@ -32,7 +34,7 @@ function AdminContracts() {
         const data = await listFn();
         setRows((data as Row[]) ?? []);
       } catch (e: any) {
-        toast.error(e.message ?? "فشل تحميل العقود");
+        toast.error(e.message ?? t("فشل تحميل العقود"));
       }
       setLoading(false);
     })();
@@ -55,32 +57,32 @@ function AdminContracts() {
   return (
     <section>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h2 className="font-serif text-2xl">العقود ({rows.length})</h2>
+        <h2 className="font-serif text-2xl">{t("العقود ({0})", [rows.length])}</h2>
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="بحث عن اسم أو مصوّرة…"
+          placeholder={t("بحث عن اسم أو مصوّرة…")}
           className="border border-border bg-card rounded-sm px-3 py-2 text-sm w-60 focus:outline-none focus:ring-1 focus:ring-gold"
         />
       </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-sm border border-border bg-card p-6 text-muted-foreground text-sm text-center">
-          لا توجد عقود.
+          {t("لا توجد عقود.")}
         </div>
       ) : (
         <div className="overflow-x-auto rounded-sm border border-border bg-card">
           <table className="w-full text-sm">
-            <caption className="sr-only">جدول العقود</caption>
+            <caption className="sr-only">{t("جدول العقود")}</caption>
             <thead className="bg-muted/40 text-muted-foreground text-xs uppercase tracking-widest">
               <tr>
-                <th className="text-right px-4 py-3">رقم العقد</th>
-                <th className="text-right px-4 py-3">العميل</th>
-                <th className="text-right px-4 py-3">المصوّرة</th>
-                <th className="text-right px-4 py-3">رقم الحجز</th>
-                <th className="text-right px-4 py-3">حالة التوقيع</th>
-                <th className="text-right px-4 py-3">تاريخ الإنشاء</th>
+                <th className="text-start px-4 py-3">{t("رقم العقد")}</th>
+                <th className="text-start px-4 py-3">{t("العميل")}</th>
+                <th className="text-start px-4 py-3">{t("المصوّرة")}</th>
+                <th className="text-start px-4 py-3">{t("رقم الحجز")}</th>
+                <th className="text-start px-4 py-3">{t("حالة التوقيع")}</th>
+                <th className="text-start px-4 py-3">{t("تاريخ الإنشاء")}</th>
               </tr>
             </thead>
             <tbody>
@@ -91,8 +93,8 @@ function AdminContracts() {
                   <td className="px-4 py-3">
                     {r.photographer ? (
                       <>
-                        <span className="font-medium">{r.photographer.display_name}</span>{" "}
-                        <span className="text-muted-foreground text-xs">@{r.photographer.username}</span>
+                        <span className="font-medium">{tx(r.photographer.display_name)}</span>{" "}
+                        <span className="text-muted-foreground text-xs">@{tx(r.photographer.username)}</span>
                       </>
                     ) : "—"}
                   </td>
@@ -100,15 +102,15 @@ function AdminContracts() {
                   <td className="px-4 py-3">
                     {r.signed_at ? (
                       <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-sm">
-                        <CheckCircle2 className="h-3 w-3" /> موقّع — {new Date(r.signed_at).toLocaleDateString("ar-JO")}
+                        <CheckCircle2 className="h-3 w-3" />{" "}{t("موقّع — {0}", [new Date(r.signed_at).toLocaleDateString(locale("ar-JO"))])}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-sm">
-                        <Clock className="h-3 w-3" /> في الانتظار
+                        <Clock className="h-3 w-3" />{" "}{t("في الانتظار")}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("ar-JO")}</td>
+                  <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString(locale("ar-JO"))}</td>
                 </tr>
               ))}
             </tbody>

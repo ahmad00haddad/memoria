@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calculator, ChevronDown, Info } from "lucide-react";
 import { useTourState } from "./ClientTour";
+import { t } from "@/i18n";
 
 export function PriceBreakdownTip() {
   const state = useTourState();
@@ -16,7 +17,7 @@ export function PriceBreakdownTip() {
       >
         <span className="flex items-center gap-2">
           <Calculator className="h-4 w-4 text-muted-foreground" />
-          كيف يُحسب السعر الإجمالي؟
+          {t("كيف يُحسب السعر الإجمالي؟")}
         </span>
         <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
@@ -32,19 +33,19 @@ export function PriceBreakdownTip() {
             <div className="p-3 pt-0 text-xs text-muted-foreground space-y-2 border-t border-border/50 mt-1">
               <div className="flex gap-2">
                 <div className="shrink-0 mt-0.5"><Info className="h-3 w-3 text-gold" /></div>
-                <div><strong className="text-foreground">نوع التصوير:</strong> السعر الأساسي للباقة المحددة (يوم كامل أو ساعات).</div>
+                <div><strong className="text-foreground">{t("نوع التصوير:")}</strong>{" "}{t("السعر الأساسي للباقة المحددة (يوم كامل أو ساعات).")}</div>
               </div>
               <div className="flex gap-2">
                 <div className="shrink-0 mt-0.5"><Info className="h-3 w-3 text-gold" /></div>
-                <div><strong className="text-foreground">رسوم التنقّل:</strong> تُحسب بناءً على المسافة بين المصوّرة وموقع التصوير (يُخصم منها الكيلومترات المجانية).</div>
+                <div><strong className="text-foreground">{t("رسوم التنقّل:")}</strong>{" "}{t("تُحسب بناءً على المسافة بين المصوّرة وموقع التصوير (يُخصم منها الكيلومترات المجانية).")}</div>
               </div>
               <div className="flex gap-2">
                 <div className="shrink-0 mt-0.5"><Info className="h-3 w-3 text-gold" /></div>
-                <div><strong className="text-foreground">الإضافات:</strong> أي خدمات إضافية كزيادة عدد الصور أو ألبومات مطبوعة.</div>
+                <div><strong className="text-foreground">{t("الإضافات:")}</strong>{" "}{t("أي خدمات إضافية كزيادة عدد الصور أو ألبومات مطبوعة.")}</div>
               </div>
               <div className="flex gap-2">
                 <div className="shrink-0 mt-0.5"><Info className="h-3 w-3 text-gold" /></div>
-                <div><strong className="text-foreground">العربون المبدئي:</strong> مبلغ أو نسبة تُدفع لتأكيد الحجز، ويُخصم من الإجمالي.</div>
+                <div><strong className="text-foreground">{t("العربون المبدئي:")}</strong>{" "}{t("مبلغ أو نسبة تُدفع لتأكيد الحجز، ويُخصم من الإجمالي.")}</div>
               </div>
             </div>
           </motion.div>

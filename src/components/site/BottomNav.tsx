@@ -5,6 +5,7 @@ import { Home, Calendar, Clapperboard, Bell, UserCircle, Search, Smartphone } fr
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { t, tx } from "@/i18n";
 
 interface Tab {
   to: string;
@@ -62,17 +63,17 @@ export function BottomNav() {
   if (!showNav) return null;
 
   const photographerTabs: Tab[] = [
-    { to: "/dashboard/", label: "الرئيسية", icon: <Home className="h-5 w-5" /> },
-    { to: "/dashboard/bookings", label: "الحجوزات", icon: <Calendar className="h-5 w-5" /> },
-    { to: "/dashboard/production", label: "الإنتاج", icon: <Clapperboard className="h-5 w-5" /> },
-    { to: "/notifications", label: "الإشعارات", icon: <Bell className="h-5 w-5" />, badge: unread },
-    { to: "/dashboard/profile", label: "حسابي", icon: <UserCircle className="h-5 w-5" /> },
+    { to: "/dashboard/", label: t("الرئيسية"), icon: <Home className="h-5 w-5" /> },
+    { to: "/dashboard/bookings", label: t("الحجوزات"), icon: <Calendar className="h-5 w-5" /> },
+    { to: "/dashboard/production", label: t("الإنتاج"), icon: <Clapperboard className="h-5 w-5" /> },
+    { to: "/notifications", label: t("الإشعارات"), icon: <Bell className="h-5 w-5" />, badge: unread },
+    { to: "/dashboard/profile", label: t("حسابي"), icon: <UserCircle className="h-5 w-5" /> },
   ];
 
   const publicTabs: Tab[] = [
-    { to: "/", label: "الرئيسية", icon: <Home className="h-5 w-5" /> },
-    { to: "/search", label: "بحث", icon: <Search className="h-5 w-5" /> },
-    { to: "/app", label: "التطبيق", icon: <Smartphone className="h-5 w-5" /> },
+    { to: "/", label: t("الرئيسية"), icon: <Home className="h-5 w-5" /> },
+    { to: "/search", label: t("بحث"), icon: <Search className="h-5 w-5" /> },
+    { to: "/app", label: t("التطبيق"), icon: <Smartphone className="h-5 w-5" /> },
   ];
 
   const tabs = authed && isPhotographer ? photographerTabs : publicTabs;
@@ -90,7 +91,7 @@ export function BottomNav() {
           animate={{ y: 0 }}
           exit={{ y: 100 }}
           transition={{ type: "spring", stiffness: 400, damping: 35 }}
-          className="fixed bottom-0 left-0 right-0 z-50
+          className="fixed bottom-0 end-0 start-0 z-50
                      bg-background/95 backdrop-blur-md border-t border-border
                      pb-[env(safe-area-inset-bottom)]
                      md:hidden"
@@ -110,10 +111,10 @@ export function BottomNav() {
                       animate={{ color: active ? "var(--gold)" : "var(--muted-foreground)" }}
                       transition={{ duration: 0.2 }}
                     >
-                      {tab.icon}
+                      {tx(tab.icon)}
                     </motion.div>
                     {tab.badge && tab.badge > 0 ? (
-                      <span className="absolute -top-1 -right-1 bg-gold text-white
+                      <span className="absolute -top-1 -start-1 bg-gold text-white
                                        text-[10px] h-4 w-4 rounded-full flex items-center
                                        justify-center font-medium leading-none">
                         {tab.badge > 9 ? "9+" : tab.badge}
@@ -125,12 +126,12 @@ export function BottomNav() {
                       active ? "text-[var(--gold)]" : "text-muted-foreground"
                     }`}
                   >
-                    {tab.label}
+                    {tx(tab.label)}
                   </span>
                   {active && (
                     <motion.div
                       layoutId="bottom-tab-indicator"
-                      className="absolute top-0 left-1/4 right-1/4 h-0.5 bg-[var(--gold)] rounded-full"
+                      className="absolute top-0 end-1/4 start-1/4 h-0.5 bg-[var(--gold)] rounded-full"
                       transition={{ type: "spring", stiffness: 500, damping: 40 }}
                     />
                   )}

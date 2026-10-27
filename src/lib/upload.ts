@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import React from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { t } from "@/i18n";
 // ============================================================================
 // upload.ts — مساعد رفع الملفات الشامل (مُصلَح)
 // ----------------------------------------------------------------------------
@@ -71,12 +72,12 @@ function validateFileType(file: File, allowedTypes: AllowedFileType): string | n
   const allowed = allowedTypes === "image_or_pdf" ? ALLOWED_IMAGES_AND_PDF : ALLOWED_IMAGES;
   if (!allowed.includes(file.type)) {
     const typeLabel = allowedTypes === "image_or_pdf"
-      ? "صور (JPG / PNG / WebP) أو PDF"
-      : "صور (JPG / PNG / WebP)";
+      ? t("صور (JPG / PNG / WebP) أو PDF")
+      : t("صور (JPG / PNG / WebP)");
     if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name)) {
-      return "صور iPhone بصيغة HEIC غير مدعومة. من إعدادات الجوال: الكاميرا ← الصِيَغ ← اختاري «الأكثر توافقاً»، أو حوّلي الصورة إلى JPG وأعيدي المحاولة.";
+      return t("صور iPhone بصيغة HEIC غير مدعومة. من إعدادات الجوال: الكاميرا ← الصِيَغ ← اختاري «الأكثر توافقاً»، أو حوّلي الصورة إلى JPG وأعيدي المحاولة.");
     }
-    return `نوع الملف "${file.type || "غير معروف"}" غير مدعوم. يُسمح بـ: ${typeLabel}`;
+    return t("نوع الملف \"{0}\" غير مدعوم. يُسمح بـ: {1}", [file.type || "غير معروف", typeLabel]);
   }
   return null;
 }
@@ -92,9 +93,9 @@ async function validateImageDimensions(file: File, maxDimension: number): Promis
       URL.revokeObjectURL(url);
       if (img.naturalWidth > maxDimension || img.naturalHeight > maxDimension) {
         resolve(
-          `أبعاد الصورة كبيرة جداً (${img.naturalWidth}×${img.naturalHeight}). ` +
-          `الحد الأقصى: ${maxDimension}×${maxDimension} بكسل. ` +
-          `يرجى تصغير الصورة وإعادة المحاولة.`
+          t("أبعاد الصورة كبيرة جداً ({0}×{1}).", [img.naturalWidth, img.naturalHeight]) +
+          t("الحد الأقصى: {0}×{1} بكسل.", [maxDimension, maxDimension]) +
+          t("يرجى تصغير الصورة وإعادة المحاولة.", [])
         );
       } else {
         resolve(null);
@@ -115,7 +116,7 @@ function parseStorageError(error: any): { userMessage: string; errorType: Upload
 
   if (msg.includes("bucket not found") || msg.includes("no such bucket") || status === 404) {
     return {
-      userMessage: "مجلد التخزين غير موجود. يرجى التواصل مع الدعم — المشكلة في إعداد الخادم.",
+      userMessage: t("مجلد التخزين غير موجود. يرجى التواصل مع الدعم — المشكلة في إعداد الخادم."),
       errorType: "bucket_not_found",
       details: `Bucket not found (status: ${status}). Run migration 20260623130000.`,
     };
@@ -127,7 +128,7 @@ function parseStorageError(error: any): { userMessage: string; errorType: Upload
       msg.includes("policies") ||
       status === 403) {
     return {
-      userMessage: "لا تملك صلاحية رفع الملف. تأكّد من تسجيل دخولك أو حدّث الصفحة وحاول مجدداً.",
+      userMessage: t("لا تملك صلاحية رفع الملف. تأكّد من تسجيل دخولك أو حدّث الصفحة وحاول مجدداً."),
       errorType: "permission_denied",
       details: `RLS policy violation (status: ${status}). Check storage policies for the bucket.`,
     };
@@ -135,7 +136,7 @@ function parseStorageError(error: any): { userMessage: string; errorType: Upload
 
   if (msg.includes("jwt expired") || msg.includes("invalid jwt") || msg.includes("jwt") || status === 401) {
     return {
-      userMessage: "انتهت صلاحية جلستك. يرجى تسجيل الدخول مجدداً ثم إعادة المحاولة.",
+      userMessage: t("انتهت صلاحية جلستك. يرجى تسجيل الدخول مجدداً ثم إعادة المحاولة."),
       errorType: "auth_expired",
       details: `JWT expired or invalid (status: ${status}).`,
     };
@@ -143,7 +144,7 @@ function parseStorageError(error: any): { userMessage: string; errorType: Upload
 
   if (msg.includes("already exists") || msg.includes("duplicate") || msg.includes("409") || status === 409) {
     return {
-      userMessage: "ملف بنفس الاسم موجود مسبقاً. جارٍ الاستبدال…",
+      userMessage: t("ملف بنفس الاسم موجود مسبقاً. جارٍ الاستبدال…"),
       errorType: "path_conflict",
       details: `File already exists (status: ${status}).`,
     };
@@ -151,7 +152,7 @@ function parseStorageError(error: any): { userMessage: string; errorType: Upload
 
   if (msg.includes("quota") || msg.includes("limit exceeded") || msg.includes("insufficient storage")) {
     return {
-      userMessage: "مساحة التخزين ممتلئة. يرجى التواصل مع الدعم.",
+      userMessage: t("مساحة التخزين ممتلئة. يرجى التواصل مع الدعم."),
       errorType: "quota_exceeded",
       details: `Storage quota exceeded.`,
     };
@@ -159,7 +160,7 @@ function parseStorageError(error: any): { userMessage: string; errorType: Upload
 
   if (msg.includes("payload too large") || msg.includes("413") || status === 413) {
     return {
-      userMessage: "حجم الملف يتجاوز الحد المسموح به في الخادم.",
+      userMessage: t("حجم الملف يتجاوز الحد المسموح به في الخادم."),
       errorType: "file_too_large",
       details: `Payload too large (413).`,
     };
@@ -168,14 +169,14 @@ function parseStorageError(error: any): { userMessage: string; errorType: Upload
   if (msg.includes("network") || msg.includes("timeout") || msg.includes("fetch") ||
       msg.includes("failed to fetch") || status === 0 || status >= 500) {
     return {
-      userMessage: "انقطع الاتصال أثناء الرفع. تحقّق من اتصالك بالإنترنت وحاول مجدداً.",
+      userMessage: t("انقطع الاتصال أثناء الرفع. تحقّق من اتصالك بالإنترنت وحاول مجدداً."),
       errorType: "network_error",
       details: `Network error (status: ${status}).`,
     };
   }
 
   return {
-    userMessage: `تعذّر رفع الملف: ${msg.slice(0, 100)}. يرجى المحاولة مجدداً.`,
+    userMessage: t("تعذّر رفع الملف: {0}. يرجى المحاولة مجدداً.", [msg.slice(0, 100)]),
     errorType: "unknown",
     details: `Unknown error: ${msg}`,
   };
@@ -226,7 +227,7 @@ export async function uploadFile(
   const maxBytes = maxMb * 1024 * 1024;
   if (finalFile.size > maxBytes) {
     const sizeMb = (finalFile.size / 1024 / 1024).toFixed(1);
-    const msg = `حجم الملف كبير (${sizeMb} MB). الحد الأقصى المسموح هو ${maxMb} MB.`;
+    const msg = t("حجم الملف كبير ({0} MB). الحد الأقصى المسموح هو {1} MB.", [sizeMb, maxMb]);
     return { ok: false, error: msg, userMessage: msg, errorType: "file_too_large" };
   }
 
@@ -242,7 +243,7 @@ export async function uploadFile(
     return {
       ok: false,
       error: "no session",
-      userMessage: "انتهت جلستك. يرجى تسجيل الدخول مجدداً.",
+      userMessage: t("انتهت جلستك. يرجى تسجيل الدخول مجدداً."),
       errorType: "auth_expired",
     };
   }
@@ -320,7 +321,7 @@ export function useFileUpload() {
       clearInterval(interval);
       setProgress(0);
       setStatus("error");
-      const msg = "تعذّر رفع الملف. يرجى المحاولة مجدداً.";
+      const msg = t("تعذّر رفع الملف. يرجى المحاولة مجدداً.");
       setErrorMsg(msg);
       toast.error(msg);
       return { ok: false, error: String(e), userMessage: msg, errorType: "unknown" as const };

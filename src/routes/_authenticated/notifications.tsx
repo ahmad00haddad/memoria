@@ -9,6 +9,8 @@ import { Bell, CheckCheck, ChevronLeft } from "lucide-react";
 import { ListSkeleton } from "@/components/ui/loading";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ageLabel } from "@/components/dashboard/focus";
+import { locale } from "@/i18n";
+import { t as tr, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/notifications")({ component: NotificationsPage });
 
@@ -16,10 +18,10 @@ function dayGroup(iso: string) {
   const d = new Date(iso); d.setHours(0, 0, 0, 0);
   const t = new Date(); t.setHours(0, 0, 0, 0);
   const diff = Math.round((t.getTime() - d.getTime()) / 86400000);
-  if (diff === 0) return "اليوم";
-  if (diff === 1) return "أمس";
-  if (diff < 7) return "هذا الأسبوع";
-  return "أقدم";
+  if (diff === 0) return tr("اليوم");
+  if (diff === 1) return tr("أمس");
+  if (diff < 7) return tr("هذا الأسبوع");
+  return tr("أقدم");
 }
 
 function NotificationsPage() {
@@ -41,7 +43,7 @@ function NotificationsPage() {
       try {
         await load();
       } catch (error: any) {
-        setLoadError(error?.message || "تعذّر تحميل الإشعارات.");
+        setLoadError(error?.message || tr("تعذّر تحميل الإشعارات."));
       } finally {
         setLoading(false);
       }
@@ -85,22 +87,22 @@ function NotificationsPage() {
       <section className="container-editorial py-12 pb-28 max-w-3xl">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <h1 className="font-serif text-4xl flex items-center gap-3">
-            <Bell className="h-7 w-7 text-gold" /> الإشعارات
-            {unread > 0 && <span className="rounded-full bg-gold px-2.5 py-0.5 font-sans text-sm text-charcoal tabular-nums">{unread}</span>}
+            <Bell className="h-7 w-7 text-gold" />{" "}{tr("الإشعارات")}
+            {unread > 0 && <span className="rounded-full bg-gold px-2.5 py-0.5 font-sans text-sm text-charcoal tabular-nums">{tx(unread)}</span>}
           </h1>
           {unread > 0 && (
             <button onClick={markAll} className="text-sm border border-border px-4 py-2 rounded-full hover:bg-secondary inline-flex items-center gap-2 active:scale-95 transition-transform">
-              <CheckCheck className="h-4 w-4" /> تعليم الكل كمقروء
+              <CheckCheck className="h-4 w-4" />{" "}{tr("تعليم الكل كمقروء")}
             </button>
           )}
         </div>
 
         {items.length > 0 && (
           <div className="mb-6 inline-flex gap-1 rounded-full bg-secondary p-1 text-xs">
-            {([[false, "الكل"], [true, `غير المقروءة (${unread})`]] as const).map(([k, l]) => (
+            {([[false, tr("الكل")], [true, tr("غير المقروءة ({0})", [unread])]] as const).map(([k, l]) => (
               <button key={String(k)} onClick={() => setUnreadOnly(k)} className={`relative rounded-full px-3 py-1.5 ${unreadOnly === k ? "text-foreground" : "text-muted-foreground"}`}>
                 {unreadOnly === k && <motion.span layoutId="notif-filter" className="absolute inset-0 rounded-full bg-card shadow-sm" />}
-                <span className="relative">{l}</span>
+                <span className="relative">{tx(l)}</span>
               </button>
             ))}
           </div>
@@ -113,22 +115,22 @@ function NotificationsPage() {
         ) : items.length === 0 ? (
           <EmptyState
             icon={Bell}
-            title="لا إشعارات بعد"
-            description="تظهر هنا التنبيهات المهمة: طلب حجز جديد، رفع إثبات عربون، توقيع عقد، أو تقييم جديد."
+            title={tr("لا إشعارات بعد")}
+            description={tr("تظهر هنا التنبيهات المهمة: طلب حجز جديد، رفع إثبات عربون، توقيع عقد، أو تقييم جديد.")}
             action={
               <div className="flex flex-wrap justify-center gap-3 text-sm">
-                <Link to="/dashboard/bookings" className="border border-border px-4 py-2 rounded-full hover:bg-secondary">الحجوزات</Link>
-                <Link to="/dashboard/contracts" className="border border-border px-4 py-2 rounded-full hover:bg-secondary">العقود</Link>
+                <Link to="/dashboard/bookings" className="border border-border px-4 py-2 rounded-full hover:bg-secondary">{tr("الحجوزات")}</Link>
+                <Link to="/dashboard/contracts" className="border border-border px-4 py-2 rounded-full hover:bg-secondary">{tr("العقود")}</Link>
               </div>
             }
           />
         ) : shown.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">قرأتِ كل الإشعارات.</div>
+          <div className="rounded-2xl border border-dashed border-border py-12 text-center text-sm text-muted-foreground">{tr("قرأتِ كل الإشعارات.")}</div>
         ) : (
           <div className="space-y-8">
             {groups.map(([g, list]) => (
               <section key={g}>
-                <h2 className="mb-2 text-xs font-medium text-muted-foreground">{g}</h2>
+                <h2 className="mb-2 text-xs font-medium text-muted-foreground">{tx(g)}</h2>
                 <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
                   <AnimatePresence initial={false}>
                     {list.map((n) => (
@@ -137,11 +139,11 @@ function NotificationsPage() {
                           onClick={() => open(n)}
                           className={`group flex w-full items-start gap-3 p-4 text-start transition-colors hover:bg-secondary/50 ${n.link ? "cursor-pointer" : "cursor-default"}`}
                         >
-                          <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full transition-colors duration-500 ${n.is_read ? "bg-transparent" : "bg-gold"}`} aria-label={n.is_read ? undefined : "غير مقروء"} />
+                          <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full transition-colors duration-500 ${n.is_read ? "bg-transparent" : "bg-gold"}`} aria-label={n.is_read ? undefined : tr("غير مقروء")} />
                           <span className="min-w-0 flex-1">
-                            <span className={`block ${n.is_read ? "font-normal" : "font-semibold"}`}>{n.title}</span>
-                            {n.body && <span className="mt-1 block text-sm text-muted-foreground">{n.body}</span>}
-                            <span className="mt-1 block text-[11px] text-muted-foreground" title={new Date(n.created_at).toLocaleString("ar-JO")}>{ageLabel(n.created_at)}</span>
+                            <span className={`block ${n.is_read ? "font-normal" : "font-semibold"}`}>{tx(n.title)}</span>
+                            {n.body && <span className="mt-1 block text-sm text-muted-foreground">{tx(n.body)}</span>}
+                            <span className="mt-1 block text-[11px] text-muted-foreground" title={new Date(n.created_at).toLocaleString(locale("ar-JO"))}>{ageLabel(n.created_at)}</span>
                           </span>
                           {n.link && <ChevronLeft className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-x-0.5 group-hover:text-gold" />}
                         </button>

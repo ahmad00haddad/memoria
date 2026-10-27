@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
+import { getLang, dirOf } from "@/i18n";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { t, tx } from "@/i18n";
 
 type ConfirmOptions = {
   title: string;
@@ -50,14 +52,14 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     <ConfirmContext.Provider value={confirm}>
       {children}
       <AlertDialog open={open} onOpenChange={(o) => { if (!o) close(false); }}>
-        <AlertDialogContent dir="rtl">
+        <AlertDialogContent dir={dirOf(getLang())}>
           <AlertDialogHeader>
-            <AlertDialogTitle>{opts?.title ?? "تأكيد"}</AlertDialogTitle>
-            {opts?.description && <AlertDialogDescription className="whitespace-pre-line">{opts.description}</AlertDialogDescription>}
+            <AlertDialogTitle>{opts?.title ?? t("تأكيد")}</AlertDialogTitle>
+            {opts?.description && <AlertDialogDescription className="whitespace-pre-line">{tx(opts.description)}</AlertDialogDescription>}
           </AlertDialogHeader>
           {opts?.requireText && (
             <label className="block space-y-1.5 text-sm">
-              <span className="text-muted-foreground">للتأكيد اكتبي: <strong dir="ltr" className="text-foreground select-all">{opts.requireText}</strong></span>
+              <span className="text-muted-foreground">{t("للتأكيد اكتبي:")}{" "}<strong dir="ltr" className="text-foreground select-all">{tx(opts.requireText)}</strong></span>
               <input
                 autoFocus
                 dir="ltr"
@@ -68,13 +70,13 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             </label>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => close(false)}>{opts?.cancelText ?? "إلغاء"}</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => close(false)}>{opts?.cancelText ?? t("إلغاء")}</AlertDialogCancel>
             <AlertDialogAction
               disabled={!!opts?.requireText && typed.trim() !== opts.requireText}
               onClick={() => close(true)}
               className={opts?.destructive ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
             >
-              {opts?.confirmText ?? "تأكيد"}
+              {opts?.confirmText ?? t("تأكيد")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

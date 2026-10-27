@@ -9,12 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 import { AlertTriangle, RefreshCcw, Home, Eye, EyeOff } from "lucide-react";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول — Memoria · ميموريا" },
-      { name: "description", content: "سجّلي الدخول إلى حساب Memoria لإدارة حجوزاتك، ملفك الشخصي، وباقاتك." },
+      { title: t("تسجيل الدخول — Memoria · ميموريا") },
+      { name: "description", content: t("سجّلي الدخول إلى حساب Memoria لإدارة حجوزاتك، ملفك الشخصي، وباقاتك.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -31,12 +32,12 @@ function LoginError({ error, reset }: any) {
         <AlertTriangle className="h-8 w-8 text-red-500" />
       </div>
       <div className="space-y-2 max-w-md">
-        <h1 className="font-serif text-2xl">عذراً! تعذر تحميل الصفحة</h1>
-        <p className="text-muted-foreground">حدث خطأ في النظام. يرجى المحاولة مرة أخرى.</p>
+        <h1 className="font-serif text-2xl">{t("عذراً! تعذر تحميل الصفحة")}</h1>
+        <p className="text-muted-foreground">{t("حدث خطأ في النظام. يرجى المحاولة مرة أخرى.")}</p>
       </div>
       <div className="flex gap-4">
         <button onClick={reset} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 transition text-sm">
-          <RefreshCcw className="h-4 w-4" /> تحديث الصفحة
+          <RefreshCcw className="h-4 w-4" />{" "}{t("تحديث الصفحة")}
         </button>
       </div>
     </div>
@@ -87,7 +88,7 @@ function LoginPage() {
     const fd = new FormData(e.currentTarget);
     const password = String(fd.get("password") ?? "");
     if (!email.trim() || !password) {
-      setErr("أدخلي البريد الإلكتروني وكلمة المرور.");
+      setErr(t("أدخلي البريد الإلكتروني وكلمة المرور."));
       setShake((n) => n + 1);
       return;
     }
@@ -99,17 +100,17 @@ function LoginPage() {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {
         const m = error.message.toLowerCase();
-        let friendly = "تعذّر تسجيل الدخول. تحقّقي من البريد وكلمة المرور.";
-        if (m.includes("invalid login")) friendly = "البريد أو كلمة المرور غير صحيحة.";
-        else if (m.includes("not confirmed")) { friendly = "لم يُفعَّل بريدك بعد. افتحي رابط التفعيل في بريدك."; setUnconfirmed(true); }
-        else if (m.includes("rate") || m.includes("limit")) friendly = "محاولات كثيرة، حاولي بعد قليل.";
+        let friendly = t("تعذّر تسجيل الدخول. تحقّقي من البريد وكلمة المرور.");
+        if (m.includes("invalid login")) friendly = t("البريد أو كلمة المرور غير صحيحة.");
+        else if (m.includes("not confirmed")) { friendly = t("لم يُفعَّل بريدك بعد. افتحي رابط التفعيل في بريدك."); setUnconfirmed(true); }
+        else if (m.includes("rate") || m.includes("limit")) friendly = t("محاولات كثيرة، حاولي بعد قليل.");
         setErr(friendly);
         setShake((n) => n + 1);
         return;
       }
 
       try { localStorage.setItem("memoria_last_email", email.trim()); } catch { /* ignore */ }
-      setSuccess("أهلاً بعودتك — ننقلك الآن.");
+      setSuccess(t("أهلاً بعودتك — ننقلك الآن."));
       navigate({ to: redirectPath, replace: true });
     } catch (error: any) {
       const message = friendlyError(error);
@@ -125,8 +126,8 @@ function LoginPage() {
       <Header />
       <div className="container-editorial py-16 max-w-md">
         <div className="text-center mb-8">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">بوابة المصوّرين</div>
-          <h1 className="font-serif text-4xl">تسجيل الدخول</h1>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("بوابة المصوّرين")}</div>
+          <h1 className="font-serif text-4xl">{t("تسجيل الدخول")}</h1>
         </div>
         <motion.form
           key={shake}
@@ -136,7 +137,7 @@ function LoginPage() {
           className="space-y-4 bg-card border border-border rounded-2xl p-6 shadow-soft"
         >
           <label className="block">
-            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">البريد الإلكتروني</span>
+            <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("البريد الإلكتروني")}</span>
             <input
               name="email"
               type="email"
@@ -149,16 +150,16 @@ function LoginPage() {
             />
             {emailFix && (
               <button type="button" onClick={() => setEmail(emailFix)} className="mt-1 text-xs text-gold hover:underline">
-                هل تقصدين <span dir="ltr">{emailFix}</span>؟
+                {t("هل تقصدين")}{" "}<span dir="ltr">{tx(emailFix)}</span>{t("؟")}
               </button>
             )}
           </label>
-          <Field label="كلمة المرور" name="password" type="password" autoComplete="current-password" required />
+          <Field label={t("كلمة المرور")} name="password" type="password" autoComplete="current-password" required />
           <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">يبقى دخولك محفوظاً على هذا الجهاز.</span>
-            <Link to="/forgot-password" className="text-gold underline">نسيتِ كلمة المرور؟</Link>
+            <span className="text-muted-foreground">{t("يبقى دخولك محفوظاً على هذا الجهاز.")}</span>
+            <Link to="/forgot-password" className="text-gold underline">{t("نسيتِ كلمة المرور؟")}</Link>
           </div>
-          {success && <p className="text-sm text-emerald-600">{success}</p>}
+          {success && <p className="text-sm text-emerald-600">{tx(success)}</p>}
           <AnimatePresence initial={false}>
           {err && (
             <motion.div key="login-error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
@@ -169,12 +170,12 @@ function LoginPage() {
                   type="button"
                   onClick={async () => {
                     const { error } = await supabase.auth.resend({ type: "signup", email: email.trim(), options: { emailRedirectTo: `${window.location.origin}/dashboard` } });
-                    if (error) toast.error("تعذّر إعادة الإرسال الآن");
-                    else toast.success("أعدنا إرسال رابط التفعيل");
+                    if (error) toast.error(t("تعذّر إعادة الإرسال الآن"));
+                    else toast.success(t("أعدنا إرسال رابط التفعيل"));
                   }}
                   className="ms-2 text-gold underline"
                 >
-                  إعادة إرسال الرابط
+                  {t("إعادة إرسال الرابط")}
                 </button>
               )}
             </div>
@@ -183,21 +184,21 @@ function LoginPage() {
           </AnimatePresence>
           <button disabled={loading} className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory py-3 rounded-full hover:opacity-90 disabled:opacity-60 active:scale-[0.99] transition-transform dark:bg-gold dark:text-charcoal">
             {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
-            {loading ? "ندخلك…" : "دخول"}
+            {loading ? t("ندخلك…") : t("دخول")}
           </button>
           <button
             type="button"
             disabled={loading || linkSent}
             onClick={async () => {
-              if (!email.trim()) { setErr("أدخلي بريدك أولاً لنرسل لكِ رابط الدخول."); setShake((n) => n + 1); return; }
+              if (!email.trim()) { setErr(t("أدخلي بريدك أولاً لنرسل لكِ رابط الدخول.")); setShake((n) => n + 1); return; }
               setErr(null);
               const { error } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}${redirectPath}` } });
-              if (error) { setErr("تعذّر إرسال الرابط. تأكّدي أن البريد مسجّل لدينا."); return; }
+              if (error) { setErr(t("تعذّر إرسال الرابط. تأكّدي أن البريد مسجّل لدينا.")); return; }
               setLinkSent(true);
             }}
             className="w-full text-xs text-muted-foreground hover:text-foreground disabled:opacity-70"
           >
-            {linkSent ? "أرسلنا رابط دخول إلى بريدك — افتحيه من هذا الجهاز" : "ادخلي برابط على بريدك بدل كلمة المرور"}
+            {linkSent ? t("أرسلنا رابط دخول إلى بريدك — افتحيه من هذا الجهاز") : t("ادخلي برابط على بريدك بدل كلمة المرور")}
           </button>
 
           <div className="relative my-4">
@@ -205,7 +206,7 @@ function LoginPage() {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">أو</span>
+              <span className="bg-card px-2 text-muted-foreground">{t("أو")}</span>
             </div>
           </div>
 
@@ -225,7 +226,7 @@ function LoginPage() {
               });
               if (error) {
                 setLoading(false);
-                setErr("تعذّر تسجيل الدخول عبر Google. حاولي مجدداً.");
+                setErr(t("تعذّر تسجيل الدخول عبر Google. حاولي مجدداً."));
               }
             }}
             className="w-full border border-border py-3 rounded-sm hover:bg-secondary disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
@@ -236,13 +237,13 @@ function LoginPage() {
               <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
-            <span>تسجيل الدخول بواسطة Google</span>
+            <span>{t("تسجيل الدخول بواسطة Google")}</span>
           </button>
           <p className="text-sm text-center text-muted-foreground">
-            مصوّرة جديدة؟ <Link to="/photographers/join" className="text-gold underline">أنشئي حسابك</Link>
+            {t("مصوّرة جديدة؟")}{" "}<Link to="/photographers/join" className="text-gold underline">{t("أنشئي حسابك")}</Link>
           </p>
           <p className="text-xs text-center text-muted-foreground">
-            عروس؟ لا تحتاجين حساباً — <Link to="/search" className="underline">ابحثي عن مصوّرة مباشرة</Link>.
+            {t("عروس؟ لا تحتاجين حساباً —")}{" "}<Link to="/search" className="underline">{t("ابحثي عن مصوّرة مباشرة")}</Link>.
           </p>
         </motion.form>
       </div>
@@ -258,27 +259,27 @@ function Field({ label, name, type, autoComplete, required }: { label: string; n
   
   return (
     <label className="block relative">
-      <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{label}</span>
+      <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{tx(label)}</span>
       <input
         name={name}
         type={isPassword && show ? "text" : type}
         autoComplete={autoComplete}
         required={required}
         onKeyUp={(e) => setCaps(e.getModifierState?.("CapsLock") ?? false)}
-        className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60 pr-3 pl-10" dir="ltr"
+        className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60 ps-3 pe-10" dir="ltr"
       />
       {isPassword && (
         <button
           type="button"
           onClick={() => setShow(!show)}
-          className="absolute left-3 top-[32px] text-muted-foreground hover:text-foreground transition-colors"
-          aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+          className="absolute end-3 top-[32px] text-muted-foreground hover:text-foreground transition-colors"
+          aria-label={show ? t("إخفاء كلمة المرور") : t("إظهار كلمة المرور")}
           tabIndex={-1}
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       )}
-      {isPassword && caps && <span className="mt-1 block text-xs text-amber-700 dark:text-amber-400">زر الأحرف الكبيرة (Caps Lock) مفعّل</span>}
+      {isPassword && caps && <span className="mt-1 block text-xs text-amber-700 dark:text-amber-400">{t("زر الأحرف الكبيرة (Caps Lock) مفعّل")}</span>}
     </label>
   );
 }

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 // ============================================================================
 // paytabs.functions.ts — بدء دفع الاشتراك عبر PayTabs (يدوي، كل فترة)
@@ -39,7 +40,7 @@ export const startPayTabsSubscription = createServerFn({ method: "POST" })
       supabaseAdmin.auth.admin.getUserById(userId),
     ]);
     const email = u?.user?.email;
-    if (!email) throw new Error("لا يوجد بريد إلكتروني على الحساب");
+    if (!email) throw new Error(t("لا يوجد بريد إلكتروني على الحساب"));
 
     const { data: row, error } = await (supabaseAdmin as any)
       .from("subscription_payments")
@@ -54,7 +55,7 @@ export const startPayTabsSubscription = createServerFn({ method: "POST" })
       })
       .select("id")
       .single();
-    if (error || !row) throw new Error(error?.message || "تعذّر إنشاء الدفعة");
+    if (error || !row) throw new Error(error?.message || t("تعذّر إنشاء الدفعة"));
 
     const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
     try {
@@ -62,7 +63,7 @@ export const startPayTabsSubscription = createServerFn({ method: "POST" })
         cartId: row.id,
         amount: plan.jod,
         currency: "JOD",
-        description: `Memoria ${plan.name} — ${plan.months === 12 ? "اشتراك سنوي" : "اشتراك شهري"}`,
+        description: `Memoria ${plan.name} — ${plan.months === 12 ? t("اشتراك سنوي") : t("اشتراك شهري")}`,
         callbackUrl: `${base}/api/public/hooks/paytabs`,
         returnUrl: `${base}/api/public/hooks/paytabs`,
         customer: { name: (prof as any)?.display_name || (prof as any)?.username || "Memoria", email },
@@ -77,6 +78,6 @@ export const startPayTabsSubscription = createServerFn({ method: "POST" })
         .from("subscription_payments")
         .update({ status: "rejected", notes: `PayTabs: ${e?.message || "request failed"}` })
         .eq("id", row.id);
-      throw new Error("تعذّر فتح صفحة الدفع، حاولي مجدداً");
+      throw new Error(t("تعذّر فتح صفحة الدفع، حاولي مجدداً"));
     }
   });

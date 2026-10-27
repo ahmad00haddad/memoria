@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { getLang, dirOf } from "@/i18n";
 import { motion } from "framer-motion";
+import { tx, t } from "@/i18n";
 
 /* صندوق الألعاب: أيقونتان بشكل شاشة الهاتف. اللعبة النشطة دائماً في الخانة الأولى،
    والنقر على أيقونة الأخرى يبدّلهما: اللعبة الجديدة تأخذ مكان القديمة وتتغيّر أيقونتها.
@@ -90,14 +92,14 @@ export function BrideGame() {
     return (
       <>
         <style>{GAME_CSS}</style>
-        <div data-full className="bride-game z-[80] bg-[#1d0e22]" style={boxStyle} dir="rtl">
-          {body}
+        <div data-full className="bride-game z-[80] bg-[#1d0e22]" style={boxStyle} dir={dirOf(getLang())}>
+          {tx(body)}
         </div>
         <button
           type="button"
           onClick={exitFull}
-          aria-label="خروج من ملء الشاشة"
-          className="fixed top-3 right-3 z-[90] flex h-10 w-10 items-center justify-center rounded-full bg-ivory/20 text-ivory"
+          aria-label={t("خروج من ملء الشاشة")}
+          className="fixed top-3 start-3 z-[90] flex h-10 w-10 items-center justify-center rounded-full bg-ivory/20 text-ivory"
         >
           ✕
         </button>
@@ -106,7 +108,7 @@ export function BrideGame() {
   }
 
   return (
-    <div className="bride-game flex flex-col items-center gap-6" dir="rtl">
+    <div className="bride-game flex flex-col items-center gap-6" dir={dirOf(getLang())}>
       <style>{GAME_CSS}</style>
 
       <div className="flex justify-center gap-8 sm:gap-12">
@@ -119,7 +121,7 @@ export function BrideGame() {
               layout
               type="button"
               onClick={() => pick(id)}
-              aria-label={`افتح ${g.name}`}
+              aria-label={t("افتح {0}", [g.name])}
               className="flex flex-col items-center gap-2"
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
@@ -127,26 +129,26 @@ export function BrideGame() {
                 className={`flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl text-2xl shadow-elegant transition-shadow ${isActive ? "ring-2 ring-gold ring-offset-2 ring-offset-background" : "opacity-80 hover:opacity-100"}`}
                 style={{ background: g.bg }}
               >
-                {g.icon}
+                {tx(g.icon)}
               </span>
-              <span className={`text-sm ${isActive ? "font-bold text-foreground" : "text-muted-foreground"}`}>{g.name}</span>
+              <span className={`text-sm ${isActive ? "font-bold text-foreground" : "text-muted-foreground"}`}>{tx(g.name)}</span>
             </motion.button>
           );
         })}
       </div>
 
       <div className="flex items-center gap-3">
-        <h2 className="font-serif text-2xl sm:text-3xl text-center">{game.name}</h2>
+        <h2 className="font-serif text-2xl sm:text-3xl text-center">{tx(game.name)}</h2>
         <button
           type="button"
           onClick={enterFull}
           className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          ⛶ ملء الشاشة
+          {t("⛶ ملء الشاشة")}
         </button>
       </div>
 
-      {body}
+      {tx(body)}
     </div>
   );
 }
@@ -179,13 +181,13 @@ function CanvasGame({ full }: { full: boolean }) {
 
   return (
     <div className={full ? "w-full h-full flex items-center justify-center" : "w-full flex flex-col items-center gap-4"}>
-      <div id="rot">📱↻ أدِيري الهاتف أفقياً لتجربة أفضل</div>
+      <div id="rot">{t("📱↻ أدِيري الهاتف أفقياً لتجربة أفضل")}</div>
       <canvas id="c"></canvas>
       <div id="bar" className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
-        <span>مسافة / ↑ : قفز (اضغطي مطولاً لقفزة أعلى)</span>
-        <span>موبايل: المسي الشاشة للقفز</span>
-        <button id="mute">الصوت: تشغيل</button>
-        <button id="share" hidden>شاركي نتيجتك على انستغرام</button>
+        <span>{t("مسافة / ↑ : قفز (اضغطي مطولاً لقفزة أعلى)")}</span>
+        <span>{t("موبايل: المسي الشاشة للقفز")}</span>
+        <button id="mute">{t("الصوت: تشغيل")}</button>
+        <button id="share" hidden>{t("شاركي نتيجتك على انستغرام")}</button>
       </div>
     </div>
   );
@@ -196,7 +198,7 @@ function TrapsGame({ full }: { full: boolean }) {
     return (
       <iframe
         src="/game/traps.html"
-        title="طريق مليان فخاخ"
+        title={t("طريق مليان فخاخ")}
         className="block h-full w-full border-0"
         allow="autoplay; fullscreen"
       />
@@ -206,15 +208,15 @@ function TrapsGame({ full }: { full: boolean }) {
     <div className="w-full flex flex-col items-center gap-4">
       <iframe
         src="/game/traps.html"
-        title="طريق مليان فخاخ"
+        title={t("طريق مليان فخاخ")}
         className="block w-full max-w-[1100px] border-0 rounded-[18px] shadow-elegant"
         style={{ aspectRatio: "960 / 520" }}
         allow="autoplay; fullscreen"
       />
       <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
-        <span>← → أو A D للمشي</span>
-        <span>مسافة / ↑ للقفز</span>
-        <span>R لإعادة المحاولة</span>
+        <span>{t("← → أو A D للمشي")}</span>
+        <span>{t("مسافة / ↑ للقفز")}</span>
+        <span>{t("R لإعادة المحاولة")}</span>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { getLang, dirOf } from "@/i18n";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/site/Header";
@@ -7,14 +8,15 @@ import {
   Smartphone, Download, Share2, Plus, CheckCircle2, Wifi, Zap, Bell,
   Apple, Chrome, MonitorSmartphone, ChevronRight, Store, Home,
 } from "lucide-react";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/app")({
   head: () => ({
     meta: [
-      { title: "حمّل تطبيق Memoria على هاتفك | Memoria" },
+      { title: t("حمّل تطبيق Memoria على هاتفك | Memoria") },
       {
         name: "description",
-        content: "ثبّتي Memoria كتطبيق على هاتفك (iPhone أو Android) أو على سطح المكتب — يعمل دون متجر، بسرعة، ومع أيقونة على الشاشة الرئيسية.",
+        content: t("ثبّتي Memoria كتطبيق على هاتفك (iPhone أو Android) أو على سطح المكتب — يعمل دون متجر، بسرعة، ومع أيقونة على الشاشة الرئيسية."),
       },
     ],
     links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/app" }],
@@ -92,7 +94,7 @@ function AppDownloadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col" dir="rtl">
+    <div className="min-h-screen bg-background text-foreground flex flex-col" dir={dirOf(getLang())}>
       <Header />
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-12 space-y-10">
@@ -114,15 +116,15 @@ function AppDownloadPage() {
               >
                 🎉
               </motion.div>
-              <h2 className="font-serif text-3xl">التطبيق جاهز!</h2>
+              <h2 className="font-serif text-3xl">{t("التطبيق جاهز!")}</h2>
               <p className="text-muted-foreground">
-                يمكنك الآن فتح Memoria مباشرة من شاشتك الرئيسية
+                {t("يمكنك الآن فتح Memoria مباشرة من شاشتك الرئيسية")}
               </p>
               <Link
                 to="/"
                 className="bg-charcoal text-ivory px-8 py-3 rounded-sm font-medium hover:opacity-90 transition-opacity"
               >
-                ابدئي الآن
+                {t("ابدئي الآن")}
               </Link>
             </motion.div>
           )}
@@ -139,10 +141,10 @@ function AppDownloadPage() {
             <Smartphone className="h-8 w-8 text-gold" />
           </div>
           <h1 className="font-serif text-3xl md:text-4xl">
-            {platformHeadline[platform]}
+            {tx(platformHeadline[platform])}
           </h1>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-            بدون متجر · يعمل بدون إنترنت · سريع كتطبيق أصلي
+            {t("بدون متجر · يعمل بدون إنترنت · سريع كتطبيق أصلي")}
           </p>
         </motion.div>
 
@@ -154,13 +156,13 @@ function AppDownloadPage() {
           className="grid grid-cols-3 gap-3 text-center text-xs"
         >
           {[
-            { icon: Wifi, label: "يعمل أوفلاين" },
-            { icon: Zap, label: "سريع جداً" },
-            { icon: Bell, label: "إشعارات فورية" },
+            { icon: Wifi, label: t("يعمل أوفلاين") },
+            { icon: Zap, label: t("سريع جداً") },
+            { icon: Bell, label: t("إشعارات فورية") },
           ].map(({ icon: Icon, label }) => (
             <div key={label} className="border border-border rounded-sm py-3 px-2 flex flex-col items-center gap-1.5">
               <Icon className="h-4 w-4 text-gold" />
-              <span className="text-muted-foreground">{label}</span>
+              <span className="text-muted-foreground">{tx(label)}</span>
             </div>
           ))}
         </motion.div>
@@ -170,7 +172,7 @@ function AppDownloadPage() {
           <section className="space-y-4">
             <h2 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
               <Apple className="h-4 w-4" />
-              {platform === "ios" ? "خطوات التثبيت على iPhone" : "التثبيت على iPhone"}
+              {platform === "ios" ? t("خطوات التثبيت على iPhone") : t("التثبيت على iPhone")}
             </h2>
             {iosSteps.map((step, index) => (
               <motion.div
@@ -187,9 +189,9 @@ function AppDownloadPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
                     <step.icon className="h-4 w-4 text-gold" />
-                    <span className="font-medium text-sm">{step.label}</span>
+                    <span className="font-medium text-sm">{tx(step.label)}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{step.desc}</p>
+                  <p className="text-xs text-muted-foreground">{tx(step.desc)}</p>
                 </div>
                 {index < iosSteps.length - 1 && (
                   <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 self-center" />
@@ -204,7 +206,7 @@ function AppDownloadPage() {
           <section className="space-y-4">
             <h2 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
               <Store className="h-4 w-4" />
-              تثبيت التطبيق على Android
+              {t("تثبيت التطبيق على Android")}
             </h2>
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -216,8 +218,8 @@ function AppDownloadPage() {
                 <Download className="h-6 w-6 text-gold" />
               </div>
               <div>
-                <p className="font-medium mb-1">جاهز للتثبيت</p>
-                <p className="text-xs text-muted-foreground">سيُضاف التطبيق إلى شاشتك الرئيسية فوراً</p>
+                <p className="font-medium mb-1">{t("جاهز للتثبيت")}</p>
+                <p className="text-xs text-muted-foreground">{t("سيُضاف التطبيق إلى شاشتك الرئيسية فوراً")}</p>
               </div>
               {busy && canInstall && (
                 <div className="w-full h-0.5 bg-border rounded-full overflow-hidden">
@@ -235,11 +237,11 @@ function AppDownloadPage() {
                   disabled={busy}
                   className="w-full bg-gold text-background font-medium py-3 rounded-sm disabled:opacity-60 transition-opacity"
                 >
-                  {busy ? "جاري التثبيت…" : "ثبّت التطبيق"}
+                  {busy ? t("جاري التثبيت…") : t("ثبّت التطبيق")}
                 </button>
               ) : (
                 <p className="text-xs text-muted-foreground border border-dashed border-border rounded-sm px-4 py-3 w-full">
-                  افتحي الصفحة في Chrome ثم اختاري «إضافة إلى الشاشة الرئيسية» من القائمة ⋮
+                  {t("افتحي الصفحة في Chrome ثم اختاري «إضافة إلى الشاشة الرئيسية» من القائمة ⋮")}
                 </p>
               )}
             </motion.div>
@@ -251,7 +253,7 @@ function AppDownloadPage() {
           <section className="space-y-4">
             <h2 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
               <MonitorSmartphone className="h-4 w-4" />
-              تثبيت التطبيق على الكمبيوتر
+              {t("تثبيت التطبيق على الكمبيوتر")}
             </h2>
             {desktopSteps.map((step, index) => (
               <motion.div
@@ -268,9 +270,9 @@ function AppDownloadPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
                     <step.icon className="h-4 w-4 text-gold" />
-                    <span className="font-medium text-sm">{step.label}</span>
+                    <span className="font-medium text-sm">{tx(step.label)}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground">{step.desc}</p>
+                  <p className="text-xs text-muted-foreground">{tx(step.desc)}</p>
                 </div>
               </motion.div>
             ))}
@@ -291,7 +293,7 @@ function AppDownloadPage() {
                   disabled={busy}
                   className="w-full bg-gold text-background font-medium py-3 rounded-sm disabled:opacity-60 transition-opacity"
                 >
-                  {busy ? "جاري التثبيت…" : "ثبّت التطبيق الآن"}
+                  {busy ? t("جاري التثبيت…") : t("ثبّت التطبيق الآن")}
                 </button>
               </motion.div>
             )}
@@ -306,9 +308,9 @@ function AppDownloadPage() {
             transition={{ delay: 0.5 }}
             className="text-center text-xs text-muted-foreground"
           >
-            إذا كنتِ قد ثبّتتِ التطبيق بالفعل،{" "}
+            {t("إذا كنتِ قد ثبّتتِ التطبيق بالفعل،")}{" "}
             <Link to="/" className="underline underline-offset-2">
-              افتحيه من هنا
+              {t("افتحيه من هنا")}
             </Link>
           </motion.p>
         )}

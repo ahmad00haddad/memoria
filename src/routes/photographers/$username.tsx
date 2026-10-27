@@ -32,6 +32,8 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT } from "@/lib/validation";
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
+import { locale } from "@/i18n";
+import { t as tr, tx } from "@/i18n";
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
@@ -52,20 +54,20 @@ export const Route = createFileRoute("/photographers/$username")({
   head: ({ params, loaderData }) => {
     const p = loaderData?.seo as any;
     const name = p?.display_name || params.username;
-    const city = p?.city ? ` في ${p.city}` : "";
-    const desc = p?.bio?.slice(0, 155) || `استعرض أعمال وأسعار المصوّرة ${name}${city} واحجز موعدك مباشرة عبر Memoria.`;
+    const city = p?.city ? tr(" في {0}", [p.city]) : "";
+    const desc = p?.bio?.slice(0, 155) || tr("استعرض أعمال وأسعار المصوّرة {0}{1} واحجز موعدك مباشرة عبر Memoria.", [name, city]);
     const rawImage = p?.cover_url || p?.avatar_url || undefined;
     const image = rawImage && rawImage.startsWith("/") ? `https://memoria-production.ahmad000haddad.workers.dev${rawImage}` : rawImage;
     const url = `https://memoria-production.ahmad000haddad.workers.dev/photographers/${params.username}`;
     const meta: Array<Record<string, string>> = [
-      { title: `${name} — مصوّرة أعراس${city} | Memoria` },
+      { title: tr("{0} — مصوّرة أعراس{1} | Memoria", [name, city]) },
       { name: "description", content: desc },
-      { property: "og:title", content: `${name} — مصوّرة أعراس${city}` },
+      { property: "og:title", content: tr("{0} — مصوّرة أعراس{1}", [name, city]) },
       { property: "og:description", content: desc },
       { property: "og:type", content: "profile" },
       { property: "og:url", content: url },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: `${name} — مصوّرة أعراس${city}` },
+      { name: "twitter:title", content: tr("{0} — مصوّرة أعراس{1}", [name, city]) },
       { name: "twitter:description", content: desc },
     ];
     if (image) {
@@ -80,14 +82,14 @@ export const Route = createFileRoute("/photographers/$username")({
       description: desc,
       image: image || undefined,
       url,
-      areaServed: p?.city || "الأردن",
+      areaServed: p?.city || tr("الأردن"),
       address: p?.city
         ? { "@type": "PostalAddress", addressLocality: p.city, addressCountry: "JO" }
         : undefined,
       priceRange: "$$",
       makesOffer: {
         "@type": "Offer",
-        itemOffered: { "@type": "Service", name: "تصوير أعراس ومناسبات" },
+        itemOffered: { "@type": "Service", name: tr("تصوير أعراس ومناسبات") },
       },
     };
     return {
@@ -236,14 +238,14 @@ function PhotographerPage() {
   const { scrollYProgress } = useScroll();
   const progressX = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
 
-  if (loading) return <FallbackPage>جاري التحميل…</FallbackPage>;
+  if (loading) return <FallbackPage>{tr("جاري التحميل…")}</FallbackPage>;
   if (loadFailed) return (
     <FallbackPage>
-      تعذّر تحميل صفحة المصوّرة. تحقّقي من الاتصال وحاولي مجدداً.{" "}
-      <button onClick={() => setReloadKey((k) => k + 1)} className="underline text-gold">إعادة المحاولة</button>
+      {tr("تعذّر تحميل صفحة المصوّرة. تحقّقي من الاتصال وحاولي مجدداً.")}{" "}
+      <button onClick={() => setReloadKey((k) => k + 1)} className="underline text-gold">{tr("إعادة المحاولة")}</button>
     </FallbackPage>
   );
-  if (!profile) return <FallbackPage>لا يوجد مصوّر بهذا الاسم. <Link to="/search" className="underline">عُد للبحث</Link></FallbackPage>;
+  if (!profile) return <FallbackPage>{tr("لا يوجد مصوّر بهذا الاسم.")}{" "}<Link to="/search" className="underline">{tr("عُد للبحث")}</Link></FallbackPage>;
 
   // اليوم يُحجَب فقط لو كان في عدم التوفر (Google/يدوي). الحجوزات الفردية لا تحجب اليوم كاملاً
   // بل تُعرض كفترات مشغولة بالساعات حتى يمكن حجز جلسة أخرى في نفس اليوم.
@@ -268,7 +270,7 @@ function PhotographerPage() {
       {/* Idea 8: Scroll Progress Bar */}
       <motion.div
         id="scroll-progress-bar"
-        className="fixed top-0 left-0 right-0 h-1 bg-gold origin-left z-50"
+        className="fixed top-0 end-0 start-0 h-1 bg-gold origin-left z-50"
         style={{ scaleX: progressX }}
       />
       
@@ -281,7 +283,7 @@ function PhotographerPage() {
       <div className="sm:hidden fixed top-0 inset-x-0 z-40 bg-charcoal/80 backdrop-blur-md border-b border-ivory/10 h-14 flex items-center px-4 pt-[env(safe-area-inset-top)]">
         <button
           type="button"
-          aria-label="رجوع"
+          aria-label={tr("رجوع")}
           onClick={() => window.history.back()}
           className="h-8 w-8 bg-ivory/10 rounded-full flex items-center justify-center text-ivory hover:bg-ivory/20"
         >
@@ -294,14 +296,14 @@ function PhotographerPage() {
       <section className="relative bg-charcoal text-ivory grain-overlay overflow-hidden pt-14 sm:pt-0">
         {/* Top meta strip: ISSUE / DATE / FEATURE — like a magazine masthead */}
         <div className="container-editorial pt-8 pb-4 border-b border-ivory/10 flex flex-wrap items-center gap-x-8 gap-y-2 text-[11px] uppercase tracking-[0.35em] opacity-70">
-          <span>Memoria · العدد ٠١</span>
-          <span className="hidden sm:inline">{new Date().toLocaleDateString("ar-JO", { year: "numeric", month: "long" })}</span>
+          <span>{tr("Memoria · العدد ٠١")}</span>
+          <span className="hidden sm:inline">{new Date().toLocaleDateString(locale("ar-JO"), { year: "numeric", month: "long" })}</span>
           <span className="ms-auto inline-flex items-center gap-2">
             <span className="relative inline-flex h-1.5 w-1.5">
               <span aria-hidden className="absolute inset-0 rounded-full bg-gold opacity-60 animate-ping opacity-0 [animation-duration:1.6s] [animation-iteration-count:2] [animation-delay:0.8s]" />
               <span className="relative h-1.5 w-1.5 rounded-full bg-gold" />
             </span>
-            ملف المصوّرة
+            {tr("ملف المصوّرة")}
           </span>
         </div>
 
@@ -316,7 +318,7 @@ function PhotographerPage() {
             <div>
               {profile.is_demo && (
                 <div className="mb-4 inline-block rounded-full border border-gold/60 bg-charcoal/60 px-4 py-1.5 text-xs text-ivory backdrop-blur">
-                  نسخة تجريبية للمصوّرات فقط، لتري كيف سيبدو حسابك. الحجز يعمل بشكل طبيعي، أما التحويل فغير متاح.
+                  {tr("نسخة تجريبية للمصوّرات فقط، لتري كيف سيبدو حسابك. الحجز يعمل بشكل طبيعي، أما التحويل فغير متاح.")}
                 </div>
               )}
               <div className="text-[11px] uppercase tracking-[0.5em] text-gold mb-4">
@@ -326,7 +328,7 @@ function PhotographerPage() {
                 <span className="relative mb-5 inline-block">
                   <motion.img
                     src={profile.avatar_url}
-                    alt={profile.display_name}
+                    alt={tx(profile.display_name)}
                     className="h-24 w-24 sm:h-28 sm:w-28 rounded-full object-cover border-2 border-transparent shadow-elegant"
                     initial={intro ? { opacity: 0, scale: 0.92 } : false}
                     animate={{ opacity: 1, scale: 1 }}
@@ -350,17 +352,17 @@ function PhotographerPage() {
                 {profile.verification_status === "verified" && <VerifiedBadge />}
                 {profile.is_featured && (
                   <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30">
-                    <Star className="h-3 w-3 fill-gold" /> اختيار المحرّر
+                    <Star className="h-3 w-3 fill-gold" />{" "}{tr("اختيار المحرّر")}
                   </span>
                 )}
                 {/* ⚡ تلميح: سرعة الرد */}
-                <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30" title="هذه المصورة ترد بسرعة على طلبات الحجز">
-                  <span className="text-emerald-400">⚡</span> ترد سريعاً
+                <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30" title={tr("هذه المصورة ترد بسرعة على طلبات الحجز")}>
+                  <span className="text-emerald-400">⚡</span>{" "}{tr("ترد سريعاً")}
                 </span>
               </div>
               {profile.bio && (
                 <p className="max-w-md text-base sm:text-lg leading-[1.8] opacity-85 whitespace-pre-line mb-8">
-                  {profile.bio}
+                  {tx(profile.bio)}
                 </p>
               )}
               <div className="flex gap-3 flex-wrap">
@@ -370,7 +372,7 @@ function PhotographerPage() {
                   onClick={() => scrollTo("book")}
                   className="hidden sm:inline-flex group relative overflow-hidden bg-ivory text-charcoal px-8 py-3.5 rounded-sm font-medium transition before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-gold/40 before:to-transparent before:transition-transform before:duration-700"
                 >
-                  <span className="relative">احجزي الآن</span>
+                  <span className="relative">{tr("احجزي الآن")}</span>
                 </motion.button>
                 <motion.button
                   whileHover={{ y: -2 }}
@@ -378,16 +380,16 @@ function PhotographerPage() {
                   onClick={() => scrollTo("packages")}
                   className="w-full sm:w-auto border border-ivory/40 text-ivory px-8 py-3.5 rounded-sm hover:bg-ivory/10 transition"
                 >
-                  الباقات
+                  {tr("الباقات")}
                 </motion.button>
               </div>
             </div>
 
             {/* Magazine-style stats row */}
             <div className="mt-12 grid grid-cols-3 gap-4 border-t border-ivory/10 pt-6">
-              <Stat label="التقييم" value={reviews.length ? <CountTo onMount to={avgRating} decimals={1} locale="en" delay={0.6} /> : "—"} sub={reviews.length ? `${reviews.length} مراجعة` : "جديد"} />
-              <Stat label="الموقع" value={profile.city || "—"} sub={profile.base_location || "الأردن"} />
-              <Stat label="الباقات" value={<CountTo onMount to={pricing.filter((p) => p.package !== "addon").length} locale="en" delay={0.7} duration={1} />} sub="باقة احترافية" />
+              <Stat label={tr("التقييم")} value={reviews.length ? <CountTo onMount to={avgRating} decimals={1} locale="en" delay={0.6} /> : "—"} sub={reviews.length ? tr("{0} مراجعة", [reviews.length]) : tr("جديد")} />
+              <Stat label={tr("الموقع")} value={profile.city || "—"} sub={profile.base_location || tr("الأردن")} />
+              <Stat label={tr("الباقات")} value={<CountTo onMount to={pricing.filter((p) => p.package !== "addon").length} locale="en" delay={0.7} duration={1} />} sub={tr("باقة احترافية")} />
             </div>
           </motion.div>
 
@@ -401,7 +403,7 @@ function PhotographerPage() {
             {(profile.cover_url || profile.avatar_url) && (
               <ProgressiveImage
                 src={profile.cover_url || profile.avatar_url!}
-                alt={profile.display_name}
+                alt={tx(profile.display_name)}
                 className="absolute inset-0 h-full w-full object-cover"
               />
             )}
@@ -412,14 +414,14 @@ function PhotographerPage() {
             <div className="absolute bottom-4 end-4 sm:bottom-6 sm:end-6 max-w-[260px]">
               <div className="bg-ivory/95 text-charcoal backdrop-blur-sm border border-border rounded-sm p-4 shadow-elegant">
                 <div className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
-                  مختارة من المعرض
+                  {tr("مختارة من المعرض")}
                 </div>
                 <div className="font-serif text-base leading-snug">
-                  «كل صورة قصة، وكل قصة تستحق الفخامة»
+                  {tr("«كل صورة قصة، وكل قصة تستحق الفخامة»")}
                 </div>
                 {profile.city && (
                   <div className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" /> {profile.city}
+                    <MapPin className="h-3 w-3" /> {tx(profile.city)}
                   </div>
                 )}
               </div>
@@ -437,11 +439,11 @@ function PhotographerPage() {
           unavailCount={blockedDates.length}
         />
         <div className="text-center mb-10">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">الباقات</div>
-          <h2 className="font-serif text-3xl sm:text-4xl">بطاقة الأسعار</h2>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("الباقات")}</div>
+          <h2 className="font-serif text-3xl sm:text-4xl">{tr("بطاقة الأسعار")}</h2>
         </div>
         {pricing.length === 0 ? (
-          <p className="text-center text-muted-foreground">لم تُحدَّد الباقات بعد.</p>
+          <p className="text-center text-muted-foreground">{tr("لم تُحدَّد الباقات بعد.")}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 relative">
             {pricing.filter((p) => p.package !== "addon").map((p, idx, arr) => {
@@ -453,27 +455,27 @@ function PhotographerPage() {
                 <RiseIn key={p.id} index={idx} className={`h-full ${collapsed ? "hidden sm:block" : ""}`}>
                 <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${isPopular ? 'border-gold border-2 ring-1 ring-gold/20 shadow-[0_0_20px_rgba(201,162,39,0.15)]' : 'border-border'}`}>
                   {isPopular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-gold text-charcoal px-3 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider">
-                      الباقة الأكثر طلباً
+                    <span className="absolute -top-3 end-1/2 -translate-x-1/2 bg-gradient-gold text-charcoal px-3 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider">
+                      {tr("الباقة الأكثر طلباً")}
                     </span>
                   )}
-                  <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? "فيديو سينمائي" : "تصوير فوتوغرافي"}</div>
-                  <h3 className="font-serif text-2xl mb-1">{p.label}</h3>
-                  {p.subtitle && <p className="text-sm text-muted-foreground">{p.subtitle}</p>}
-                  <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString("ar-JO")} <span className="text-sm">د.أ</span></div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")}</div>
+                  <h3 className="font-serif text-2xl mb-1">{tx(p.label)}</h3>
+                  {p.subtitle && <p className="text-sm text-muted-foreground">{tx(p.subtitle)}</p>}
+                  <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString(locale("ar-JO"))} <span className="text-sm">{tr("د.أ")}</span></div>
                   {features.length > 0 && (
                     <ul className="mb-6 space-y-2.5 border-t border-border pt-4 text-sm text-muted-foreground">
                       {features.map((ft, i) => (
                         <li key={i} className={`flex items-start gap-2.5 leading-relaxed ${ft.kind === "exclusive" ? "text-foreground font-medium" : ""}`}>
-                          {ft.kind === "exclusive" ? <Star className="mt-0.5 h-4 w-4 shrink-0 fill-gold text-gold" aria-label="ميزة حصرية" />
-                            : ft.kind === "fast" ? <Zap className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-label="تسليم سريع" />
+                          {ft.kind === "exclusive" ? <Star className="mt-0.5 h-4 w-4 shrink-0 fill-gold text-gold" aria-label={tr("ميزة حصرية")} />
+                            : ft.kind === "fast" ? <Zap className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-label={tr("تسليم سريع")} />
                             : <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold/70" aria-hidden />}
                           <span>{emphasizeNumbers(ft.text)}</span>
                         </li>
                       ))}
                     </ul>
                   )}
-                  <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm transition-transform duration-150 ease-out active:scale-[0.97] ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>{p.cta_label?.trim() || "احجزي هذه الباقة"}</button>
+                  <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm transition-transform duration-150 ease-out active:scale-[0.97] ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>{p.cta_label?.trim() || tr("احجزي هذه الباقة")}</button>
                   {pickedPackageId === p.id && <DrawFrame key={`pick-${p.id}`} duration={1.2} />}
                 </div>
                 </RiseIn>
@@ -486,7 +488,7 @@ function PhotographerPage() {
         {completedCount >= 3 && (
           <div className="mt-8 flex justify-center">
             <span className="inline-flex items-center gap-2 text-xs text-amber-700 bg-amber-50 px-4 py-2 rounded-sm border border-amber-200">
-              <span className="animate-pulse">🔥</span> <strong>طلب عالي:</strong> تم حجز هذه المصوّرة مرات عديدة مؤخراً. سارعي بتأكيد حجزكِ!
+              <span className="animate-pulse">🔥</span> <strong>{tr("طلب عالي:")}</strong>{" "}{tr("تم حجز هذه المصوّرة مرات عديدة مؤخراً. سارعي بتأكيد حجزكِ!")}
             </span>
           </div>
         )}
@@ -495,9 +497,7 @@ function PhotographerPage() {
             type="button"
             onClick={() => setShowAllPkgs(true)}
             className="sm:hidden mt-4 w-full min-h-12 rounded-full border border-border text-sm hover:bg-secondary"
-          >
-            عرض كل الباقات ({pricing.filter((p) => p.package !== "addon").length})
-          </button>
+          >{tr("عرض كل الباقات ({0})", [pricing.filter((p) => p.package !== "addon").length])}</button>
         )}
       </section>
 
@@ -505,8 +505,8 @@ function PhotographerPage() {
       {(profile.portfolio_urls?.length ?? 0) > 0 && (
         <section className="container-editorial pb-16">
           <div className="text-center mb-8">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">مختارات</div>
-            <h2 className="font-serif text-3xl">مختارات من الأعمال</h2>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("مختارات")}</div>
+            <h2 className="font-serif text-3xl">{tr("مختارات من الأعمال")}</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {profile.portfolio_urls!.slice(0, 12).map((item, i) => {
@@ -517,7 +517,7 @@ function PhotographerPage() {
                 viewport: { once: true, amount: 0.3 },
                 transition: { duration: 0.8, delay: (i % 4) * 0.08, ease: EASE_OUT },
               } as const;
-              const img = <ProgressiveImage src={u} alt={`${profile.display_name} — معرض الأعمال ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition" />;
+              const img = <ProgressiveImage src={u} alt={tr("{0} — معرض الأعمال {1}", [profile.display_name, i + 1])} className="w-full h-full object-cover hover:scale-105 transition" />;
               // صورة مربوطة برابط (فيديو/ألبوم) تفتح الرابط بدل العارض
               return link ? (
                 <motion.a
@@ -525,11 +525,11 @@ function PhotographerPage() {
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  aria-label={`فتح العمل على ${linkLabel(link)}`}
+                  aria-label={tr("فتح العمل على {0}", [linkLabel(link)])}
                   className="group relative block aspect-square bg-secondary rounded-sm overflow-hidden"
                   {...motionProps}
                 >
-                  {img}
+                  {tx(img)}
                   <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 transition group-hover:bg-black/35">
                     <span className="grid h-12 w-12 place-items-center rounded-full bg-white/90 text-charcoal shadow">
                       {/youtube|vimeo/i.test(linkLabel(link)) ? <Play className="h-5 w-5 fill-current" /> : <ExternalLink className="h-5 w-5" />}
@@ -545,7 +545,7 @@ function PhotographerPage() {
                   className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in"
                   {...motionProps}
                 >
-                  {img}
+                  {tx(img)}
                 </motion.button>
               );
             })}
@@ -574,8 +574,8 @@ function PhotographerPage() {
       {profile.booking_notes && (
         <section className="container-editorial py-12">
           <div className="rounded-sm border border-border bg-card p-6 max-w-2xl mx-auto">
-            <h3 className="font-serif text-xl mb-3">ملاحظات مهمة</h3>
-            <div className="text-sm text-muted-foreground leading-loose whitespace-pre-line">{profile.booking_notes}</div>
+            <h3 className="font-serif text-xl mb-3">{tr("ملاحظات مهمة")}</h3>
+            <div className="text-sm text-muted-foreground leading-loose whitespace-pre-line">{tx(profile.booking_notes)}</div>
           </div>
         </section>
       )}
@@ -583,20 +583,20 @@ function PhotographerPage() {
       {/* REVIEWS */}
       {reviews.length > 0 && (
         <section className="container-editorial pb-12">
-          <h2 className="font-serif text-2xl mb-2 text-center">آراء العملاء</h2>
+          <h2 className="font-serif text-2xl mb-2 text-center">{tr("آراء العملاء")}</h2>
           <div className="flex justify-center mb-4">
             <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] bg-gold/10 text-gold px-3 py-1 rounded-full border border-gold/30">
-              <CheckCircle2 className="h-3 w-3" /> تقييمات من حجوزات مكتملة فقط
+              <CheckCircle2 className="h-3 w-3" />{" "}{tr("تقييمات من حجوزات مكتملة فقط")}
             </span>
           </div>
           <div className="grid sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
             {reviews.slice(0, 6).map((r) => (
               <div key={r.id} className="rounded-sm border border-border bg-card p-4">
                 <div className="flex items-center justify-between">
-                  <div className="font-medium text-sm">{r.client_name}</div>
+                  <div className="font-medium text-sm">{tx(r.client_name)}</div>
                   <div className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-gold text-gold" : "text-muted-foreground/40"}`} />)}</div>
                 </div>
-                {r.comment && <p className="text-sm text-muted-foreground mt-2">{r.comment}</p>}
+                {r.comment && <p className="text-sm text-muted-foreground mt-2">{tx(r.comment)}</p>}
               </div>
             ))}
           </div>
@@ -605,21 +605,21 @@ function PhotographerPage() {
 
       {/* CONTACT FOOTER */}
       <section className="container-editorial pb-8 sm:pb-16 text-center">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">للاستفسار والتواصل</div>
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">{tr("للاستفسار والتواصل")}</div>
         <div className="flex justify-center gap-3">
           {profile.instagram && (
-            <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label="إنستغرام" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
+            <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label={tr("إنستغرام")} className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
           )}
           {profile.whatsapp && (
-            <a href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي..")}`} target="_blank" rel="noreferrer" aria-label="واتساب" className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
+            <a href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(tr("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي.."))}`} target="_blank" rel="noreferrer" aria-label={tr("واتساب")} className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
           )}
           <button
             type="button"
-            aria-label="مشاركة الملف"
+            aria-label={tr("مشاركة الملف")}
             onClick={() => {
               const url = typeof window !== "undefined" ? window.location.href : "";
               if (navigator.share) navigator.share({ title: profile.display_name, url }).catch(() => {});
-              else { navigator.clipboard.writeText(url); toast.success("نُسخ الرابط"); }
+              else { navigator.clipboard.writeText(url); toast.success(tr("نُسخ الرابط")); }
             }}
             className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"
           ><Share2 className="h-5 w-5" /></button>
@@ -638,11 +638,11 @@ function Stat({ label, value, sub }: { label: string; value: React.ReactNode; su
   return (
     <div className="group">
       <div className="text-[11px] uppercase tracking-[0.3em] text-gold/80 mb-1 flex items-center gap-1">
-        {label === "الموقع" && <MapPin className="h-3 w-3 group-hover:animate-bounce" />}
-        {label}
+        {(label === "الموقع" || label === tr("الموقع")) && <MapPin className="h-3 w-3 group-hover:animate-bounce" />}
+        {tx(label)}
       </div>
-      <div className="font-serif text-2xl leading-none">{value}</div>
-      {sub && <div className="text-[11px] opacity-60 mt-1 truncate">{sub}</div>}
+      <div className="font-serif text-2xl leading-none">{tx(value)}</div>
+      {sub && <div className="text-[11px] opacity-60 mt-1 truncate">{tx(sub)}</div>}
     </div>
   );
 }
@@ -655,7 +655,7 @@ function ProgressiveImage({ src, alt, className }: { src: string, alt?: string, 
       <div className={`absolute inset-0 bg-secondary/80 animate-pulse transition-opacity duration-700 ${loaded ? "opacity-0" : "opacity-100"}`} />
       <img
         src={src}
-        alt={alt}
+        alt={tx(alt)}
         className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-md scale-105"}`}
         onLoad={() => setLoaded(true)}
       />
@@ -666,16 +666,16 @@ function ProgressiveImage({ src, alt, className }: { src: string, alt?: string, 
 function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profile; completedCount: number; unavailCount: number }) {
   const joined = profile.created_at ? new Date(profile.created_at) : null;
   const joinedLabel = joined
-    ? joined.toLocaleDateString("ar-JO", { month: "long", year: "numeric" })
+    ? joined.toLocaleDateString(locale("ar-JO"), { month: "long", year: "numeric" })
     : "—";
   const depositLabel = profile.fixed_deposit
-    ? `${Number(profile.fixed_deposit).toLocaleString("ar-JO")} د.أ`
+    ? tr("{0} د.أ", [Number(profile.fixed_deposit).toLocaleString(locale("ar-JO"))])
     : `${profile.deposit_percent || 25}%`;
   const items = [
-    { icon: CalendarCheck, label: "عضوة منذ", value: joinedLabel },
-    { icon: Award, label: "حجوزات مكتملة", value: completedCount > 0 ? String(completedCount) : "جديدة" },
-    { icon: Shield, label: "العربون", value: depositLabel },
-    { icon: Clock, label: "تواريخ مشغولة", value: String(unavailCount) },
+    { icon: CalendarCheck, label: tr("عضوة منذ"), value: joinedLabel },
+    { icon: Award, label: tr("حجوزات مكتملة"), value: completedCount > 0 ? String(completedCount) : tr("جديدة") },
+    { icon: Shield, label: tr("العربون"), value: depositLabel },
+    { icon: Clock, label: tr("تواريخ مشغولة"), value: String(unavailCount) },
   ];
   return (
     <div className="mb-10 grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -685,8 +685,8 @@ function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profi
             <it.icon className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{it.label}</div>
-            <div className="font-serif text-base truncate">{it.value}</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{tx(it.label)}</div>
+            <div className="font-serif text-base truncate">{tx(it.value)}</div>
           </div>
         </div>
       ))}
@@ -720,10 +720,10 @@ function SavedBookingsBanner() {
   if (items.length === 0) return null;
   return (
     <div className="mb-4 rounded-sm border border-emerald-600/30 bg-emerald-600/5 px-3 py-2 text-xs space-y-1">
-      <div className="font-medium text-foreground">لديكِ حجوزات سابقة من هذا الجهاز:</div>
+      <div className="font-medium text-foreground">{tr("لديكِ حجوزات سابقة من هذا الجهاز:")}</div>
       {items.slice(0, 3).map((x) => (
         <Link key={x.token} to="/track/$token" params={{ token: x.token }} className="block underline underline-offset-2 text-emerald-700 dark:text-emerald-400">
-          تتبّع حجزك{x.photographer ? ` مع ${x.photographer}` : ""}{x.date ? ` — ${x.date}` : ""}
+          {tr("تتبّع حجزك")}{x.photographer ? tr("مع {0}", [x.photographer]) : ""}{x.date ? ` — ${x.date}` : ""}
         </Link>
       ))}
     </div>
@@ -791,7 +791,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const clearDraft = () => {
     setF(initial); setAddonQty({}); setStep(1); setConsent(false); setRestoredDraft(false);
     try { window.localStorage.removeItem(storageKey); } catch { /* ignore */ }
-    toast.success("تم مسح المسودة");
+    toast.success(tr("تم مسح المسودة"));
   };
   const navigate = useNavigate();
   const submitFn = useServerFn(submitBookingRequest);
@@ -833,7 +833,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       const endHour = (18 + hours) % 24;
       end = end || `${String(endHour).padStart(2, "0")}:00`;
     }
-    const note = `الباقة: ${pkg.label} — ${Number(pkg.price).toLocaleString("ar-JO")} د.أ${pkg.description ? `\n${pkg.description}` : ""}`;
+    const note = tr("الباقة: {0} — {1} د.أ{2}", [pkg.label, Number(pkg.price).toLocaleString(locale("ar-JO")), pkg.description ? `\n${pkg.description}` : ""]);
     setF({ ...f, package_id: id, start_time: start, end_time: end, client_notes: f.client_notes ? f.client_notes : note });
   };
 
@@ -852,24 +852,24 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
 
   const submit = async () => {
     if (!f.client_name || !f.client_phone || !f.client_email || !f.event_date || !selected) {
-      return toast.error("الرجاء تعبئة الاسم والهاتف والإيميل والتاريخ واختيار الباقة");
+      return toast.error(tr("الرجاء تعبئة الاسم والهاتف والإيميل والتاريخ واختيار الباقة"));
     }
     if (!normalizePhone(f.client_phone)) return toast.error(PHONE_HINT);
     if (!isEmail(f.client_email)) return toast.error(EMAIL_HINT);
     if (!consent) {
-      return toast.error("الرجاء الموافقة على سياسة الخصوصية والشروط");
+      return toast.error(tr("الرجاء الموافقة على سياسة الخصوصية والشروط"));
     }
     const start = f.start_time || "12:00";
     const end = f.end_time || "18:00";
     if (toMin(end) <= toMin(start)) {
-      return toast.error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
+      return toast.error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
     }
-    if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
-    if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
+    if (isBlocked) return toast.error(tr("هذا اليوم غير متاح، الرجاء اختيار يوم آخر"));
+    if (hasConflict) return toast.error(tr("هذا الوقت محجوز، اختاري وقتاً مختلفاً"));
     setSubmitting(true);
     hapticVibrate("light");
     try {
-      const notes = [f.client_notes, f.remaining_note ? `الرصيد المتبقي: ${f.remaining_note}` : ""].filter(Boolean).join("\n");
+      const notes = [f.client_notes, f.remaining_note ? tr("الرصيد المتبقي: {0}", [f.remaining_note]) : ""].filter(Boolean).join("\n");
       const items = [
         { rule_id: selected.id, qty: 1 },
         ...selectedAddons.map((x) => ({ rule_id: x.rule.id, qty: x.qty })),
@@ -909,7 +909,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       try { window.localStorage.removeItem(storageKey); } catch { /* ignore */ }
     } catch (e: any) {
       hapticVibrate("error");
-      toast.error(e.message || "فشل إرسال الطلب");
+      toast.error(e.message || tr("فشل إرسال الطلب"));
     } finally {
       setSubmitting(false);
     }
@@ -921,16 +921,16 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     const price = Number(offerPrice);
     const minPrice = Math.ceil(listed * 0.5);
     if (!f.client_name.trim() || !f.client_phone || !f.client_email || !f.event_date || !f.start_time || !f.end_time) {
-      return toast.error("املئي الاسم والهاتف والإيميل والتاريخ ووقت البداية والنهاية أولاً");
+      return toast.error(tr("املئي الاسم والهاتف والإيميل والتاريخ ووقت البداية والنهاية أولاً"));
     }
     if (!normalizePhone(f.client_phone)) return toast.error(PHONE_HINT);
     if (!isEmail(f.client_email)) return toast.error(EMAIL_HINT);
     if (!Number.isFinite(price) || price < minPrice || price >= listed) {
-      return toast.error(`اقترحي سعراً بين ${minPrice.toLocaleString("ar-JO")} و${(listed - 1).toLocaleString("ar-JO")} د.أ`);
+      return toast.error(tr("اقترحي سعراً بين {0} و{1} د.أ", [minPrice.toLocaleString(locale("ar-JO")), (listed - 1).toLocaleString(locale("ar-JO"))]));
     }
-    if (toMin(f.end_time) <= toMin(f.start_time)) return toast.error("وقت الانتهاء يجب أن يكون بعد وقت البداية");
-    if (isBlocked) return toast.error("هذا اليوم غير متاح، الرجاء اختيار يوم آخر");
-    if (hasConflict) return toast.error("هذا الوقت محجوز، اختاري وقتاً مختلفاً");
+    if (toMin(f.end_time) <= toMin(f.start_time)) return toast.error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
+    if (isBlocked) return toast.error(tr("هذا اليوم غير متاح، الرجاء اختيار يوم آخر"));
+    if (hasConflict) return toast.error(tr("هذا الوقت محجوز، اختاري وقتاً مختلفاً"));
     setOfferSending(true);
     try {
       const res = await offerFn({
@@ -945,7 +945,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       hapticVibrate("success");
     } catch (e: any) {
       hapticVibrate("error");
-      toast.error(e.message || "فشل إرسال العرض");
+      toast.error(e.message || tr("فشل إرسال العرض"));
     } finally {
       setOfferSending(false);
     }
@@ -958,7 +958,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     const originalTitle = document.title;
     const handleVisibilityChange = () => {
       if (document.hidden && !success && (f.event_date || f.package_id)) {
-        document.title = "عُودي لإكمال حجزك! 💍";
+        document.title = tr("عُودي لإكمال حجزك! 💍");
       } else {
         document.title = originalTitle;
       }
@@ -971,10 +971,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     return (
       <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
         <div className="mb-3 flex justify-center"><CheckCircle2 className="h-14 w-14 text-emerald-600" /></div>
-        <h2 className="font-serif text-2xl mb-2">تم إرسال عرضكِ للمصوّرة</h2>
-        <p className="text-muted-foreground mb-5">تم إرسال عرضكِ للمصوّرة. لن يُحجز الموعد إلا بعد موافقتها، وسنراسلكِ على بريدكِ وواتساب.</p>
-        <Link to="/offer/$token" params={{ token: offerSent }} className="block bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90">متابعة حالة العرض</Link>
-        <button onClick={() => { setOfferSent(null); setOfferOpen(false); setOfferPrice(""); }} className="mt-4 text-xs text-muted-foreground underline underline-offset-2">رجوع للنموذج</button>
+        <h2 className="font-serif text-2xl mb-2">{tr("تم إرسال عرضكِ للمصوّرة")}</h2>
+        <p className="text-muted-foreground mb-5">{tr("تم إرسال عرضكِ للمصوّرة. لن يُحجز الموعد إلا بعد موافقتها، وسنراسلكِ على بريدكِ وواتساب.")}</p>
+        <Link to="/offer/$token" params={{ token: offerSent }} className="block bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90">{tr("متابعة حالة العرض")}</Link>
+        <button onClick={() => { setOfferSent(null); setOfferOpen(false); setOfferPrice(""); }} className="mt-4 text-xs text-muted-foreground underline underline-offset-2">{tr("رجوع للنموذج")}</button>
       </div>
     );
   }
@@ -986,23 +986,23 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     return (
       <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
         <div className="mb-3 flex justify-center"><DrawIcon duration={1.1}><CheckCircle2 className="h-14 w-14 text-emerald-600" /></DrawIcon></div>
-        <h2 className="font-serif text-3xl mb-2">{success.verify ? "بقيت خطوة واحدة!" : "تم إرسال طلبك!"}</h2>
+        <h2 className="font-serif text-3xl mb-2">{success.verify ? tr("بقيت خطوة واحدة!") : tr("تم إرسال طلبك!")}</h2>
         <p className="text-muted-foreground mb-5">
-          {success.verify ? "أكّدي طلبك ليصل إلى " + profile.display_name + "." : `تم إخطار ${profile.display_name} وسيتم التواصل معكِ قريبًا.`}
+          {success.verify ? tr("أكّدي طلبك ليصل إلى") + profile.display_name + "." : tr("تم إخطار {0} وسيتم التواصل معكِ قريبًا.", [profile.display_name])}
         </p>
         <div className="relative mb-5 rounded-sm border-2 border-transparent bg-gold/10 p-4 text-start">
           <DrawFrame delay={0.4} />
-          <div className="font-semibold mb-1">🔗 رابط تتبّع حجزك — احفظيه الآن</div>
-          <p className="text-xs text-muted-foreground mb-3 leading-relaxed">هذا الرابط هو طريقتك الوحيدة لمتابعة الحجز ورفع إثبات العربون. انسخيه وأرسليه لنفسك على واتساب. حفظناه أيضاً على هذا الجهاز.</p>
-          <div className="font-mono text-[11px] break-all rounded-sm bg-background border border-border px-2 py-1.5 mb-3 select-all" dir="ltr">{fullUrl}</div>
+          <div className="font-semibold mb-1">{tr("🔗 رابط تتبّع حجزك — احفظيه الآن")}</div>
+          <p className="text-xs text-muted-foreground mb-3 leading-relaxed">{tr("هذا الرابط هو طريقتك الوحيدة لمتابعة الحجز ورفع إثبات العربون. انسخيه وأرسليه لنفسك على واتساب. حفظناه أيضاً على هذا الجهاز.")}</p>
+          <div className="font-mono text-[11px] break-all rounded-sm bg-background border border-border px-2 py-1.5 mb-3 select-all" dir="ltr">{tx(fullUrl)}</div>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => { navigator.clipboard.writeText(fullUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
               className="inline-flex items-center gap-2 rounded-sm bg-charcoal text-ivory px-4 py-2 text-sm">
-              {copied ? <><CheckCircle2 className="h-4 w-4" /> تم النسخ</> : <><ClipboardCopy className="h-4 w-4" /> نسخ الرابط</>}
+              {copied ? <><CheckCircle2 className="h-4 w-4" />{" "}{tr("تم النسخ")}</> : <><ClipboardCopy className="h-4 w-4" />{" "}{tr("نسخ الرابط")}</>}
             </button>
-            <a href={`https://wa.me/?text=${encodeURIComponent("رابط تتبّع حجزي في ميموريا: " + fullUrl)}`} target="_blank" rel="noopener noreferrer"
+            <a href={`https://wa.me/?text=${encodeURIComponent(tr("رابط تتبّع حجزي في ميموريا:") + fullUrl)}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-sm border border-border px-4 py-2 text-sm hover:bg-secondary">
-              <MessageCircle className="h-4 w-4" /> أرسليه لنفسك على واتساب
+              <MessageCircle className="h-4 w-4" />{" "}{tr("أرسليه لنفسك على واتساب")}
             </a>
           </div>
         </div>
@@ -1021,29 +1021,29 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         )}
         <div className="grid grid-cols-2 gap-3 mb-5 text-start">
           <div className="rounded-sm border border-border bg-secondary/40 p-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">رقم الحجز</div>
-            <div className="font-mono text-lg font-semibold mt-1">#{bookingRef}</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{tr("رقم الحجز")}</div>
+            <div className="font-mono text-lg font-semibold mt-1">#{tx(bookingRef)}</div>
           </div>
           <div className="rounded-sm border border-border bg-secondary/40 p-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">الرد المتوقّع</div>
-            <div className="font-serif text-lg mt-1">خلال 24 ساعة</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{tr("الرد المتوقّع")}</div>
+            <div className="font-serif text-lg mt-1">{tr("خلال 24 ساعة")}</div>
           </div>
         </div>
         <div className="bg-gold/5 border border-gold/30 rounded-sm p-4 mb-5 text-start">
-          <div className="text-xs uppercase tracking-[0.2em] text-gold mb-1">الخطوة التالية</div>
+          <div className="text-xs uppercase tracking-[0.2em] text-gold mb-1">{tr("الخطوة التالية")}</div>
           {profile.is_demo
-            ? <p className="text-sm">هذا حساب تجريبي، لذلك لا يوجد تحويل للعربون. يمكنك فتح صفحة تتبع الحجز لترى كيف تبدو.</p>
-            : <p className="text-sm">حوّلي العربون بقيمة <span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span>، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز.</p>}
+            ? <p className="text-sm">{tr("هذا حساب تجريبي، لذلك لا يوجد تحويل للعربون. يمكنك فتح صفحة تتبع الحجز لترى كيف تبدو.")}</p>
+            : <p className="text-sm">{tr("حوّلي العربون بقيمة")}{" "}<span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span>{tr("، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز.")}</p>}
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <button onClick={() => navigate({ to: trackUrl })}
                   className="flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 inline-flex items-center justify-center gap-2">
-            <Send className="h-4 w-4" /> اذهبي لصفحة تتبع الحجز
+            <Send className="h-4 w-4" />{" "}{tr("اذهبي لصفحة تتبع الحجز")}
           </button>
 
         </div>
-        <button onClick={async () => { if (await askConfirm({ title: "إرسال طلب حجز جديد؟", description: "تأكدي أنكِ حفظتِ رابط التتبّع. سيبقى محفوظاً أيضاً في قائمة حجوزاتك على هذا الجهاز.", confirmText: "طلب جديد", cancelText: "رجوع" })) saveSuccess(null); }}
-          className="mt-4 text-xs text-muted-foreground underline underline-offset-2">إرسال طلب حجز جديد</button>
+        <button onClick={async () => { if (await askConfirm({ title: tr("إرسال طلب حجز جديد؟"), description: tr("تأكدي أنكِ حفظتِ رابط التتبّع. سيبقى محفوظاً أيضاً في قائمة حجوزاتك على هذا الجهاز."), confirmText: tr("طلب جديد"), cancelText: tr("رجوع") })) saveSuccess(null); }}
+          className="mt-4 text-xs text-muted-foreground underline underline-offset-2">{tr("إرسال طلب حجز جديد")}</button>
       </div>
     );
   }
@@ -1056,8 +1056,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   
   const goNext = () => {
     if (!stepValid[step]) {
-      const msg = step === 1 ? "يجب اختيار التاريخ والباقة قبل المتابعة للخطوة التالية." :
-                  step === 3 ? "يرجى تعبئة جميع الحقول الإلزامية والموافقة على الشروط." : "يرجى إكمال الحقول المطلوبة.";
+      const msg = step === 1 ? tr("يجب اختيار التاريخ والباقة قبل المتابعة للخطوة التالية.") :
+                  step === 3 ? tr("يرجى تعبئة جميع الحقول الإلزامية والموافقة على الشروط.") : tr("يرجى إكمال الحقول المطلوبة.");
       setFormError(msg);
       toast.error(msg);
       return;
@@ -1065,25 +1065,25 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     setFormError(null);
     setStep((s) => (s === 3 ? 3 : ((s + 1) as 1 | 2 | 3)));
     // Idea 6: Auto-save Draft Toast
-    toast("تم حفظ مسودتك 📝", { position: "bottom-center" });
+    toast(tr("تم حفظ مسودتك 📝"), { position: "bottom-center" });
   };
   const goBack = () => {
     setFormError(null);
     setStep((s) => (s === 1 ? 1 : ((s - 1) as 1 | 2 | 3)));
-    toast("تم حفظ مسودتك 📝", { position: "bottom-center" });
+    toast(tr("تم حفظ مسودتك 📝"), { position: "bottom-center" });
   };
-  const stepLabels = ["التاريخ والباقة", "الموقع والإضافات", "البيانات والتأكيد"];
+  const stepLabels = [tr("التاريخ والباقة"), tr("الموقع والإضافات"), tr("البيانات والتأكيد")];
 
   return (
     <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft">
       <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Book in simple steps</div>
-      <h2 className="font-serif text-3xl mb-4">احجزي بخطوات بسيطة</h2>
+      <h2 className="font-serif text-3xl mb-4">{tr("احجزي بخطوات بسيطة")}</h2>
       <SavedBookingsBanner />
       {restoredDraft && !success && (
         <div className="mb-4 flex items-center justify-between gap-3 rounded-sm border border-gold/30 bg-gold/5 px-3 py-2 text-xs">
-          <span className="text-foreground">تم استعادة مسودتك السابقة تلقائيًا.</span>
+          <span className="text-foreground">{tr("تم استعادة مسودتك السابقة تلقائيًا.")}</span>
           <button type="button" onClick={clearDraft} className="text-muted-foreground hover:text-destructive underline underline-offset-2">
-            بدء من جديد
+            {tr("بدء من جديد")}
           </button>
         </div>
       )}
@@ -1094,7 +1094,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         <motion.div key="form-error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
         <div role="alert" aria-live="assertive" className="mb-4 rounded-sm border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
           <span className="mt-0.5 text-base leading-none">⚠️</span>
-          <span>{formError}</span>
+          <span>{tx(formError)}</span>
         </div>
         </motion.div>
       )}
@@ -1105,14 +1105,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         <div className="flex items-center gap-2 mb-2">
           {[1, 2, 3].map((n) => (
             <div key={n} className="flex-1 flex items-center gap-2">
-              <div className={`h-7 w-7 grid place-items-center rounded-full text-xs font-semibold border transition-colors duration-500 ${step >= n ? "bg-charcoal text-ivory border-charcoal" : "bg-background text-muted-foreground border-border"}`}>{n}</div>
+              <div className={`h-7 w-7 grid place-items-center rounded-full text-xs font-semibold border transition-colors duration-500 ${step >= n ? "bg-charcoal text-ivory border-charcoal" : "bg-background text-muted-foreground border-border"}`}>{tx(n)}</div>
               <div className={`h-1 flex-1 rounded-full transition-colors duration-700 ${step > n ? "bg-charcoal" : step === n ? "bg-gold/60" : "bg-border"}`} />
             </div>
           ))}
         </div>
         <div className="flex justify-between text-[11px] text-muted-foreground">
           {stepLabels.map((l, i) => (
-            <span key={l} className={step === i + 1 ? "text-foreground font-medium" : ""}>{l}</span>
+            <span key={l} className={step === i + 1 ? "text-foreground font-medium" : ""}>{tx(l)}</span>
           ))}
         </div>
       </div>
@@ -1120,14 +1120,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       {step === 1 && (
       <motion.div key="step-1" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
-          <label className="text-sm text-muted-foreground">التاريخ</label>
+          <label className="text-sm text-muted-foreground">{tr("التاريخ")}</label>
           <Popover>
             <PopoverTrigger asChild>
               <button
                 type="button"
                 className={`w-full mt-1 inline-flex items-center justify-between gap-2 border rounded-sm px-3 py-2 bg-background text-sm text-start ${isBlocked ? "border-destructive text-destructive" : "border-border"}`}
               >
-                <span>{selectedDateObj ? format(selectedDateObj, "EEEE d MMMM yyyy", { locale: ar }) : "اختاري اليوم"}</span>
+                <span>{selectedDateObj ? format(selectedDateObj, "EEEE d MMMM yyyy", { locale: ar }) : tr("اختاري اليوم")}</span>
                 <CalendarIcon className="h-4 w-4 opacity-60" />
               </button>
             </PopoverTrigger>
@@ -1145,17 +1145,17 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                 modifiersClassNames={{ blocked: "line-through text-destructive/60 bg-destructive/5" }}
                 locale={ar}
                 // Full Arabic day names overflow the 7 narrow columns
-                formatters={{ formatWeekdayName: (d) => ["أحد", "إثن", "ثلا", "أرب", "خمي", "جمع", "سبت"][d.getDay()] }}
+                formatters={{ formatWeekdayName: (d) => [tr("أحد"), tr("إثن"), tr("ثلا"), tr("أرب"), tr("خمي"), tr("جمع"), tr("سبت")][d.getDay()] }}
                 className="pointer-events-auto"
               />
               <div className="border-t border-border p-2 text-[11px] text-muted-foreground flex flex-col gap-2">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-destructive/20 line-through">×</span> أيام محجوزة/محجوبة</span>
+                  <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-destructive/20 line-through">×</span>{" "}{tr("أيام محجوزة/محجوبة")}</span>
                 </div>
                 {/* Idea 5: Busy Month Hint */}
                 {blockedDates.filter(d => new Date(d).getMonth() === (selectedDateObj?.getMonth() ?? new Date().getMonth())).length >= 15 && (
                   <div className="text-amber-700 bg-amber-50 p-1.5 rounded-sm border border-amber-200">
-                    🔥 <strong>هذا الشهر شبه ممتلئ!</strong> سارعي بتأكيد موعدكِ قبل نفاد الأيام المتاحة.
+                    🔥 <strong>{tr("هذا الشهر شبه ممتلئ!")}</strong>{" "}{tr("سارعي بتأكيد موعدكِ قبل نفاد الأيام المتاحة.")}
                   </div>
                 )}
               </div>
@@ -1163,16 +1163,16 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           </Popover>
           {daysUntil !== null && daysUntil < 7 && !isBlocked && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-sm p-2">
-              💡 <strong>تاريخ قريب!</strong> ننصحكِ بإرسال الطلب الآن والتواصل مع المصوّرة فوراً عبر الواتساب لتأكيد التفرّغ.
+              💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{tr("ننصحكِ بإرسال الطلب الآن والتواصل مع المصوّرة فوراً عبر الواتساب لتأكيد التفرّغ.")}
             </motion.div>
           )}
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="من" type="time" v={f.start_time} on={(v) => setF({ ...f, start_time: v })} />
-          <Field label="إلى" type="time" v={f.end_time} on={(v) => setF({ ...f, end_time: v })} />
+          <Field label={tr("من")} type="time" v={f.start_time} on={(v) => setF({ ...f, start_time: v })} />
+          <Field label={tr("إلى")} type="time" v={f.end_time} on={(v) => setF({ ...f, end_time: v })} />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-sm text-muted-foreground">الباقة الأساسية</label>
+          <label className="text-sm text-muted-foreground">{tr("الباقة الأساسية")}</label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 md:gap-4 mt-2">
               {mainPackages.map((r, idx) => {
                 const isSelected = f.package_id === r.id;
@@ -1190,24 +1190,24 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                     }`}
                   >
                     {isVIP && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-white text-[11px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm z-10">
-                        👑 الخيار المفضل
+                      <div className="absolute -top-3 end-1/2 -translate-x-1/2 bg-gold text-white text-[11px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm z-10">
+                        {tr("👑 الخيار المفضل")}
                       </div>
                     )}
                     
                     <div className="flex justify-between items-start mb-2 w-full">
                       <div className={`font-serif font-bold ${isSelected ? 'text-gold' : 'text-foreground'}`}>
-                        {r.label}
+                        {tx(r.label)}
                       </div>
                     </div>
                     
                     <div className="text-xl font-bold md:mb-3">
-                      {r.price} <span className="text-xs font-normal text-muted-foreground">د.أ</span>
+                      {tx(r.price)} <span className="text-xs font-normal text-muted-foreground">{tr("د.أ")}</span>
                     </div>
                     
                     {r.description && (
                       <div className={`text-xs text-muted-foreground leading-relaxed mt-2 md:mt-auto whitespace-pre-line border-t border-border pt-2 ${isSelected ? "" : "hidden md:block"}`}>
-                        {r.description}
+                        {tx(r.description)}
                       </div>
                     )}
                   </button>
@@ -1215,21 +1215,21 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
               })}
             </div>
         </div>
-        {isBlocked && <p className="text-sm text-destructive sm:col-span-2">⚠️ هذا اليوم غير متاح</p>}
-        {hasConflict && <p className="text-sm text-destructive sm:col-span-2">⚠️ يتعارض مع فترة محجوزة</p>}
+        {isBlocked && <p className="text-sm text-destructive sm:col-span-2">{tr("⚠️ هذا اليوم غير متاح")}</p>}
+        {hasConflict && <p className="text-sm text-destructive sm:col-span-2">{tr("⚠️ يتعارض مع فترة محجوزة")}</p>}
       </motion.div>
       )}
 
       {step === 2 && (
       <motion.div key="step-2" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
-          <Field label="الموقع / القاعة" v={f.venue_address} on={(v) => setF({ ...f, venue_address: v })} />
+          <Field label={tr("الموقع / القاعة")} v={f.venue_address} on={(v) => setF({ ...f, venue_address: v })} />
         </div>
         {addonPackages.length > 0 && (
           <div className="sm:col-span-2">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-muted-foreground">إضافات اختيارية</label>
-              <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">يتم الاتفاق على تفاصيلها لاحقاً</span>
+              <label className="text-sm text-muted-foreground">{tr("إضافات اختيارية")}</label>
+              <span className="text-[11px] bg-secondary text-muted-foreground px-2 py-0.5 rounded-full">{tr("يتم الاتفاق على تفاصيلها لاحقاً")}</span>
             </div>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {addonPackages.map((a) => {
@@ -1239,18 +1239,18 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
                   <div key={a.id} className={`rounded-sm border p-3 text-sm transition ${active ? "border-gold bg-gold/5" : "border-border bg-background"}`}>
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="font-medium truncate">{a.label}</div>
-                        <div className="text-xs text-muted-foreground">{Number(a.price).toLocaleString("ar-JO")} د.أ</div>
+                        <div className="font-medium truncate">{tx(a.label)}</div>
+                        <div className="text-xs text-muted-foreground">{tr("{0} د.أ", [Number(a.price).toLocaleString(locale("ar-JO"))])}</div>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <button type="button" onClick={() => setAddonQty({ ...addonQty, [a.id]: Math.max(0, qty - 1) })}
                                 className="w-7 h-7 grid place-items-center border border-border rounded-sm hover:bg-secondary">−</button>
-                        <span className="w-6 text-center">{qty}</span>
+                        <span className="w-6 text-center">{tx(qty)}</span>
                         <button type="button" onClick={() => setAddonQty({ ...addonQty, [a.id]: qty + 1 })}
                                 className="w-7 h-7 grid place-items-center border border-border rounded-sm hover:bg-secondary">+</button>
                       </div>
                     </div>
-                    {a.description && <div className="text-xs text-muted-foreground mt-1 whitespace-pre-line">{a.description}</div>}
+                    {a.description && <div className="text-xs text-muted-foreground mt-1 whitespace-pre-line">{tx(a.description)}</div>}
                   </div>
                 );
               })}
@@ -1258,23 +1258,23 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           </div>
         )}
         <div className="sm:col-span-2">
-          <Field label="الرصيد المتبقي (اختياري)" v={f.remaining_note} on={(v) => setF({ ...f, remaining_note: v })} />
+          <Field label={tr("الرصيد المتبقي (اختياري)")} v={f.remaining_note} on={(v) => setF({ ...f, remaining_note: v })} />
         </div>
         <div className="sm:col-span-2">
-          <label htmlFor="client-notes" className="text-sm text-muted-foreground">معلومات إضافية</label>
+          <label htmlFor="client-notes" className="text-sm text-muted-foreground">{tr("معلومات إضافية")}</label>
           <textarea id="client-notes" value={f.client_notes} onChange={(e) => setF({ ...f, client_notes: e.target.value })} rows={3} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-sm text-muted-foreground">مستوى الخصوصية</label>
+          <label className="text-sm text-muted-foreground">{tr("مستوى الخصوصية")}</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
             {[
-              { v: "public", t: "صور قابلة للنشر", d: "يحق للمصوّرة استخدام لقطات للترويج" },
-              { v: "private_only", t: "خصوصية تامة", d: "فريق نسائي فقط — لا مشاركة مع أي طرف ثالث" },
+              { v: "public", t: tr("صور قابلة للنشر"), d: tr("يحق للمصوّرة استخدام لقطات للترويج") },
+              { v: "private_only", t: tr("خصوصية تامة"), d: tr("فريق نسائي فقط — لا مشاركة مع أي طرف ثالث") },
             ].map((o) => (
               <button key={o.v} type="button" onClick={() => setF({ ...f, privacy_level: o.v as any })}
                 className={`text-start rounded-sm border p-3 text-sm transition ${f.privacy_level === o.v ? "border-gold bg-gold/5" : "border-border hover:bg-secondary"}`}>
-                <div className="font-medium">{o.t}</div>
-                <div className="text-xs text-muted-foreground mt-1">{o.d}</div>
+                <div className="font-medium">{tx(o.t)}</div>
+                <div className="text-xs text-muted-foreground mt-1">{tx(o.d)}</div>
               </button>
             ))}
           </div>
@@ -1284,13 +1284,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
 
       {step === 3 && (
       <motion.div key="step-3" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label="الاسم" v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
+        <Field label={tr("الاسم")} v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
         <div>
-          <Field label="رقم الجوال (واتساب)" type="tel" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
-          {f.client_phone.length >= 4 && !normalizePhone(f.client_phone) && <p className="mt-1 text-xs text-destructive">{PHONE_HINT}</p>}
+          <Field label={tr("رقم الجوال (واتساب)")} type="tel" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />
+          {f.client_phone.length >= 4 && !normalizePhone(f.client_phone) && <p className="mt-1 text-xs text-destructive">{tx(PHONE_HINT)}</p>}
         </div>
         <div className="sm:col-span-2">
-          <Field label="الإيميل" type="email" v={f.client_email} on={(v) => setF({ ...f, client_email: v })} />
+          <Field label={tr("الإيميل")} type="email" v={f.client_email} on={(v) => setF({ ...f, client_email: v })} />
         </div>
         {selected && (
           <motion.div 
@@ -1300,24 +1300,24 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             transition={{ duration: 0.5 }}
             className="sm:col-span-2 rounded-sm bg-secondary/60 border border-border p-3 text-sm space-y-1.5"
           >
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">ملخّص الطلب</div>
-            <div className="flex justify-between text-muted-foreground"><span>التاريخ</span><span>{selectedDateObj ? format(selectedDateObj, "d MMMM yyyy", { locale: ar }) : "—"}</span></div>
-            <div className="flex justify-between"><span>{selected.label}</span><span>{basePrice.toLocaleString("ar-JO")} د.أ</span></div>
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-1">{tr("ملخّص الطلب")}</div>
+            <div className="flex justify-between text-muted-foreground"><span>{tr("التاريخ")}</span><span>{selectedDateObj ? format(selectedDateObj, "d MMMM yyyy", { locale: ar }) : "—"}</span></div>
+            <div className="flex justify-between"><span>{tx(selected.label)}</span><span>{tr("{0} د.أ", [basePrice.toLocaleString(locale("ar-JO"))])}</span></div>
             {selectedAddons.map((x) => (
               <div key={x.rule.id} className="flex justify-between text-muted-foreground">
-                <span>{x.rule.label} × {x.qty}</span>
-                <span>{(Number(x.rule.price) * x.qty).toLocaleString("ar-JO")} د.أ</span>
+                <span>{tx(x.rule.label)} × {tx(x.qty)}</span>
+                <span>{tr("{0} د.أ", [(Number(x.rule.price) * x.qty).toLocaleString(locale("ar-JO"))])}</span>
               </div>
             ))}
-            <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">المجموع</span><span className="font-semibold">{total.toLocaleString("ar-JO")} د.أ</span></div>
-            <div className="flex justify-between text-gold"><span>العربون المطلوب</span><span className="font-semibold">{deposit.toLocaleString("ar-JO")} د.أ</span></div>
+            <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">{tr("المجموع")}</span><span className="font-semibold">{tr("{0} د.أ", [total.toLocaleString(locale("ar-JO"))])}</span></div>
+            <div className="flex justify-between text-gold"><span>{tr("العربون المطلوب")}</span><span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span></div>
           </motion.div>
         )}
         <label className="sm:col-span-2 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed cursor-pointer">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-gold" />
           <span>
-            أوافق على <Link to="/privacy" className="text-gold underline">سياسة الخصوصية</Link> و
-            <Link to="/terms" className="text-gold underline"> الشروط والأحكام</Link>، وأقرّ بأن بياناتي ستُستخدم لمعالجة هذا الحجز فقط.
+            {tr("أوافق على")}{" "}<Link to="/privacy" className="text-gold underline">{tr("سياسة الخصوصية")}</Link>{" "}{tr("و")}
+            <Link to="/terms" className="text-gold underline">{" "}{tr("الشروط والأحكام")}</Link>{tr("، وأقرّ بأن بياناتي ستُستخدم لمعالجة هذا الحجز فقط.")}
           </span>
         </label>
       </motion.div>
@@ -1327,22 +1327,22 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       <div className="mt-6 flex items-center gap-2">
         {step > 1 && (
           <button type="button" onClick={goBack} className="px-4 py-3 rounded-sm border border-border hover:bg-secondary inline-flex items-center gap-1 text-sm">
-            <ChevronRight className="h-4 w-4" /> السابق
+            <ChevronRight className="h-4 w-4" />{" "}{tr("السابق")}
           </button>
         )}
         {step < 3 ? (
           <button type="button" onClick={goNext} aria-disabled={!stepValid[step]} className={`flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 ${stepValid[step] ? "" : "opacity-50"} inline-flex items-center justify-center gap-1 text-sm`}>
-            التالي <ChevronLeft className="h-4 w-4" />
+            {tr("التالي")}{" "}<ChevronLeft className="h-4 w-4" />
           </button>
         ) : (
           <button onClick={submit} disabled={submitting} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm transition-all duration-300">
             {submitting ? (
               <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> جاري الإرسال…
+                <Loader2 className="h-4 w-4 animate-spin" />{" "}{tr("جاري الإرسال…")}
               </motion.div>
             ) : (
               <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2">
-                <Send className="h-4 w-4" /> إرسال طلب الحجز
+                <Send className="h-4 w-4" />{" "}{tr("إرسال طلب الحجز")}
               </motion.div>
             )}
           </button>
@@ -1353,21 +1353,18 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
         <div className="mt-4 border-t border-border pt-4">
           {!offerOpen ? (
             <button type="button" onClick={() => setOfferOpen(true)} className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-sm py-2.5 hover:bg-secondary">
-              اقترحي سعراً مختلفاً
+              {tr("اقترحي سعراً مختلفاً")}
             </button>
           ) : (
             <div className="rounded-sm border border-border bg-secondary/40 p-4 space-y-3 text-sm">
-              <div className="font-medium">اقترحي سعراً</div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                السعر المعلن لباقة «{selected.label}»: {Number(selected.price).toLocaleString("ar-JO")} د.أ. أقل سعر يمكن اقتراحه: {Math.ceil(Number(selected.price) * 0.5).toLocaleString("ar-JO")} د.أ.
-                نستخدم الاسم والهاتف والإيميل والتاريخ والوقت التي ملأتِها. لن يُحجز الموعد إلا بعد موافقة المصوّرة.
-              </p>
-              <Field label="السعر المقترح (د.أ)" type="number" v={offerPrice} on={setOfferPrice} />
+              <div className="font-medium">{tr("اقترحي سعراً")}</div>
+              <p className="text-xs text-muted-foreground leading-relaxed">{tr("السعر المعلن لباقة «{0}»: {1} د.أ. أقل سعر يمكن اقتراحه: {2} د.أ. نستخدم الاسم والهاتف والإيميل والتاريخ والوقت التي ملأتِها. لن يُحجز الموعد إلا بعد موافقة المصوّرة.", [selected.label, Number(selected.price).toLocaleString(locale("ar-JO")), Math.ceil(Number(selected.price) * 0.5).toLocaleString(locale("ar-JO"))])}</p>
+              <Field label={tr("السعر المقترح (د.أ)")} type="number" v={offerPrice} on={setOfferPrice} />
               <div className="flex gap-2">
                 <button type="button" onClick={sendOffer} disabled={offerSending} className="flex-1 bg-charcoal text-ivory py-2.5 rounded-sm disabled:opacity-60 inline-flex items-center justify-center gap-2">
-                  {offerSending ? <><Loader2 className="h-4 w-4 animate-spin" /> جاري الإرسال…</> : "إرسال العرض"}
+                  {offerSending ? <><Loader2 className="h-4 w-4 animate-spin" />{" "}{tr("جاري الإرسال…")}</> : tr("إرسال العرض")}
                 </button>
-                <button type="button" onClick={() => setOfferOpen(false)} className="px-4 rounded-sm border border-border hover:bg-secondary">إلغاء</button>
+                <button type="button" onClick={() => setOfferOpen(false)} className="px-4 rounded-sm border border-border hover:bg-secondary">{tr("إلغاء")}</button>
               </div>
             </div>
           )}
@@ -1378,15 +1375,15 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
       {step === 3 && (new Date().getHours() >= 0 && new Date().getHours() <= 7) && (
         <div className="mt-4 text-xs text-indigo-800 bg-indigo-50 border border-indigo-200 p-2.5 rounded-sm flex items-start gap-2">
           <span className="text-base leading-none mt-0.5">🌙</span>
-          <span>المصوّرة قد تكون نائمة الآن، سيصلها إشعارك فور استيقاظها.</span>
+          <span>{tr("المصوّرة قد تكون نائمة الآن، سيصلها إشعارك فور استيقاظها.")}</span>
         </div>
       )}
       
       {daySlots.length > 0 && !isBlocked && step === 1 && (
         <div className="mt-3 rounded-sm border border-amber-200 bg-amber-50 p-3 text-sm">
-          <div className="font-medium text-amber-900 mb-1">فترات محجوزة في هذا اليوم:</div>
+          <div className="font-medium text-amber-900 mb-1">{tr("فترات محجوزة في هذا اليوم:")}</div>
           <ul className="text-xs text-amber-800 space-y-0.5">
-            {daySlots.map((s, i) => <li key={i}>• من {s.start_time?.slice(0,5)} إلى {s.end_time?.slice(0,5)}</li>)}
+            {daySlots.map((s, i) => <li key={i}>{tr("• من {0} إلى {1}", [s.start_time?.slice(0,5), s.end_time?.slice(0,5)])}</li>)}
           </ul>
         </div>
       )}
@@ -1407,37 +1404,37 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
   if (profile.is_demo) {
     return (
       <div className="bg-charcoal text-ivory rounded-sm p-6 sm:p-8 h-fit lg:sticky lg:top-24">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">نسخة تجريبية</div>
-        <h3 className="font-serif text-2xl mb-3">التحويل غير متاح</h3>
-        <p className="text-sm text-ivory/80">هذا الحساب للعرض فقط. في حساب مصوّرة حقيقي تظهر هنا معلومات العربون وطريقة التحويل. جرّبي الحجز كما هو، وسيعمل بشكل طبيعي.</p>
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("نسخة تجريبية")}</div>
+        <h3 className="font-serif text-2xl mb-3">{tr("التحويل غير متاح")}</h3>
+        <p className="text-sm text-ivory/80">{tr("هذا الحساب للعرض فقط. في حساب مصوّرة حقيقي تظهر هنا معلومات العربون وطريقة التحويل. جرّبي الحجز كما هو، وسيعمل بشكل طبيعي.")}</p>
       </div>
     );
   }
 
   return (
     <div className="bg-charcoal text-ivory rounded-sm p-6 sm:p-8 h-fit lg:sticky lg:top-24">
-      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">العربون</div>
-      <h3 className="font-serif text-2xl mb-5">معلومات العربون</h3>
+      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("العربون")}</div>
+      <h3 className="font-serif text-2xl mb-5">{tr("معلومات العربون")}</h3>
       <div className="space-y-4 text-sm">
         {profile.fixed_deposit ? (
-          <Row label="مبلغ العربون" value={`${Number(profile.fixed_deposit).toLocaleString("ar-JO")} د.أ`} />
+          <Row label={tr("مبلغ العربون")} value={tr("{0} د.أ", [Number(profile.fixed_deposit).toLocaleString(locale("ar-JO"))])} />
         ) : (
-          <Row label="نسبة العربون" value={`${profile.deposit_percent}%`} />
+          <Row label={tr("نسبة العربون")} value={`${profile.deposit_percent}%`} />
         )}
         {cliqAlias && (
           <div className="bg-ivory/10 rounded-sm p-3 group">
             <div className="text-[11px] uppercase tracking-[0.2em] text-ivory/60 mb-1 flex items-center justify-between">
               <span>CliQ Alias</span>
               <span className="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">
-                {copied ? "تم النسخ بنجاح" : "الدفع لحساب المصوّرة مباشرة"}
+                {copied ? tr("تم النسخ بنجاح") : tr("الدفع لحساب المصوّرة مباشرة")}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <div className="font-mono text-lg truncate">{cliqAlias}</div>
+              <div className="font-mono text-lg truncate">{tx(cliqAlias)}</div>
               <button 
                 onClick={handleCopy} 
                 className={`p-2 rounded-sm transition-all duration-300 ${copied ? "bg-green-500/20 text-green-400" : "hover:bg-ivory/10"}`}
-                aria-label="نسخ"
+                aria-label={tr("نسخ")}
               >
                 <AnimatePresence mode="wait">
                   {copied ? (
@@ -1456,31 +1453,31 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
         )}
         {bankInfo && (
           <div className="bg-ivory/10 rounded-sm p-3">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-ivory/60 mb-1">تحويل بنكي</div>
-            <div className="whitespace-pre-line">{bankInfo}</div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-ivory/60 mb-1">{tr("تحويل بنكي")}</div>
+            <div className="whitespace-pre-line">{tx(bankInfo)}</div>
           </div>
         )}
         {!cliqAlias && !bankInfo && (
           <div className="bg-ivory/10 rounded-sm p-3 text-xs leading-relaxed">
-            ستظهر معلومات الدفع كاملة في صفحة تتبّع الحجز فور إرسال طلبك.
+            {tr("ستظهر معلومات الدفع كاملة في صفحة تتبّع الحجز فور إرسال طلبك.")}
           </div>
         )}
       </div>
       <p className="text-[11px] text-ivory/60 mt-5 leading-relaxed">
         <Shield className="h-3 w-3 inline-block me-1 -mt-0.5 opacity-70" />
-        يُدفع هذا العربون مباشرة لحساب المصوّرة الشخصي لتثبيت حجزكِ فوراً.
+        {tr("يُدفع هذا العربون مباشرة لحساب المصوّرة الشخصي لتثبيت حجزكِ فوراً.")}
       </p>
     </div>
   );
 }
 
 function Row({ label, value }: { label: string; value: string }) {
-  return <div className="flex items-center justify-between border-b border-ivory/10 pb-2"><span className="opacity-70">{label}</span><span className="font-medium">{value}</span></div>;
+  return <div className="flex items-center justify-between border-b border-ivory/10 pb-2"><span className="opacity-70">{tx(label)}</span><span className="font-medium">{tx(value)}</span></div>;
 }
 
 function Field({ label, v, on, type = "text" }: { label: string; v: string; on: (v: string) => void; type?: string }) {
   const auto = type === "email" ? "email" : type === "tel" ? "tel" : label === "الاسم" ? "name" : "off";
-  return <label className="block"><span className="text-sm text-muted-foreground">{label}</span><input type={type} autoComplete={auto} dir={type === "text" ? undefined : "ltr"} value={v} onChange={(e) => on(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
+  return <label className="block"><span className="text-sm text-muted-foreground">{tx(label)}</span><input type={type} autoComplete={auto} dir={type === "text" ? undefined : "ltr"} value={v} onChange={(e) => on(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
 }
 
 function FallbackPage({ children }: { children: React.ReactNode }) {
@@ -1510,22 +1507,22 @@ function StickyBookBar({ name, whatsapp, onBook }: { name: string; whatsapp?: st
     >
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] text-muted-foreground">احجزي مع</div>
-          <div className="font-serif text-sm truncate">{name}</div>
+          <div className="text-[11px] text-muted-foreground">{tr("احجزي مع")}</div>
+          <div className="font-serif text-sm truncate">{tx(name)}</div>
         </div>
         {whatsapp && (
           <a
-            href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("مرحباً! شاهدت أعمالك على ميموريا وأود الاستفسار عن باقات التصوير لحفل زفافي.")}`}
+            href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(tr("مرحباً! شاهدت أعمالك على ميموريا وأود الاستفسار عن باقات التصوير لحفل زفافي."))}`}
             target="_blank"
             rel="noreferrer"
             className="h-11 w-11 grid place-items-center rounded-full border border-border"
-            aria-label="واتساب"
+            aria-label={tr("واتساب")}
           >
             <MessageCircle className="h-4 w-4 text-green-600" />
           </a>
         )}
         <button onClick={onBook} className="rounded-full bg-charcoal px-6 py-3 text-sm font-medium text-ivory transition-transform active:scale-95 dark:bg-gold dark:text-charcoal">
-          احجزي موعدك
+          {tr("احجزي موعدك")}
         </button>
       </div>
     </div>

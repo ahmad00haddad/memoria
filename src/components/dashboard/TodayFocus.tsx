@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, CheckCircle2, ChevronDown, Sparkles } from "lucide-react";
 import type { FocusItem } from "./focus";
+import { t, tx } from "@/i18n";
 
 const toneDot: Record<FocusItem["tone"], string> = {
   urgent: "bg-gold",
@@ -28,7 +29,7 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
           className="mb-3 flex items-center gap-2 text-sm text-muted-foreground"
         >
           <Sparkles className="h-3.5 w-3.5 text-gold" />
-          <span>منذ آخر زيارة: {whatsNew}</span>
+          <span>{t("منذ آخر زيارة: {0}", [whatsNew])}</span>
         </motion.p>
       )}
 
@@ -49,17 +50,17 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
                     {top.tone === "urgent" && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-60 motion-reduce:hidden" />}
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-gold" />
                   </span>
-                  مهمة اليوم
+                  {t("مهمة اليوم")}
                 </div>
-                <h2 className="font-serif text-3xl sm:text-4xl leading-tight text-balance">{top.title}</h2>
-                <p className="mt-2 text-sm text-ivory/70 dark:text-muted-foreground">{top.detail}</p>
+                <h2 className="font-serif text-3xl sm:text-4xl leading-tight text-balance">{tx(top.title)}</h2>
+                <p className="mt-2 text-sm text-ivory/70 dark:text-muted-foreground">{tx(top.detail)}</p>
               </div>
               <Link
                 to={top.to as any}
                 params={top.params as any}
                 className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-medium text-charcoal transition-transform duration-200 hover:gap-3 active:scale-95"
               >
-                {top.cta}
+                {tx(top.cta)}
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
               </Link>
             </div>
@@ -75,8 +76,8 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
               <CheckCircle2 className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-serif text-xl">لا شيء عاجل اليوم</div>
-              <p className="text-sm text-muted-foreground">{g("كل الطلبات مرتّبة. استمتعي بيومك.", "كل الطلبات مرتّبة. استمتع بيومك.")}</p>
+              <div className="font-serif text-xl">{t("لا شيء عاجل اليوم")}</div>
+              <p className="text-sm text-muted-foreground">{g(t("كل الطلبات مرتّبة. استمتعي بيومك."), t("كل الطلبات مرتّبة. استمتع بيومك."))}</p>
             </div>
           </motion.div>
         )}
@@ -90,7 +91,7 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
             aria-expanded={open}
             className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
-            {open ? "إخفاء" : rest.length === 1 ? "مهمة أخرى" : `${rest.length} مهام أخرى`}
+            {open ? t("إخفاء") : rest.length === 1 ? t("مهمة أخرى") : t("{0} مهام أخرى", [rest.length])}
             <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
           </button>
           <AnimatePresence initial={false}>
@@ -116,10 +117,10 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
                     >
                       <span className={`h-2 w-2 shrink-0 rounded-full ${toneDot[it.tone]}`} />
                       <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-medium truncate">{it.title}</span>
-                        <span className="block text-xs text-muted-foreground truncate">{it.detail}</span>
+                        <span className="block text-sm font-medium truncate">{tx(it.title)}</span>
+                        <span className="block text-xs text-muted-foreground truncate">{tx(it.detail)}</span>
                       </span>
-                      <span className="hidden sm:inline text-xs text-gold opacity-0 transition-opacity group-hover:opacity-100">{it.cta}</span>
+                      <span className="hidden sm:inline text-xs text-gold opacity-0 transition-opacity group-hover:opacity-100">{tx(it.cta)}</span>
                       <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-x-0.5 group-hover:text-gold" />
                     </Link>
                   </motion.li>

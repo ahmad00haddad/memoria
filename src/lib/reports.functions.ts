@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { computeReportStats, type ReportStats } from "./report-stats";
+import { t } from "@/i18n";
 
 export type { ReportStats };
 
@@ -21,7 +22,7 @@ export const getReportStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { range?: string }) => {
     const range = d?.range ?? "365";
-    if (!RANGE_RE.test(range)) throw new Error("نطاق غير صالح");
+    if (!RANGE_RE.test(range)) throw new Error(t("نطاق غير صالح"));
     return { range };
   })
   .handler(async ({ data, context }) => {

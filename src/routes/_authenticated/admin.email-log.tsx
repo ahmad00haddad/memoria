@@ -5,6 +5,7 @@ import { listEmailLogAdmin } from "@/lib/admin.functions";
 import { Mail, CheckCircle2, XCircle } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 import { toast } from "sonner";
+import { locale } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/email-log")({
   component: AdminEmailLog,
@@ -104,7 +105,7 @@ function AdminEmailLog() {
                     <td className="px-4 py-3">{r.subject}</td>
                     <td className="px-4 py-3 text-xs text-destructive">{r.error ?? "—"}</td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {(r.sent_at ?? (r as any).created_at) ? new Date(r.sent_at ?? (r as any).created_at).toLocaleString("ar-JO") : "—"}
+                      {(r.sent_at ?? (r as any).created_at) ? new Date(r.sent_at ?? (r as any).created_at).toLocaleString(locale("ar-JO")) : "—"}
                     </td>
                   </tr>
                 );

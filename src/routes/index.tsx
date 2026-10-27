@@ -14,19 +14,20 @@ import { useAuthState } from "@/hooks/use-auth-state";
 import { fadeUp, scaleIn, staggerContainer, float, cardHover, viewportOnce } from "@/lib/animations";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { Calligraphy, CountTo, DrawFrame, DrawIcon, DrawRule, RiseImg, SettleIn, Shimmer, TypeIn, useSeen, EASE_DRAW, EASE_OUT } from "@/components/site/Reveal";
+import { t as tr, tx, locale } from "@/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Memoria · ميموريا — منصّة تصوير المناسبات في الأردن" },
-      { name: "description", content: "احجزي مصوّرة أعراس ومناسبات موثّقة في الأردن. باقات واضحة، عربون CliQ مباشر، وتقييمات من حجوزات مكتملة فقط." },
-      { property: "og:title", content: "Memoria · ميموريا — تصوير المناسبات" },
-      { property: "og:description", content: "منصّة لحجز مصوّرات المناسبات بثقة — أسعار شفافة، عربون مباشر، وتقييمات موثّقة." },
+      { title: tr("Memoria · ميموريا — منصّة تصوير المناسبات في الأردن") },
+      { name: "description", content: tr("احجزي مصوّرة أعراس ومناسبات موثّقة في الأردن. باقات واضحة، عربون CliQ مباشر، وتقييمات من حجوزات مكتملة فقط.") },
+      { property: "og:title", content: tr("Memoria · ميموريا — تصوير المناسبات") },
+      { property: "og:description", content: tr("منصّة لحجز مصوّرات المناسبات بثقة — أسعار شفافة، عربون مباشر، وتقييمات موثّقة.") },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://memoria-production.ahmad000haddad.workers.dev/" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Memoria · ميموريا" },
-      { name: "twitter:description", content: "احجزي مصوّرة مناسباتك بثقة." },
+      { name: "twitter:title", content: tr("Memoria · ميموريا") },
+      { name: "twitter:description", content: tr("احجزي مصوّرة مناسباتك بثقة.") },
       { property: "og:image", content: "https://memoria-production.ahmad000haddad.workers.dev/og-default.png" },
       { name: "twitter:image", content: "https://memoria-production.ahmad000haddad.workers.dev/og-default.png" },
     ],
@@ -57,8 +58,8 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
           <Camera className="h-6 w-6 text-charcoal" />
         </div>
         <div>
-          <div className="font-serif text-xl tracking-wide">Memoria <span className="text-muted-foreground text-base">ميموريا</span></div>
-          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
+          <div className="font-serif text-xl tracking-wide">Memoria <span className="text-muted-foreground text-base">{tr("ميموريا")}</span></div>
+          <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{tr("ذاكرة يومكِ · الأردن")}</div>
         </div>
       </div>
 
@@ -69,9 +70,9 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
         transition={{ delay: 0.1 }}
         className="text-center mb-10"
       >
-        <h1 className="font-serif text-4xl sm:text-5xl mb-3">أهلاً بكِ 👋</h1>
+        <h1 className="font-serif text-4xl sm:text-5xl mb-3">{tr("أهلاً بكِ 👋")}</h1>
         <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto">
-          أخبرينا من أنتِ حتى نُوجّهكِ مباشرةً لما يناسبكِ — بدون ضياع
+          {tr("أخبرينا من أنتِ حتى نُوجّهكِ مباشرةً لما يناسبكِ — بدون ضياع")}
         </p>
       </motion.div>
 
@@ -86,15 +87,15 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
         <motion.button
           variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } } }}
           onClick={() => onSelect("client")}
-          className="group flex flex-col items-start p-7 rounded-sm border-2 border-border bg-card hover:border-gold/60 hover:bg-gold/5 hover:shadow-elegant transition-all text-right"
+          className="group flex flex-col items-start p-7 rounded-sm border-2 border-border bg-card hover:border-gold/60 hover:bg-gold/5 hover:shadow-elegant transition-all text-start"
         >
           <motion.div className="text-4xl mb-4" variants={{ hidden: { scale: 0.6, opacity: 0 }, visible: { scale: [0.6, 1.25, 1], opacity: 1, transition: { duration: 0.9, delay: 0.35, ease: EASE_OUT } } }}>🌸</motion.div>
-          <div className="font-serif text-2xl mb-2">عروس أو أهل الزفاف</div>
+          <div className="font-serif text-2xl mb-2">{tr("عروس أو أهل الزفاف")}</div>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">
-            ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فوراً بدون واتساب.
+            {tr("ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فوراً بدون واتساب.")}
           </p>
           <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
-            ابحثي الآن <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            {tr("ابحثي الآن")}{" "}<ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
           </div>
         </motion.button>
 
@@ -102,15 +103,15 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
         <motion.button
           variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } } }}
           onClick={() => onSelect("photographer")}
-          className="group flex flex-col items-start p-7 rounded-sm border-2 border-charcoal bg-charcoal text-ivory hover:opacity-95 hover:shadow-elegant transition-all text-right"
+          className="group flex flex-col items-start p-7 rounded-sm border-2 border-charcoal bg-charcoal text-ivory hover:opacity-95 hover:shadow-elegant transition-all text-start"
         >
           <motion.div className="text-4xl mb-4" variants={{ hidden: { scale: 0.6, opacity: 0 }, visible: { scale: [0.6, 1.25, 1], opacity: 1, transition: { duration: 0.9, delay: 0.35, ease: EASE_OUT } } }}>📷</motion.div>
-          <div className="font-serif text-2xl mb-2">مصوّرة محترفة</div>
+          <div className="font-serif text-2xl mb-2">{tr("مصوّرة محترفة")}</div>
           <p className="text-sm text-ivory/70 leading-relaxed mb-6 flex-1">
-            أنشئي ملفكِ، حدّدي أسعاركِ، واستقبلي حجوزاتكِ — تجربة مجانية ١٤ يوماً بدون بطاقة.
+            {tr("أنشئي ملفكِ، حدّدي أسعاركِ، واستقبلي حجوزاتكِ — تجربة مجانية ١٤ يوماً بدون بطاقة.")}
           </p>
           <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
-            انضمّي مجاناً <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+            {tr("انضمّي مجاناً")}{" "}<ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
           </div>
         </motion.button>
       </motion.div>
@@ -123,7 +124,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
         onClick={() => onSelect("guest")}
         className="mt-8 text-xs text-muted-foreground hover:text-foreground underline transition-colors"
       >
-        تخطّي — سأستكشف بنفسي
+        {tr("تخطّي — سأستكشف بنفسي")}
       </motion.button>
     </motion.div>
   );
@@ -225,7 +226,7 @@ function Landing() {
       const ls = JSON.parse(localStorage.getItem("memoria_last_search") || "null");
       if (ls && (ls.city || ls.date)) {
         const date = ls.date && ls.date >= new Date().toISOString().slice(0, 10) ? ls.date : undefined;
-        const label = [ls.city, date && new Date(date).toLocaleDateString("ar-JO", { day: "numeric", month: "long" })].filter(Boolean).join(" · ");
+        const label = [ls.city, date && new Date(date).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })].filter(Boolean).join(" · ");
         if (label) setResume({ label, city: ls.city || undefined, date });
       }
     } catch { /* ignore */ }
@@ -285,7 +286,7 @@ function Landing() {
           >
             <span className="eyebrow">Memoria</span>
             <DrawRule onMount delay={0.3} duration={1.1} className="h-px flex-1 max-w-24 bg-gold/40" />
-            <span className="text-xs">عمّان · الأردن</span>
+            <span className="text-xs">{tr("عمّان · الأردن")}</span>
             <span className="hidden sm:inline font-serif italic text-sm text-muted-foreground/70" dir="ltr">Wedding photography, booked beautifully</span>
           </motion.div>
 
@@ -297,21 +298,21 @@ function Landing() {
               animate="visible"
             >
               <motion.p variants={fadeUp} className="eyebrow">
-                منصّة الحجوزات الأكثر فخامة لمصوّري الأعراس في الأردن
+                {tr("منصّة الحجوزات الأكثر فخامة لمصوّري الأعراس في الأردن")}
               </motion.p>
               <motion.h1
                 variants={fadeUp}
                 className="font-serif text-[2.4rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]"
               >
-                من النقرة الأولى
+                {tr("من النقرة الأولى")}
                 <span className="block font-script text-gold text-[2.8rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
-                  <Calligraphy onMount delay={0.9} duration={2}><Shimmer onMount delay={3.2}>إلى الذكرى الأبدية</Shimmer></Calligraphy>
+                  <Calligraphy onMount delay={0.9} duration={2}><Shimmer onMount delay={3.2}>{tr("إلى الذكرى الأبدية")}</Shimmer></Calligraphy>
                 </span>
               </motion.h1>
               <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-md leading-loose">
                 {visitorRole === "photographer" || isPhotographer
-                  ? "ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان."
-                  : "احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون موثّق."}
+                  ? tr("ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان.")
+                  : tr("احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون موثّق.")}
               </motion.p>
               {visitorRole !== "photographer" && !isPhotographer && (
                 <motion.form
@@ -320,26 +321,26 @@ function Landing() {
                   className="flex max-w-xl flex-col gap-2 rounded-2xl border border-border bg-card/90 p-2 shadow-soft backdrop-blur sm:flex-row sm:items-center sm:rounded-full"
                 >
                   <label className="flex flex-1 items-center gap-2 rounded-full px-4 py-2 focus-within:bg-secondary/60">
-                    <span className="text-xs text-muted-foreground shrink-0">المدينة</span>
+                    <span className="text-xs text-muted-foreground shrink-0">{tr("المدينة")}</span>
                     <select value={heroCity} onChange={(e) => setHeroCity(e.target.value)} className="w-full bg-transparent text-sm text-foreground outline-none [&>option]:bg-background [&>option]:text-foreground">
-                      <option value="">كل المدن</option>
-                      {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                      <option value="">{tr("كل المدن")}</option>
+                      {cities.map((c) => <option key={c} value={c}>{tx(c)}</option>)}
                     </select>
                   </label>
                   <span className="hidden h-6 w-px bg-border sm:block" />
                   <label className="flex flex-1 items-center gap-2 rounded-full px-4 py-2 focus-within:bg-secondary/60">
-                    <span className="text-xs text-muted-foreground shrink-0">تاريخ العرس</span>
+                    <span className="text-xs text-muted-foreground shrink-0">{tr("تاريخ العرس")}</span>
                     <input type="date" value={heroDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setHeroDate(e.target.value)} className="w-full bg-transparent text-sm outline-none" />
                   </label>
                   <button type="submit" className="group inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm text-ivory transition-all hover:gap-3 active:scale-[0.98] dark:bg-gold dark:text-charcoal">
-                    {heroDate ? "المتاحات" : "ابحثي"} <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+                    {heroDate ? tr("المتاحات") : tr("ابحثي")} <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
                   </button>
                 </motion.form>
               )}
               {resume && visitorRole !== "photographer" && !isPhotographer && (
                 <motion.div variants={fadeUp} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>تابعي بحثك:</span>
-                  <button onClick={() => goSearch(resume.city, resume.date)} className="rounded-full border border-dashed border-border px-3 py-1 hover:border-gold/50 hover:text-foreground">{resume.label}</button>
+                  <span>{tr("تابعي بحثك:")}</span>
+                  <button onClick={() => goSearch(resume.city, resume.date)} className="rounded-full border border-dashed border-border px-3 py-1 hover:border-gold/50 hover:text-foreground">{tx(resume.label)}</button>
                 </motion.div>
               )}
               <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-x-8 gap-y-4">
@@ -348,22 +349,22 @@ function Landing() {
                     to="/dashboard"
                     className={visitorRole === "client" ? "hidden" : "inline-flex items-center gap-2 bg-charcoal text-ivory px-7 py-3.5 rounded-full transition hover:opacity-90 active:scale-[0.98] dark:bg-gold dark:text-charcoal"}
                   >
-                    لوحتي
+                    {tr("لوحتي")}
                   </Link>
                 ) : visitorRole !== "client" ? (
                   <Link
                     to="/photographers/join"
                     className="text-sm border-b border-current/40 pb-1 hover:border-gold hover:text-gold transition-colors"
                   >
-                    مصوّرة؟ انضمي مجاناً
+                    {tr("مصوّرة؟ انضمي مجاناً")}
                   </Link>
                 ) : null}
               </motion.div>
               {isPhotographer && trialDaysLeft !== null && (
                 <motion.div variants={fadeUp} className="border-s-2 border-gold ps-4 py-1 text-sm text-foreground max-w-md">
                   {trialDaysLeft > 0
-                    ? `متبقّي ${trialDaysLeft} يومًا من التجربة المجانية لحسابك.`
-                    : "انتهت التجربة المجانية، ويجب تفعيل الاشتراك للاستمرار في استقبال الحجوزات."}
+                    ? tr("متبقّي {0} يومًا من التجربة المجانية لحسابك.", [trialDaysLeft])
+                    : tr("انتهت التجربة المجانية، ويجب تفعيل الاشتراك للاستمرار في استقبال الحجوزات.")}
                 </motion.div>
               )}
               <motion.div variants={fadeUp} className="flex items-center gap-6 pt-2 text-sm text-muted-foreground flex-wrap">
@@ -376,10 +377,10 @@ function Landing() {
                   >
                     <Star className="h-3.5 w-3.5 fill-gold text-gold" />
                   </motion.span>
-                  تقييمات حقيقية من عملاء سابقات
+                  {tr("تقييمات حقيقية من عملاء سابقات")}
                 </div>
                 <span className="hidden sm:block h-3 w-px bg-border" />
-                <div className="hidden sm:block">حجز فوري بدون واتساب</div>
+                <div className="hidden sm:block">{tr("حجز فوري بدون واتساب")}</div>
               </motion.div>
             </motion.div>
 
@@ -428,7 +429,7 @@ function Landing() {
                   src={heroImg}
                   fetchPriority="high"
                   decoding="async"
-                  alt="عروس في إطلالة سينمائية"
+                  alt={tr("عروس في إطلالة سينمائية")}
                   width={598}
                   height={1420}
                   initial={{ scale: 1.18 }}
@@ -446,11 +447,11 @@ function Landing() {
                 className="absolute -bottom-8 -start-4 sm:-start-12 bg-card border border-gold/25 will-change-transform rounded-2xl p-5 shadow-soft max-w-[250px]"
               >
                 <div className="flex items-center justify-between mb-1.5 gap-3">
-                  <div className="text-xs text-muted-foreground">سعر فوري</div>
-                  <span className="text-[11px] text-gold border border-gold/30 px-1.5 py-0.5 rounded-sm">مثال تقديري</span>
+                  <div className="text-xs text-muted-foreground">{tr("سعر فوري")}</div>
+                  <span className="text-[11px] text-gold border border-gold/30 px-1.5 py-0.5 rounded-sm">{tr("مثال تقديري")}</span>
                 </div>
-                <div className="font-serif text-3xl tabular-nums">~<CountTo onMount from={200} to={320} delay={1.1} duration={1.8} /> <span className="text-sm text-muted-foreground">د.أ</span></div>
-                <div className="text-xs text-muted-foreground leading-relaxed mt-1">٤ ساعات تصوير + ٥٠ صورة معدّلة — الأسعار تختلف حسب المصوّر</div>
+                <div className="font-serif text-3xl tabular-nums">~<CountTo onMount from={200} to={320} delay={1.1} duration={1.8} /> <span className="text-sm text-muted-foreground">{tr("د.أ")}</span></div>
+                <div className="text-xs text-muted-foreground leading-relaxed mt-1">{tr("٤ ساعات تصوير + ٥٠ صورة معدّلة — الأسعار تختلف حسب المصوّر")}</div>
               </motion.div>
             </motion.div>
           </div>
@@ -471,39 +472,39 @@ function Landing() {
         >
           <div className="grid gap-10 lg:grid-cols-12 items-end mb-10">
             <div className="lg:col-span-5">
-              <div className="eyebrow mb-3">ابدأ من هنا</div>
-              <h2 className="font-serif text-4xl sm:text-5xl">من أنت؟</h2>
+              <div className="eyebrow mb-3">{tr("ابدأ من هنا")}</div>
+              <h2 className="font-serif text-4xl sm:text-5xl">{tr("من أنت؟")}</h2>
             </div>
             <p className="lg:col-span-6 lg:col-start-7 text-muted-foreground leading-loose max-w-md">
-              مكان واحد يجمع العروس بمصوّرتها — من أول نظرة على المعرض حتى استلام الصور.
+              {tr("مكان واحد يجمع العروس بمصوّرتها — من أول نظرة على المعرض حتى استلام الصور.")}
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-12">
             <div className="md:col-span-5">
               <RoleCard
-                index="٠١"
-                title="العروس وأهل الزفاف"
-                desc="ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فورًا."
-                cta="ابحثي عن مصوّرة"
+                index={tr("٠١")}
+                title={tr("العروس وأهل الزفاف")}
+                desc={tr("ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فورًا.")}
+                cta={tr("ابحثي عن مصوّرة")}
                 href="/search"
               />
             </div>
             <div className="md:col-span-7 md:mt-12">
               {!authLoading && !isPhotographer ? (
                 <RoleCard
-                  index="٠٢"
-                  title="مصوّرة محترفة"
-                  desc="أنشئي ملفكِ، حدّدي أسعاركِ واربطي تقويمكِ — ودعي النظام يدير حجوزاتكِ."
-                  cta="انضمي إلى المنصة"
+                  index={tr("٠٢")}
+                  title={tr("مصوّرة محترفة")}
+                  desc={tr("أنشئي ملفكِ، حدّدي أسعاركِ واربطي تقويمكِ — ودعي النظام يدير حجوزاتكِ.")}
+                  cta={tr("انضمي إلى المنصة")}
                   href="/photographers/join"
                   highlight
                 />
               ) : (
                 <RoleCard
-                  index="٠٢"
-                  title="حسابك جاهز"
-                  desc="أنتِ مسجّلة بالفعل. انتقلي مباشرة إلى لوحة التحكم لإدارة الباقات والحجوزات والاشتراك."
-                  cta="افتحي لوحة التحكم"
+                  index={tr("٠٢")}
+                  title={tr("حسابك جاهز")}
+                  desc={tr("أنتِ مسجّلة بالفعل. انتقلي مباشرة إلى لوحة التحكم لإدارة الباقات والحجوزات والاشتراك.")}
+                  cta={tr("افتحي لوحة التحكم")}
                   href="/dashboard"
                   highlight
                 />
@@ -527,16 +528,16 @@ function Landing() {
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-28">
-              <div className="eyebrow mb-3">سير العمل</div>
-              <h2 className="font-serif text-4xl sm:text-5xl mb-4">حلّ كامل<br /><span className="font-script text-gold"><Calligraphy delay={0.2}><Shimmer delay={2.2}>لكل مشكلة</Shimmer></Calligraphy></span></h2>
-              <p className="text-muted-foreground leading-loose max-w-xs">كل ما كان يضيع في محادثات الواتساب، صار في مكانه الصحيح.</p>
+              <div className="eyebrow mb-3">{tr("سير العمل")}</div>
+              <h2 className="font-serif text-4xl sm:text-5xl mb-4">{tr("حلّ كامل")}<br /><span className="font-script text-gold"><Calligraphy delay={0.2}><Shimmer delay={2.2}>{tr("لكل مشكلة")}</Shimmer></Calligraphy></span></h2>
+              <p className="text-muted-foreground leading-loose max-w-xs">{tr("كل ما كان يضيع في محادثات الواتساب، صار في مكانه الصحيح.")}</p>
             </div>
           </div>
           <ol className="lg:col-span-7 lg:col-start-6">
-            <Feature n="01" icon={MessageSquareOff} title="بدون واتساب" desc="جميع التفاصيل تُدخل عبر النموذج: الموقع، الوقت، نوع التصوير." />
-            <Feature n="02" icon={Calendar} title="تقويم ذكي" desc="مزامنة Google Calendar مع فاصل ساعتين بين الجلسات لمراعاة الازدحام." />
-            <Feature n="03" icon={Receipt} title="سعر فوري" desc="حاسبة ديناميكية تشمل الساعات، الإضافات، ورسوم التنقّل بالكيلومتر." />
-            <Feature last n="04" icon={ShieldCheck} title="عربون موثّق" desc="تحويل CliQ مباشر للمصوّرة، مع إثبات مرفوع وتأكيد موثّق لكل حجز." />
+            <Feature n="01" icon={MessageSquareOff} title={tr("بدون واتساب")} desc={tr("جميع التفاصيل تُدخل عبر النموذج: الموقع، الوقت، نوع التصوير.")} />
+            <Feature n="02" icon={Calendar} title={tr("تقويم ذكي")} desc={tr("مزامنة Google Calendar مع فاصل ساعتين بين الجلسات لمراعاة الازدحام.")} />
+            <Feature n="03" icon={Receipt} title={tr("سعر فوري")} desc={tr("حاسبة ديناميكية تشمل الساعات، الإضافات، ورسوم التنقّل بالكيلومتر.")} />
+            <Feature last n="04" icon={ShieldCheck} title={tr("عربون موثّق")} desc={tr("تحويل CliQ مباشر للمصوّرة، مع إثبات مرفوع وتأكيد موثّق لكل حجز.")} />
           </ol>
         </div>
       </motion.section>
@@ -554,19 +555,19 @@ function Landing() {
         >
           <SettleIn className="pointer-events-none absolute -top-10 start-6 origin-top-right font-serif text-[16rem] leading-none text-gold/10 select-none">”</SettleIn>
           <div className="container-editorial relative">
-            <div className="eyebrow mb-3">تجارب حقيقية</div>
-            <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-14">آراء العرائس</h2>
+            <div className="eyebrow mb-3">{tr("تجارب حقيقية")}</div>
+            <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-14">{tr("آراء العرائس")}</h2>
             <div className="grid gap-12 lg:grid-cols-12">
               <motion.figure variants={fadeUp} className="lg:col-span-7">
                 <PhraseQuote
                   className="font-serif text-2xl sm:text-3xl leading-[1.7] text-ivory"
-                  phrases={["تجربة رائعة من البداية للنهاية.", "أسعار واضحة وبدون مفاجآت،", "والمصورة كانت لطيفة جداً وصورها خيالية.", "أنقذتني من ضياع الأوقات والبحث العشوائي."]}
+                  phrases={[tr("تجربة رائعة من البداية للنهاية."), tr("أسعار واضحة وبدون مفاجآت،"), tr("والمصورة كانت لطيفة جداً وصورها خيالية."), tr("أنقذتني من ضياع الأوقات والبحث العشوائي.")]}
                 />
-                <SignedName name="سارة الأحمد" />
+                <SignedName name={tr("سارة الأحمد")} />
               </motion.figure>
               <div className="lg:col-span-4 lg:col-start-9 space-y-10 lg:pt-24">
-                <Quote name="دانة وليد" text="أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير." />
-                <Quote name="لين المجالي" text="ميزة التوفر الفوري خلتني أقدر أرتب أموري خلال ساعات، بدل ما أنتظر أيام عشان أسمع رد المصورات. الصور وصلتني أسرع من المتوقع، شكراً ميموريا." />
+                <Quote name={tr("دانة وليد")} text={tr("أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير.")} />
+                <Quote name={tr("لين المجالي")} text={tr("ميزة التوفر الفوري خلتني أقدر أرتب أموري خلال ساعات، بدل ما أنتظر أيام عشان أسمع رد المصورات. الصور وصلتني أسرع من المتوقع، شكراً ميموريا.")} />
               </div>
             </div>
           </div>
@@ -585,11 +586,11 @@ function Landing() {
         >
           <div className="flex items-end justify-between gap-6 mb-12 flex-wrap">
             <div>
-              <div className="eyebrow mb-3">المميّزون</div>
-              <h2 className="font-serif text-4xl sm:text-5xl">مصوّرون بأعلى التقييمات</h2>
+              <div className="eyebrow mb-3">{tr("المميّزون")}</div>
+              <h2 className="font-serif text-4xl sm:text-5xl">{tr("مصوّرون بأعلى التقييمات")}</h2>
             </div>
             <Link to="/search" className="group/all relative text-sm pb-1 hover:text-gold transition-colors">
-              كل المصوّرات
+              {tr("كل المصوّرات")}
               <DrawRule className="absolute inset-x-0 bottom-0 h-px bg-current/40 group-hover/all:bg-gold" duration={1} delay={0.3} />
             </Link>
           </div>
@@ -610,13 +611,13 @@ function Landing() {
           {featuredStatus === "error" && (
             <div className="mx-auto max-w-md border-y border-border py-10 text-center">
               <p className="text-sm text-muted-foreground">
-                تعذّر تحميل قائمة المصوّرات الآن. تحقّقي من الاتصال وحاولي مجدداً.
+                {tr("تعذّر تحميل قائمة المصوّرات الآن. تحقّقي من الاتصال وحاولي مجدداً.")}
               </p>
               <button
                 onClick={() => setFeaturedReload((n) => n + 1)}
                 className="mt-4 inline-flex items-center justify-center rounded-full bg-charcoal px-6 py-2.5 text-sm font-medium text-ivory transition hover:opacity-90 active:scale-[0.98]"
               >
-                إعادة المحاولة
+                {tr("إعادة المحاولة")}
               </button>
             </div>
           )}
@@ -627,11 +628,11 @@ function Landing() {
               <motion.div key={p.username} variants={fadeUp} className={i % 2 ? "lg:mt-16" : ""}>
                 <Link to="/photographers/$username" params={{ username: p.username }} className="group block">
                   <div className="aspect-[3/4] bg-gradient-royal overflow-hidden rounded-t-full">
-                    {p.cover_url && <RiseImg src={p.cover_url} alt={p.display_name} loading="lazy" delay={i * 0.12} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />}
+                    {p.cover_url && <RiseImg src={p.cover_url} alt={tx(p.display_name)} loading="lazy" delay={i * 0.12} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />}
                   </div>
                   <div className="pt-4 flex items-baseline justify-between gap-3">
-                    <div className="font-serif text-xl group-hover:text-gold transition-colors">{p.display_name}</div>
-                    {p.city && <div className="text-xs text-muted-foreground">{p.city}</div>}
+                    <div className="font-serif text-xl group-hover:text-gold transition-colors">{tx(p.display_name)}</div>
+                    {p.city && <div className="text-xs text-muted-foreground">{tx(p.city)}</div>}
                   </div>
                 </Link>
               </motion.div>
@@ -678,8 +679,8 @@ function Flourish() {
 function Quote({ name, text }: { name: string; text: string }) {
   return (
     <motion.figure variants={fadeUp} className="border-s border-ivory/15 ps-6">
-      <blockquote className="text-sm leading-loose text-ivory/80">{text}</blockquote>
-      <figcaption className="mt-4 font-script text-lg text-gold">{name}</figcaption>
+      <blockquote className="text-sm leading-loose text-ivory/80">{tx(text)}</blockquote>
+      <figcaption className="mt-4 font-script text-lg text-gold">{tx(name)}</figcaption>
     </motion.figure>
   );
 }
@@ -694,14 +695,14 @@ function RoleCard({ index, title, desc, cta, href, highlight }: { index: string;
         }`}
       >
         <DrawFrame fade width={1.5} radius={16} duration={2} delay={0.3} className={highlight ? "text-gold/70" : "text-gold"} />
-        <span aria-hidden className={`absolute -top-6 end-4 font-serif text-[8rem] leading-none select-none transition-transform duration-700 ease-out group-hover:-translate-x-3 group-hover:translate-y-2 ${highlight ? "text-ivory/[0.06]" : "text-foreground/[0.05]"}`}>{index}</span>
+        <span aria-hidden className={`absolute -top-6 end-4 font-serif text-[8rem] leading-none select-none transition-transform duration-700 ease-out group-hover:-translate-x-3 group-hover:translate-y-2 ${highlight ? "text-ivory/[0.06]" : "text-foreground/[0.05]"}`}>{tx(index)}</span>
         <div className={`eyebrow mb-6 ${highlight ? "" : "!text-muted-foreground"}`}>
-          {highlight ? "للمصوّرين" : "للعملاء"}
+          {highlight ? tr("للمصوّرين") : tr("للعملاء")}
         </div>
-        <h3 className="font-serif text-3xl mb-3">{title}</h3>
-        <p className={`text-sm leading-loose mb-10 max-w-sm ${highlight ? "text-ivory/70" : "text-muted-foreground"}`}>{desc}</p>
+        <h3 className="font-serif text-3xl mb-3">{tx(title)}</h3>
+        <p className={`text-sm leading-loose mb-10 max-w-sm ${highlight ? "text-ivory/70" : "text-muted-foreground"}`}>{tx(desc)}</p>
         <div className="mt-auto inline-flex items-center gap-2 text-sm self-start border-b border-current/40 pb-1 transition-all duration-300 group-hover:gap-3 group-hover:border-gold group-hover:text-gold">
-          {cta} <ArrowLeft className="h-4 w-4" />
+          {tx(cta)} <ArrowLeft className="h-4 w-4" />
         </div>
       </Link>
     </motion.div>
@@ -722,11 +723,11 @@ function Feature({ n, icon: Icon, title, desc, last }: { n: string; icon: typeof
         viewport={{ once: true, amount: 1 }}
         transition={{ duration: 1.2, delay: 0.2, ease: EASE_OUT }}
       >
-        {n}
+        {tx(n)}
       </motion.span>
       <div>
-        <h3 className="font-serif text-2xl mb-2">{title}</h3>
-        <p className="text-muted-foreground leading-loose max-w-md">{desc}</p>
+        <h3 className="font-serif text-2xl mb-2">{tx(title)}</h3>
+        <p className="text-muted-foreground leading-loose max-w-md">{tx(desc)}</p>
       </div>
       <span className="mt-2"><DrawIcon delay={0.35}><Icon className="h-5 w-5 text-muted-foreground/50 transition-colors group-hover:text-gold" strokeWidth={1.25} /></DrawIcon></span>
     </motion.li>
@@ -749,7 +750,7 @@ function SignedName({ name }: { name: string }) {
         animate={on ? { opacity: 1, x: 0, filter: "blur(0px)" } : { opacity: 0, x: 12, filter: "blur(4px)" }}
         transition={{ duration: 1, delay: 0.7, ease: EASE_OUT }}
       >
-        {name}
+        {tx(name)}
       </motion.span>
     </figcaption>
   );
@@ -767,7 +768,7 @@ function PhraseQuote({ phrases, className }: { phrases: string[]; className?: st
           animate={on ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0.08, filter: "blur(3px)" }}
           transition={{ duration: 1.1, delay: i * 0.45, ease: EASE_OUT }}
         >
-          {p}{i < phrases.length - 1 ? " " : ""}
+          {tx(p)}{i < phrases.length - 1 ? " " : ""}
         </motion.span>
       ))}
     </blockquote>

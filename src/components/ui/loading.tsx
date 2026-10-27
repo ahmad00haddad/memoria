@@ -1,11 +1,12 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { t, tx } from "@/i18n";
 
-export function PageLoader({ label = "جارٍ التحميل…" }: { label?: string }) {
+export function PageLoader({ label = t("جارٍ التحميل…") }: { label?: string }) {
   return (
     <div className="min-h-[60vh] grid place-items-center">
       <div className="flex flex-col items-center gap-3 text-muted-foreground">
         <div className="h-8 w-8 rounded-full border-2 border-border border-t-gold animate-spin" />
-        <span className="text-sm">{label}</span>
+        <span className="text-sm">{tx(label)}</span>
       </div>
     </div>
   );

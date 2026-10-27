@@ -3,14 +3,15 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
-      { title: "الأسئلة الشائعة — Memoria · ميموريا" },
-      { name: "description", content: "إجابات لأكثر الأسئلة شيوعاً حول الحجز، الدفع، الإلغاء، التقييمات، والاشتراكات على منصّة ميموريا." },
-      { property: "og:title", content: "الأسئلة الشائعة — Memoria" },
-      { property: "og:description", content: "كل ما تحتاجين معرفته قبل الحجز أو الانضمام." },
+      { title: t("الأسئلة الشائعة — Memoria · ميموريا") },
+      { name: "description", content: t("إجابات لأكثر الأسئلة شيوعاً حول الحجز، الدفع، الإلغاء، التقييمات، والاشتراكات على منصّة ميموريا.") },
+      { property: "og:title", content: t("الأسئلة الشائعة — Memoria") },
+      { property: "og:description", content: t("كل ما تحتاجين معرفته قبل الحجز أو الانضمام.") },
       { property: "og:url", content: "https://memoria-production.ahmad000haddad.workers.dev/faq" },
     ],
     links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/faq" }],
@@ -52,26 +53,26 @@ function FaqPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container-editorial py-16 max-w-3xl">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">الأسئلة الشائعة</div>
-        <h1 className="font-serif text-4xl sm:text-5xl mb-4"><RevealWords lines={["إجابات سريعة وواضحة"]} /></h1>
-        <p className="text-muted-foreground mb-10">إن لم تجدي إجابة لسؤالك هنا، <Link to="/contact" className="text-gold underline">تواصلي معنا</Link>.</p>
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("الأسئلة الشائعة")}</div>
+        <h1 className="font-serif text-4xl sm:text-5xl mb-4"><RevealWords lines={[t("إجابات سريعة وواضحة")]} /></h1>
+        <p className="text-muted-foreground mb-10">{t("إن لم تجدي إجابة لسؤالك هنا،")}{" "}<Link to="/contact" className="text-gold underline">{t("تواصلي معنا")}</Link>.</p>
 
-        <h2 className="font-serif text-2xl mb-4">للعميلات</h2>
+        <h2 className="font-serif text-2xl mb-4">{t("للعميلات")}</h2>
         <Accordion type="single" collapsible className="mb-10">
           {clientQ.map((q, i) => (
             <RiseIn key={i} cols={1}><AccordionItem value={`c-${i}`}>
-              <AccordionTrigger className="text-right">{q.q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-loose">{q.a}</AccordionContent>
+              <AccordionTrigger className="text-start">{tx(q.q)}</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-loose">{tx(q.a)}</AccordionContent>
             </AccordionItem></RiseIn>
           ))}
         </Accordion>
 
-        <h2 className="font-serif text-2xl mb-4">للمصوّرات</h2>
+        <h2 className="font-serif text-2xl mb-4">{t("للمصوّرات")}</h2>
         <Accordion type="single" collapsible>
           {photographerQ.map((q, i) => (
             <RiseIn key={i} cols={1}><AccordionItem value={`p-${i}`}>
-              <AccordionTrigger className="text-right">{q.q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground leading-loose">{q.a}</AccordionContent>
+              <AccordionTrigger className="text-start">{tx(q.q)}</AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-loose">{tx(q.a)}</AccordionContent>
             </AccordionItem></RiseIn>
           ))}
         </Accordion>

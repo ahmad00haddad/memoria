@@ -5,6 +5,7 @@
  */
 import { useState, useEffect } from "react";
 import { Bell, X } from "lucide-react";
+import { t } from "@/i18n";
 
 export function NotificationPermission() {
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">("default");
@@ -58,18 +59,18 @@ export function NotificationPermission() {
     <div className="flex items-center gap-3 rounded-sm border border-gold/30 bg-gold/5 px-4 py-3 text-sm">
       <Bell className="h-4 w-4 text-gold shrink-0" />
       <span className="flex-1">
-        فعّلي إشعارات المتصفح لتبقَي على اطلاع بالحجوزات الجديدة فوراً.
+        {t("فعّلي إشعارات المتصفح لتبقَي على اطلاع بالحجوزات الجديدة فوراً.")}
       </span>
       <button
         onClick={requestPermission}
         className="shrink-0 rounded-sm bg-charcoal text-ivory px-3 py-1.5 text-xs font-medium hover:bg-charcoal/90 transition-colors"
       >
-        تفعيل
+        {t("تفعيل")}
       </button>
       <button
         onClick={dismiss}
         className="shrink-0 p-1 text-muted-foreground hover:text-foreground transition-colors"
-        aria-label="إخفاء"
+        aria-label={t("إخفاء")}
       >
         <X className="h-3.5 w-3.5" />
       </button>

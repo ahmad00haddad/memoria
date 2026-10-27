@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Info, X } from "lucide-react";
 import { useTourState } from "./ClientTour";
 import { useDismissed } from "@/hooks/use-dismissed";
+import { t } from "@/i18n";
 
 export function PhotographerProfileTip() {
   const state = useTourState();
@@ -21,8 +22,8 @@ export function PhotographerProfileTip() {
         <div className="rounded-sm border border-gold/30 bg-gold/5 p-4 flex gap-3 relative">
           <button
             onClick={dismiss}
-            className="absolute top-2 left-2 p-1 text-muted-foreground hover:text-foreground"
-            aria-label="إغلاق التلميح"
+            className="absolute top-2 end-2 p-1 text-muted-foreground hover:text-foreground"
+            aria-label={t("إغلاق التلميح")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -35,11 +36,10 @@ export function PhotographerProfileTip() {
           
           <div className="pe-6">
             <h4 className="font-serif text-sm font-bold text-foreground mb-1">
-              كيف تختارين الباقة المناسبة؟
+              {t("كيف تختارين الباقة المناسبة؟")}
             </h4>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              الباقات المعروضة هنا هي أسعار والتزامات حقيقية محددة من قِبل المصوّرة نفسها. 
-              اختاري الباقة الأنسب لميزانيتك واحتياجات يومك، ثم انتقلي لنموذج الحجز لتأكيد التاريخ والسعر النهائي بما في ذلك أي رسوم تنقل.
+              {t("الباقات المعروضة هنا هي أسعار والتزامات حقيقية محددة من قِبل المصوّرة نفسها. اختاري الباقة الأنسب لميزانيتك واحتياجات يومك، ثم انتقلي لنموذج الحجز لتأكيد التاريخ والسعر النهائي بما في ذلك أي رسوم تنقل.")}
             </p>
           </div>
         </div>

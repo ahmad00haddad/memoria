@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { getLang, dirOf } from "@/i18n";
 import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
@@ -16,6 +17,8 @@ import { hapticVibrate } from "@/lib/utils";
 import { daysFromToday, relativeDay, ageLabel } from "@/components/dashboard/focus";
 import { Inbox, Search, CheckCircle2, MessageCircle, ChevronLeft, Paperclip, AlertTriangle, History, X, Plus } from "lucide-react";
 import { ManualBookingSheet } from "@/components/dashboard/ManualBookingSheet";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/")({ component: BookingsList });
 
@@ -99,7 +102,7 @@ function BookingsList() {
           })
           .subscribe();
       } catch (error: any) {
-        setLoadError(error?.message || "تعذّر تحميل الحجوزات");
+        setLoadError(error?.message || t("تعذّر تحميل الحجوزات"));
       } finally {
         setLoading(false);
       }
@@ -110,17 +113,17 @@ function BookingsList() {
   const handleConfirm = async (id: string) => {
     const amount = list.find((b) => b.id === id)?.deposit_amount;
     // الإيصالات سهلة التزوير — نطلب تأكيداً صريحاً بأنها راجعت تطبيق البنك.
-    if (!window.confirm(g("تأكّدتِ", "تأكّدت") + ` من تطبيق البنك أن العربون${amount ? ` (${amount} د.أ)` : ""} وصل فعلاً لحسابك؟\n` + g("لا تعتمدي على صورة الإيصال وحدها.", "لا تعتمد على صورة الإيصال وحدها."))) return;
+    if (!window.confirm(g(t("تأكّدتِ"), t("تأكّدت")) + t("من تطبيق البنك أن العربون{0} وصل فعلاً لحسابك؟", [amount ? ` (${amount} د.أ)` : ""]) + g(t("لا تعتمدي على صورة الإيصال وحدها."), t("لا تعتمد على صورة الإيصال وحدها.")))) return;
     const prev = list;
     setList((l) => l.map((b) => (b.id === id ? { ...b, status: "confirmed" } : b))); // تحديث متفائل
     try {
       await confirmFn({ data: { booking_id: id } });
       hapticVibrate("success");
-      toast.success("حجز جديد مؤكَّد 🎉 أبلغنا العميلة");
+      toast.success(t("حجز جديد مؤكَّد 🎉 أبلغنا العميلة"));
     } catch (e: any) {
       setList(prev);
       hapticVibrate("error");
-      toast.error(e?.message || "تعذّر تأكيد الحجز");
+      toast.error(e?.message || t("تعذّر تأكيد الحجز"));
     }
   };
 
@@ -147,13 +150,13 @@ function BookingsList() {
   }), [list]);
 
   const FILTERS: { value: FilterKey; label: string }[] = [
-    { value: "all", label: "الكل" },
-    ...(counts.action > 0 ? [{ value: "action" as const, label: "تحتاج إجراء" }] : []),
-    { value: "upcoming", label: "القادمة" },
-    { value: "pending_deposit", label: "بانتظار العربون" },
-    { value: "confirmed", label: "مؤكّدة" },
-    { value: "completed", label: "مكتملة" },
-    { value: "cancelled", label: "ملغاة" },
+    { value: "all", label: t("الكل") },
+    ...(counts.action > 0 ? [{ value: "action" as const, label: t("تحتاج إجراء") }] : []),
+    { value: "upcoming", label: t("القادمة") },
+    { value: "pending_deposit", label: t("بانتظار العربون") },
+    { value: "confirmed", label: t("مؤكّدة") },
+    { value: "completed", label: t("مكتملة") },
+    { value: "cancelled", label: t("ملغاة") },
   ];
 
   const query = q.trim().toLowerCase();
@@ -181,30 +184,30 @@ function BookingsList() {
     }
     const asc = (a: any, b: any) => +new Date(a.event_date) - +new Date(b.event_date);
     return [
-      { key: "week", title: "خلال ٧ أيام", items: week.sort(asc) },
-      { key: "later", title: "لاحقاً", items: later.sort(asc) },
-      { key: "past", title: "سابقة", items: past.sort((a, b) => -asc(a, b)) },
+      { key: "week", title: t("خلال ٧ أيام"), items: week.sort(asc) },
+      { key: "later", title: t("لاحقاً"), items: later.sort(asc) },
+      { key: "past", title: t("سابقة"), items: past.sort((a, b) => -asc(a, b)) },
     ].filter((g) => g.items.length > 0);
   }, [displayed]);
 
   const firstSwipeable = displayed.find(hasProof)?.id;
 
   return (
-    <div className="min-h-screen bg-background text-foreground" dir="rtl">
+    <div className="min-h-screen bg-background text-foreground" dir={dirOf(getLang())}>
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-5 pb-24">
         <BackToDashboard />
 
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-3">
-            <h1 className="font-serif text-3xl">الحجوزات</h1>
-            <span className="text-xs text-muted-foreground tabular-nums">{list.length} حجزاً</span>
+            <h1 className="font-serif text-3xl">{t("الحجوزات")}</h1>
+            <span className="text-xs text-muted-foreground tabular-nums">{t("{0} حجزاً", [list.length])}</span>
           </div>
           <button
             onClick={() => setManualOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-full bg-charcoal px-4 py-2 text-sm font-medium text-ivory hover:opacity-90 dark:bg-gold dark:text-charcoal"
           >
-            <Plus className="h-4 w-4" /> حجز يدوي
+            <Plus className="h-4 w-4" />{" "}{t("حجز يدوي")}
           </button>
         </div>
         <ManualBookingSheet open={manualOpen} onClose={() => setManualOpen(false)} />
@@ -212,7 +215,7 @@ function BookingsList() {
         {lastOpened && list.some((b) => b.id === lastOpened.id) && !query && filter === "all" && (
           <Link to="/dashboard/bookings/$id" params={{ id: lastOpened.id }} className="flex items-center gap-2 rounded-xl border border-dashed border-border px-4 py-2.5 text-sm text-muted-foreground hover:border-gold/40 hover:text-foreground transition-colors">
             <History className="h-4 w-4" />
-            <span>آخر ما فتحتِه: <span className="text-foreground">{lastOpened.name}</span></span>
+            <span>{t("آخر ما فتحتِه:")}{" "}<span className="text-foreground">{tx(lastOpened.name)}</span></span>
             <ChevronLeft className="ms-auto h-4 w-4" />
           </Link>
         )}
@@ -223,11 +226,11 @@ function BookingsList() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder={g("ابحثي بالاسم أو الهاتف أو المكان…", "ابحث بالاسم أو الهاتف أو المكان…")}
+            placeholder={g(t("ابحثي بالاسم أو الهاتف أو المكان…"), t("ابحث بالاسم أو الهاتف أو المكان…"))}
             className="w-full bg-card border border-border rounded-full py-2.5 ps-9 pe-9 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-gold/60 transition-colors"
           />
           {q && (
-            <button onClick={() => setQ("")} aria-label="مسح البحث" className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+            <button onClick={() => setQ("")} aria-label={t("مسح البحث")} className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
               <X className="h-4 w-4" />
             </button>
           )}
@@ -245,8 +248,8 @@ function BookingsList() {
                 className={`relative flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border transition-colors ${active ? "border-transparent text-ivory dark:text-charcoal" : f.value === "action" ? "border-gold/50 text-gold" : "border-border text-muted-foreground hover:border-foreground/30"}`}
               >
                 {active && <motion.span layoutId="bookings-filter" className="absolute inset-0 rounded-full bg-charcoal dark:bg-gold" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
-                <span className="relative">{f.label}</span>
-                <span className={`relative tabular-nums ${active ? "opacity-70" : "opacity-60"}`}>{n}</span>
+                <span className="relative">{tx(f.label)}</span>
+                <span className={`relative tabular-nums ${active ? "opacity-70" : "opacity-60"}`}>{tx(n)}</span>
               </button>
             );
           })}
@@ -257,13 +260,13 @@ function BookingsList() {
 
         {!loading && !loadError && displayed.length === 0 && (
           list.length === 0 ? (
-            <EmptyState icon={Inbox} title="لا حجوزات بعد" description="عندما تطلب عروس موعداً من ملفك العام سيظهر الطلب هنا فوراً." />
+            <EmptyState icon={Inbox} title={t("لا حجوزات بعد")} description={t("عندما تطلب عروس موعداً من ملفك العام سيظهر الطلب هنا فوراً.")} />
           ) : (
             <div className="rounded-2xl border border-dashed border-border py-12 text-center">
               <CheckCircle2 className="mx-auto mb-3 h-8 w-8 text-emerald-600" />
-              <div className="font-serif text-xl">{filter === "action" ? "لا شيء يحتاج إجراء" : "لا نتائج هنا"}</div>
-              <p className="mt-1 text-sm text-muted-foreground">{query ? `لا حجز يطابق «${q}»` : "كل شيء مرتّب في هذا القسم."}</p>
-              <button onClick={() => { setFilter("all"); setQ(""); }} className="mt-4 rounded-full border border-border px-4 py-1.5 text-xs hover:bg-secondary">عرض كل الحجوزات</button>
+              <div className="font-serif text-xl">{filter === "action" ? t("لا شيء يحتاج إجراء") : t("لا نتائج هنا")}</div>
+              <p className="mt-1 text-sm text-muted-foreground">{query ? t("لا حجز يطابق «{0}»", [q]) : t("كل شيء مرتّب في هذا القسم.")}</p>
+              <button onClick={() => { setFilter("all"); setQ(""); }} className="mt-4 rounded-full border border-border px-4 py-1.5 text-xs hover:bg-secondary">{t("عرض كل الحجوزات")}</button>
             </div>
           )
         )}
@@ -271,7 +274,7 @@ function BookingsList() {
         {!loading && !loadError && groups.map((g) => (
           <section key={g.key} className="space-y-3">
             <h2 className="sticky top-[calc(env(safe-area-inset-top,0px)+3.5rem)] z-10 -mx-4 bg-background/90 px-4 py-2 text-xs font-medium text-muted-foreground backdrop-blur">
-              {g.title} <span className="tabular-nums opacity-60">· {g.items.length}</span>
+              {tx(g.title)} <span className="tabular-nums opacity-60">· {tx(g.items.length)}</span>
             </h2>
             <motion.div layout className="space-y-3">
               <AnimatePresence initial={false}>
@@ -299,9 +302,9 @@ function BookingsList() {
 
 /** يبرز الجزء المطابق من البحث بالذهبي. */
 function Highlight({ text, query }: { text: string; query: string }) {
-  if (!query) return <>{text}</>;
+  if (!query) return <>{tx(text)}</>;
   const i = text.toLowerCase().indexOf(query);
-  if (i < 0) return <>{text}</>;
+  if (i < 0) return <>{tx(text)}</>;
   return <>{text.slice(0, i)}<mark className="rounded-sm bg-gold/25 text-inherit">{text.slice(i, i + query.length)}</mark>{text.slice(i + query.length)}</>;
 }
 
@@ -322,7 +325,7 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
   const waOpacity = useTransform(x, [-90, 0], [1, 0]);
   const canConfirm = !!hasProof(booking);
   const canWa = !!booking.client_phone;
-  const name = booking.client_name || "عميلة";
+  const name = booking.client_name || t("عميلة");
   const d = booking.event_date ? daysFromToday(booking.event_date) : null;
   const pendingAge = (booking.status === "pending_deposit" || booking.status === "quote") && !canConfirm
     ? (Date.now() - new Date(booking.created_at).getTime()) / 86400000
@@ -340,12 +343,12 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
       {/* خلفيات السحب */}
       {canConfirm && (
         <motion.div style={{ opacity: confirmOpacity }} className="absolute inset-0 flex items-center justify-end gap-2 bg-emerald-600 px-5 text-sm font-medium text-white">
-          <CheckCircle2 className="h-5 w-5" /> تأكيد العربون
+          <CheckCircle2 className="h-5 w-5" />{" "}{t("تأكيد العربون")}
         </motion.div>
       )}
       {canWa && (
         <motion.div style={{ opacity: waOpacity }} className="absolute inset-0 flex items-center justify-start gap-2 bg-[#25D366] px-5 text-sm font-medium text-white">
-          واتساب <MessageCircle className="h-5 w-5" />
+          {t("واتساب")}{" "}<MessageCircle className="h-5 w-5" />
         </motion.div>
       )}
 
@@ -369,9 +372,9 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="font-medium truncate"><Highlight text={name} query={query} /></div>
+            <div className="font-medium truncate"><Highlight text={tx(name)} query={query} /></div>
             <div className="mt-0.5 text-xs text-muted-foreground">
-              {booking.event_date ? new Date(booking.event_date).toLocaleDateString("ar-JO", { weekday: "short", day: "numeric", month: "long" }) : "—"}
+              {booking.event_date ? new Date(booking.event_date).toLocaleDateString(locale("ar-JO"), { weekday: "short", day: "numeric", month: "long" }) : "—"}
               {d !== null && d >= 0 && d <= 30 && booking.status !== "cancelled" && <span className={d <= 3 ? "text-gold" : ""}> · {relativeDay(d)}</span>}
             </div>
           </div>
@@ -383,37 +386,36 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
         {(canConfirm || conflict || isOverdue(booking) || pendingAge !== null || (booking.status === "cancelled" && booking.cancellation_reason)) && (
           <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
             {canConfirm && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-gold"><Paperclip className="h-3 w-3" /> {g("العربون وصل — راجعيه", "العربون وصل — راجعه")}</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-gold"><Paperclip className="h-3 w-3" /> {g(t("العربون وصل — راجعيه"), t("العربون وصل — راجعه"))}</span>
             )}
             {isOverdue(booking) && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-destructive"><AlertTriangle className="h-3 w-3" /> التسليم متأخر</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-destructive"><AlertTriangle className="h-3 w-3" />{" "}{t("التسليم متأخر")}</span>
             )}
             {conflict && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-700 dark:text-amber-400"><AlertTriangle className="h-3 w-3" /> حجز آخر في نفس اليوم</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-700 dark:text-amber-400"><AlertTriangle className="h-3 w-3" />{" "}{t("حجز آخر في نفس اليوم")}</span>
             )}
             {pendingAge !== null && (
-              <span className={`rounded-full px-2 py-0.5 ${pendingAge > 3 ? "bg-amber-500/10 text-amber-700 dark:text-amber-400" : "bg-secondary text-muted-foreground"}`}>
-                الطلب {ageLabel(booking.created_at)}
+              <span className={`rounded-full px-2 py-0.5 ${pendingAge > 3 ? "bg-amber-500/10 text-amber-700 dark:text-amber-400" : "bg-secondary text-muted-foreground"}`}>{t("الطلب {0}", [ageLabel(booking.created_at)])}
               </span>
             )}
             {booking.status === "cancelled" && booking.cancellation_reason && (
-              <span className="truncate rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">السبب: {booking.cancellation_reason}</span>
+              <span className="truncate rounded-full bg-secondary px-2 py-0.5 text-muted-foreground">{t("السبب: {0}", [booking.cancellation_reason])}</span>
             )}
           </div>
         )}
 
         <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
-          <span className="text-sm font-semibold tabular-nums" title={`الأساسي ${booking.base_price ?? 0} + التنقّل ${booking.travel_fee ?? 0}`}>
-            {booking.total_price ? `${Number(booking.total_price).toLocaleString("ar-JO")} د.أ` : "—"}
+          <span className="text-sm font-semibold tabular-nums" title={t("الأساسي {0} + التنقّل {1}", [booking.base_price ?? 0, booking.travel_fee ?? 0])}>
+            {booking.total_price ? t("{0} د.أ", [Number(booking.total_price).toLocaleString(locale("ar-JO"))]) : "—"}
           </span>
           <Link to="/dashboard/bookings/$id" params={{ id: booking.id }} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-gold">
-            التفاصيل <ChevronLeft className="h-3.5 w-3.5" />
+            {t("التفاصيل")}{" "}<ChevronLeft className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         {showHint && (
           <div className="mt-3 rounded-lg bg-secondary/70 px-3 py-2 text-center text-[11px] text-muted-foreground">
-            {g("اسحبي البطاقة يميناً لتأكيد العربون، ويساراً لفتح واتساب", "اسحب البطاقة يميناً لتأكيد العربون، ويساراً لفتح واتساب")}
+            {g(t("اسحبي البطاقة يميناً لتأكيد العربون، ويساراً لفتح واتساب"), t("اسحب البطاقة يميناً لتأكيد العربون، ويساراً لفتح واتساب"))}
           </div>
         )}
       </motion.div>

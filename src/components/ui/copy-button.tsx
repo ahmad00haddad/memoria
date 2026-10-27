@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { cn, hapticVibrate } from "@/lib/utils";
+import { t } from "@/i18n";
 
 /**
  * زر نسخ يتحوّل إلى "نُسخ ✓" لثانية ثم يعود — بدون toast مزعج.
@@ -10,8 +11,8 @@ import { cn, hapticVibrate } from "@/lib/utils";
  */
 export function CopyButton({
   value,
-  label = "نسخ",
-  copiedLabel = "نُسخ",
+  label = t("نسخ"),
+  copiedLabel = t("نُسخ"),
   className,
   iconOnly = false,
 }: {
@@ -32,7 +33,7 @@ export function CopyButton({
       hapticVibrate("light");
       setTimeout(() => setCopied(false), 1400);
     } catch {
-      toast.message(value, { description: "انسخيه يدوياً" });
+      toast.message(value, { description: t("انسخيه يدوياً") });
     }
   };
 

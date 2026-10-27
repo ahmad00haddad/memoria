@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 // What "verified" means on Memoria. One list, used by the photographer's
 // dashboard (what's missing), the request endpoint (refuses incomplete
 // requests) and the admin review (what was checked). The admin then confirms
@@ -19,13 +20,13 @@ export const MIN_PORTFOLIO = 6;
 
 export function verificationChecks(i: VerificationInput): VerificationCheck[] {
   return [
-    { key: "avatar", label: "صورة شخصية واضحة", ok: !!i.avatar_url },
-    { key: "cover", label: "صورة غلاف", ok: !!i.cover_url },
-    { key: "portfolio", label: `${MIN_PORTFOLIO} صور على الأقل من أعمالكِ`, ok: i.portfolio_count >= MIN_PORTFOLIO },
-    { key: "packages", label: "باقة أسعار واحدة على الأقل", ok: i.package_count >= 1 },
-    { key: "phone", label: "رقم هاتف أو واتساب للتواصل", ok: i.has_phone },
-    { key: "instagram", label: "حساب إنستغرام يعرض أعمالكِ", ok: !!i.instagram?.trim() },
-    { key: "bio", label: "نبذة تعريفية (٤٠ حرفاً على الأقل)", ok: (i.bio?.trim().length ?? 0) >= 40 },
+    { key: "avatar", label: t("صورة شخصية واضحة"), ok: !!i.avatar_url },
+    { key: "cover", label: t("صورة غلاف"), ok: !!i.cover_url },
+    { key: "portfolio", label: t("{0} صور على الأقل من أعمالكِ", [MIN_PORTFOLIO]), ok: i.portfolio_count >= MIN_PORTFOLIO },
+    { key: "packages", label: t("باقة أسعار واحدة على الأقل"), ok: i.package_count >= 1 },
+    { key: "phone", label: t("رقم هاتف أو واتساب للتواصل"), ok: i.has_phone },
+    { key: "instagram", label: t("حساب إنستغرام يعرض أعمالكِ"), ok: !!i.instagram?.trim() },
+    { key: "bio", label: t("نبذة تعريفية (٤٠ حرفاً على الأقل)"), ok: (i.bio?.trim().length ?? 0) >= 40 },
   ];
 }
 

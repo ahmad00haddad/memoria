@@ -12,13 +12,14 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { toast } from "sonner";
 import { CheckCircle2, ArrowLeft, ArrowRight, Camera, DollarSign, Wallet, Eye, Sparkles, Loader2, Upload, Pencil } from "lucide-react";
+import { t as tr, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   component: Onboarding,
   head: () => ({
     meta: [
-      { title: "إعداد حسابك — Memoria" },
-      { name: "description", content: "خطوات سريعة لإكمال ملف المصوّرة قبل استقبال أول حجز." },
+      { title: tr("إعداد حسابك — Memoria") },
+      { name: "description", content: tr("خطوات سريعة لإكمال ملف المصوّرة قبل استقبال أول حجز.") },
       { name: "robots", content: "noindex,nofollow" },
     ],
   }),
@@ -46,11 +47,11 @@ const PKG_TEMPLATES = [
 ];
 
 const STEPS_ = () => [
-  { icon: Sparkles, title: g("مرحباً بكِ في Memoria", "مرحباً بك في Memoria"), desc: "٤ خطوات قصيرة تستغرق أقل من ٥ دقائق — بعدها ملفك جاهز لاستقبال أول حجز." },
-  { icon: Camera, title: "معلوماتك الأساسية", desc: g("الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بكِ.", "الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بك.") },
-  { icon: DollarSign, title: "أول باقة أسعار", desc: g("بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لكِ باب الحجوزات.", "بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لك باب الحجوزات.") },
-  { icon: Wallet, title: "بيانات الدفع والتواصل", desc: "CliQ alias ورقم واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية تماماً." },
-  { icon: Eye, title: "نشر ملفك", desc: g("راجعي البيانات ثم انشري بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم.", "راجع البيانات ثم انشر بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم.") },
+  { icon: Sparkles, title: g(tr("مرحباً بكِ في Memoria"), tr("مرحباً بك في Memoria")), desc: tr("٤ خطوات قصيرة تستغرق أقل من ٥ دقائق — بعدها ملفك جاهز لاستقبال أول حجز.") },
+  { icon: Camera, title: tr("معلوماتك الأساسية"), desc: g(tr("الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بكِ."), tr("الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بك.")) },
+  { icon: DollarSign, title: tr("أول باقة أسعار"), desc: g(tr("بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لكِ باب الحجوزات."), tr("بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لك باب الحجوزات.")) },
+  { icon: Wallet, title: tr("بيانات الدفع والتواصل"), desc: tr("CliQ alias ورقم واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية تماماً.") },
+  { icon: Eye, title: tr("نشر ملفك"), desc: g(tr("راجعي البيانات ثم انشري بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم."), tr("راجع البيانات ثم انشر بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم.")) },
 ];
 
 function Onboarding() {
@@ -119,21 +120,21 @@ function Onboarding() {
   const validateStep = (): string | null => {
     if (step === 1) {
       const uname = f.username.trim().toLowerCase();
-      if (!f.display_name.trim()) return g("أدخلي الاسم الذي سيظهر للعميل.", "أدخل الاسم الذي سيظهر للعميل.");
-      if (uname.length < 3 || !/^[a-z0-9_]+$/.test(uname)) return "اسم المستخدم يجب أن يكون ٣ أحرف على الأقل (a-z, 0-9, _).";
-      if (!f.city.trim()) return g("اختاري المدينة الأساسية.", "اختر المدينة الأساسية.");
+      if (!f.display_name.trim()) return g(tr("أدخلي الاسم الذي سيظهر للعميل."), tr("أدخل الاسم الذي سيظهر للعميل."));
+      if (uname.length < 3 || !/^[a-z0-9_]+$/.test(uname)) return tr("اسم المستخدم يجب أن يكون ٣ أحرف على الأقل (a-z, 0-9, _).");
+      if (!f.city.trim()) return g(tr("اختاري المدينة الأساسية."), tr("اختر المدينة الأساسية."));
       if (f.avatar_url.trim() && !/^https?:\/\/.+/i.test(f.avatar_url.trim())) {
-        return "رابط الصورة يجب أن يبدأ بـ http:// أو https://";
+        return tr("رابط الصورة يجب أن يبدأ بـ http:// أو https://");
       }
     }
     if (step === 2) {
-      if (!f.pkg_label.trim()) return g("أدخلي اسم الباقة (مثال: باقة الساعة الواحدة).", "أدخل اسم الباقة (مثال: باقة الساعة الواحدة).");
-      if (!f.pkg_price || Number(f.pkg_price) <= 0) return g("أدخلي سعراً صحيحاً للباقة.", "أدخل سعراً صحيحاً للباقة.");
+      if (!f.pkg_label.trim()) return g(tr("أدخلي اسم الباقة (مثال: باقة الساعة الواحدة)."), tr("أدخل اسم الباقة (مثال: باقة الساعة الواحدة)."));
+      if (!f.pkg_price || Number(f.pkg_price) <= 0) return g(tr("أدخلي سعراً صحيحاً للباقة."), tr("أدخل سعراً صحيحاً للباقة."));
     }
     if (step === 3) {
-      if (!f.cliq_alias.trim() && !f.whatsapp.trim()) return g("أضيفي CliQ أو رقم واتساب على الأقل.", "أضف CliQ أو رقم واتساب على الأقل.");
+      if (!f.cliq_alias.trim() && !f.whatsapp.trim()) return g(tr("أضيفي CliQ أو رقم واتساب على الأقل."), tr("أضف CliQ أو رقم واتساب على الأقل."));
       if (f.whatsapp.trim() && !/^\+?\d{9,15}$/.test(f.whatsapp.trim().replace(/[\s-]/g, ""))) {
-        return g("رقم واتساب غير صحيح — أدخلي رقماً دولياً مثل +9627XXXXXXXX.", "رقم واتساب غير صحيح — أدخل رقماً دولياً مثل +9627XXXXXXXX.");
+        return g(tr("رقم واتساب غير صحيح — أدخلي رقماً دولياً مثل +9627XXXXXXXX."), tr("رقم واتساب غير صحيح — أدخل رقماً دولياً مثل +9627XXXXXXXX."));
       }
     }
     return null;
@@ -150,9 +151,9 @@ function Onboarding() {
       }).eq("id", uid);
       if (error) {
         if (error.code === '23505') {
-          toast.error("اسم المستخدم هذا محجوز، يرجى اختيار اسم آخر.");
+          toast.error(tr("اسم المستخدم هذا محجوز، يرجى اختيار اسم آخر."));
         } else {
-          toast.error(error.message || "تعذّر حفظ المعلومات");
+          toast.error(error.message || tr("تعذّر حفظ المعلومات"));
         }
         return false;
       }
@@ -168,7 +169,7 @@ function Onboarding() {
       const { error } = existing?.id
         ? await supabase.from("pricing_rules").update(payload).eq("id", existing.id)
         : await supabase.from("pricing_rules").insert(payload);
-      if (error) { toast.error(error.message || "تعذّر حفظ الباقة"); return false; }
+      if (error) { toast.error(error.message || tr("تعذّر حفظ الباقة")); return false; }
     }
     if (step === 3) {
       const { error } = await supabase.from("photographer_private").upsert({
@@ -176,7 +177,7 @@ function Onboarding() {
         cliq_alias: f.cliq_alias.trim() || null,
         whatsapp: f.whatsapp.trim() || null,
       }, { onConflict: "user_id" });
-      if (error) { toast.error(error.message || "تعذّر حفظ بيانات التواصل"); return false; }
+      if (error) { toast.error(error.message || tr("تعذّر حفظ بيانات التواصل")); return false; }
     }
     return true;
   };
@@ -208,7 +209,7 @@ function Onboarding() {
       .eq("photographer_id", uid);
     if (!pkgCount) {
       setSaving(false);
-      toast.error(g("أضيفي باقة سعرية واحدة على الأقل قبل نشر ملفك", "أضف باقة سعرية واحدة على الأقل قبل نشر ملفك"));
+      toast.error(g(tr("أضيفي باقة سعرية واحدة على الأقل قبل نشر ملفك"), tr("أضف باقة سعرية واحدة على الأقل قبل نشر ملفك")));
       setStep(2);
       return;
     }
@@ -218,10 +219,10 @@ function Onboarding() {
       is_published: true,
     } as any).eq("id", uid);
     setSaving(false);
-    if (error) { toast.error(error.message || "تعذّر إكمال الإعداد"); return; }
+    if (error) { toast.error(error.message || tr("تعذّر إكمال الإعداد")); return; }
     hapticVibrate("success");
     try { confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 }, colors: ["#c9a96e", "#f4ead5", "#2b2520"] }); } catch { /* ignore */ }
-    toast.success("ملفك منشور الآن — العرائس يستطعن رؤيته وحجز موعد");
+    toast.success(tr("ملفك منشور الآن — العرائس يستطعن رؤيته وحجز موعد"));
     setTimeout(() => nav({ to: "/dashboard" }), 900);
   };
 
@@ -236,7 +237,7 @@ function Onboarding() {
       if (error) throw error;
       nav({ to: "/dashboard" });
     } catch (e: any) {
-      toast.error(e?.message || g("تعذّر التخطي، حاولي مجدداً.", "تعذّر التخطي، حاول مجدداً."));
+      toast.error(e?.message || g(tr("تعذّر التخطي، حاولي مجدداً."), tr("تعذّر التخطي، حاول مجدداً.")));
     } finally {
       setSaving(false);
     }
@@ -253,8 +254,8 @@ function Onboarding() {
       <Header />
       <section className="container-editorial py-10 max-w-2xl">
         <div className="mb-6 flex items-center justify-between">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold">إعداد الحساب</div>
-          <button onClick={skip} className="text-xs text-muted-foreground hover:text-foreground">{g("تخطّي وإكمال لاحقاً", "تخطَّ وإكمال لاحقاً")}</button>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold">{tr("إعداد الحساب")}</div>
+          <button onClick={skip} className="text-xs text-muted-foreground hover:text-foreground">{g(tr("تخطّي وإكمال لاحقاً"), tr("تخطَّ وإكمال لاحقاً"))}</button>
         </div>
 
         <div className="mb-6 flex items-center gap-2">
@@ -290,9 +291,9 @@ function Onboarding() {
               <Icon className="h-6 w-6 text-gold" />
             </div>
             <div>
-              <div className="text-xs text-muted-foreground mb-1">الخطوة {step + 1} من {STEPS_().length}</div>
-              <h1 className="font-serif text-2xl leading-tight">{s.title}</h1>
-              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{s.desc}</p>
+              <div className="text-xs text-muted-foreground mb-1">{tr("الخطوة {0} من {1}", [step + 1, STEPS_().length])}</div>
+              <h1 className="font-serif text-2xl leading-tight">{tx(s.title)}</h1>
+              <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{tx(s.desc)}</p>
             </div>
           </div>
 
@@ -300,12 +301,12 @@ function Onboarding() {
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 text-xs bg-gold/10 text-gold border border-gold/20 rounded-full px-3 py-1.5 mb-2">
                 <Sparkles className="h-3.5 w-3.5" />
-                تستغرق أقل من ٥ دقائق
+                {tr("تستغرق أقل من ٥ دقائق")}
               </div>
               <ul className="space-y-3 text-sm text-muted-foreground">
-                {["الاسم الظاهر للعميل ورابط ملفك الخاص", "أول باقة أسعار لتفعيل الحجوزات", "بيانات الدفع — آمنة ومخفية عن الزوار", "نشر ملفك بنقرة واحدة"].map((t) => (
+                {[tr("الاسم الظاهر للعميل ورابط ملفك الخاص"), tr("أول باقة أسعار لتفعيل الحجوزات"), tr("بيانات الدفع — آمنة ومخفية عن الزوار"), tr("نشر ملفك بنقرة واحدة")].map((t) => (
                   <li key={t} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-gold shrink-0" />{t}
+                    <CheckCircle2 className="h-4 w-4 text-gold shrink-0" />{tx(t)}
                   </li>
                 ))}
               </ul>
@@ -314,39 +315,39 @@ function Onboarding() {
 
           {step === 1 && (
             <div className="space-y-4">
-              <Field label="أنا">
+              <Field label={tr("أنا")}>
                 <GenderPicker />
               </Field>
-              <Field label="الاسم الظاهر للعميل *">
-                <input value={f.display_name} onChange={(e) => upd("display_name", e.target.value)} className={inputCx} placeholder="سارة أحمد / استوديو النور" />
+              <Field label={tr("الاسم الظاهر للعميل *")}>
+                <input value={f.display_name} onChange={(e) => upd("display_name", e.target.value)} className={inputCx} placeholder={tr("سارة أحمد / استوديو النور")} />
               </Field>
-              <Field label="اسم المستخدم * (يظهر في رابط ملفك)">
+              <Field label={tr("اسم المستخدم * (يظهر في رابط ملفك)")}>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">{typeof window !== "undefined" ? window.location.host : ""}/photographers/</span>
                   <input value={f.username} onChange={(e) => upd("username", e.target.value)} className={inputCx} placeholder="sara_photo" dir="ltr" />
                 </div>
               </Field>
-              <Field label="المدينة *">
-                <input value={f.city} onChange={(e) => upd("city", e.target.value)} className={inputCx} placeholder="عمّان / إربد / الزرقاء…" />
+              <Field label={tr("المدينة *")}>
+                <input value={f.city} onChange={(e) => upd("city", e.target.value)} className={inputCx} placeholder={tr("عمّان / إربد / الزرقاء…")} />
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {CITIES.map((c) => (
-                    <button key={c} type="button" onClick={() => upd("city", c)} className={`rounded-full border px-3 py-1 text-xs transition-colors ${f.city === c ? "border-gold bg-gold/10 text-foreground" : "border-border text-muted-foreground hover:border-gold/40"}`}>{c}</button>
+                    <button key={c} type="button" onClick={() => upd("city", c)} className={`rounded-full border px-3 py-1 text-xs transition-colors ${f.city === c ? "border-gold bg-gold/10 text-foreground" : "border-border text-muted-foreground hover:border-gold/40"}`}>{tx(c)}</button>
                   ))}
                 </div>
               </Field>
-              <Field label="نبذة قصيرة (اختياري)">
-                <textarea value={f.bio} onChange={(e) => upd("bio", e.target.value)} className={inputCx + " min-h-[90px]"} placeholder={g("أسلوبك، خبرتك، نوع الجلسات التي تفضّلينها…", "أسلوبك، خبرتك، نوع الجلسات التي تفضّلها…")} />
+              <Field label={tr("نبذة قصيرة (اختياري)")}>
+                <textarea value={f.bio} onChange={(e) => upd("bio", e.target.value)} className={inputCx + " min-h-[90px]"} placeholder={g(tr("أسلوبك، خبرتك، نوع الجلسات التي تفضّلينها…"), tr("أسلوبك، خبرتك، نوع الجلسات التي تفضّلها…"))} />
               </Field>
               <div>
-                <div className="text-xs font-medium mb-1.5">صورتك الشخصية (اختياري)</div>
+                <div className="text-xs font-medium mb-1.5">{tr("صورتك الشخصية (اختياري)")}</div>
                 <button type="button" onClick={() => avatarRef.current?.click()} className="flex items-center gap-3 rounded-xl border border-dashed border-border p-3 text-sm hover:border-gold/50 transition-colors w-full text-start">
                   <span className="relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full bg-secondary">
                     {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
                     {avatarBusy && <span className="absolute inset-0 grid place-items-center bg-black/40"><Loader2 className="h-5 w-5 animate-spin text-white" /></span>}
                   </span>
                   <span>
-                    <span className="block font-medium">{f.avatar_url ? "تغيير الصورة" : g("اختاري صورة", "اختر صورة")}</span>
-                    <span className="block text-xs text-muted-foreground">الملفات بصورة شخصية تُفتح أكثر</span>
+                    <span className="block font-medium">{f.avatar_url ? tr("تغيير الصورة") : g(tr("اختاري صورة"), tr("اختر صورة"))}</span>
+                    <span className="block text-xs text-muted-foreground">{tr("الملفات بصورة شخصية تُفتح أكثر")}</span>
                   </span>
                 </button>
                 <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const file = e.target.files?.[0]; if (file) onAvatar(file); e.target.value = ""; }} />
@@ -358,65 +359,64 @@ function Onboarding() {
             <div className="space-y-4">
               {!f.pkg_label && (
                 <div className="flex flex-wrap gap-1.5">
-                  <span className="w-full text-xs text-muted-foreground">{g("ابدئي من مثال وعدّليه:", "ابدأ من مثال وعدّله:")}</span>
+                  <span className="w-full text-xs text-muted-foreground">{g(tr("ابدئي من مثال وعدّليه:"), tr("ابدأ من مثال وعدّله:"))}</span>
                   {PKG_TEMPLATES.map((t) => (
                     <button key={t.label} type="button" onClick={() => { upd("pkg_label", t.label); upd("pkg_price", t.price); upd("pkg_type", t.type); }} className="rounded-full border border-gold/30 bg-gold/5 px-3 py-1 text-xs text-gold hover:bg-gold/15">
-                      {t.label} · {t.price} د.أ
-                    </button>
+                      {tr("{0} · {1} د.أ", [t.label, t.price])}</button>
                   ))}
                 </div>
               )}
-              <Field label="اسم الباقة *">
-                <input value={f.pkg_label} onChange={(e) => upd("pkg_label", e.target.value)} className={inputCx} placeholder="مثال: باقة الساعة الواحدة / يوم كامل" />
+              <Field label={tr("اسم الباقة *")}>
+                <input value={f.pkg_label} onChange={(e) => upd("pkg_label", e.target.value)} className={inputCx} placeholder={tr("مثال: باقة الساعة الواحدة / يوم كامل")} />
               </Field>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="نوع الخدمة">
+                <Field label={tr("نوع الخدمة")}>
                   <select value={f.pkg_service} onChange={(e) => upd("pkg_service", e.target.value as any)} className={inputCx}>
-                    <option value="photography">تصوير فوتوغرافي</option>
-                    <option value="cinematic_video">تصوير فيديو</option>
+                    <option value="photography">{tr("تصوير فوتوغرافي")}</option>
+                    <option value="cinematic_video">{tr("تصوير فيديو")}</option>
                   </select>
                 </Field>
-                <Field label="نوع الباقة">
+                <Field label={tr("نوع الباقة")}>
                   <select value={f.pkg_type} onChange={(e) => upd("pkg_type", e.target.value as any)} className={inputCx}>
-                    <option value="hourly">بالساعة</option>
-                    <option value="full_day">يوم كامل</option>
-                    <option value="addon">إضافة</option>
+                    <option value="hourly">{tr("بالساعة")}</option>
+                    <option value="full_day">{tr("يوم كامل")}</option>
+                    <option value="addon">{tr("إضافة")}</option>
                   </select>
                 </Field>
               </div>
-              <Field label="السعر (د.أ) *">
+              <Field label={tr("السعر (د.أ) *")}>
                 <input type="number" min={0} value={f.pkg_price} onChange={(e) => upd("pkg_price", e.target.value)} className={inputCx} placeholder="100" dir="ltr" />
               </Field>
               {Number(f.pkg_price) > 0 && (
-                <p className="text-xs text-muted-foreground tabular-nums">العربون الافتراضي ٢٥٪ = {Math.round(Number(f.pkg_price) * 0.25)} د.أ — تغيّرينه لاحقاً من ملفك.</p>
+                <p className="text-xs text-muted-foreground tabular-nums">{tr("العربون الافتراضي ٢٥٪ = {0} د.أ — تغيّرينه لاحقاً من ملفك.", [Math.round(Number(f.pkg_price) * 0.25)])}</p>
               )}
-              <p className="text-xs text-muted-foreground">يمكنك إضافة المزيد من الباقات لاحقاً من صفحة الأسعار.</p>
+              <p className="text-xs text-muted-foreground">{tr("يمكنك إضافة المزيد من الباقات لاحقاً من صفحة الأسعار.")}</p>
             </div>
           )}
 
           {step === 3 && (
             <div className="space-y-4">
-              <Field label="CliQ alias (لاستقبال العربون)">
+              <Field label={tr("CliQ alias (لاستقبال العربون)")}>
                 <input value={f.cliq_alias} onChange={(e) => upd("cliq_alias", e.target.value)} className={inputCx} placeholder="SARA.PHOTO" dir="ltr" />
               </Field>
-              <Field label="رقم واتساب (للتواصل مع العميل)">
+              <Field label={tr("رقم واتساب (للتواصل مع العميل)")}>
                 <input value={f.whatsapp} onChange={(e) => upd("whatsapp", e.target.value)} className={inputCx} placeholder="+9627XXXXXXXX" dir="ltr" />
               </Field>
-              <p className="text-xs text-muted-foreground">لن تظهر هذه البيانات إلا للعملاء الذين أكّدوا حجزهم فعلياً.</p>
+              <p className="text-xs text-muted-foreground">{tr("لن تظهر هذه البيانات إلا للعملاء الذين أكّدوا حجزهم فعلياً.")}</p>
             </div>
           )}
 
           {step === 4 && (
             <div className="space-y-4 text-sm">
               <div className="rounded-sm border border-border bg-background p-4 space-y-2">
-                <Row k="الاسم" v={f.display_name} onEdit={() => goTo(1)} />
-                <Row k="اسم المستخدم" v={"@" + f.username} onEdit={() => goTo(1)} />
-                <Row k="المدينة" v={f.city} onEdit={() => goTo(1)} />
-                <Row k="أول باقة" v={`${f.pkg_label} — ${f.pkg_price} د.أ`} onEdit={() => goTo(2)} />
-                <Row k="CliQ / واتساب" v={[f.cliq_alias, f.whatsapp].filter(Boolean).join(" · ") || "—"} onEdit={() => goTo(3)} />
+                <Row k={tr("الاسم")} v={f.display_name} onEdit={() => goTo(1)} />
+                <Row k={tr("اسم المستخدم")} v={"@" + f.username} onEdit={() => goTo(1)} />
+                <Row k={tr("المدينة")} v={f.city} onEdit={() => goTo(1)} />
+                <Row k={tr("أول باقة")} v={tr("{0} — {1} د.أ", [f.pkg_label, f.pkg_price])} onEdit={() => goTo(2)} />
+                <Row k={tr("CliQ / واتساب")} v={[f.cliq_alias, f.whatsapp].filter(Boolean).join(" · ") || "—"} onEdit={() => goTo(3)} />
               </div>
               <div className="rounded-sm border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40 p-4 text-emerald-800 dark:text-emerald-300 text-sm">
-                عند الضغط على "نشر ملفي" سيصبح ملفك مرئياً للعملاء ويمكنهم بدء الحجز مباشرة.
+                {tr("عند الضغط على \"نشر ملفي\" سيصبح ملفك مرئياً للعملاء ويمكنهم بدء الحجز مباشرة.")}
               </div>
             </div>
           )}
@@ -427,7 +427,7 @@ function Onboarding() {
           <AnimatePresence>
             {fieldErr && (
               <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="mt-4 text-sm text-destructive" role="alert">
-                {fieldErr}
+                {tx(fieldErr)}
               </motion.p>
             )}
           </AnimatePresence>
@@ -438,7 +438,7 @@ function Onboarding() {
               disabled={step === 0 || saving}
               className="text-sm px-4 py-2 border border-border rounded-sm hover:bg-secondary disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
-              <ArrowRight className="h-4 w-4" /> السابق
+              <ArrowRight className="h-4 w-4" />{" "}{tr("السابق")}
             </button>
             {isLast ? (
               <button
@@ -447,7 +447,7 @@ function Onboarding() {
                 className="text-sm px-6 py-2 rounded-sm bg-emerald-600 text-white hover:opacity-90 inline-flex items-center gap-2 disabled:opacity-60"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
-                نشر ملفي وإنهاء الإعداد
+                {tr("نشر ملفي وإنهاء الإعداد")}
               </button>
             ) : (
               <button
@@ -456,7 +456,7 @@ function Onboarding() {
                 className="text-sm px-6 py-2 rounded-sm bg-charcoal text-ivory hover:opacity-90 inline-flex items-center gap-2 disabled:opacity-60"
               >
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                التالي <ArrowLeft className="h-4 w-4" />
+                {tr("التالي")}{" "}<ArrowLeft className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -472,7 +472,7 @@ const inputCx = "w-full h-10 px-3 rounded-xl border border-input bg-background t
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-xs font-medium mb-1.5">{label}</div>
+      <div className="text-xs font-medium mb-1.5">{tx(label)}</div>
       {children}
     </label>
   );
@@ -481,11 +481,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function Row({ k, v, onEdit }: { k: string; v: string; onEdit?: () => void }) {
   return (
     <div className="group flex items-baseline justify-between gap-3">
-      <span className="text-xs text-muted-foreground">{k}</span>
+      <span className="text-xs text-muted-foreground">{tx(k)}</span>
       <span className="flex items-center gap-2 text-sm font-medium text-end">
         {v || "—"}
         {onEdit && (
-          <button type="button" onClick={onEdit} aria-label={`تعديل ${k}`} className="text-muted-foreground opacity-60 hover:text-gold group-hover:opacity-100">
+          <button type="button" onClick={onEdit} aria-label={tr("تعديل {0}", [k])} className="text-muted-foreground opacity-60 hover:text-gold group-hover:opacity-100">
             <Pencil className="h-3.5 w-3.5" />
           </button>
         )}

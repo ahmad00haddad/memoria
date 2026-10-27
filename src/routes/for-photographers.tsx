@@ -4,14 +4,15 @@ import { Footer } from "@/components/site/Footer";
 import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { Calendar, DollarSign, FileSignature, MessageCircle, ListChecks, BarChart3, Bell, Share2, Camera, Image as ImageIcon, Lock, Smartphone, Globe, Sparkles, ArrowLeft, Wallet, ShieldCheck, Users } from "lucide-react";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/for-photographers")({
   head: () => ({
     meta: [
-      { title: "للمصوّرات — انضمي إلى Memoria | إدارة كاملة لأعمال التصوير" },
-      { name: "description", content: "صفحة عامة احترافية، نظام حجوزات، عقود رقمية، تذكيرات تلقائية، قوالب واتساب جاهزة، تقارير مالية، ومزامنة Google Calendar — كل ما تحتاجينه لإدارة استوديوك من مكان واحد." },
-      { property: "og:title", content: "للمصوّرات — انضمي إلى Memoria" },
-      { property: "og:description", content: "نظام إدارة كامل لأعمال مصوّرات الأعراس." },
+      { title: t("للمصوّرات — انضمي إلى Memoria | إدارة كاملة لأعمال التصوير") },
+      { name: "description", content: t("صفحة عامة احترافية، نظام حجوزات، عقود رقمية، تذكيرات تلقائية، قوالب واتساب جاهزة، تقارير مالية، ومزامنة Google Calendar — كل ما تحتاجينه لإدارة استوديوك من مكان واحد.") },
+      { property: "og:title", content: t("للمصوّرات — انضمي إلى Memoria") },
+      { property: "og:description", content: t("نظام إدارة كامل لأعمال مصوّرات الأعراس.") },
     ],
     links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/for-photographers" }],
   }),
@@ -45,32 +46,32 @@ function ForPhotographersPage() {
       <Header />
       <main>
         <section className="container-editorial py-16 sm:py-24 text-center">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">للمصوّرات</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">{t("للمصوّرات")}</div>
           <h1 className="font-serif text-4xl sm:text-5xl leading-tight mb-4">
-            <RevealWords lines={["إدارة كاملة لاستوديوكِ", "من مكان واحد"]} />
+            <RevealWords lines={[t("إدارة كاملة لاستوديوكِ"), t("من مكان واحد")]} />
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Memoria ليست فقط منصّة عرض — بل نظام إدارة متكامل صُمّم خصيصاً لمصوّرات الأعراس في الأردن. حجوزات، عقود، عرابين، تسليم صور، تقارير، وقوالب واتساب — كل ذلك بالعربية ومن هاتفكِ.
+            {t("Memoria ليست فقط منصّة عرض — بل نظام إدارة متكامل صُمّم خصيصاً لمصوّرات الأعراس في الأردن. حجوزات، عقود، عرابين، تسليم صور، تقارير، وقوالب واتساب — كل ذلك بالعربية ومن هاتفكِ.")}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             {authed && isPhotographer ? (
               <Link to="/dashboard" className="bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
-                انتقلي إلى لوحة التحكم <ArrowLeft className="h-4 w-4" />
+                {t("انتقلي إلى لوحة التحكم")}{" "}<ArrowLeft className="h-4 w-4" />
               </Link>
             ) : (
               <Link to="/photographers/join" className="bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
-                انضمّي مجاناً ١٤ يوم <ArrowLeft className="h-4 w-4" />
+                {t("انضمّي مجاناً ١٤ يوم")}{" "}<ArrowLeft className="h-4 w-4" />
               </Link>
             )}
-            <Link to="/pricing" className="border border-border px-6 py-3 rounded-sm hover:bg-secondary">شاهدي خطط الاشتراك</Link>
+            <Link to="/pricing" className="border border-border px-6 py-3 rounded-sm hover:bg-secondary">{t("شاهدي خطط الاشتراك")}</Link>
           </div>
         </section>
 
         <section className="container-editorial pb-16">
           <div className="text-center mb-12">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">المميّزات</div>
-            <h2 className="font-serif text-3xl sm:text-4xl">١٦ ميزة قوية تُسهّل عملكِ</h2>
-            <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">صُمّمت كل ميزة بناءً على احتياج حقيقي لمصوّرات يعملن فعلياً في السوق الأردني.</p>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("المميّزات")}</div>
+            <h2 className="font-serif text-3xl sm:text-4xl">{t("١٦ ميزة قوية تُسهّل عملكِ")}</h2>
+            <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">{t("صُمّمت كل ميزة بناءً على احتياج حقيقي لمصوّرات يعملن فعلياً في السوق الأردني.")}</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f, i) => {
@@ -81,8 +82,8 @@ function ForPhotographersPage() {
                   <div className="grid h-11 w-11 place-items-center rounded-sm bg-gold/10 text-gold mb-4 transition-colors duration-500 group-hover:bg-gold group-hover:text-charcoal">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-serif text-xl mb-2">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                  <h3 className="font-serif text-xl mb-2">{tx(f.title)}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{tx(f.desc)}</p>
                 </div>
                 </RiseIn>
               );
@@ -93,15 +94,15 @@ function ForPhotographersPage() {
         <section className="bg-secondary/40 py-16">
           <div className="container-editorial text-center">
             <DollarSign className="h-10 w-10 text-gold mx-auto mb-4" />
-            <h2 className="font-serif text-3xl mb-3">ابدئي اليوم — بدون بطاقة</h2>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">تجربة مجانية ١٤ يوماً. كل المميزات مفتوحة. ألغي في أي وقت دون التزام.</p>
+            <h2 className="font-serif text-3xl mb-3">{t("ابدئي اليوم — بدون بطاقة")}</h2>
+            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">{t("تجربة مجانية ١٤ يوماً. كل المميزات مفتوحة. ألغي في أي وقت دون التزام.")}</p>
             {authed && isPhotographer ? (
               <Link to="/dashboard" className="bg-gold text-charcoal px-8 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
-                انتقلي إلى لوحة التحكم <ArrowLeft className="h-4 w-4" />
+                {t("انتقلي إلى لوحة التحكم")}{" "}<ArrowLeft className="h-4 w-4" />
               </Link>
             ) : (
               <Link to="/photographers/join" className="bg-gold text-charcoal px-8 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
-                أنشئي حسابك الآن <ArrowLeft className="h-4 w-4" />
+                {t("أنشئي حسابك الآن")}{" "}<ArrowLeft className="h-4 w-4" />
               </Link>
             )}
           </div>

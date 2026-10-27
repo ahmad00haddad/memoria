@@ -3,6 +3,7 @@ import { GenderProvider } from "@/hooks/use-gender";
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated")({
   // Before loading the route, verify auth state on the client/server
@@ -40,16 +41,16 @@ function GlobalAuthError({ error, reset }: ErrorComponentProps) {
         <AlertTriangle className="h-12 w-12 text-red-500" />
       </div>
       <div className="space-y-2 max-w-md">
-        <h1 className="font-serif text-3xl">عذراً! واجهنا مشكلة 🔌</h1>
-        <p className="text-muted-foreground">حدث خطأ غير متوقع. لا تقلقي، بياناتك بأمان.</p>
-        <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-sm mt-4 text-left font-mono" dir="ltr">{errorMessage}</p>
+        <h1 className="font-serif text-3xl">{t("عذراً! واجهنا مشكلة 🔌")}</h1>
+        <p className="text-muted-foreground">{t("حدث خطأ غير متوقع. لا تقلقي، بياناتك بأمان.")}</p>
+        <p className="text-xs text-destructive bg-destructive/10 p-2 rounded-sm mt-4 text-end font-mono" dir="ltr">{tx(errorMessage)}</p>
       </div>
       <div className="flex gap-4">
         <button onClick={reset} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 transition">
-          <RefreshCcw className="h-4 w-4" /> تحديث الصفحة
+          <RefreshCcw className="h-4 w-4" />{" "}{t("تحديث الصفحة")}
         </button>
         <Link to="/dashboard" className="inline-flex items-center gap-2 border border-border px-6 py-3 rounded-sm hover:bg-secondary transition">
-          <Home className="h-4 w-4" /> العودة للرئيسية
+          <Home className="h-4 w-4" />{" "}{t("العودة للرئيسية")}
         </Link>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Download, Share } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { t } from "@/i18n";
 
 function wasDismissed() {
   try { return !!localStorage.getItem("pwa_prompt_dismissed"); } catch { return true; }
@@ -73,20 +74,20 @@ export function PwaInstallPrompt() {
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-[72px] sm:bottom-6 left-4 right-4 z-50 bg-charcoal text-ivory rounded-lg p-4 shadow-elegant flex items-center justify-between gap-3"
+          className="fixed bottom-[72px] sm:bottom-6 end-4 start-4 z-50 bg-charcoal text-ivory rounded-lg p-4 shadow-elegant flex items-center justify-between gap-3"
         >
           <div className="flex-1">
             <h2 className="font-serif text-sm font-bold flex items-center gap-2">
               <Download className="h-4 w-4 text-gold" />
-              أضيفي ميموريا لهاتفك
+              {t("أضيفي ميموريا لهاتفك")}
             </h2>
             {isIOS ? (
               <p className="text-[11px] text-ivory/80 mt-1 leading-tight flex items-center gap-1 flex-wrap">
-                لأفضل تجربة، اضغطي على زر <Share className="h-3 w-3 inline" /> ثم <span className="font-bold">إضافة للشاشة الرئيسية ➕</span>
+                {t("لأفضل تجربة، اضغطي على زر")}{" "}<Share className="h-3 w-3 inline" />{" "}{t("ثم")}{" "}<span className="font-bold">{t("إضافة للشاشة الرئيسية ➕")}</span>
               </p>
             ) : (
               <p className="text-[11px] text-ivory/80 mt-1 leading-tight">
-                احصلي على التطبيق لتجربة أسرع وإشعارات فورية.
+                {t("احصلي على التطبيق لتجربة أسرع وإشعارات فورية.")}
               </p>
             )}
           </div>
@@ -97,13 +98,13 @@ export function PwaInstallPrompt() {
                 onClick={handleInstall}
                 className="bg-gold text-charcoal px-3 py-1.5 rounded-sm text-xs font-bold hover:bg-gold/90 transition-colors"
               >
-                تثبيت
+                {t("تثبيت")}
               </button>
             )}
             <button
               onClick={handleDismiss}
               className="p-1 text-ivory/60 hover:text-ivory bg-ivory/10 rounded-full"
-              aria-label="إغلاق"
+              aria-label={t("إغلاق")}
             >
               <X className="h-4 w-4" />
             </button>

@@ -1,4 +1,6 @@
-// حسابات تقارير المصوّرة — دالة نقية مشتركة بين الخادم والمتصفح.
+
+import { locale } from "@/i18n";
+import { t } from "@/i18n";// حسابات تقارير المصوّرة — دالة نقية مشتركة بين الخادم والمتصفح.
 // الخادم يستخدمها في getReportStats، والصفحة تستخدمها كبديل إذا تعذّر الوصول للخادم.
 
 export type ReportStats = {
@@ -23,11 +25,11 @@ export type ReportStats = {
 
 export function statusLabel(s: string): string {
   switch (s) {
-    case "quote": return "عرض سعر";
-    case "pending_deposit": return "بانتظار العربون";
-    case "confirmed": return "مؤكّد";
-    case "completed": return "مكتمل";
-    case "cancelled": return "ملغى";
+    case "quote": return t("عرض سعر");
+    case "pending_deposit": return t("بانتظار العربون");
+    case "confirmed": return t("مؤكّد");
+    case "completed": return t("مكتمل");
+    case "cancelled": return t("ملغى");
     default: return s;
   }
 }
@@ -106,7 +108,7 @@ export function computeReportStats(
   for (let i = 11; i >= 0; i--) {
     const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    months[key] = { label: d.toLocaleDateString("ar-JO", { month: "short", year: "2-digit" }), revenue: 0, count: 0 };
+    months[key] = { label: d.toLocaleDateString(locale("ar-JO"), { month: "short", year: "2-digit" }), revenue: 0, count: 0 };
   }
   earned.forEach((b: any) => {
     if (!b.event_date) return;
@@ -119,7 +121,7 @@ export function computeReportStats(
   // 10) حسب الخدمة.
   const byService: Record<string, { revenue: number; count: number }> = {};
   earned.forEach((b: any) => {
-    const k = b.service || "غير محدد";
+    const k = b.service || t("غير محدد");
     byService[k] = byService[k] ?? { revenue: 0, count: 0 };
     byService[k].revenue += Number(b.total_price ?? 0);
     byService[k].count += 1;
@@ -136,7 +138,7 @@ export function computeReportStats(
     { stage: "quote", label: statusLabel("quote"), count: filtered.filter((b: any) => b.status === "quote").length },
     { stage: "pending_deposit", label: statusLabel("pending_deposit"), count: filtered.filter((b: any) => b.status === "pending_deposit").length },
     { stage: "confirmed", label: statusLabel("confirmed"), count: filtered.filter((b: any) => b.status === "confirmed").length },
-    { stage: "delivered", label: "تم التسليم", count: filtered.filter((b: any) => b.status === "completed" && b.delivered_at).length },
+    { stage: "delivered", label: t("تم التسليم"), count: filtered.filter((b: any) => b.status === "completed" && b.delivered_at).length },
     { stage: "completed", label: statusLabel("completed"), count: filtered.filter((b: any) => b.status === "completed").length },
     { stage: "cancelled", label: statusLabel("cancelled"), count: cancelledCount },
   ];

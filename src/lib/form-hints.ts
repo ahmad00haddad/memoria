@@ -1,3 +1,4 @@
+import { t } from "@/i18n";
 // تلميحات صغيرة للنماذج: تصحيح نطاق البريد وقوة كلمة المرور.
 
 const COMMON_DOMAINS = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com", "live.com"];
@@ -26,9 +27,9 @@ export function emailTypoSuggestion(email: string): string | null {
 /** قوة كلمة المرور من ٠ إلى ٣ مع نصيحة قصيرة بالعربية. */
 export function passwordStrength(pw: string): { score: 0 | 1 | 2 | 3; hint: string } {
   if (!pw) return { score: 0, hint: "" };
-  if (pw.length < 8) return { score: 1, hint: `${8 - pw.length} أحرف إضافية على الأقل` };
+  if (pw.length < 8) return { score: 1, hint: t("{0} أحرف إضافية على الأقل", [8 - pw.length]) };
   const variety = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(pw)).length;
-  if (variety >= 3 && pw.length >= 10) return { score: 3, hint: "كلمة مرور قوية" };
-  if (variety >= 2) return { score: 2, hint: "جيدة — أضيفي رمزاً أو حرفاً كبيراً لتصبح أقوى" };
-  return { score: 1, hint: "أضيفي أرقاماً أو رموزاً" };
+  if (variety >= 3 && pw.length >= 10) return { score: 3, hint: t("كلمة مرور قوية") };
+  if (variety >= 2) return { score: 2, hint: t("جيدة — أضيفي رمزاً أو حرفاً كبيراً لتصبح أقوى") };
+  return { score: 1, hint: t("أضيفي أرقاماً أو رموزاً") };
 }

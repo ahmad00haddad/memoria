@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 // ============================================================================
 // upload-diagnostic.functions.ts — تشخيص مشاكل الرفع (server-authoritative)
@@ -20,7 +21,7 @@ export const checkUploadHealth = createServerFn({ method: "GET" })
     if (!userId) {
       return {
         healthy: false,
-        error: "انتهت الجلسة. سجّل الدخول مجدداً.",
+        error: t("انتهت الجلسة. سجّل الدخول مجدداً."),
         errorType: "auth_expired" as const,
       };
     }
@@ -32,7 +33,7 @@ export const checkUploadHealth = createServerFn({ method: "GET" })
     if (healthErr) {
       return {
         healthy: false,
-        error: `تعذّر فحص حالة التخزين: ${healthErr.message}`,
+        error: t("تعذّر فحص حالة التخزين: {0}", [healthErr.message]),
         errorType: "unknown" as const,
       };
     }
@@ -53,31 +54,31 @@ export const checkUploadHealth = createServerFn({ method: "GET" })
     const issues: string[] = [];
 
     if (!rlsEnabled) {
-      issues.push("RLS غير مفعّل على storage.objects — هذا خطر أمني.");
+      issues.push(t("RLS غير مفعّل على storage.objects — هذا خطر أمني."));
     }
 
     if (policyCount < 5) {
-      issues.push(`عدد سياسات التخزين منخفض (${policyCount}). قد لا تكون الـ buckets مضبوطة.`);
+      issues.push(t("عدد سياسات التخزين منخفض ({0}). قد لا تكون الـ buckets مضبوطة.", [policyCount]));
     }
 
     const requiredBuckets = ["avatars", "deposit-proofs", "payment-proofs", "delivery-photos"];
     const existingBuckets = buckets.map((b: any) => b.id);
     for (const req of requiredBuckets) {
       if (!existingBuckets.includes(req)) {
-        issues.push(`Bucket "${req}" غير موجود. شغّل migration التخزين.`);
+        issues.push(t("Bucket \"{0}\" غير موجود. شغّل migration التخزين.", [req]));
       }
     }
 
     if (!canListAvatars) {
       const errMsg = String(listErr?.message || "").toLowerCase();
       if (errMsg.includes("bucket not found")) {
-        issues.push("Bucket \"avatars\" غير موجود في Supabase. شغّل migration 20260623130000.");
+        issues.push(t("Bucket \"avatars\" غير موجود في Supabase. شغّل migration 20260623130000."));
       } else if (errMsg.includes("jwt") || errMsg.includes("401")) {
-        issues.push("انتهت صلاحية الجلسة. سجّل الدخول مجدداً.");
+        issues.push(t("انتهت صلاحية الجلسة. سجّل الدخول مجدداً."));
       } else if (errMsg.includes("rls") || errMsg.includes("policy") || errMsg.includes("403")) {
-        issues.push("لا تملك صلاحية الوصول إلى التخزين. تحقّق من سياسات RLS.");
+        issues.push(t("لا تملك صلاحية الوصول إلى التخزين. تحقّق من سياسات RLS."));
       } else {
-        issues.push(`تعذّر الوصول إلى bucket \"avatars\": ${listErr?.message || "خطأ غير معروف"}`);
+        issues.push(t("تعذّر الوصول إلى bucket \"avatars\": {0}", [listErr?.message || "خطأ غير معروف"]));
       }
     }
 
@@ -106,31 +107,31 @@ export const getUploadConfig = createServerFn({ method: "GET" })
         avatars: {
           max_mb: 5,
           allowed_types: ["image/jpeg", "image/png", "image/webp", "image/gif"],
-          allowed_label: "صور (JPG / PNG / WebP / GIF)",
+          allowed_label: t("صور (JPG / PNG / WebP / GIF)"),
           public: true,
         },
         "deposit-proofs": {
           max_mb: 5,
           allowed_types: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
-          allowed_label: "صور (JPG / PNG / WebP) أو PDF",
+          allowed_label: t("صور (JPG / PNG / WebP) أو PDF"),
           public: false,
         },
         "payment-proofs": {
           max_mb: 5,
           allowed_types: ["image/jpeg", "image/png", "image/webp", "application/pdf"],
-          allowed_label: "صور (JPG / PNG / WebP) أو PDF",
+          allowed_label: t("صور (JPG / PNG / WebP) أو PDF"),
           public: false,
         },
         "delivery-photos": {
           max_mb: 20,
           allowed_types: ["image/jpeg", "image/png", "image/webp"],
-          allowed_label: "صور (JPG / PNG / WebP)",
+          allowed_label: t("صور (JPG / PNG / WebP)"),
           public: false,
         },
         portfolio: {
           max_mb: 10,
           allowed_types: ["image/jpeg", "image/png", "image/webp"],
-          allowed_label: "صور (JPG / PNG / WebP)",
+          allowed_label: t("صور (JPG / PNG / WebP)"),
           public: true,
         },
       },

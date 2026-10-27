@@ -29,18 +29,20 @@ import { BrideGame } from "@/components/site/BrideGame";
 import { ClientTour } from "@/components/ClientTour";
 import { IntroContext, markIntroSeen, readIntro } from "@/lib/intro";
 import { FirstVisitIntro } from "@/components/site/FirstVisitIntro";
+import { getLang, dirOf, LANG_COOKIE } from "@/i18n";
+import { t as tr } from "@/i18n";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4" dir={dirOf(getLang())}>
       <div className="max-w-md text-center">
-        <h1 className="font-serif text-7xl font-bold text-foreground">٤٠٤</h1>
-        <h2 className="mt-4 font-serif text-2xl text-foreground">الصفحة غير موجودة</h2>
+        <h1 className="font-serif text-7xl font-bold text-foreground">{tr("٤٠٤")}</h1>
+        <h2 className="mt-4 font-serif text-2xl text-foreground">{tr("الصفحة غير موجودة")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          الصفحة التي تبحثين عنها غير موجودة أو تم نقلها.
+          {tr("الصفحة التي تبحثين عنها غير موجودة أو تم نقلها.")}
         </p>
         <div className="mt-6">
-          <p className="mb-3 text-xs text-muted-foreground">العبي بينما نلاقي الصفحة</p>
+          <p className="mb-3 text-xs text-muted-foreground">{tr("العبي بينما نلاقي الصفحة")}</p>
           <BrideGame />
         </div>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -48,13 +50,13 @@ function NotFoundComponent() {
             to="/"
             className="inline-flex items-center justify-center rounded-sm bg-charcoal px-5 py-2.5 text-sm font-medium text-ivory transition-colors hover:opacity-90"
           >
-            العودة للرئيسية
+            {tr("العودة للرئيسية")}
           </Link>
           <Link
             to="/search"
             className="inline-flex items-center justify-center rounded-sm border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            ابحثي عن مصوّرة
+            {tr("ابحثي عن مصوّرة")}
           </Link>
         </div>
       </div>
@@ -69,13 +71,13 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4" dir="rtl">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4" dir={dirOf(getLang())}>
       <div className="max-w-md text-center">
         <h1 className="font-serif text-2xl text-foreground">
-          تعذّر تحميل هذه الصفحة
+          {tr("تعذّر تحميل هذه الصفحة")}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          حدث خلل غير متوقع. يمكنكِ المحاولة مجدداً أو العودة للرئيسية.
+          {tr("حدث خلل غير متوقع. يمكنكِ المحاولة مجدداً أو العودة للرئيسية.")}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -85,13 +87,13 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
             }}
             className="inline-flex items-center justify-center rounded-sm bg-charcoal px-5 py-2.5 text-sm font-medium text-ivory transition-colors hover:opacity-90"
           >
-            إعادة المحاولة
+            {tr("إعادة المحاولة")}
           </button>
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-sm border border-border bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            الرئيسية
+            {tr("الرئيسية")}
           </Link>
         </div>
       </div>
@@ -108,18 +110,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "Memoria" },
-      { title: "Memoria (ميموريا) — ذاكرة يومكِ، محفوظة بأمان" },
-      { name: "description", content: "ميموريا: منصة أردنية متخصّصة في حجز مصوّرات الأعراس. مواعيد واضحة، عقود رقمية، وعربون موثّق — بعيداً عن فوضى الواتساب." },
-      { property: "og:title", content: "Memoria (ميموريا) — ذاكرة يومكِ، محفوظة بأمان" },
-      { property: "og:description", content: "ميموريا: منصة أردنية متخصّصة في حجز مصوّرات الأعراس. مواعيد واضحة، عقود رقمية، وعربون موثّق — بعيداً عن فوضى الواتساب." },
+      { title: tr("Memoria (ميموريا) — ذاكرة يومكِ، محفوظة بأمان") },
+      { name: "description", content: tr("ميموريا: منصة أردنية متخصّصة في حجز مصوّرات الأعراس. مواعيد واضحة، عقود رقمية، وعربون موثّق — بعيداً عن فوضى الواتساب.") },
+      { property: "og:title", content: tr("Memoria (ميموريا) — ذاكرة يومكِ، محفوظة بأمان") },
+      { property: "og:description", content: tr("ميموريا: منصة أردنية متخصّصة في حجز مصوّرات الأعراس. مواعيد واضحة، عقود رقمية، وعربون موثّق — بعيداً عن فوضى الواتساب.") },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "https://memoria-production.ahmad000haddad.workers.dev/og-default.png" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@memoria_jo" },
-      { name: "twitter:title", content: "Memoria (ميموريا) — ذاكرة يومكِ، محفوظة بأمان" },
-      { name: "twitter:description", content: "ميموريا: منصة أردنية متخصّصة في حجز مصوّرات الأعراس." },
+      { name: "twitter:title", content: tr("Memoria (ميموريا) — ذاكرة يومكِ، محفوظة بأمان") },
+      { name: "twitter:description", content: tr("ميموريا: منصة أردنية متخصّصة في حجز مصوّرات الأعراس.") },
       { name: "twitter:image", content: "https://memoria-production.ahmad000haddad.workers.dev/og-default.png" },
     ],
     links: [
@@ -187,7 +189,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang={getLang()} dir={dirOf(getLang())} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -334,6 +336,10 @@ function RootComponent() {
   // whole first session keeps the intro until the next full load.
   const [intro] = useState(readIntro);
   useEffect(() => { markIntroSeen(); }, []);
+  // ?lang=en in a shared link sticks for the rest of the visit
+  useEffect(() => {
+    document.cookie = `${LANG_COOKIE}=${getLang()}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  }, []);
   // The soft page entrances play on every visit to public pages. Inside the app
   // (dashboard/admin), used many times a day, they play on the first visit only.
   const appArea = /^\/(dashboard|admin|notifications)/.test(pathname);
@@ -357,7 +363,7 @@ function RootComponent() {
           <LazyMotion features={domAnimation}>
            <MotionConfig reducedMotion="user">
             <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-background focus:text-foreground focus:border focus:rounded-sm focus:shadow-sm">
-              تخطي إلى المحتوى الرئيسي
+              {tr("تخطي إلى المحتوى الرئيسي")}
             </a>
             {showIntro && <FirstVisitIntro onReveal={onIntroReveal} />}
             {/* No initial={false} here: it is inherited by every page and would make all

@@ -24,16 +24,17 @@ import { CompareMode } from "@/components/search/CompareMode";
 import { typoCorrect } from "@/lib/searchUtils";
 import { playSound } from "@/lib/sounds";
 import { BarChart2 } from "lucide-react";
+import { t as tr, tx, locale } from "@/i18n";
 
 export const Route = createFileRoute("/search")({
   component: SearchPage,
   head: () => ({
     meta: [
-      { title: "مصوّرات أعراس في الأردن — ابحثي واحجزي | Memoria" },
+      { title: tr("مصوّرات أعراس في الأردن — ابحثي واحجزي | Memoria") },
       {
         name: "description",
         content:
-          "اعثري على مصوّر عرسك المثالي في الأردن. فلترة بالمدينة والسعر والتاريخ المتاح وتقييمات حقيقية من العرائس.",
+          tr("اعثري على مصوّر عرسك المثالي في الأردن. فلترة بالمدينة والسعر والتاريخ المتاح وتقييمات حقيقية من العرائس."),
       },
     ],
     links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/search" }],
@@ -161,11 +162,11 @@ function SearchPage() {
   // شرائح الفلاتر النشطة — كل شريحة تُزال بنقرة
   const activeChips = [
     city && { k: "city", label: city, clear: () => setCity("") },
-    date && { k: "date", label: new Date(date).toLocaleDateString("ar-JO", { day: "numeric", month: "long" }), clear: () => setDate("") },
-    (minPrice || maxPrice) && { k: "price", label: minPrice && maxPrice ? `${minPrice}–${maxPrice} د.أ` : minPrice ? `من ${minPrice} د.أ` : `حتى ${maxPrice} د.أ`, clear: () => { setMinPrice(""); setMaxPrice(""); } },
-    minRating > 0 && { k: "rating", label: `${minRating}+ نجوم`, clear: () => setMinRating(0) },
-    verifiedOnly && { k: "verified", label: "موثّقة", clear: () => setVerifiedOnly(false) },
-    favsOnly && { k: "favs", label: "مفضّلتي", clear: () => setFavsOnly(false) },
+    date && { k: "date", label: new Date(date).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" }), clear: () => setDate("") },
+    (minPrice || maxPrice) && { k: "price", label: minPrice && maxPrice ? tr("{0}–{1} د.أ", [minPrice, maxPrice]) : minPrice ? tr("من {0} د.أ", [minPrice]) : tr("حتى {0} د.أ", [maxPrice]), clear: () => { setMinPrice(""); setMaxPrice(""); } },
+    minRating > 0 && { k: "rating", label: tr("{0}+ نجوم", [minRating]), clear: () => setMinRating(0) },
+    verifiedOnly && { k: "verified", label: tr("موثّقة"), clear: () => setVerifiedOnly(false) },
+    favsOnly && { k: "favs", label: tr("مفضّلتي"), clear: () => setFavsOnly(false) },
   ].filter(Boolean) as { k: string; label: string; clear: () => void }[];
   const drawerFilterCount = [date, minPrice || maxPrice, sort !== "featured"].filter(Boolean).length;
 
@@ -191,16 +192,16 @@ function SearchPage() {
         <section className="container-editorial py-6 sm:py-10 md:py-12">
           {/* Mobile Large Title */}
           <div className="sm:hidden mb-6 px-2">
-            <p className="font-serif text-3xl font-bold">البحث</p>
+            <p className="font-serif text-3xl font-bold">{tr("البحث")}</p>
           </div>
 
           <div className="hidden sm:block text-center mb-6 md:mb-8">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">دليل المصوّرين</div>
-            <h1 className="font-serif text-3xl md:text-4xl">اعثري على مصوّرة عرسك</h1>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("دليل المصوّرين")}</div>
+            <h1 className="font-serif text-3xl md:text-4xl">{tr("اعثري على مصوّرة عرسك")}</h1>
             <p className="text-sm text-muted-foreground mt-2">
             {results.length > 0
-              ? `${displayResults.length} مصوّرة متاحة${hasFilters ? " ضمن فلترك" : ""}`
-              : "أدخلي مدينتك أو ميزانيتك أو تاريخ حفلك لنُريك المصوّرات المتاحات."}
+              ? tr("{0} مصوّرة متاحة{1}", [displayResults.length, hasFilters ? " ضمن فلترك" : ""])
+              : tr("أدخلي مدينتك أو ميزانيتك أو تاريخ حفلك لنُريك المصوّرات المتاحات.")}
             </p>
           </div>
 
@@ -214,20 +215,20 @@ function SearchPage() {
           }}
           className={`sm:rounded-md sm:border sm:border-border bg-card p-3 sm:p-4 md:p-5 mb-4 sm:mb-6 md:mb-8 sm:shadow-soft sticky top-0 z-30 transition-transform duration-300 ease-out ${barHidden ? "-translate-y-full sm:translate-y-0" : ""} sm:relative sm:top-auto sm:z-auto border-b border-border sm:border-b-0 -mx-4 sm:mx-0 px-4 sm:px-4`}
         >
-      <fieldset className="grid gap-3 md:grid-cols-12" aria-label="فلاتر البحث الأساسية">
+      <fieldset className="grid gap-3 md:grid-cols-12" aria-label={tr("فلاتر البحث الأساسية")}>
             <div className="md:col-span-4 relative flex items-center gap-2">
               <div className="relative flex-1">
                 <Search className="absolute top-1/2 -translate-y-1/2 start-3 h-4 w-4 text-muted-foreground" />
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="اسم المصوّرة، @المستخدم…"
+                  placeholder={tr("اسم المصوّرة، @المستخدم…")}
                   autoCapitalize="none"
                   autoCorrect="off"
                   autoComplete="off"
                   spellCheck={false}
                   className="w-full sm:rounded-sm rounded-full sm:border border-transparent sm:border-input bg-secondary/50 sm:bg-background ps-9 pe-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                  aria-label="كلمات مفتاحية للبحث"
+                  aria-label={tr("كلمات مفتاحية للبحث")}
                 />
               </div>
               
@@ -235,19 +236,19 @@ function SearchPage() {
               <div className="sm:hidden">
                 <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
                   <Drawer.Trigger asChild>
-                    <button type="button" aria-label="الفلاتر" className="relative flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 text-foreground touch-card">
-                      {drawerFilterCount > 0 && <span className="absolute -top-1 -end-1 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-bold text-charcoal">{drawerFilterCount}</span>}
+                    <button type="button" aria-label={tr("الفلاتر")} className="relative flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 text-foreground touch-card">
+                      {drawerFilterCount > 0 && <span className="absolute -top-1 -end-1 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-bold text-charcoal">{tx(drawerFilterCount)}</span>}
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
                     </button>
                   </Drawer.Trigger>
                   <Drawer.Portal>
                     <Drawer.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-md z-40 transition-all duration-300" />
-                    <Drawer.Content className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-background border-t border-border pb-safe">
+                    <Drawer.Content className="fixed bottom-0 end-0 start-0 z-50 rounded-t-2xl bg-background border-t border-border pb-safe">
                       <div className="mx-auto w-12 h-1.5 rounded-full bg-border mt-3 mb-4" />
                       <div className="px-4 pb-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                        <h2 className="text-base font-semibold mb-2">الفلاتر</h2>
+                        <h2 className="text-base font-semibold mb-2">{tr("الفلاتر")}</h2>
                         <div className="space-y-2">
-                          <label htmlFor="search-date" className="text-xs text-muted-foreground">تاريخ العرس — نعرض المتاحات فيه فقط</label>
+                          <label htmlFor="search-date" className="text-xs text-muted-foreground">{tr("تاريخ العرس — نعرض المتاحات فيه فقط")}</label>
                           <input
                             id="search-date"
                             type="date"
@@ -258,7 +259,7 @@ function SearchPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs text-muted-foreground">السعر</label>
+                          <label className="text-xs text-muted-foreground">{tr("السعر")}</label>
                           <div className="flex gap-2">
                             <input
                               type="number"
@@ -266,7 +267,7 @@ function SearchPage() {
                               min={0}
                               value={minPrice}
                               onChange={(e) => setMinPrice(e.target.value)}
-                              placeholder="من"
+                              placeholder={tr("من")}
                               className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm"
                             />
                             <input
@@ -275,26 +276,26 @@ function SearchPage() {
                               min={0}
                               value={maxPrice}
                               onChange={(e) => setMaxPrice(e.target.value)}
-                              placeholder="إلى"
+                              placeholder={tr("إلى")}
                               className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm"
                             />
                           </div>
                         </div>
                         <div className="space-y-2">
-                          <label htmlFor="search-sort-m" className="text-xs text-muted-foreground">الترتيب</label>
+                          <label htmlFor="search-sort-m" className="text-xs text-muted-foreground">{tr("الترتيب")}</label>
                           <select id="search-sort-m" value={sort} onChange={(e) => setSort(e.target.value as any)} className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm">
-                            <option value="featured">الأبرز</option>
-                            <option value="rating">الأعلى تقييماً</option>
-                            <option value="price_asc">الأقل سعراً</option>
-                            <option value="price_desc">الأعلى سعراً</option>
+                            <option value="featured">{tr("الأبرز")}</option>
+                            <option value="rating">{tr("الأعلى تقييماً")}</option>
+                            <option value="price_asc">{tr("الأقل سعراً")}</option>
+                            <option value="price_desc">{tr("الأعلى سعراً")}</option>
                           </select>
                         </div>
                         <div className="flex gap-2 pt-2">
                           {drawerFilterCount > 0 && (
-                            <button type="button" onClick={() => { setDate(""); setMinPrice(""); setMaxPrice(""); setSort("featured"); }} className="rounded-full border border-border px-4 py-3 text-sm">مسح</button>
+                            <button type="button" onClick={() => { setDate(""); setMinPrice(""); setMaxPrice(""); setSort("featured"); }} className="rounded-full border border-border px-4 py-3 text-sm">{tr("مسح")}</button>
                           )}
                           <button type="button" onClick={() => setDrawerOpen(false)} className="flex-1 rounded-full bg-charcoal py-3 text-sm font-medium text-ivory dark:bg-gold dark:text-charcoal">
-                            {resultsQ.isFetching ? "نبحث…" : `عرض ${displayResults.length} مصوّرة`}
+                            {resultsQ.isFetching ? tr("نبحث…") : tr("عرض {0} مصوّرة", [displayResults.length])}
                           </button>
                         </div>
                       </div>
@@ -309,12 +310,12 @@ function SearchPage() {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                aria-label="المدينة"
+                aria-label={tr("المدينة")}
               >
-                <option value="">كل المدن</option>
+                <option value="">{tr("كل المدن")}</option>
                 {(citiesQ.data ?? []).map((c) => (
                   <option key={c} value={c}>
-                    {c}
+                    {tx(c)}
                   </option>
                 ))}
               </select>
@@ -327,9 +328,9 @@ function SearchPage() {
                 min={0}
                 value={minPrice}
                 onChange={(e) => setMinPrice(e.target.value)}
-                placeholder="السعر من"
+                placeholder={tr("السعر من")}
                 className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                aria-label="الحد الأدنى للسعر"
+                aria-label={tr("الحد الأدنى للسعر")}
               />
             </div>
             <div className="hidden sm:block md:col-span-2">
@@ -339,9 +340,9 @@ function SearchPage() {
                 min={0}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
-                placeholder="إلى"
+                placeholder={tr("إلى")}
                 className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                aria-label="الحد الأعلى للسعر"
+                aria-label={tr("الحد الأعلى للسعر")}
               />
             </div>
 
@@ -352,7 +353,7 @@ function SearchPage() {
                 min={new Date().toISOString().slice(0, 10)}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
-                aria-label="تاريخ المناسبة"
+                aria-label={tr("تاريخ المناسبة")}
               />
             </div>
           </fieldset>
@@ -368,7 +369,7 @@ function SearchPage() {
                 }`}
               >
                 <BadgeCheck className="h-3.5 w-3.5" />
-                موثّقة
+                {tr("موثّقة")}
               </button>
               <button
                 type="button"
@@ -378,7 +379,7 @@ function SearchPage() {
                 }`}
               >
                 <Star className="h-3.5 w-3.5" />
-                أعلى تقييم
+                {tr("أعلى تقييم")}
               </button>
               {favs.length > 0 && (
                 <button
@@ -386,9 +387,7 @@ function SearchPage() {
                   onClick={() => { hapticVibrate("light"); setFavsOnly((v) => !v); }}
                   className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${favsOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
                 >
-                  <Heart className="h-3.5 w-3.5" />
-                  مفضّلتي ({favs.length})
-                </button>
+                  <Heart className="h-3.5 w-3.5" />{tr("مفضّلتي ({0})", [favs.length])}</button>
               )}
               <div className="w-px h-5 bg-border mx-1" />
               <button
@@ -396,7 +395,7 @@ function SearchPage() {
                 onClick={() => setCity("")}
                 className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors touch-card ${!city ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
               >
-                كل المدن
+                {tr("كل المدن")}
               </button>
               {(citiesQ.data ?? []).map((c) => (
                 <button
@@ -405,24 +404,24 @@ function SearchPage() {
                   onClick={() => setCity(c)}
                   className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors touch-card ${city === c ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
                 >
-                  {c}
+                  {tx(c)}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="hidden sm:flex flex-wrap items-center gap-3 mt-3">
-            <label htmlFor="search-sort" className="text-xs text-muted-foreground">ترتيب:</label>
+            <label htmlFor="search-sort" className="text-xs text-muted-foreground">{tr("ترتيب:")}</label>
             <select
               id="search-sort"
               value={sort}
               onChange={(e) => setSort(e.target.value as SearchSort)}
               className="rounded-sm border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gold/60"
             >
-              <option value="featured">المميّزات أولاً</option>
-              <option value="rating">الأعلى تقييماً</option>
-              <option value="price_asc">السعر: الأقل أولاً</option>
-              <option value="price_desc">السعر: الأعلى أولاً</option>
+              <option value="featured">{tr("المميّزات أولاً")}</option>
+              <option value="rating">{tr("الأعلى تقييماً")}</option>
+              <option value="price_asc">{tr("السعر: الأقل أولاً")}</option>
+              <option value="price_desc">{tr("السعر: الأعلى أولاً")}</option>
             </select>
             {hasFilters && (
               <button
@@ -430,7 +429,7 @@ function SearchPage() {
                 onClick={clearAll}
                 className="ms-auto text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
               >
-                <X className="h-3 w-3" /> مسح الفلتر
+                <X className="h-3 w-3" />{" "}{tr("مسح الفلتر")}
               </button>
             )}
             <button
@@ -439,7 +438,7 @@ function SearchPage() {
               className={`${hasFilters ? "" : "ms-auto"} text-xs inline-flex items-center gap-1 px-2 py-1 rounded-sm border border-border hover:bg-secondary transition`}
             >
               <SlidersHorizontal className="h-3 w-3" />
-              {showAdvanced ? "إخفاء الفلاتر المتقدّمة" : "فلاتر متقدّمة"}
+              {showAdvanced ? tr("إخفاء الفلاتر المتقدّمة") : tr("فلاتر متقدّمة")}
             </button>
           </div>
 
@@ -454,7 +453,7 @@ function SearchPage() {
                 className="overflow-hidden"
               >
                 <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center gap-2">
-                  <label className="text-xs text-muted-foreground">الحد الأدنى للتقييم:</label>
+                  <label className="text-xs text-muted-foreground">{tr("الحد الأدنى للتقييم:")}</label>
                   {[0, 3, 4, 4.5].map((r) => (
                     <button
                       key={r}
@@ -462,7 +461,7 @@ function SearchPage() {
                       onClick={() => setMinRating(r)}
                       className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${minRating === r ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
-                      {r === 0 ? "الكل" : (<><Star className="h-3 w-3 fill-gold text-gold" />{r}+</>)}
+                      {r === 0 ? tr("الكل") : (<><Star className="h-3 w-3 fill-gold text-gold" />{tx(r)}+</>)}
                     </button>
                   ))}
                   <span className="mx-2 h-4 w-px bg-border" />
@@ -471,7 +470,7 @@ function SearchPage() {
                     onClick={() => setVerifiedOnly((v) => !v)}
                     className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${verifiedOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                   >
-                    <BadgeCheck className="h-3 w-3" /> موثّقة فقط
+                    <BadgeCheck className="h-3 w-3" />{" "}{tr("موثّقة فقط")}
                   </button>
                   {favs.length > 0 && (
                     <button
@@ -479,8 +478,7 @@ function SearchPage() {
                       onClick={() => setFavsOnly((v) => !v)}
                       className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${favsOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
-                      <Heart className="h-3 w-3" /> مفضّلتي ({favs.length})
-                    </button>
+                      <Heart className="h-3 w-3" />{" "}{tr("مفضّلتي ({0})", [favs.length])}</button>
                   )}
                 </div>
               </motion.div>
@@ -498,7 +496,7 @@ function SearchPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
-              {resultsQ.isFetching ? "نبحث…" : `${displayResults.length} نتيجة`}
+              {resultsQ.isFetching ? tr("نبحث…") : tr("{0} نتيجة", [displayResults.length])}
             </motion.span>
             <AnimatePresence initial={false}>
               {activeChips.map((c) => (
@@ -512,41 +510,41 @@ function SearchPage() {
                   onClick={() => { hapticVibrate("light"); c.clear(); }}
                   className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/5 px-3 py-1 text-xs text-foreground hover:border-gold"
                 >
-                  {c.label} <X className="h-3 w-3 text-muted-foreground" />
+                  {tx(c.label)} <X className="h-3 w-3 text-muted-foreground" />
                 </motion.button>
               ))}
             </AnimatePresence>
           </div>
         ) : lastSearch ? (
           <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span>آخر بحث:</span>
+            <span>{tr("آخر بحث:")}</span>
             <button
               type="button"
               onClick={() => { if (lastSearch.city) setCity(lastSearch.city); if (lastSearch.maxPrice) setMaxPrice(lastSearch.maxPrice); if (lastSearch.date && lastSearch.date >= new Date().toISOString().slice(0, 10)) setDate(lastSearch.date); }}
               className="rounded-full border border-dashed border-border px-3 py-1 hover:border-gold/50 hover:text-foreground"
             >
-              {[lastSearch.city, lastSearch.maxPrice && `حتى ${lastSearch.maxPrice} د.أ`, lastSearch.date && new Date(lastSearch.date).toLocaleDateString("ar-JO", { day: "numeric", month: "short" })].filter(Boolean).join(" · ")}
+              {[lastSearch.city, lastSearch.maxPrice && tr("حتى {0} د.أ", [lastSearch.maxPrice]), lastSearch.date && new Date(lastSearch.date).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "short" })].filter(Boolean).join(" · ")}
             </button>
           </div>
         ) : null}
         {!date && displayResults.length > 0 && (
           <p className="mb-4 text-xs text-muted-foreground">
-            لديكِ تاريخ للعرس؟{" "}
-            <button type="button" onClick={() => setDrawerOpen(true)} className="sm:hidden text-gold hover:underline py-2 px-1">أضيفيه</button>
-            <span className="hidden sm:inline">أضيفيه في خانة التاريخ</span>
-            {" "}لنعرض المتاحات فيه فقط.
+            {tr("لديكِ تاريخ للعرس؟")}{" "}
+            <button type="button" onClick={() => setDrawerOpen(true)} className="sm:hidden text-gold hover:underline py-2 px-1">{tr("أضيفيه")}</button>
+            <span className="hidden sm:inline">{tr("أضيفيه في خانة التاريخ")}</span>
+            {" "}{tr("لنعرض المتاحات فيه فقط.")}
           </p>
         )}
         {isTypoCorrected && (
           <div className="col-span-full mb-4 px-4 py-2 bg-secondary/30 rounded-md text-sm">
-            تم التصحيح الإملائي إلى <strong>{correctedQ}</strong> بدلاً من <span className="line-through text-muted-foreground">{originalQuery}</span>. 
-            <button onClick={() => setSkipTypo(true)} className="text-gold hover:underline ms-2">ابحثي عن «{originalQuery}» كما كتبتِها</button>
+            {tr("تم التصحيح الإملائي إلى")}{" "}<strong>{tx(correctedQ)}</strong>{" "}{tr("بدلاً من")}{" "}<span className="line-through text-muted-foreground">{tx(originalQuery)}</span>. 
+            <button onClick={() => setSkipTypo(true)} className="text-gold hover:underline ms-2">{tr("ابحثي عن «{0}» كما كتبتِها", [originalQuery])}</button>
           </div>
         )}
         
         {resultsQ.isError ? (
           <div className="col-span-full text-center py-16 text-sm text-destructive">
-            تعذّر تحميل النتائج. تحقّق من اتصالك وحاول مجدداً.
+            {tr("تعذّر تحميل النتائج. تحقّق من اتصالك وحاول مجدداً.")}
           </div>
         ) : resultsQ.isLoading ? (
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
@@ -560,49 +558,49 @@ function SearchPage() {
           <div className="space-y-4">
             <EmptyState
               icon={Search}
-              title="لا توجد نتائج"
-              description="لم نعثر على مصوّرات تطابق فلترك الحالي. جرّبي اقتراحاتنا التالية:"
+              title={tr("لا توجد نتائج")}
+              description={tr("لم نعثر على مصوّرات تطابق فلترك الحالي. جرّبي اقتراحاتنا التالية:")}
               action={
                 <div className="flex flex-col items-center gap-4">
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     {date && (
                       <button onClick={() => setDate("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                        إزالة التاريخ
+                        {tr("إزالة التاريخ")}
                       </button>
                     )}
                     {city && (
                       <button onClick={() => setCity("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                        البحث في كل المدن
+                        {tr("البحث في كل المدن")}
                       </button>
                     )}
                     {(minPrice || maxPrice) && (
                       <button onClick={() => { setMinPrice(""); setMaxPrice(""); }} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                        إزالة السعر
+                        {tr("إزالة السعر")}
                       </button>
                     )}
                     {verifiedOnly && (
                       <button onClick={() => setVerifiedOnly(false)} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
-                        إظهار جميع المصوّرات
+                        {tr("إظهار جميع المصوّرات")}
                       </button>
                     )}
                     {hasFilters && (
                       <button onClick={clearAll} className="inline-flex items-center gap-2 bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 text-sm">
-                        <X className="h-4 w-4" /> مسح كل الفلاتر
+                        <X className="h-4 w-4" />{" "}{tr("مسح كل الفلاتر")}
                       </button>
                     )}
                   </div>
                   
                   {/* Idea 5: Empty Search Suggestions */}
                   <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
-                    <span className="text-xs text-muted-foreground w-full block mb-1">اقتراحات سريعة:</span>
-                    <button onClick={() => { clearAll(); setCity("عمان"); }} className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition-colors">
-                      استكشفي مصورات عمّان
+                    <span className="text-xs text-muted-foreground w-full block mb-1">{tr("اقتراحات سريعة:")}</span>
+                    <button onClick={() => { clearAll(); setCity(tr("عمان")); }} className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition-colors">
+                      {tr("استكشفي مصورات عمّان")}
                     </button>
-                    <button onClick={() => { clearAll(); setQ("فيديو"); }} className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
-                      تصوير فيديو سينمائي
+                    <button onClick={() => { clearAll(); setQ(tr("فيديو")); }} className="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors">
+                      {tr("تصوير فيديو سينمائي")}
                     </button>
                     <button onClick={() => { clearAll(); setMaxPrice("300"); }} className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-full hover:bg-amber-100 transition-colors">
-                      أقل من 300 دينار
+                      {tr("أقل من 300 دينار")}
                     </button>
                   </div>
                 </div>
@@ -611,20 +609,20 @@ function SearchPage() {
             {city && city !== "عمان" && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto bg-gold/10 border border-gold/20 rounded-sm p-4 text-center">
                 <p className="text-sm text-foreground">
-                  💡 <strong>تلميح:</strong> لم تجدي طلبكِ في <span className="font-bold">{city}</span>؟ العديد من مصوّرات عمّان يغطّين المحافظات الأخرى (قد تُضاف رسوم تنقّل بسيطة).
+                  💡 <strong>{tr("تلميح:")}</strong>{" "}{tr("لم تجدي طلبكِ في")}{" "}<span className="font-bold">{tx(city)}</span>{tr("؟ العديد من مصوّرات عمّان يغطّين المحافظات الأخرى (قد تُضاف رسوم تنقّل بسيطة).")}
                 </p>
-                <button onClick={() => setCity("عمان")} className="mt-3 text-xs bg-background border border-border px-4 py-1.5 rounded-sm hover:bg-secondary transition">
-                  جربي البحث في عمّان
+                <button onClick={() => setCity(tr("عمان"))} className="mt-3 text-xs bg-background border border-border px-4 py-1.5 rounded-sm hover:bg-secondary transition">
+                  {tr("جربي البحث في عمّان")}
                 </button>
               </motion.div>
             )}
             {maxPrice && Number(maxPrice) <= 100 && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto bg-amber-50 border border-amber-200 text-amber-800 rounded-sm p-4 text-center">
                 <p className="text-sm">
-                  💡 <strong>تلميح الميزانية:</strong> باقات تصوير الأعراس الاحترافية في الأردن تبدأ عادةً من 150 د.أ.
+                  💡 <strong>{tr("تلميح الميزانية:")}</strong>{" "}{tr("باقات تصوير الأعراس الاحترافية في الأردن تبدأ عادةً من 150 د.أ.")}
                 </p>
                 <button onClick={() => { setMaxPrice("150"); setMinPrice(""); }} className="mt-3 text-xs bg-background border border-border px-4 py-1.5 rounded-sm hover:bg-secondary transition">
-                  رفع الحد الأعلى إلى 150 د.أ
+                  {tr("رفع الحد الأعلى إلى 150 د.أ")}
                 </button>
               </motion.div>
             )}
@@ -652,8 +650,8 @@ function SearchPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            aria-label="العودة للأعلى"
-            className="fixed bottom-24 sm:bottom-8 right-4 sm:right-8 z-50 h-12 w-12 rounded-full bg-background/80 backdrop-blur-md border border-border shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center text-foreground hover:bg-background transition-colors"
+            aria-label={tr("العودة للأعلى")}
+            className="fixed bottom-24 sm:bottom-8 start-4 sm:start-8 z-50 h-12 w-12 rounded-full bg-background/80 backdrop-blur-md border border-border shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center text-foreground hover:bg-background transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
           </motion.button>
@@ -737,12 +735,12 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
             }}
             className={`absolute top-3 end-[3.75rem] z-20 h-10 px-3 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center transition shadow-sm text-xs font-medium ${compareList.find(c => c.username === p.username) ? 'bg-gold text-charcoal' : 'hover:bg-background/80 text-foreground'}`}
           >
-            <BarChart2 className="w-3 h-3 me-1" /> {compareList.find(c => c.username === p.username) ? 'مقارنة' : 'قارني'}
+            <BarChart2 className="w-3 h-3 me-1" /> {compareList.find(c => c.username === p.username) ? tr("مقارنة") : tr("قارني")}
           </button>
           
           <button
             onClick={toggleFav}
-            aria-label={isFav ? "إزالة من المفضّلة" : "إضافة للمفضّلة"}
+            aria-label={isFav ? tr("إزالة من المفضّلة") : tr("إضافة للمفضّلة")}
             className="absolute top-3 end-3 z-20 h-10 w-10 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-background/80 transition shadow-sm"
           >
             <motion.div
@@ -776,7 +774,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
                           opacity-80 group-hover:opacity-90 transition-opacity duration-300" />
 
           {/* Content */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5">
+          <div className="absolute bottom-0 end-0 start-0 p-4 sm:p-5">
             <h3 className="font-serif text-lg sm:text-xl text-white leading-tight truncate flex items-center gap-2">
               {p.display_name ?? p.username}
               {p.verification_status === 'verified' && (
@@ -786,7 +784,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
             {p.city && (
               <p className="text-white/65 text-sm mt-0.5 flex items-center gap-1">
                 <MapPin className="h-3 w-3 shrink-0" />
-                {p.city}
+                {tx(p.city)}
               </p>
             )}
             <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -797,30 +795,28 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
                   <Star className="h-3 w-3 fill-gold text-gold" />
                   {p.avg_rating.toFixed(1)}
                   {p.review_count > 0 && (
-                    <span className="text-white/50">({p.review_count})</span>
+                    <span className="text-white/50">({tx(p.review_count)})</span>
                   )}
                 </span>
               )}
               {p.min_price != null && (
-                <span className="text-xs text-white/55">
-                  من {p.min_price} د.أ
-                </span>
+                <span className="text-xs text-white/55">{tr("من {0} د.أ", [p.min_price])}</span>
               )}
             </div>
           </div>
 
           {p.is_demo && (
             <div className={`absolute ${p.is_featured ? "top-11" : "top-3"} start-3 z-10 text-[11px] bg-black/60 text-white px-2.5 py-1 rounded-full backdrop-blur-sm`}>
-              نسخة تجريبية للمصوّرات
+              {tr("نسخة تجريبية للمصوّرات")}
             </div>
           )}
 
           {/* Featured badge */}
           {p.is_featured && (
-            <div className="absolute top-3 right-3 text-[11px] uppercase
+            <div className="absolute top-3 start-3 text-[11px] uppercase
                             tracking-widest bg-gold/90 text-white px-2 py-0.5
                             rounded-full backdrop-blur-sm">
-              مميّز ✦
+              {tr("مميّز ✦")}
             </div>
           )}
         </motion.div>

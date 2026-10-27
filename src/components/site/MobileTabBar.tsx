@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { openCommandPalette } from "@/components/CommandPalette";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useEffect, useState } from "react";
+import { t as tr, tx } from "@/i18n";
 
 export function MobileTabBar() {
   const { authed, isPhotographer, userId } = useAuthState();
@@ -44,13 +45,13 @@ export function MobileTabBar() {
   // المصوّرة المسجّلة: أدوات عملها اليومية بدل صفحات التسويق
   if (authed && isPhotographer) {
     const tabs = [
-      { to: "/dashboard", label: "لوحتي", icon: LayoutDashboard, active: currentPath === "/dashboard" || currentPath === "/dashboard/" },
-      { to: "/dashboard/bookings", label: "الحجوزات", icon: Calendar, active: currentPath.startsWith("/dashboard/bookings"), badge: pending },
-      { to: "/dashboard/production", label: "الإنتاج", icon: ListChecks, active: currentPath.startsWith("/dashboard/production") },
-      { to: "/dashboard/calendar", label: "التقويم", icon: CalendarDays, active: currentPath.startsWith("/dashboard/calendar") },
+      { to: "/dashboard", label: tr("لوحتي"), icon: LayoutDashboard, active: currentPath === "/dashboard" || currentPath === "/dashboard/" },
+      { to: "/dashboard/bookings", label: tr("الحجوزات"), icon: Calendar, active: currentPath.startsWith("/dashboard/bookings"), badge: pending },
+      { to: "/dashboard/production", label: tr("الإنتاج"), icon: ListChecks, active: currentPath.startsWith("/dashboard/production") },
+      { to: "/dashboard/calendar", label: tr("التقويم"), icon: CalendarDays, active: currentPath.startsWith("/dashboard/calendar") },
     ];
     return (
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
+      <div className="sm:hidden fixed bottom-0 end-0 start-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
         <div className="flex items-center justify-around h-16">
           {tabs.map((t) => (
             <Link key={t.to} to={t.to as any} className={`relative flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${t.active ? "text-gold" : "text-muted-foreground"}`}>
@@ -61,16 +62,16 @@ export function MobileTabBar() {
                 </motion.span>
                 {!!t.badge && (
                   <motion.span key={t.badge} initial={{ scale: 0.4 }} animate={{ scale: 1 }} className="absolute -top-1.5 -end-2 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-bold text-charcoal tabular-nums">
-                    {t.badge}
+                    {tx(t.badge)}
                   </motion.span>
                 )}
               </span>
-              <span className="text-[11px] font-medium">{t.label}</span>
+              <span className="text-[11px] font-medium">{tx(t.label)}</span>
             </Link>
           ))}
           <button onClick={openCommandPalette} className="flex flex-col items-center justify-center w-full h-full gap-1 text-muted-foreground">
             <Search className="h-5 w-5" strokeWidth={1.8} />
-            <span className="text-[11px] font-medium">بحث</span>
+            <span className="text-[11px] font-medium">{tr("بحث")}</span>
           </button>
         </div>
       </div>
@@ -78,7 +79,7 @@ export function MobileTabBar() {
   }
 
   return (
-    <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
+    <div className="sm:hidden fixed bottom-0 end-0 start-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-around h-16">
         
         {/* رابط الرئيسية (موجود دائماً) */}
@@ -89,7 +90,7 @@ export function MobileTabBar() {
           }`}
         >
           <Home className="h-5 w-5" />
-          <span className="text-[11px] font-medium">الرئيسية</span>
+          <span className="text-[11px] font-medium">{tr("الرئيسية")}</span>
         </Link>
 
         {/* الروابط الديناميكية حسب الدور */}
@@ -102,7 +103,7 @@ export function MobileTabBar() {
               }`}
             >
               <Search className="h-5 w-5" />
-              <span className="text-[11px] font-medium">البحث</span>
+              <span className="text-[11px] font-medium">{tr("البحث")}</span>
             </Link>
             <Link
               to="/guide"
@@ -111,7 +112,7 @@ export function MobileTabBar() {
               }`}
             >
               <HelpCircle className="h-5 w-5" />
-              <span className="text-[11px] font-medium">كيف يعمل</span>
+              <span className="text-[11px] font-medium">{tr("كيف يعمل")}</span>
             </Link>
           </>
         ) : (visitorRole === "photographer" || isPhotographer) ? (
@@ -123,7 +124,7 @@ export function MobileTabBar() {
               }`}
             >
               <Briefcase className="h-5 w-5" />
-              <span className="text-[11px] font-medium">المميزات</span>
+              <span className="text-[11px] font-medium">{tr("المميزات")}</span>
             </Link>
             {!authed && (
               <Link
@@ -133,7 +134,7 @@ export function MobileTabBar() {
                 }`}
               >
                 <Tag className="h-5 w-5" />
-                <span className="text-[11px] font-medium">الأسعار</span>
+                <span className="text-[11px] font-medium">{tr("الأسعار")}</span>
               </Link>
             )}
           </>
@@ -148,7 +149,7 @@ export function MobileTabBar() {
             }`}
           >
             <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[11px] font-medium">لوحتي</span>
+            <span className="text-[11px] font-medium">{tr("لوحتي")}</span>
           </Link>
         ) : (visitorRole === "photographer") ? (
           <Link
@@ -158,7 +159,7 @@ export function MobileTabBar() {
             }`}
           >
             <PlusCircle className="h-5 w-5" />
-            <span className="text-[11px] font-medium">انضمي</span>
+            <span className="text-[11px] font-medium">{tr("انضمي")}</span>
           </Link>
         ) : (
           <Link
@@ -168,7 +169,7 @@ export function MobileTabBar() {
             }`}
           >
             <User className="h-5 w-5" />
-            <span className="text-[11px] font-medium">دخول</span>
+            <span className="text-[11px] font-medium">{tr("دخول")}</span>
           </Link>
         )}
       </div>

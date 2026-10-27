@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useIntro } from "@/lib/intro";
 import { animate, motion, useInView } from "framer-motion";
+import { tx, locale } from "@/i18n";
 
 /**
  * Quiet, one-shot entrance helpers for existing page details (gold rules,
@@ -78,7 +79,7 @@ export function Calligraphy({ children, delay = 0, duration = 1.8, onMount = fal
 export function TypeIn({ text, delay = 0, step = 0.045, onMount = false }: { text: string; delay?: number; step?: number; onMount?: boolean }) {
   const [ref, on] = useSeen<HTMLSpanElement>(0.8, onMount);
   return (
-    <span ref={ref} aria-label={text}>
+    <span ref={ref} aria-label={tx(text)}>
       {text.split("").map((ch, i) => (
         <motion.span
           key={i}
@@ -86,7 +87,7 @@ export function TypeIn({ text, delay = 0, step = 0.045, onMount = false }: { tex
           animate={{ opacity: on ? 1 : 0 }}
           transition={{ duration: 0.35, delay: delay + i * step, ease: "easeOut" }}
         >
-          {ch}
+          {tx(ch)}
         </motion.span>
       ))}
     </span>
@@ -123,7 +124,7 @@ export function RiseImg({ className = "", delay = 0, ...img }: React.ImgHTMLAttr
   );
 }
 
-const arNum = new Intl.NumberFormat("ar-EG");
+const arNum = new Intl.NumberFormat(locale("ar-EG"));
 
 /** A number that counts up (Arabic-Indic digits) the first time it is seen. */
 export function CountTo({ from = 0, to, delay = 0, duration = 1.6, onMount = false, decimals = 0, locale }: { from?: number; to: number; delay?: number; duration?: number; onMount?: boolean; decimals?: number; /** e.g. "en" to keep Latin digits */ locale?: string }) {
@@ -218,7 +219,7 @@ export function RevealWords({ lines, delay = 0.15, step = 0.09 }: { lines: strin
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 0.9, delay: delay + i * step, ease: EASE_OUT }}
               >
-                {w}
+                {tx(w)}
                 {wi < arr.length - 1 || li < lines.length - 1 ? " " : ""}
               </motion.span>
             );

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t as tr } from "@/i18n";
 
 // ============================================================================
 // cancellation.functions.ts — إلغاء الحجوزات (مصوّرة/أدمن + عميل) واسترداد العربون
@@ -42,9 +43,9 @@ export const cancelBooking = createServerFn({ method: "POST" })
     } as any);
     if (error) {
       const m = error.message || "";
-      if (m.includes("CANNOT_CANCEL_COMPLETED")) throw new Error("لا يمكن إلغاء حجز مكتمل");
-      if (m.includes("ALREADY_CANCELLED")) throw new Error("الحجز ملغى مسبقاً");
-      if (m.includes("BOOKING_NOT_FOUND")) throw new Error("الحجز غير موجود");
+      if (m.includes("CANNOT_CANCEL_COMPLETED")) throw new Error(tr("لا يمكن إلغاء حجز مكتمل"));
+      if (m.includes("ALREADY_CANCELLED")) throw new Error(tr("الحجز ملغى مسبقاً"));
+      if (m.includes("BOOKING_NOT_FOUND")) throw new Error(tr("الحجز غير موجود"));
       if (m.includes("forbidden")) throw new Error("forbidden");
       throw new Error(m);
     }
@@ -57,11 +58,11 @@ export const cancelBooking = createServerFn({ method: "POST" })
       const { sendEmail, tplBookingCancelled } = await import("@/lib/email.server");
       const { data: prof } = await supabaseAdmin
         .from("profiles").select("display_name").eq("id", info.photographer_id).maybeSingle();
-      const photographerName = prof?.display_name || "المصوّرة";
+      const photographerName = prof?.display_name || tr("المصوّرة");
 
       if (info.client_email) {
         const t = tplBookingCancelled({
-          client_name: info.client_name || "عميلتنا",
+          client_name: info.client_name || tr("عميلتنا"),
           photographer_name: photographerName,
           event_date: String(info.event_date),
           refund_amount: Number(info.refund_amount || 0),
@@ -76,14 +77,14 @@ export const cancelBooking = createServerFn({ method: "POST" })
       if (info.client_phone) {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
         const refundNote = Number(info.refund_amount || 0) > 0
-          ? `سيتم رد العربون بقيمة ${info.refund_amount} دينار خلال 3-5 أيام عمل.`
-          : "وفقاً لسياسة الاسترداد لا يوجد استرداد للعربون في هذه الحالة.";
+          ? tr("سيتم رد العربون بقيمة {0} دينار خلال 3-5 أيام عمل.", [info.refund_amount])
+          : tr("وفقاً لسياسة الاسترداد لا يوجد استرداد للعربون في هذه الحالة.");
         await sendWhatsAppNotification(
           info.photographer_id,
           info.client_phone,
           "cancellation",
           {
-            client_name: info.client_name || "عميلتنا",
+            client_name: info.client_name || tr("عميلتنا"),
             photographer_name: photographerName,
             event_date: String(info.event_date),
             refund_note: refundNote,
@@ -120,9 +121,9 @@ export const clientCancelBooking = createServerFn({ method: "POST" })
     if (error) {
       const m = error.message || "";
       if (m.includes("CLIENT_CANCEL_NOT_ALLOWED")) {
-        throw new Error("لا يمكن الإلغاء بعد تأكيد الحجز — يرجى التواصل مع المصوّرة");
+        throw new Error(tr("لا يمكن الإلغاء بعد تأكيد الحجز — يرجى التواصل مع المصوّرة"));
       }
-      if (m.includes("invalid token")) throw new Error("رابط غير صالح");
+      if (m.includes("invalid token")) throw new Error(tr("رابط غير صالح"));
       throw new Error(m);
     }
 
@@ -137,8 +138,8 @@ export const clientCancelBooking = createServerFn({ method: "POST" })
         .from("profiles").select("display_name").eq("id", info.photographer_id).maybeSingle();
       if (photographerEmail) {
         const t = tplBookingCancelled({
-          client_name: info.client_name || "العميل",
-          photographer_name: prof?.display_name || "المصوّرة",
+          client_name: info.client_name || tr("العميل"),
+          photographer_name: prof?.display_name || tr("المصوّرة"),
           event_date: String(info.event_date),
           refund_amount: 0,
           by: "client",
@@ -166,7 +167,7 @@ export const updateRefundPolicy = createServerFn({ method: "POST" })
     if (d.policy === "partial") {
       percent = Number(d.percent);
       if (!Number.isInteger(percent) || percent < 0 || percent > 100) {
-        throw new Error("نسبة الاسترداد يجب أن تكون بين 0 و100");
+        throw new Error(tr("نسبة الاسترداد يجب أن تكون بين 0 و100"));
       }
     }
     return { policy: d.policy, percent };

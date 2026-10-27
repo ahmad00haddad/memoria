@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { getLang, dirOf } from "@/i18n";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { locale } from "@/i18n";
+import { t as tr, tx } from "@/i18n";
 
 // عدّ تنازلي حيّ ليوم العرس + قائمة تجهيز قصيرة تكتمل تلقائياً من حالة الحجز.
 // يظهر فقط قبل الموعد (وفي يومه) ولحجز غير ملغى.
@@ -43,8 +46,8 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
   const done = steps.filter((x) => x.done).length;
 
   return (
-    <section aria-label="العدّ التنازلي ليوم العرس" className="mb-8 overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/10 to-transparent p-6 text-center sm:p-8">
-      <div className="text-xs tracking-[0.3em] text-gold">{isToday ? "اليوم يومكِ" : "العدّ التنازلي ليومكِ"}</div>
+    <section aria-label={tr("العدّ التنازلي ليوم العرس")} className="mb-8 overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/10 to-transparent p-6 text-center sm:p-8">
+      <div className="text-xs tracking-[0.3em] text-gold">{isToday ? tr("اليوم يومكِ") : tr("العدّ التنازلي ليومكِ")}</div>
 
       {isToday ? (
         <motion.p
@@ -52,36 +55,35 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
           animate={{ opacity: 1, y: 0 }}
           className="mt-3 font-serif text-4xl"
         >
-          مبروك 🤍
+          {tr("مبروك 🤍")}
         </motion.p>
       ) : (
-        <div className="mt-4 flex justify-center gap-2 sm:gap-4" dir="rtl">
+        <div className="mt-4 flex justify-center gap-2 sm:gap-4" dir={dirOf(getLang())}>
           {[
-            { v: p.d, l: "يوم" },
-            { v: p.h, l: "ساعة" },
-            { v: p.m, l: "دقيقة" },
-            { v: p.s, l: "ثانية" },
+            { v: p.d, l: tr("يوم") },
+            { v: p.h, l: tr("ساعة") },
+            { v: p.m, l: tr("دقيقة") },
+            { v: p.s, l: tr("ثانية") },
           ].map((u) => (
             <div key={u.l} className="w-[4.5rem] rounded-xl bg-background/70 py-3 ring-1 ring-border sm:w-24">
               <div className="font-serif text-3xl tabular-nums sm:text-4xl" aria-live={u.l === "يوم" ? "polite" : "off"}>
-                {u.v.toLocaleString("ar-JO")}
+                {u.v.toLocaleString(locale("ar-JO"))}
               </div>
-              <div className="mt-1 text-xs text-muted-foreground">{u.l}</div>
+              <div className="mt-1 text-xs text-muted-foreground">{tx(u.l)}</div>
             </div>
           ))}
         </div>
       )}
 
-      <p className="mt-4 text-sm text-muted-foreground">
-        مع {photographerName} ·{" "}
-        {new Date(`${eventDate}T12:00:00+03:00`).toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long" })}
+      <p className="mt-4 text-sm text-muted-foreground">{tr("مع {0} ·", [photographerName])}{" "}
+        {new Date(`${eventDate}T12:00:00+03:00`).toLocaleDateString(locale("ar-JO"), { weekday: "long", day: "numeric", month: "long" })}
       </p>
 
       {/* قائمة التجهيز */}
       <div className="mx-auto mt-6 max-w-sm text-start">
         <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-          <span>جاهزية يومكِ</span>
-          <span className="tabular-nums">{done}/{steps.length}</span>
+          <span>{tr("جاهزية يومكِ")}</span>
+          <span className="tabular-nums">{tx(done)}/{tx(steps.length)}</span>
         </div>
         <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-secondary">
           <motion.div
@@ -103,7 +105,7 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
                 <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${st.done ? "bg-gold text-charcoal" : "ring-1 ring-border"}`}>
                   {st.done && <Check className="h-3.5 w-3.5" />}
                 </span>
-                <span className={st.done ? "text-muted-foreground line-through decoration-gold/50" : "text-foreground"}>{st.label}</span>
+                <span className={st.done ? "text-muted-foreground line-through decoration-gold/50" : "text-foreground"}>{tx(st.label)}</span>
               </button>
             </li>
           ))}

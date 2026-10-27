@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import { t, tx } from "@/i18n";
 
 /**
  * زر رجوع موحّد وواضح من أي صفحة فرعية إلى "لوحتي".
@@ -8,7 +9,7 @@ import { ChevronRight } from "lucide-react";
  * ملاحظة (للـ UI في Lovable): التصميم هنا مبسّط ووظيفي عمداً —
  * يمكن تجميله لاحقاً مع الحفاظ على وجود زر رجوع ظاهر في كل صفحة فرعية.
  */
-export function BackToDashboard({ label = "العودة إلى لوحتي" }: { label?: string }) {
+export function BackToDashboard({ label = t("العودة إلى لوحتي") }: { label?: string }) {
   return (
     <Link
       to="/dashboard"
@@ -16,7 +17,7 @@ export function BackToDashboard({ label = "العودة إلى لوحتي" }: { 
     >
       {/* في الواجهة RTL يشير السهم لليمين = رجوع */}
       <ChevronRight className="h-4 w-4" />
-      <span>{label}</span>
+      <span>{tx(label)}</span>
     </Link>
   );
 }

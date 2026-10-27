@@ -4,8 +4,11 @@ import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LangToggle } from "@/components/site/LangToggle";
+import { getLang, dirOf } from "@/i18n";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { t, tx } from "@/i18n";
 
 export function Header() {
   const [unreadNotifs, setUnreadNotifs] = useState(0);
@@ -141,8 +144,8 @@ export function Header() {
         <Link to="/" className="flex items-center gap-2 group">
           <img src="/favicon.svg" alt="" width={36} height={36} className="h-9 w-9 transition-transform duration-700 ease-out group-hover:rotate-[25deg] group-hover:scale-105" />
           <div className="leading-tight">
-            <div className="font-serif text-lg tracking-wide">Memoria <span className="text-muted-foreground text-sm">ميموريا</span></div>
-            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">ذاكرة يومكِ · الأردن</div>
+            <div className="font-serif text-lg tracking-wide">Memoria <span className="text-muted-foreground text-sm">{t("ميموريا")}</span></div>
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{t("ذاكرة يومكِ · الأردن")}</div>
           </div>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2 text-sm">
@@ -150,20 +153,20 @@ export function Header() {
           {authed && isPhotographer ? (
             // ── مصوّرة مسجّلة: أدوات عملها بدل روابط العرائس ──
             <>
-              <NavLink to="/dashboard/bookings" className="hidden sm:inline-flex">الحجوزات</NavLink>
-              <NavLink to="/dashboard/calendar" className="hidden md:inline-flex">التقويم</NavLink>
+              <NavLink to="/dashboard/bookings" className="hidden sm:inline-flex">{t("الحجوزات")}</NavLink>
+              <NavLink to="/dashboard/calendar" className="hidden md:inline-flex">{t("التقويم")}</NavLink>
             </>
           ) : authed ? (
             // ── مسجّل دخول: عرض الروابط الكاملة ──
             <>
-              <NavLink to="/search" className="hidden sm:inline-flex">ابحث عن مصوّر</NavLink>
-              <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
+              <NavLink to="/search" className="hidden sm:inline-flex">{t("ابحث عن مصوّر")}</NavLink>
+              <NavLink to="/guide" className="hidden md:inline-flex">{t("كيف يعمل")}</NavLink>
             </>
           ) : visitorRole === "client" ? (
             // ── زائر | دور العروس: روابط البحث فقط ──
             <>
-              <NavLink to="/search" className="hidden sm:inline-flex">ابحثي عن مصوّرة</NavLink>
-              <NavLink to="/guide" className="hidden md:inline-flex">كيف يعمل</NavLink>
+              <NavLink to="/search" className="hidden sm:inline-flex">{t("ابحثي عن مصوّرة")}</NavLink>
+              <NavLink to="/guide" className="hidden md:inline-flex">{t("كيف يعمل")}</NavLink>
               <button
                 onClick={() => { 
                   try { localStorage.setItem("memoria_visitor_role", "photographer"); } catch { /* ignore */ } 
@@ -171,17 +174,17 @@ export function Header() {
                   navigate({ to: "/photographers/join" });
                 }}
                 className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
-                title="تغيير الدور"
+                title={t("تغيير الدور")}
               >
-                📷 أنا مصوّرة
+                {t("📷 أنا مصوّرة")}
               </button>
             </>
           ) : visitorRole === "photographer" ? (
             // ── زائر | دور المصوّرة: روابط المصوّرات فقط ──
             <>
-              <NavLink to="/for-photographers" className="hidden sm:inline-flex">للمصوّرات</NavLink>
-              <NavLink to="/photographers/join" className="hidden md:inline-flex">انضمي مجاناً</NavLink>
-              <NavLink to="/pricing" className="hidden md:inline-flex">الأسعار</NavLink>
+              <NavLink to="/for-photographers" className="hidden sm:inline-flex">{t("للمصوّرات")}</NavLink>
+              <NavLink to="/photographers/join" className="hidden md:inline-flex">{t("انضمي مجاناً")}</NavLink>
+              <NavLink to="/pricing" className="hidden md:inline-flex">{t("الأسعار")}</NavLink>
               <button
                 onClick={() => { 
                   try { localStorage.setItem("memoria_visitor_role", "client"); } catch { /* ignore */ } 
@@ -189,27 +192,27 @@ export function Header() {
                   navigate({ to: "/search" });
                 }}
                 className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
-                title="تغيير الدور"
+                title={t("تغيير الدور")}
               >
-                🌸 أنا عروس
+                {t("🌸 أنا عروس")}
               </button>
             </>
           ) : (
             // ── زائر جديد بدون دور محفوظ: روابط محايدة ──
             <>
-              <NavLink to="/search" className="hidden sm:inline-flex">ابحث عن مصوّر</NavLink>
-              <NavLink to="/for-photographers" className="hidden lg:inline-flex">للمصوّرات</NavLink>
+              <NavLink to="/search" className="hidden sm:inline-flex">{t("ابحث عن مصوّر")}</NavLink>
+              <NavLink to="/for-photographers" className="hidden lg:inline-flex">{t("للمصوّرات")}</NavLink>
             </>
           )}
           {authed && (
             <div className="flex items-center gap-2">
-              <Link to="/dashboard" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label="الرسائل">
+              <Link to="/dashboard" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label={t("الرسائل")}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 {unreadMsgs > 0 && (
-                  <span className="absolute -top-1 -left-1 bg-blue-600 text-white text-[11px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{unreadMsgs}</span>
+                  <span className="absolute -top-1 -end-1 bg-blue-600 text-white text-[11px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{tx(unreadMsgs)}</span>
                 )}
               </Link>
-              <Link to="/notifications" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors group" aria-label="إشعارات">
+              <Link to="/notifications" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors group" aria-label={t("إشعارات")}>
                 <motion.div animate={jiggle ? { rotate: [0, -20, 20, -15, 15, -10, 10, 0] } : { rotate: 0 }} transition={{ duration: 0.6 }}>
                   <Bell className="h-5 w-5" />
                 </motion.div>
@@ -217,52 +220,53 @@ export function Header() {
                   // a new notification pops the badge in and sends out one ring
                   <motion.span
                     key={unreadNotifs}
-                    className="absolute -top-1 -left-1 bg-red-600 text-white text-[11px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1"
+                    className="absolute -top-1 -end-1 bg-red-600 text-white text-[11px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1"
                     initial={{ scale: 0.4 }}
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 520, damping: 14 }}
                   >
                     <span aria-hidden className="absolute inset-0 rounded-full bg-red-600 opacity-0 animate-ping [animation-duration:1.2s] [animation-iteration-count:1]" />
-                    <span className="relative">{unreadNotifs}</span>
+                    <span className="relative">{tx(unreadNotifs)}</span>
                   </motion.span>
                 )}
               </Link>
             </div>
           )}
+          <LangToggle />
           <ThemeToggle />
           {authLoading ? (
             <span className="hidden sm:inline-flex h-9 w-24 rounded-sm bg-secondary/70" aria-hidden="true" />
           ) : authed ? (
-            <Link to="/dashboard" className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity">لوحتي</Link>
+            <Link to="/dashboard" className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity">{t("لوحتي")}</Link>
           ) : (
-            <Link to="/login" className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity">تسجيل الدخول</Link>
+            <Link to="/login" className="hidden sm:inline-flex px-4 py-2 rounded-sm bg-charcoal text-ivory text-sm hover:opacity-90 transition-opacity">{t("تسجيل الدخول")}</Link>
           )}
           <Sheet open={openMenu} onOpenChange={setOpenMenu}>
             <SheetTrigger asChild>
-              <button className="hidden sm:grid md:hidden h-9 w-9 place-items-center rounded-sm border border-border/60 hover:bg-secondary" aria-label="القائمة">
+              <button className="hidden sm:grid md:hidden h-9 w-9 place-items-center rounded-sm border border-border/60 hover:bg-secondary" aria-label={t("القائمة")}>
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72" dir="rtl">
+            <SheetContent side={getLang() === "ar" ? "right" : "left"} className="w-72" dir={dirOf(getLang())}>
               <SheetHeader>
-                <SheetTitle>القائمة</SheetTitle>
+                <SheetTitle>{t("القائمة")}</SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-1 text-sm">
                 {/* روابط حسب الدور */}
                 {authed || visitorRole === "client" || !visitorRole ? (
-                  <SheetClose asChild><Link to="/search" className="px-3 py-2.5 rounded-sm hover:bg-secondary">ابحثي عن مصوّرة</Link></SheetClose>
+                  <SheetClose asChild><Link to="/search" className="px-3 py-2.5 rounded-sm hover:bg-secondary">{t("ابحثي عن مصوّرة")}</Link></SheetClose>
                 ) : null}
                 {authed || !visitorRole ? (
-                  <SheetClose asChild><Link to="/guide" className="px-3 py-2.5 rounded-sm hover:bg-secondary">كيف يعمل</Link></SheetClose>
+                  <SheetClose asChild><Link to="/guide" className="px-3 py-2.5 rounded-sm hover:bg-secondary">{t("كيف يعمل")}</Link></SheetClose>
                 ) : null}
                 {(authed || visitorRole === "photographer" || !visitorRole) && (
                   <>
-                    <SheetClose asChild><Link to="/for-photographers" className="px-3 py-2.5 rounded-sm hover:bg-secondary">للمصوّرات</Link></SheetClose>
-                    <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">الأسعار</Link></SheetClose>
+                    <SheetClose asChild><Link to="/for-photographers" className="px-3 py-2.5 rounded-sm hover:bg-secondary">{t("للمصوّرات")}</Link></SheetClose>
+                    <SheetClose asChild><Link to="/pricing" className="px-3 py-2.5 rounded-sm hover:bg-secondary">{t("الأسعار")}</Link></SheetClose>
                   </>
                 )}
                 {!authLoading && !authed && visitorRole === "photographer" && (
-                  <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">انضمي مجاناً</Link></SheetClose>
+                  <SheetClose asChild><Link to="/photographers/join" className="px-3 py-2.5 rounded-sm hover:bg-secondary">{t("انضمي مجاناً")}</Link></SheetClose>
                 )}
                 {/* تغيير الدور */}
                 {!authed && (visitorRole === "client" || visitorRole === "photographer") && (
@@ -278,9 +282,9 @@ export function Header() {
                         navigate({ to: "/search" });
                       }
                     }}
-                    className="px-3 py-2.5 rounded-sm text-muted-foreground hover:bg-secondary text-right"
+                    className="px-3 py-2.5 rounded-sm text-muted-foreground hover:bg-secondary text-start"
                   >
-                    {visitorRole === "client" ? "📷 أنا مصوّرة — غيّري الدور" : "🌸 أنا عروس — غيّري الدور"}
+                    {visitorRole === "client" ? t("📷 أنا مصوّرة — غيّري الدور") : t("🌸 أنا عروس — غيّري الدور")}
                   </button>
                 )}
                 <div className="my-2 h-px bg-border" />
@@ -288,11 +292,11 @@ export function Header() {
                   <div className="h-10 rounded-sm bg-secondary/70" aria-hidden="true" />
                 ) : authed ? (
                   <SheetClose asChild>
-                    <Link to="/dashboard" className="px-3 py-2.5 rounded-sm bg-charcoal text-ivory text-center hover:opacity-90">لوحتي</Link>
+                    <Link to="/dashboard" className="px-3 py-2.5 rounded-sm bg-charcoal text-ivory text-center hover:opacity-90">{t("لوحتي")}</Link>
                   </SheetClose>
                 ) : (
                   <SheetClose asChild>
-                    <Link to="/login" className="px-3 py-2.5 rounded-sm bg-charcoal text-ivory text-center hover:opacity-90">تسجيل الدخول</Link>
+                    <Link to="/login" className="px-3 py-2.5 rounded-sm bg-charcoal text-ivory text-center hover:opacity-90">{t("تسجيل الدخول")}</Link>
                   </SheetClose>
                 )}
               </nav>
@@ -321,14 +325,14 @@ function NavLink({
       {active && (
         <motion.span
           aria-hidden
-          className="absolute bottom-0 left-0 right-0 h-px bg-gold origin-right"
+          className="absolute bottom-0 end-0 start-0 h-px bg-gold origin-right"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.9, delay: 0.3, ease: [0.65, 0, 0.35, 1] }}
         />
       )}
       <motion.span
-        className="absolute bottom-0 left-0 right-0 h-px bg-gold origin-left"
+        className="absolute bottom-0 end-0 start-0 h-px bg-gold origin-left"
         initial={{ scaleX: 0 }}
         whileHover={{ scaleX: 1 }}
         transition={{ duration: 0.25, ease: "easeOut" }}

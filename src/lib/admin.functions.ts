@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 async function ensureAdmin(supabase: any, userId: string) {
   const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
@@ -34,7 +35,7 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
 
     if (profError) {
       console.error("[listPhotographersAdmin] Profiles query error:", profError);
-      throw new Error(`فشل جلب المصورات: ${profError.message}`);
+      throw new Error(t("فشل جلب المصورات: {0}", [profError.message]));
     }
 
     const ids = (profiles ?? []).map((p: any) => p.id);
@@ -46,15 +47,15 @@ export const listPhotographersAdmin = createServerFn({ method: "GET" })
 
     if (subsRes.error) {
       console.error("[listPhotographersAdmin] Subscriptions query error:", subsRes.error);
-      throw new Error(`فشل جلب الاشتراكات: ${subsRes.error.message}`);
+      throw new Error(t("فشل جلب الاشتراكات: {0}", [subsRes.error.message]));
     }
     if (bookingsRes.error) {
       console.error("[listPhotographersAdmin] Bookings query error:", bookingsRes.error);
-      throw new Error(`فشل جلب الحجوزات: ${bookingsRes.error.message}`);
+      throw new Error(t("فشل جلب الحجوزات: {0}", [bookingsRes.error.message]));
     }
     if (reviewsRes.error) {
       console.error("[listPhotographersAdmin] Reviews query error:", reviewsRes.error);
-      throw new Error(`فشل جلب التقييمات: ${reviewsRes.error.message}`);
+      throw new Error(t("فشل جلب التقييمات: {0}", [reviewsRes.error.message]));
     }
 
     const subs = subsRes.data;
@@ -355,8 +356,8 @@ export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" }
       .select("id, photographer_id, status")
       .eq("id", data.payment_id)
       .single();
-    if (pErr || !payment) throw new Error("الدفعة غير موجودة");
-    if (payment.status !== "pending") throw new Error("تمت معالجة هذه الدفعة سابقًا");
+    if (pErr || !payment) throw new Error(t("الدفعة غير موجودة"));
+    if (payment.status !== "pending") throw new Error(t("تمت معالجة هذه الدفعة سابقًا"));
 
     // Mark payment as approved
     const { error: e1 } = await supabaseAdmin
@@ -464,11 +465,11 @@ export const adminVerifyPhotographer = createServerFn({ method: "POST" })
     // tell the photographer what happened (and why, when it's a no)
     const note =
       data.status === "verified"
-        ? { title: "✓ تم توثيق ملفكِ", body: "تظهر الآن شارة «موثّقة» على ملفكِ وفي نتائج البحث." }
+        ? { title: t("✓ تم توثيق ملفكِ"), body: t("تظهر الآن شارة «موثّقة» على ملفكِ وفي نتائج البحث.") }
         : data.status === "rejected"
-          ? { title: "لم يُقبل طلب التوثيق", body: data.reason || "راجعي ملفكِ وأعيدي الطلب، أو تواصلي معنا." }
+          ? { title: t("لم يُقبل طلب التوثيق"), body: data.reason || t("راجعي ملفكِ وأعيدي الطلب، أو تواصلي معنا.") }
           : data.status === "unverified"
-            ? { title: "أُزيل توثيق ملفكِ", body: data.reason || "تواصلي معنا لمعرفة السبب." }
+            ? { title: t("أُزيل توثيق ملفكِ"), body: data.reason || t("تواصلي معنا لمعرفة السبب.") }
             : null;
     if (note) {
       await supabaseAdmin.from("notifications")
@@ -911,8 +912,8 @@ export const adminGrantRole = createServerFn({ method: "POST" })
     const ROLES = ["admin", "photographer", "client"];
     const byId = typeof d?.user_id === "string" && /^[0-9a-f-]{36}$/i.test(d.user_id);
     const byEmail = typeof d?.email === "string" && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email.trim());
-    if (!byId && !byEmail) throw new Error("اكتب إيميل المستخدم أو معرّفه");
-    if (!ROLES.includes(d.role)) throw new Error(`role يجب أن يكون من: ${ROLES.join(", ")}`);
+    if (!byId && !byEmail) throw new Error(t("اكتب إيميل المستخدم أو معرّفه"));
+    if (!ROLES.includes(d.role)) throw new Error(t("role يجب أن يكون من: {0}", [ROLES.join(", ")]));
     return d;
   })
   .handler(async ({ data, context }) => {
@@ -929,7 +930,7 @@ export const adminGrantRole = createServerFn({ method: "POST" })
         targetId = list.users.find((u) => (u.email ?? "").toLowerCase() === want)?.id;
         if (list.users.length < 200) break;
       }
-      if (!targetId) throw new Error("لا يوجد حساب بهذا الإيميل. يجب أن يسجّل الشخص أولاً.");
+      if (!targetId) throw new Error(t("لا يوجد حساب بهذا الإيميل. يجب أن يسجّل الشخص أولاً."));
     }
     data.user_id = targetId;
     const { error } = await supabaseAdmin.from("user_roles").upsert(

@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { t } from "@/i18n";
 
 // Everything the side-by-side comparison needs, for up to 3 published
 // photographers. Public data only (no contact details).
@@ -69,7 +70,7 @@ export const getCompareDetails = createServerFn({ method: "GET" })
         min_price: min,
         max_price: pk.length ? pk[pk.length - 1].price : null,
         services: [...new Set(pk.map((x) => (x.service === "cinematic_video" ? "video" : "photo")))],
-        deposit_label: fixed ? `${fixed} د.أ ثابت` : `${pct}٪ من السعر`,
+        deposit_label: fixed ? t("{0} د.أ ثابت", [fixed]) : t("{0}٪ من السعر", [pct]),
         deposit_on_min: min == null ? fixed : fixed ?? Math.round((min * pct) / 100),
         free_km: p.free_km != null ? Number(p.free_km) : null,
         travel_fee_per_km: p.travel_fee_per_km != null ? Number(p.travel_fee_per_km) : null,

@@ -9,25 +9,27 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { PageLoader } from "@/components/ui/loading";
 import { getYearRecap, type YearRecap } from "@/lib/recap.functions";
 import { g } from "@/hooks/use-gender";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/recap")({ component: RecapPage });
 
 const MONTHS = ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"];
 const DAYS = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-const ar = (n: number) => n.toLocaleString("ar-JO");
-const yr = (n: number) => n.toLocaleString("ar-JO", { useGrouping: false });
+const ar = (n: number) => n.toLocaleString(locale("ar-JO"));
+const yr = (n: number) => n.toLocaleString(locale("ar-JO"), { useGrouping: false });
 
 /** البطاقات التي تظهر في الصفحة وفي صورة الستوري — أرقام عامة فقط، بلا مبالغ. */
 function facts(r: YearRecap) {
   const out: { value: string; label: string }[] = [
-    { value: ar(r.events), label: r.events === 1 ? "مناسبة وثّقتها" : "مناسبة وثّقتها" },
+    { value: ar(r.events), label: r.events === 1 ? t("مناسبة وثّقتها") : t("مناسبة وثّقتها") },
   ];
-  if (r.photos > 0) out.push({ value: ar(r.photos), label: "صورة سلّمتها" });
-  if (r.hours > 0) out.push({ value: ar(r.hours), label: "ساعة خلف الكاميرا" });
-  if (r.venues > 1) out.push({ value: ar(r.venues), label: "مكاناً مختلفاً" });
-  if (r.topMonth !== null) out.push({ value: MONTHS[r.topMonth], label: "أكثر شهر ازدحاماً" });
-  if (r.topWeekday !== null) out.push({ value: DAYS[r.topWeekday], label: "يومي المفضّل للأعراس" });
-  if (r.avgRating && r.reviews > 0) out.push({ value: `${r.avgRating.toLocaleString("ar-JO")} ★`, label: `من ${ar(r.reviews)} تقييم` });
+  if (r.photos > 0) out.push({ value: ar(r.photos), label: t("صورة سلّمتها") });
+  if (r.hours > 0) out.push({ value: ar(r.hours), label: t("ساعة خلف الكاميرا") });
+  if (r.venues > 1) out.push({ value: ar(r.venues), label: t("مكاناً مختلفاً") });
+  if (r.topMonth !== null) out.push({ value: MONTHS[r.topMonth], label: t("أكثر شهر ازدحاماً") });
+  if (r.topWeekday !== null) out.push({ value: DAYS[r.topWeekday], label: t("يومي المفضّل للأعراس") });
+  if (r.avgRating && r.reviews > 0) out.push({ value: `${r.avgRating.toLocaleString(locale("ar-JO"))} ★`, label: t("من {0} تقييم", [ar(r.reviews)]) });
   return out;
 }
 
@@ -41,7 +43,7 @@ function RecapPage() {
 
   useEffect(() => {
     setR(null);
-    fetchRecap({ data: { year } }).then(setR).catch((e) => toast.error(e?.message || "تعذّر تحميل الملخص"));
+    fetchRecap({ data: { year } }).then(setR).catch((e) => toast.error(e?.message || t("تعذّر تحميل الملخص")));
   }, [year]);
 
   if (!r) return <PageLoader />;
@@ -60,13 +62,13 @@ function RecapPage() {
       const blob = await makeImage();
       const file = new File([blob], `memoria-${r.year}.png`, { type: "image/png" });
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `سنتي ${r.year} مع Memoria` });
+        await navigator.share({ files: [file], title: t("سنتي {0} مع Memoria", [r.year]) });
       } else {
         download(blob, r.year);
-        toast.success(g("حُفظت الصورة — ارفعيها كستوري على إنستغرام", "حُفظت الصورة — ارفعها كستوري على إنستغرام"));
+        toast.success(g(t("حُفظت الصورة — ارفعيها كستوري على إنستغرام"), t("حُفظت الصورة — ارفعها كستوري على إنستغرام")));
       }
     } catch (e: any) {
-      if (e?.name !== "AbortError") toast.error("تعذّر إنشاء الصورة");
+      if (e?.name !== "AbortError") toast.error(t("تعذّر إنشاء الصورة"));
     } finally {
       setBusy(false);
     }
@@ -84,27 +86,25 @@ function RecapPage() {
         <BackToDashboard />
         <div className="mt-2 flex items-end justify-between gap-3">
           <div>
-            <div className="text-xs tracking-[0.3em] text-gold">ملخّص السنة</div>
-            <h1 className="font-serif text-4xl">سنتي {yr(r.year)}</h1>
+            <div className="text-xs tracking-[0.3em] text-gold">{t("ملخّص السنة")}</div>
+            <h1 className="font-serif text-4xl">{t("سنتي {0}", [yr(r.year)])}</h1>
           </div>
           <select
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
-            aria-label="السنة"
+            aria-label={t("السنة")}
             className="min-h-11 rounded-full border border-border bg-background px-4 text-sm"
           >
-            {[thisYear, thisYear - 1, thisYear - 2].map((y) => <option key={y} value={y}>{y}</option>)}
+            {[thisYear, thisYear - 1, thisYear - 2].map((y) => <option key={y} value={y}>{tx(y)}</option>)}
           </select>
         </div>
 
         {r.events === 0 ? (
-          <p className="mt-10 rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">
-            لا مناسبات مؤكَّدة في {yr(r.year)} بعد. سيمتلئ ملخّصك مع أول حجز.
-          </p>
+          <p className="mt-10 rounded-2xl border border-dashed border-border p-8 text-center text-muted-foreground">{t("لا مناسبات مؤكَّدة في {0} بعد. سيمتلئ ملخّصك مع أول حجز.", [yr(r.year)])}</p>
         ) : (
           <>
             <p className="mt-3 text-sm text-muted-foreground">
-              {g("بطاقة جاهزة للمشاركة على إنستغرام. لا تظهر فيها أي مبالغ أو أسماء عميلات.", "بطاقة جاهزة للمشاركة على إنستغرام. لا تظهر فيها أي مبالغ أو أسماء عميلات.")}
+              {g(t("بطاقة جاهزة للمشاركة على إنستغرام. لا تظهر فيها أي مبالغ أو أسماء عميلات."), t("بطاقة جاهزة للمشاركة على إنستغرام. لا تظهر فيها أي مبالغ أو أسماء عميلات."))}
             </p>
             <ul className="mt-6 grid grid-cols-2 gap-3">
               {list.map((f, i) => (
@@ -115,18 +115,18 @@ function RecapPage() {
                   transition={{ delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                   className={`rounded-2xl border border-border bg-card p-4 ${i === 0 ? "col-span-2 border-gold/40 bg-gold/5" : ""}`}
                 >
-                  <div className={`font-serif ${i === 0 ? "text-5xl text-gold" : "text-2xl"}`}>{f.value}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">{f.label}</div>
+                  <div className={`font-serif ${i === 0 ? "text-5xl text-gold" : "text-2xl"}`}>{tx(f.value)}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{tx(f.label)}</div>
                 </motion.li>
               ))}
             </ul>
 
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button onClick={share} disabled={busy} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-charcoal text-sm font-medium text-ivory disabled:opacity-60 dark:bg-gold dark:text-charcoal">
-                <Share2 className="h-4 w-4" /> مشاركة ستوري
+                <Share2 className="h-4 w-4" />{" "}{t("مشاركة ستوري")}
               </button>
               <button onClick={save} disabled={busy} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-border text-sm">
-                <Download className="h-4 w-4" /> حفظ الصورة
+                <Download className="h-4 w-4" />{" "}{t("حفظ الصورة")}
               </button>
             </div>
           </>
@@ -172,10 +172,10 @@ function drawStory(c: HTMLCanvasElement, r: YearRecap, list: { value: string; la
 
   ctx.fillStyle = gold;
   ctx.font = `500 40px ${sans}`;
-  ctx.fillText("ملخّص السنة", W / 2, 230);
+  ctx.fillText(t("ملخّص السنة"), W / 2, 230);
   ctx.fillStyle = ivory;
   ctx.font = `700 150px ${serif}`;
-  ctx.fillText(`سنتي ${yr(r.year)}`, W / 2, 400);
+  ctx.fillText(t("سنتي {0}", [yr(r.year)]), W / 2, 400);
   ctx.fillStyle = muted;
   ctx.font = `400 46px ${sans}`;
   ctx.fillText(r.name, W / 2, 490);
@@ -210,7 +210,7 @@ function drawStory(c: HTMLCanvasElement, r: YearRecap, list: { value: string; la
 
   ctx.fillStyle = gold;
   ctx.font = `600 44px ${serif}`;
-  ctx.fillText("Memoria · ميموريا", W / 2, H - 170);
+  ctx.fillText(t("Memoria · ميموريا"), W / 2, H - 170);
   if (r.username) {
     ctx.fillStyle = muted;
     ctx.direction = "ltr";

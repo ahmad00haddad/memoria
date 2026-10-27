@@ -1,0 +1,457 @@
+src/components/CommandPalette.tsx:18 [module-level] "لوحتي"
+src/components/CommandPalette.tsx:18 [module-level] "dashboard home الرئيسية"
+src/components/CommandPalette.tsx:19 [module-level] "الحجوزات"
+src/components/CommandPalette.tsx:19 [module-level] "bookings طلبات"
+src/components/CommandPalette.tsx:20 [module-level] "متابعة الإنتاج"
+src/components/CommandPalette.tsx:20 [module-level] "production تحرير تسليم"
+src/components/CommandPalette.tsx:21 [module-level] "التقويم والتوفّر"
+src/components/CommandPalette.tsx:21 [module-level] "calendar حجب أيام"
+src/components/CommandPalette.tsx:22 [module-level] "الأسعار والباقات"
+src/components/CommandPalette.tsx:22 [module-level] "pricing باقة سعر"
+src/components/CommandPalette.tsx:23 [module-level] "تعديل ملفي"
+src/components/CommandPalette.tsx:23 [module-level] "profile صور نبذة cliq"
+src/components/CommandPalette.tsx:24 [module-level] "التقارير المالية"
+src/components/CommandPalette.tsx:24 [module-level] "reports إيرادات csv"
+src/components/CommandPalette.tsx:25 [module-level] "العقود"
+src/components/CommandPalette.tsx:25 [module-level] "contracts توقيع"
+src/components/CommandPalette.tsx:26 [module-level] "عروض الأسعار"
+src/components/CommandPalette.tsx:26 [module-level] "offers تفاوض سعر مقترح"
+src/components/CommandPalette.tsx:27 [module-level] "قوالب واتساب"
+src/components/CommandPalette.tsx:27 [module-level] "whatsapp رسائل"
+src/components/CommandPalette.tsx:28 [module-level] "الاشتراك"
+src/components/CommandPalette.tsx:28 [module-level] "subscription دفع تجديد"
+src/components/CommandPalette.tsx:29 [module-level] "الإشعارات"
+src/components/CommandPalette.tsx:29 [module-level] "notifications تنبيهات"
+src/components/CommandPalette.tsx:30 [module-level] "برنامج الإحالة"
+src/components/CommandPalette.tsx:30 [module-level] "referral دعوة"
+src/components/CommandPalette.tsx:34 [module-level] "عرض سعر"
+src/components/CommandPalette.tsx:34 [module-level] "بانتظار العربون"
+src/components/CommandPalette.tsx:34 [module-level] "مؤكّد"
+src/components/CommandPalette.tsx:34 [module-level] "مكتمل"
+src/components/CommandPalette.tsx:34 [module-level] "ملغى"
+src/components/CommandPalette.tsx:114 [attr] "إضافة باقة جديدة سعر"
+src/components/CommandPalette.tsx:117 [attr] "حجب يوم عطلة تقويم"
+src/components/CommandPalette.tsx:122 [attr] "نسخ رابط ملفي العام انستجرام"
+src/components/CommandPalette.tsx:134 [attr] "عرض ملفي العام كما تراه العرائس"
+src/components/dashboard/MonthGrid.tsx:10 [module-level] "أحد"
+src/components/dashboard/MonthGrid.tsx:10 [module-level] "إثنين"
+src/components/dashboard/MonthGrid.tsx:10 [module-level] "ثلاثاء"
+src/components/dashboard/MonthGrid.tsx:10 [module-level] "أربعاء"
+src/components/dashboard/MonthGrid.tsx:10 [module-level] "خميس"
+src/components/dashboard/MonthGrid.tsx:10 [module-level] "جمعة"
+src/components/dashboard/MonthGrid.tsx:10 [module-level] "سبت"
+src/content/blog.ts:16 [module-level] "كيف تختارين مصورة الزفاف: دليل عملي قبل أن تحجزي"
+src/content/blog.ts:17 [module-level] "خطوات واضحة لاختيار مصوّرة الزفاف: قراءة الأعمال، مقارنة الباقات، فهم
+src/content/blog.ts:19 [module-level] "اختيار المصوّرة قرار يبقى أثره سنوات في ألبومك. هذه الخطوات تساعدك عل
+src/content/blog.ts:22 [module-level] "ابدئي بالأسلوب لا بالسعر"
+src/content/blog.ts:24 [module-level] "أول سؤال يجب أن تطرحيه على نفسك: كيف أريد أن تبدو صوري بعد عشر سنوات؟
+src/content/blog.ts:25 [module-level] "اجمعي عشر صور تحبينها من أعراس مختلفة، وانظري ما الذي يجمعها: الألوان
+src/content/blog.ts:29 [module-level] "اقرئي المعرض كاملاً وليس الصور الأولى فقط"
+src/content/blog.ts:31 [module-level] "الصور الأولى في أي معرض هي الأفضل عادة، وهذا طبيعي. لكن ما يهمك هو ال
+src/content/blog.ts:32 [module-level] "انتبهي أيضاً للمواقع المشابهة لموقع عرسك. إن كان عرسك في قاعة مغلقة ب
+src/content/blog.ts:36 [module-level] "قارني ما تشمله الباقة لا اسمها"
+src/content/blog.ts:38 [module-level] "تختلف الباقات في ما تشمله، وليس الفرق في الاسم. افحصي بنود كل باقة: ع
+src/content/blog.ts:39 [module-level] "اسألي عن الأمور التي قد تُضاف على السعر: رسوم التنقل، ساعات إضافية، أ
+src/content/blog.ts:42 [module-level] "ساعات التغطية وموعد البدء والانتهاء"
+src/content/blog.ts:43 [module-level] "عدد الصور وطريقة التسليم ومدته"
+src/content/blog.ts:44 [module-level] "رسوم التنقل أو الساعات الإضافية إن وُجدت"
+src/content/blog.ts:45 [module-level] "هل يشمل السعر تعديل الألوان والتحرير"
+src/content/blog.ts:49 [module-level] "التوثيق والتقييمات"
+src/content/blog.ts:51 [module-level] "حين تجدين مصوّرة تعجبك، ابحثي عن ما يؤكد أنها جادة وملتزمة. على Memor
+src/content/blog.ts:52 [module-level] "لا تعتمدي على تقييم واحد حاد أو مديح مبالغ فيه. الصورة الكاملة تظهر م
+src/content/blog.ts:56 [module-level] "تواصلي قبل الحجز وراقبي الإحساس"
+src/content/blog.ts:58 [module-level] "المصوّرة ستكون معك في أكثر أيامك توتراً، لذلك الراحة معها مهمة بقدر ا
+src/content/blog.ts:59 [module-level] "ويفضّل أن تتفقا على كل شيء كتابةً، من التاريخ والساعات إلى طريقة التس
+src/content/blog.ts:63 [module-level] "احجزي مبكراً لكن بلا استعجال"
+src/content/blog.ts:65 [module-level] "المصوّرات المطلوبات تمتلئ تقاويمهنّ في بعض الأيام، فكلما حددتِ تاريخك
+src/content/blog.ts:69 [module-level] "لا تتجاهلي التفاصيل العملية"
+src/content/blog.ts:71 [module-level] "قبل أن تقرري، تأكدي من أن المصوّرة تغطي مدينتك أو منطقتك، وأن تاريخك 
+src/content/blog.ts:72 [module-level] "وفكّري كذلك في مدى ملاءمة أسلوب المصوّرة لأجواء عرسك. فالعرس الصغير ا
+src/content/blog.ts:73 [module-level] "وأخيراً، خذي وقتك في المقارنة. من الأفضل أن تضعي ثلاث مصوّرات في القا
+src/content/blog.ts:80 [module-level] "أسئلة تسألينها للمصورة قبل الحجز"
+src/content/blog.ts:81 [module-level] "قائمة بأسئلة عملية تطرحينها على مصوّرة الزفاف قبل تأكيد الحجز، لتتجنب
+src/content/blog.ts:83 [module-level] "أسئلة قليلة تطرحينها قبل أن تدفعي العربون تُغنيك عن مشكلات كثيرة بعد 
+src/content/blog.ts:86 [module-level] "لماذا الأسئلة مهمة؟"
+src/content/blog.ts:88 [module-level] "معظم الخلافات بين العروس والمصوّرة لا تأتي من سوء نية، بل من افتراضات
+src/content/blog.ts:92 [module-level] "أسئلة عن اليوم نفسه"
+src/content/blog.ts:94 [module-level] "ابدئي بتفاصيل التغطية، لأنها تحدّد ما ستحصلين عليه فعلاً."
+src/content/blog.ts:97 [module-level] "كم ساعة تشمل الباقة، ومتى تبدأ وتنتهي بالضبط؟"
+src/content/blog.ts:98 [module-level] "هل تغطين التجهيز والزفة والحفل جميعها، أم بعضها فقط؟"
+src/content/blog.ts:99 [module-level] "هل ستحضرين وحدك أم مع مساعدة؟"
+src/content/blog.ts:100 [module-level] "ماذا يحدث إن تأخر البرنامج وتجاوزنا الساعات المتفق عليها؟"
+src/content/blog.ts:101 [module-level] "هل تحتاجين إلى مكان للجلوس أو ترتيب خاص في القاعة؟"
+src/content/blog.ts:105 [module-level] "أسئلة عن الصور والتسليم"
+src/content/blog.ts:107 [module-level] "هنا أكثر نقطة يختلف عليها الناس، فاحرصي على الوضوح."
+src/content/blog.ts:110 [module-level] "كم صورة تُسلَّم تقريباً، وهل هي كل الصور أم مختارة؟"
+src/content/blog.ts:111 [module-level] "هل تتضمن الباقة تعديل الألوان والتحرير؟"
+src/content/blog.ts:112 [module-level] "كم يستغرق التسليم، وبأي طريقة (معرض إلكتروني، رابط تحميل)؟"
+src/content/blog.ts:113 [module-level] "هل أستطيع طلب لقطات محددة قبل اليوم؟"
+src/content/blog.ts:114 [module-level] "كم من الوقت تحتفظين بنسخة من الصور احتياطاً؟"
+src/content/blog.ts:118 [module-level] "أسئلة عن الدفع والإلغاء"
+src/content/blog.ts:120 [module-level] "حين تتحدثين عن المال، اطلبي الوضوح من البداية. اسألي عن مبلغ العربون 
+src/content/blog.ts:121 [module-level] "اسألي أيضاً عن بقية المبلغ: متى يُدفع، وهل يُقبل نقداً أم تحويلاً. لا
+src/content/blog.ts:125 [module-level] "أسئلة عن الأسلوب والتعامل"
+src/content/blog.ts:127 [module-level] "المصوّرة ستكون بين الضيفات وأنتِ في أكثر لحظات توترك، فاسألي كيف تتعا
+src/content/blog.ts:128 [module-level] "أخبريها بما لا تريدينه أيضاً. إن كان هناك أشخاص أو لحظات لا ترغبين بت
+src/content/blog.ts:132 [module-level] "اكتبي كل شيء"
+src/content/blog.ts:134 [module-level] "بعد أن تتفقا، تأكدي أن النقاط الأساسية مكتوبة: التاريخ، الساعات، المو
+src/content/blog.ts:138 [module-level] "أسئلة عن الخصوصية والاستخدام"
+src/content/blog.ts:140 [module-level] "إن كانت صورك ستُنشر في حساب المصوّرة أو في موقعها، فهذا شأن يجب أن تت
+src/content/blog.ts:141 [module-level] "اسألي أيضاً عن حقوق استخدام الصور: هل يمكنك طباعتها ومشاركتها كما تشا
+src/content/blog.ts:142 [module-level] "وإن كان عرسك فيه جانب نسائي خاص، فاسألي كيف ستتعامل المصوّرة معه، وما
+src/content/blog.ts:146 [module-level] "بعد أن تحصلين على الإجابات"
+src/content/blog.ts:148 [module-level] "خذي وقتاً لمراجعة الإجابات قبل أن تقرري. إن وجدتِ أن مصوّرة تجيب بوضو
+src/content/blog.ts:149 [module-level] "ولا تترددي في طرح سؤال تأخرتِ في التفكير به، حتى بعد الحجز، ما دام ال
+src/content/blog.ts:150 [module-level] "وإن كنتِ تحجزين عبر المنصّة، فاستخدمي المحادثة داخل صفحة التتبّع لتبق
+src/content/blog.ts:157 [module-level] "تكلفة تصوير الأعراس في الأردن: العوامل التي تحدد السعر"
+src/content/blog.ts:158 [module-level] "ما الذي يؤثر في سعر تصوير الزفاف في الأردن؟ شرح للعوامل التي تتغير به
+src/content/blog.ts:160 [module-level] "لا يوجد سعر واحد لتصوير العرس. هذه العوامل تفسّر لماذا تختلف الأسعار،
+src/content/blog.ts:163 [module-level] "لا يوجد سعر ثابت، وهذا طبيعي"
+src/content/blog.ts:165 [module-level] "حين تسألين عن تكلفة تصوير الأعراس تحصلين على أجوبة متباعدة، وهذا ليس 
+src/content/blog.ts:169 [module-level] "مدة التغطية"
+src/content/blog.ts:171 [module-level] "أهم عامل هو عدد الساعات. تغطية التجهيز والزفة والحفل معاً تحتاج وقتاً
+src/content/blog.ts:175 [module-level] "فريق التصوير"
+src/content/blog.ts:177 [module-level] "هل تعمل المصوّرة وحدها أم معها مساعدة أو مصوّرة ثانية أو مصوّر فيديو؟
+src/content/blog.ts:181 [module-level] "حجم التسليم والتحرير"
+src/content/blog.ts:183 [module-level] "عدد الصور المسلّمة ونوع التحرير يؤثران في العمل بعد العرس. تعديل الأل
+src/content/blog.ts:186 [module-level] "عدد الصور المسلّمة وهل هي كل الصور أم مختارة"
+src/content/blog.ts:187 [module-level] "مستوى التحرير وتعديل الألوان"
+src/content/blog.ts:188 [module-level] "ألبوم مطبوع أو مكبّرات إن وُجدت"
+src/content/blog.ts:189 [module-level] "مدة التسليم وطريقته"
+src/content/blog.ts:193 [module-level] "الموقع والتنقل"
+src/content/blog.ts:195 [module-level] "عرس في مدينة بعيدة عن مكان المصوّرة قد يحمل رسوم تنقل، وقد يحتاج مبيت
+src/content/blog.ts:199 [module-level] "الموسم والتاريخ"
+src/content/blog.ts:201 [module-level] "أيام نهاية الأسبوع في مواسم الأعراس أكثر طلباً، وقد تختلف الشروط بين 
+src/content/blog.ts:205 [module-level] "الخبرة والأسلوب"
+src/content/blog.ts:207 [module-level] "المصوّرة ذات الأعمال الكثيرة والتقييمات الثابتة قد تضع سعراً أعلى من 
+src/content/blog.ts:211 [module-level] "كيف تقارنين بإنصاف"
+src/content/blog.ts:213 [module-level] "ضعي الباقات التي تعجبك بجانب بعضها واكتبي لكل واحدة: الساعات، الفريق،
+src/content/blog.ts:217 [module-level] "أسئلة تختصر عليك المقارنة"
+src/content/blog.ts:219 [module-level] "حين تتواصلين مع أكثر من مصوّرة، اطرحي عليهن الأسئلة نفسها بالترتيب نف
+src/content/blog.ts:220 [module-level] "ولا تحكمي على السعر وحده. باقة أقل سعراً قد تكون أنسب إن كانت تشمل ما
+src/content/blog.ts:221 [module-level] "ويمكنك أن تسألي عن إمكانية تعديل الباقة بما يناسبك، كتقليل الساعات أو
+src/content/blog.ts:225 [module-level] "متى يكون السعر المنخفض مصدر قلق؟"
+src/content/blog.ts:227 [module-level] "السعر المنخفض ليس سيئاً بحد ذاته، فبعض المصوّرات يبدأن مسيرتهن بأسعار
+src/content/blog.ts:228 [module-level] "وانتبهي إلى الباقات التي تبدو شاملة لكل شيء بسعر ضعيف دون تفاصيل. اطل
+src/content/blog.ts:235 [module-level] "تجهيز يوم الزفاف للتصوير: ما يجب فعله قبل وصول المصوّرة"
+src/content/blog.ts:236 [module-level] "كيف تجهّزين المكان والوقت والأشخاص ليمر يوم الزفاف بسلاسة أمام الكامي
+src/content/blog.ts:238 [module-level] "صور جيدة تحتاج تحضيراً بسيطاً من جانبك. هذه خطوات تجعل يوم التصوير أه
+src/content/blog.ts:241 [module-level] "اجعلي الجدول واضحاً"
+src/content/blog.ts:243 [module-level] "قبل العرس بأسبوع على الأقل، اكتبي جدولاً بسيطاً لليوم: متى يبدأ التجه
+src/content/blog.ts:244 [module-level] "أضيفي إلى الجدول هامشاً من الوقت. الأعراس نادراً ما تسير بحسب الساعة،
+src/content/blog.ts:248 [module-level] "جهّزي المكان الذي سيُصوَّر فيه التجهيز"
+src/content/blog.ts:250 [module-level] "غالباً ما تُلتقط صور التجهيز في غرفة واحدة بالبيت أو الصالون. اختاري 
+src/content/blog.ts:251 [module-level] "لا تنسي ما تريدين تصويره من أشياء ذات معنى، كرسالة، أو خاتم العائلة، 
+src/content/blog.ts:254 [module-level] "الفستان على علاقة جميلة"
+src/content/blog.ts:255 [module-level] "الحذاء والمجوهرات والعطر"
+src/content/blog.ts:256 [module-level] "الدعوة والخواتم والباقة"
+src/content/blog.ts:257 [module-level] "أي قطعة عائلية ذات قيمة خاصة"
+src/content/blog.ts:261 [module-level] "المكياج والشعر أولاً"
+src/content/blog.ts:263 [module-level] "اتفقي مع خبيرة التجميل على وقت الانتهاء بدقة، واجعليه قبل موعد الجلسة
+src/content/blog.ts:267 [module-level] "حدّدي من يجب أن يظهر في الصور"
+src/content/blog.ts:269 [module-level] "اكتبي قائمة بالصور العائلية المهمة: العروسان مع الأهل، مع الإخوة، مع 
+src/content/blog.ts:273 [module-level] "فكّري بالإضاءة والمكان"
+src/content/blog.ts:275 [module-level] "إن أردتِ جلسة خارجية، فاختاري وقتاً قبل الغروب، وجهّزي بديلاً داخلياً
+src/content/blog.ts:276 [module-level] "في القاعة نفسها، قد تكون إضاءة الرقص ملوّنة أو خافتة. تحدثي مع المصوّ
+src/content/blog.ts:280 [module-level] "الراحة قبل الجمال"
+src/content/blog.ts:282 [module-level] "كلي واشربي الماء قبل الجلسة، فالتصوير الطويل متعب. أحضري حذاءً مريحاً
+src/content/blog.ts:283 [module-level] "وأخيراً، ثقي بالمصوّرة التي اخترتها. بعد أن تتفقا على ما تحتاجانه، دع
+src/content/blog.ts:287 [module-level] "قبل العرس بأسبوع"
+src/content/blog.ts:289 [module-level] "قبل العرس بأسبوع تواصلي مع المصوّرة وراجعي معها الجدول والعنوان وأرقا
+src/content/blog.ts:290 [module-level] "جهّزي أيضاً أي تصريح أو إذن قد يلزم للتصوير في مواقع معينة، وأخبري ال
+src/content/blog.ts:291 [module-level] "وفي اليوم نفسه، اجعلي هاتفك مع شخص تثقين به، ودعي المصوّرة تعمل بحرية
+src/content/blog.ts:295 [module-level] "بعد الجلسة وقبل الحفل"
+src/content/blog.ts:297 [module-level] "بعد الانتهاء من الجلسة، اتفقي مع المصوّرة على الاستراحة القصيرة قبل ا
+src/content/blog.ts:298 [module-level] "وتأكدي من أن شخصاً ما يحمل فستانك الإضافي أو الحذاء البديل، فاللحظات 
+src/content/blog.ts:305 [module-level] "قائمة اللقطات التي يجب ألا تفوتك في صور الزفاف"
+src/content/blog.ts:306 [module-level] "قائمة مرتبة بالقطات الأساسية في صور الزفاف: التجهيز، التفاصيل، العائل
+src/content/blog.ts:308 [module-level] "قائمة لقطات مرتبة بحسب اليوم، تعطينها للمصوّرة مسبقاً حتى لا تضيع لحظ
+src/content/blog.ts:311 [module-level] "كيف تستخدمين القائمة"
+src/content/blog.ts:313 [module-level] "ليست كل اللقطات مناسبة لكل عرس، فاحذفي ما لا يعنيك وأضيفي ما يخصّك. ا
+src/content/blog.ts:317 [module-level] "التجهيز"
+src/content/blog.ts:319 [module-level] "هذه الصور تسبق القاعة وتُروى بها قصة اليوم، وتكون غالباً أكثر هدوءاً 
+src/content/blog.ts:322 [module-level] "الفستان معلّقاً قبل أن ترتديه"
+src/content/blog.ts:323 [module-level] "تفاصيل المكياج وتصفيف الشعر"
+src/content/blog.ts:324 [module-level] "المجوهرات والحذاء والعطر والباقة"
+src/content/blog.ts:325 [module-level] "لحظة ارتداء الفستان بمساعدة الأم أو الأخت"
+src/content/blog.ts:326 [module-level] "لقطة قريبة للخاتم أو لقطعة عائلية"
+src/content/blog.ts:327 [module-level] "نظرة العروس إلى المرآة قبل الخروج"
+src/content/blog.ts:331 [module-level] "اللقطات العائلية"
+src/content/blog.ts:333 [module-level] "هذه هي الصور التي يطلب الناس نسخاً منها بعد سنوات، فلا تتركيها للمصاد
+src/content/blog.ts:336 [module-level] "العروسان مع الوالدين"
+src/content/blog.ts:337 [module-level] "العروسان مع الإخوة والأخوات"
+src/content/blog.ts:338 [module-level] "مع الجدّات والجدّين"
+src/content/blog.ts:339 [module-level] "مع الصديقات المقرّبات"
+src/content/blog.ts:340 [module-level] "صورة جماعية للعائلة الكبيرة"
+src/content/blog.ts:344 [module-level] "الزفة والدخول"
+src/content/blog.ts:346 [module-level] "من أكثر اللحظات حركة وتغيراً، وهي لا تُعاد. اسألي المصوّرة عن مكان وق
+src/content/blog.ts:349 [module-level] "لحظة الدخول والإضاءة والزغاريد"
+src/content/blog.ts:350 [module-level] "السلام على الأم والأب"
+src/content/blog.ts:351 [module-level] "الرقصة الأولى"
+src/content/blog.ts:352 [module-level] "ردود فعل الحاضرات"
+src/content/blog.ts:356 [module-level] "الحفل والتفاصيل"
+src/content/blog.ts:358 [module-level] "بعد الزفة يأتي الجزء الأكثر مرحاً. اطلبي لقطات للتفاصيل التي أنفقتِ ع
+src/content/blog.ts:361 [module-level] "زينة القاعة والطاولات"
+src/content/blog.ts:362 [module-level] "الكعكة وقطعها"
+src/content/blog.ts:363 [module-level] "الرقص والضحك العفوي"
+src/content/blog.ts:364 [module-level] "الأطفال والأجواء الخفيفة"
+src/content/blog.ts:365 [module-level] "كلمات الأهل والأصدقاء إن وُجدت"
+src/content/blog.ts:369 [module-level] "جلسة العروسين"
+src/content/blog.ts:371 [module-level] "إن كانت لك جلسة منفصلة، فاطلبي مزيجاً من الوقفات المرتبة واللقطات الع
+src/content/blog.ts:375 [module-level] "ما لا تُنسيه"
+src/content/blog.ts:377 [module-level] "بعض اللحظات صغيرة لكنها تبقى: صورة لك مع أمك في لحظة هدوء، أو مع أختك
+src/content/blog.ts:381 [module-level] "نصائح لتنفيذ القائمة"
+src/content/blog.ts:383 [module-level] "لا تجعلي القائمة طويلة جداً. عشرون لقطة محددة أفضل من مئة لقطة يصعب ت
+src/content/blog.ts:384 [module-level] "اختاري شخصاً من العائلة أو الصديقات ليساعد المصوّرة في تجميع الأشخاص 
+src/content/blog.ts:385 [module-level] "ولا تنسي أن بعض أجمل الصور تأتي من لحظات لم تخطط لها. اترك مساحة للمص
+src/content/blog.ts:389 [module-level] "شاركي القائمة مع من يساعدك"
+src/content/blog.ts:391 [module-level] "القائمة ليست للمصوّرة وحدها. أعطي نسخة لأختك أو صديقتك المقرّبة أو من
+src/content/blog.ts:392 [module-level] "وإن كان في العائلة أشخاص لا يحبون الظهور في الصور، فاسألي أولاً قبل أ
+src/content/blog.ts:396 [module-level] "لقطات الختام"
+src/content/blog.ts:398 [module-level] "في نهاية الحفل، اطلبي لقطات للوداع والسلام على الضيفات والأهل، فهي لح
+src/content/blog.ts:399 [module-level] "وفي اليوم التالي أو بعده، راجعي مع المصوّرة ما تم تصويره، واسأليها عن
+src/content/seo.ts:29 [module-level] "الحجز عبر Memoria يمرّ بخطوات واضحة: تتصفّحين ملفات مصوّرات منشورة بع
+src/content/seo.ts:53 [module-level] "عمان"
+src/content/seo.ts:54 [module-level] "مصورة أعراس في عمّان — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:55 [module-level] "ابحثي عن مصوّرة أعراس في عمّان، شاهدي الأعمال والباقات، واحجزي مع تتب
+src/content/seo.ts:56 [module-level] "عمّان أكثر مدن الأردن تنوّعاً في أماكن الأعراس، من القاعات الكبيرة وا
+src/content/seo.ts:58 [module-level] "كثير من العرائس في عمّان يقسّمن اليوم بين التجهيز في البيت أو الصالون
+src/content/seo.ts:59 [module-level] "للجلسات الخارجية تختار عرائس عمّان أحياناً مواقع مثل وسط البلد والمدر
+src/content/seo.ts:60 [module-level] "في المدن الكبيرة يزداد الطلب على بعض التواريخ، خصوصاً أيام نهاية الأس
+src/content/seo.ts:62 [module-level] "عمّان"
+src/content/seo.ts:66 [module-level] "إربد"
+src/content/seo.ts:67 [module-level] "مصورة أعراس في إربد — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:68 [module-level] "مصوّرات أعراس في إربد: تصفّحي الأعمال والباقات وتوفّر التواريخ، واحجز
+src/content/seo.ts:69 [module-level] "في إربد تجتمع أعراس العائلات الكبيرة مع جلسات التصوير في طبيعة الشمال
+src/content/seo.ts:71 [module-level] "أعراس إربد كثيراً ما تضم عدداً كبيراً من المدعوّات، وتبدأ مراسم الزفة
+src/content/seo.ts:72 [module-level] "للجلسات الخارجية يتجه كثيرون من الشمال إلى أم قيس وإطلالتها على الجول
+src/content/seo.ts:73 [module-level] "الطقس في الشمال يتقلب بين فصل وآخر، ويكون أبرد وأمطر في الشتاء. إن كا
+src/content/seo.ts:75 [module-level] "إربد"
+src/content/seo.ts:79 [module-level] "الزرقاء"
+src/content/seo.ts:80 [module-level] "مصورة أعراس في الزرقاء — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:81 [module-level] "اعثري على مصوّرة أعراس في الزرقاء والرصيفة، قارني الباقات وتحققي من ا
+src/content/seo.ts:82 [module-level] "الزرقاء ومحيطها، ومنه الرصيفة، من المناطق التي تقام فيها أعراس كثيرة 
+src/content/seo.ts:84 [module-level] "كثير من الأعراس هنا يبدأ من البيت: تجهيز العروس، ثم الزفة، ثم الانتقا
+src/content/seo.ts:85 [module-level] "الزرقاء قريبة من عمّان، وهذا يفتح خيارات أوسع: يمكنك اختيار مصوّرة من
+src/content/seo.ts:86 [module-level] "للجلسات الخارجية يختار بعض العرائس مناطق مفتوحة قرب المدينة أو حدائق 
+src/content/seo.ts:88 [module-level] "الزرقاء"
+src/content/seo.ts:92 [module-level] "العقبة"
+src/content/seo.ts:93 [module-level] "مصورة أعراس في العقبة — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:94 [module-level] "مصوّرات أعراس وجلسات شاطئية في العقبة: شاهدي الأعمال والباقات واحجزي 
+src/content/seo.ts:95 [module-level] "العقبة مدينة بحرية، وصور الأعراس فيها تختلف عن بقية المدن بسبب البحر 
+src/content/seo.ts:97 [module-level] "كثير من عرائس العقبة وزائراتها يخترن جلسة عند البحر الأحمر أو في محيط
+src/content/seo.ts:98 [module-level] "إن كان عرسك في الصيف فالحرارة عامل يجب حسابه: فستان ثقيل وجلسة طويلة 
+src/content/seo.ts:99 [module-level] "بعض الأزواج يخططون لجلسة في وادي رم القريب، وهي رحلة تحتاج وقتاً وترت
+src/content/seo.ts:101 [module-level] "العقبة"
+src/content/seo.ts:105 [module-level] "السلط"
+src/content/seo.ts:106 [module-level] "مصورة أعراس في السلط — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:107 [module-level] "مصوّرات أعراس في السلط: أعمال وباقات وتوفّر التواريخ، واحجزي بعربون C
+src/content/seo.ts:108 [module-level] "السلط بحجارتها الصفراء وبيوتها القديمة وأدراجها من أجمل المدن الأردني
+src/content/seo.ts:110 [module-level] "كثيرون يختارون التصوير في البلدة القديمة بين البيوت الحجرية والأزقة. 
+src/content/seo.ts:111 [module-level] "الطرق المنحدرة وصعوبة ركن السيارات في وسط السلط تعني أنك قد تحتاجين و
+src/content/seo.ts:112 [module-level] "قرب السلط من عمّان يجعل خيارات المصوّرات أوسع. تفقّدي ملفات المصوّرات
+src/content/seo.ts:114 [module-level] "السلط"
+src/content/seo.ts:118 [module-level] "مادبا"
+src/content/seo.ts:119 [module-level] "مصورة أعراس في مادبا — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:120 [module-level] "مصوّرات أعراس في مادبا: تصفّحي الأعمال والباقات وتوفّر التواريخ، واحج
+src/content/seo.ts:121 [module-level] "مادبا معروفة بفسيفسائها وكنائسها وإطلالاتها، وهي خلفية جميلة لصور الأ
+src/content/seo.ts:123 [module-level] "من المواقع التي يفكر بها الناس للصور في مادبا محيط كنيسة القديس جاورج
+src/content/seo.ts:124 [module-level] "الجلسة عند الغروب على أطراف المدينة تعطي ضوءاً دافئاً، لكنها تحتاج تن
+src/content/seo.ts:125 [module-level] "قرب مادبا من عمّان يتيح لك الاختيار بين مصوّرات من المدينة ومن العاصم
+src/content/seo.ts:127 [module-level] "مادبا"
+src/content/seo.ts:131 [module-level] "جرش"
+src/content/seo.ts:132 [module-level] "مصورة أعراس في جرش — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:133 [module-level] "مصوّرات أعراس وجلسات خطوبة في جرش: شاهدي الأعمال والباقات واحجزي مع ت
+src/content/seo.ts:134 [module-level] "جرش بآثارها الرومانية وأعمدتها وأقواسها من الأماكن التي تجذب العرائس 
+src/content/seo.ts:136 [module-level] "كثير من الجلسات تُلتقط عند الأعمدة والمدرجات والأقواس الأثرية، وهذا م
+src/content/seo.ts:137 [module-level] "المساحة هناك مفتوحة وليس فيها ظل كبير، والأرض غير مستوية في بعض الموا
+src/content/seo.ts:138 [module-level] "الأعراس العائلية في جرش والمناطق المحيطة تُقام عادة في قاعات وبيوت. إ
+src/content/seo.ts:140 [module-level] "جرش"
+src/content/seo.ts:166 [module-level] "حفل الزفاف"
+src/content/seo.ts:167 [module-level] "مصورة حفل زفاف في الأردن"
+src/content/seo.ts:168 [module-level] "مصورة حفل زفاف في الأردن — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:169 [module-level] "مصوّرات أعراس في الأردن: تصفّحي الأعمال والباقات وتوفّر التواريخ، واح
+src/content/seo.ts:170 [module-level] "الزفاف يوم طويل بمراحل كثيرة، والمصوّرة المناسبة هي التي تفهم تسلسله 
+src/content/seo.ts:172 [module-level] "يبدأ اليوم عادة بتجهيز العروس، ثم لحظة الإطلالة الأولى على العائلة، ف
+src/content/seo.ts:173 [module-level] "اسألي عن عدد الصور المسلّمة وموعد التسليم وصيغته. بعض المصوّرات تسلّم
+src/content/seo.ts:174 [module-level] "إن كان في عرسك مساحات لا يُسمح فيها بالتصوير أو ضيفات يفضلن عدم الظهو
+src/content/seo.ts:176 [module-level] "حفل الزفاف"
+src/content/seo.ts:180 [module-level] "الخطوبة"
+src/content/seo.ts:181 [module-level] "مصورة خطوبة في الأردن"
+src/content/seo.ts:182 [module-level] "مصورة خطوبة في الأردن — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:183 [module-level] "مصوّرات خطوبة وجلسات ما قبل الزفاف في الأردن: تصفّحي الأعمال والباقات
+src/content/seo.ts:184 [module-level] "الخطوبة مناسبة أخفّ وأقصر من العرس، ولذلك تحتاج تنسيقاً مختلفاً: وقتا
+src/content/seo.ts:186 [module-level] "كثير من العائلات تقيم الخطوبة في البيت أو في صالة صغيرة، فيكون المكان
+src/content/seo.ts:187 [module-level] "لحظات الخطوبة المهمة قصيرة: تبادل الخواتم، السلام على الأهل، الصور ال
+src/content/seo.ts:188 [module-level] "إن أردتِ جلسة منفصلة للعروسين بعد الخطوبة، فاسألي إن كانت ضمن الباقة 
+src/content/seo.ts:190 [module-level] "الخطوبة"
+src/content/seo.ts:194 [module-level] "ليلة الحنّاء"
+src/content/seo.ts:195 [module-level] "مصورة حنّاء في الأردن"
+src/content/seo.ts:196 [module-level] "مصورة ليلة الحنّاء في الأردن — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:197 [module-level] "مصوّرات ليلة الحنّاء في الأردن: تصفّحي الأعمال والباقات والتوفّر، واح
+src/content/seo.ts:198 [module-level] "ليلة الحنّاء مناسبة غنية بالتفاصيل: الأزياء التقليدية والنقوش والأغان
+src/content/seo.ts:200 [module-level] "اطلبي من المصوّرة لقطات قريبة لليدين والحنّاء والخواتم، إلى جانب صور 
+src/content/seo.ts:201 [module-level] "تُقام الحنّاء غالباً في المساء وبإضاءة دافئة وخافتة. اسألي كيف تتعامل
+src/content/seo.ts:202 [module-level] "كثير من الليالي تكون قبل العرس بيوم أو يومين، فتأكدي أن المصوّرة متاح
+src/content/seo.ts:204 [module-level] "ليلة الحنّاء"
+src/content/seo.ts:208 [module-level] "التخرّج"
+src/content/seo.ts:209 [module-level] "مصورة تخرّج في الأردن"
+src/content/seo.ts:210 [module-level] "مصورة تخرّج في الأردن — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:211 [module-level] "مصوّرات حفلات التخرّج وجلسات الخريجات في الأردن: تصفّحي الأعمال والبا
+src/content/seo.ts:212 [module-level] "التخرّج لحظة قصيرة ومزدحمة، والصور فيها تحتاج تخطيطاً أكثر مما يبدو ل
+src/content/seo.ts:214 [module-level] "تصوير الخريجات يكون عادة في الحرم الجامعي أو القاعة، وبعض الجامعات تض
+src/content/seo.ts:215 [module-level] "اجمعي قائمة بالصور التي تريدينها: مع الزميلات، مع الأهل، مع الأساتذة،
+src/content/seo.ts:216 [module-level] "كثير من الخريجات يفضلن جلسة قصيرة منفصلة في يوم هادئ بعد الحفل. اسألي
+src/content/seo.ts:218 [module-level] "التخرّج"
+src/content/seo.ts:222 [module-level] "المولود الجديد"
+src/content/seo.ts:223 [module-level] "مصورة مولود جديد في الأردن"
+src/content/seo.ts:224 [module-level] "مصورة مولود جديد في الأردن — احجزي مصوّرة موثّقة | Memoria"
+src/content/seo.ts:225 [module-level] "مصوّرات جلسات المواليد والعائلة في الأردن: تصفّحي الأعمال والباقات وا
+src/content/seo.ts:226 [module-level] "جلسة المولود تحتاج صبراً وهدوءاً قبل أي شيء، فأسلوب المصوّرة في التعا
+src/content/seo.ts:228 [module-level] "عادة تكون الأسابيع الأولى بعد الولادة أنسب وقت للجلسة لأن الطفل ينام 
+src/content/seo.ts:229 [module-level] "اسألي إن كانت الجلسة في بيتك أو في استوديو، وماذا تستخدم المصوّرة من 
+src/content/seo.ts:230 [module-level] "كثيرات يردن أن تظهر الأم والأب والإخوة في بعض الصور. حدّدي ذلك مسبقاً
+src/content/seo.ts:232 [module-level] "مولود جديد"
+src/lib/booking.functions.ts:310 [module-level] "هذا حساب تجريبي للمصوّرات فقط، لذلك التحويل غير متاح عليه. الحجز نفسه
+src/lib/friendlyErrors.ts:9 [module-level] "تعذّر الاتصال بالإنترنت. تأكدي من الشبكة وحاولي مرة أخرى."
+src/lib/friendlyErrors.ts:11 [module-level] "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+src/lib/friendlyErrors.ts:12 [module-level] "لم يتم تأكيد بريدكِ بعد. افتحي رسالة التفعيل في بريدكِ."
+src/lib/friendlyErrors.ts:15 [module-level] "هذا البريد مسجّل مسبقاً. سجّلي الدخول أو استعيدي كلمة المرور."
+src/lib/friendlyErrors.ts:17 [module-level] "كلمة المرور ضعيفة. استخدمي 8 أحرف على الأقل."
+src/lib/friendlyErrors.ts:18 [module-level] "محاولات كثيرة. انتظري دقيقة ثم حاولي مجدداً."
+src/lib/friendlyErrors.ts:21 [module-level] "انتهت الجلسة. سجّلي الدخول مرة أخرى."
+src/lib/friendlyErrors.ts:23 [module-level] "ليس لديكِ صلاحية لهذا الإجراء."
+src/lib/friendlyErrors.ts:24 [module-level] "الملف كبير جداً."
+src/lib/friendlyErrors.ts:25 [module-level] "الرابط غير صالح أو انتهت صلاحيته."
+src/lib/friendlyErrors.ts:26 [module-level] "هذا موجود مسبقاً."
+src/lib/friendlyErrors.ts:27 [module-level] "استغرق الطلب وقتاً طويلاً. حاولي مرة أخرى."
+src/lib/searchUtils.ts:3 [module-level] "عماان"
+src/lib/searchUtils.ts:3 [module-level] "عمان"
+src/lib/searchUtils.ts:4 [module-level] "عمن"
+src/lib/searchUtils.ts:4 [module-level] "عمان"
+src/lib/searchUtils.ts:5 [module-level] "اربد"
+src/lib/searchUtils.ts:5 [module-level] "إربد"
+src/lib/searchUtils.ts:6 [module-level] "يربد"
+src/lib/searchUtils.ts:6 [module-level] "إربد"
+src/lib/searchUtils.ts:7 [module-level] "الزرقا"
+src/lib/searchUtils.ts:7 [module-level] "الزرقاء"
+src/lib/searchUtils.ts:8 [module-level] "زرقاء"
+src/lib/searchUtils.ts:8 [module-level] "الزرقاء"
+src/lib/searchUtils.ts:9 [module-level] "المفرق"
+src/lib/searchUtils.ts:9 [module-level] "مفرق"
+src/lib/searchUtils.ts:10 [module-level] "عقلة"
+src/lib/searchUtils.ts:10 [module-level] "العقبة"
+src/lib/searchUtils.ts:11 [module-level] "عقبه"
+src/lib/searchUtils.ts:11 [module-level] "العقبة"
+src/lib/searchUtils.ts:14 [module-level] "تصوير"
+src/lib/searchUtils.ts:14 [module-level] "تصوير"
+src/lib/searchUtils.ts:15 [module-level] "فوتوغرافي"
+src/lib/searchUtils.ts:15 [module-level] "فوتوغرافي"
+src/lib/searchUtils.ts:16 [module-level] "عرس"
+src/lib/searchUtils.ts:16 [module-level] "عرس"
+src/lib/searchUtils.ts:17 [module-level] "حفله"
+src/lib/searchUtils.ts:17 [module-level] "حفلة"
+src/lib/searchUtils.ts:18 [module-level] "فديو"
+src/lib/searchUtils.ts:18 [module-level] "فيديو"
+src/lib/searchUtils.ts:19 [module-level] "استديو"
+src/lib/searchUtils.ts:19 [module-level] "استوديو"
+src/lib/searchUtils.ts:20 [module-level] "استيديو"
+src/lib/searchUtils.ts:20 [module-level] "استوديو"
+src/lib/searchUtils.ts:21 [module-level] "عرائس"
+src/lib/searchUtils.ts:21 [module-level] "عرايس"
+src/lib/searchUtils.ts:22 [module-level] "خطوبه"
+src/lib/searchUtils.ts:22 [module-level] "خطوبة"
+src/lib/searchUtils.ts:31 [lookup] "ا"
+src/lib/searchUtils.ts:31 [lookup] "ه"
+src/lib/searchUtils.ts:33 [lookup] "ا"
+src/lib/searchUtils.ts:33 [lookup] "ه"
+src/lib/validation.ts:3 [module-level] "٠١٢٣٤٥٦٧٨٩"
+src/lib/validation.ts:29 [module-level] "رقم الجوال غير صحيح. مثال: 0791234567، أو مع رمز الدولة لغير الأردن: 
+src/lib/validation.ts:35 [module-level] "البريد الإلكتروني غير صحيح. مثال: name@gmail.com"
+src/routes/blog.index.tsx:8 [module-level] "مدوّنة Memoria — نصائح لتصوير الأعراس والمناسبات"
+src/routes/blog.index.tsx:9 [module-level] "مقالات عملية تساعدك على اختيار مصوّرة الأعراس وتجهيز يوم المناسبة وفه
+src/routes/_authenticated/admin.contact-messages.tsx:14 [module-level] "جديدة"
+src/routes/_authenticated/admin.contact-messages.tsx:15 [module-level] "مقروءة"
+src/routes/_authenticated/admin.contact-messages.tsx:16 [module-level] "تم الرد"
+src/routes/_authenticated/admin.contact-messages.tsx:17 [module-level] "سبام"
+src/routes/_authenticated/admin.referrals.tsx:25 [module-level] "معلّقة"
+src/routes/_authenticated/admin.referrals.tsx:26 [module-level] "مكتملة"
+src/routes/_authenticated/admin.referrals.tsx:27 [module-level] "مكافأة مُمنوحة"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:50 [module-level] "عرض سعر"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:51 [module-level] "بانتظار العربون"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:52 [module-level] "مؤكّد"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:53 [module-level] "مكتمل"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:54 [module-level] "ملغى"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:841 [module-level] "بانتظار الجلسة"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:842 [module-level] "يوم التصوير"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:843 [module-level] "اختيار الصور"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:844 [module-level] "قيد التحرير"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:845 [module-level] "جاهز للتسليم"
+src/routes/_authenticated/dashboard.bookings.$id.tsx:846 [module-level] "تم التسليم"
+src/routes/_authenticated/dashboard.bookings.index.tsx:24 [module-level] "بانتظار العربون"
+src/routes/_authenticated/dashboard.bookings.index.tsx:25 [module-level] "عرض سعر"
+src/routes/_authenticated/dashboard.bookings.index.tsx:26 [module-level] "مؤكّد"
+src/routes/_authenticated/dashboard.bookings.index.tsx:27 [module-level] "ملغى"
+src/routes/_authenticated/dashboard.bookings.index.tsx:28 [module-level] "مكتمل"
+src/routes/_authenticated/dashboard.contracts.tsx:22 [module-level] `بسم الله الرحمن الرحيم عقد خدمات تصوير زفاف يُبرم هذا العقد بين المصو
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[اسم العميل]"
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[التاريخ]"
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[الموقع]"
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[البداية]"
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[النهاية]"
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[المجموع]"
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[العربون]"
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[رسوم الساعة الإضافية]"
+src/routes/_authenticated/dashboard.contracts.tsx:68 [module-level] "[مستوى الخصوصية]"
+src/routes/_authenticated/dashboard.offers.tsx:16 [module-level] "بانتظار ردّك"
+src/routes/_authenticated/dashboard.offers.tsx:16 [module-level] "مقبول"
+src/routes/_authenticated/dashboard.offers.tsx:16 [module-level] "مرفوض"
+src/routes/_authenticated/dashboard.offers.tsx:16 [module-level] "منتهي"
+src/routes/_authenticated/dashboard.production.tsx:61 [module-level] "بانتظار الجلسة"
+src/routes/_authenticated/dashboard.production.tsx:62 [module-level] "يوم التصوير"
+src/routes/_authenticated/dashboard.production.tsx:63 [module-level] "اختيار الصور"
+src/routes/_authenticated/dashboard.production.tsx:64 [module-level] "قيد التحرير"
+src/routes/_authenticated/dashboard.production.tsx:65 [module-level] "جاهز للتسليم"
+src/routes/_authenticated/dashboard.production.tsx:66 [module-level] "تم التسليم"
+src/routes/_authenticated/dashboard.production.tsx:72 [module-level] "الحجوزات المؤكّدة التي لم يحن موعد تصويرها بعد."
+src/routes/_authenticated/dashboard.production.tsx:73 [module-level] "حجوزات يوم تصويرها اليوم أو انتهى للتو."
+src/routes/_authenticated/dashboard.production.tsx:74 [module-level] "صُوّرت وتنتظر أن تختار العميلة صورها من الرابط."
+src/routes/_authenticated/dashboard.production.tsx:75 [module-level] "صور مختارة قيد التحرير."
+src/routes/_authenticated/dashboard.production.tsx:76 [module-level] "انتهى التحرير وتنتظر الإرسال للعميلة."
+src/routes/_authenticated/dashboard.production.tsx:77 [module-level] "حجوزات سُلّمت صورها."
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "كانون الثاني"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "شباط"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "آذار"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "نيسان"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "أيار"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "حزيران"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "تموز"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "آب"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "أيلول"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "تشرين الأول"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "تشرين الثاني"
+src/routes/_authenticated/dashboard.recap.tsx:16 [module-level] "كانون الأول"
+src/routes/_authenticated/dashboard.recap.tsx:17 [module-level] "الأحد"
+src/routes/_authenticated/dashboard.recap.tsx:17 [module-level] "الإثنين"
+src/routes/_authenticated/dashboard.recap.tsx:17 [module-level] "الثلاثاء"
+src/routes/_authenticated/dashboard.recap.tsx:17 [module-level] "الأربعاء"
+src/routes/_authenticated/dashboard.recap.tsx:17 [module-level] "الخميس"
+src/routes/_authenticated/dashboard.recap.tsx:17 [module-level] "الجمعة"
+src/routes/_authenticated/dashboard.recap.tsx:17 [module-level] "السبت"
+src/routes/_authenticated/dashboard.subscription.tsx:25 [module-level] "شهري"
+src/routes/_authenticated/dashboard.subscription.tsx:25 [module-level] "شهريًا"
+src/routes/_authenticated/dashboard.subscription.tsx:26 [module-level] "سنوي"
+src/routes/_authenticated/dashboard.subscription.tsx:26 [module-level] "سنويًا"
+src/routes/_authenticated/dashboard.subscription.tsx:58 [module-level] "زبوني"
+src/routes/_authenticated/dashboard.subscription.tsx:58 [module-level] "بطاقة"
+src/routes/_authenticated/dashboard.subscription.tsx:58 [module-level] "بطاقة"
+src/routes/_authenticated/dashboard.subscription.tsx:58 [module-level] "بطاقة · PayTabs"
+src/routes/_authenticated/onboarding.tsx:41 [module-level] "عمّان"
+src/routes/_authenticated/onboarding.tsx:41 [module-level] "إربد"
+src/routes/_authenticated/onboarding.tsx:41 [module-level] "الزرقاء"
+src/routes/_authenticated/onboarding.tsx:41 [module-level] "العقبة"
+src/routes/_authenticated/onboarding.tsx:41 [module-level] "السلط"
+src/routes/_authenticated/onboarding.tsx:41 [module-level] "مادبا"
+src/routes/_authenticated/onboarding.tsx:43 [module-level] "تغطية ٤ ساعات"
+src/routes/_authenticated/onboarding.tsx:44 [module-level] "يوم زفاف كامل"
+src/routes/_authenticated/onboarding.tsx:45 [module-level] "جلسة خطوبة"

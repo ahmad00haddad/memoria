@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 // ============================================================================
 // calendar.functions.ts — دوال التقويم الخادمية
@@ -112,7 +113,7 @@ export const toggleUnavailability = createServerFn({ method: "POST" })
       .limit(1);
 
     if (conflict && conflict.length > 0) {
-      throw new Error(`لا يمكن إضافة يوم عدم التوفر — يوجد حجز مؤكّد لـ ${conflict[0].client_name} في هذا التاريخ`);
+      throw new Error(t("لا يمكن إضافة يوم عدم التوفر — يوجد حجز مؤكّد لـ {0} في هذا التاريخ", [conflict[0].client_name]));
     }
 
     // التحقق من وجود مسبق

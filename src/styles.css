@@ -10,6 +10,8 @@
 @import "@fontsource/aref-ruqaa/arabic-400.css";
 @import "@fontsource/aref-ruqaa/arabic-700.css";
 @import "@fontsource-variable/cormorant-garamond";
+/* English body face. @font-face only: the browser fetches it on English pages alone. */
+@import "@fontsource-variable/jost";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -152,6 +154,20 @@
      face for emphasis instead (see .font-script). */
   [dir="rtl"] .italic, [dir="rtl"] em { font-style: normal; }
   [dir="rtl"] h1 .italic, [dir="rtl"] h2 .italic { font-family: var(--font-script); font-weight: 400; }
+
+  /* English: Cormorant display + Jost text, an invitation-card pairing */
+  html[lang="en"], html[lang="en"] body, html[lang="en"] button, html[lang="en"] input,
+  html[lang="en"] textarea, html[lang="en"] select, html[lang="en"] .font-sans {
+    font-family: "Jost Variable", system-ui, sans-serif;
+  }
+  html[lang="en"] h1, html[lang="en"] h2, html[lang="en"] h3, html[lang="en"] .font-serif {
+    font-family: "Cormorant Garamond Variable", "Playfair Display Variable", serif;
+    font-weight: 500;
+  }
+  html[lang="en"] .font-script { font-family: "Cormorant Garamond Variable", serif; font-style: italic; }
+
+  /* Arrows were drawn for right-to-left reading; mirror them in English */
+  html[dir="ltr"] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right) { scale: -1 1; }
 
   p { text-wrap: pretty; }
   h1, h2, h3 { text-wrap: balance; }

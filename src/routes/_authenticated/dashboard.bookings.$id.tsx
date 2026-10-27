@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { getLang, dirOf } from "@/i18n";
 import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
@@ -33,6 +34,8 @@ import {
   saveDeliveryLink,
 } from "@/lib/production.functions";
 import { AlertTriangle } from "lucide-react";
+import { locale } from "@/i18n";
+import { t as tr, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({
   component: BookingDetail,
@@ -68,11 +71,11 @@ function _BookingDetailErrorBody(reset: () => void) {
         <AlertTriangle className="h-8 w-8 text-red-500" />
       </div>
       <div className="space-y-2 max-w-md">
-        <h1 className="font-serif text-2xl">عذراً! حدث خطأ أثناء تحميل الحجز</h1>
-        <p className="text-muted-foreground text-sm">بيانات هذا الحجز قد تكون غير مكتملة أو تم حذفها.</p>
+        <h1 className="font-serif text-2xl">{tr("عذراً! حدث خطأ أثناء تحميل الحجز")}</h1>
+        <p className="text-muted-foreground text-sm">{tr("بيانات هذا الحجز قد تكون غير مكتملة أو تم حذفها.")}</p>
       </div>
       <button onClick={reset} className="bg-charcoal text-ivory px-6 py-2 rounded-sm hover:opacity-90 transition text-sm active:scale-95 transition-transform duration-200">
-        إعادة المحاولة
+        {tr("إعادة المحاولة")}
       </button>
     </div>
   );
@@ -196,12 +199,12 @@ function BookingDetail() {
     try {
       await updateStageFn({ data: { booking_id: id, stage } });
       hapticVibrate("success");
-      toast.success(`المرحلة الآن: ${STAGES.find((s) => s.key === stage)?.label ?? stage}`);
+      toast.success(tr("المرحلة الآن: {0}", [STAGES.find((s) => s.key === stage)?.label ?? stage]));
       load();
     } catch (e: any) {
       setB((x: any) => ({ ...x, production_stage: prev }));
       hapticVibrate("error");
-      toast.error(e?.message || "تعذّر تحديث المرحلة");
+      toast.error(e?.message || tr("تعذّر تحديث المرحلة"));
     } finally {
       setActionLoading(null);
     }
@@ -213,10 +216,10 @@ function BookingDetail() {
     setActionLoading("link");
     try {
       await saveDeliveryFn({ data: { booking_id: id, link } });
-      toast.success("سُلّمت الصور 🤍 وصل الرابط للعميلة");
+      toast.success(tr("سُلّمت الصور 🤍 وصل الرابط للعميلة"));
       load();
     } catch (e: any) {
-      toast.error(e.message || "فشل حفظ الرابط");
+      toast.error(e.message || tr("فشل حفظ الرابط"));
     } finally {
       setActionLoading(null);
     }
@@ -227,10 +230,10 @@ function BookingDetail() {
     setActionLoading("link");
     try {
       await saveSelectionFn({ data: { booking_id: id, link } });
-      toast.success("حُفظ الرابط ووصل إشعار للعميلة");
+      toast.success(tr("حُفظ الرابط ووصل إشعار للعميلة"));
       load();
     } catch (e: any) {
-      toast.error(e?.message || "تعذّر حفظ الرابط");
+      toast.error(e?.message || tr("تعذّر حفظ الرابط"));
     } finally {
       setActionLoading(null);
     }
@@ -242,14 +245,14 @@ function BookingDetail() {
     if (status === "confirmed") {
       // Server fn تتطلب إثبات العربون — لا تغيير
       try { await confirmFn({ data: { booking_id: id } }); }
-      catch (e: any) { setActionLoading(null); hapticVibrate("error"); return toast.error(e?.message || "تعذّر التأكيد"); }
+      catch (e: any) { setActionLoading(null); hapticVibrate("error"); return toast.error(e?.message || tr("تعذّر التأكيد")); }
       hapticVibrate("success");
-      toast.success("حجز جديد مؤكَّد 🎉 أبلغنا العميلة");
+      toast.success(tr("حجز جديد مؤكَّد 🎉 أبلغنا العميلة"));
       await load();
       const { data: existing } = await supabase.from("contracts").select("id").eq("booking_id", id).maybeSingle();
       if (!existing) {
         await generateContract();
-        toast.success("أنشأنا العقد تلقائياً");
+        toast.success(tr("أنشأنا العقد تلقائياً"));
       }
       setActionLoading(null);
       return;
@@ -257,10 +260,10 @@ function BookingDetail() {
     // ✅ آمن: server fn بدلاً من الكتابة المباشرة
     try {
       await updateStatusFn({ data: { booking_id: id, status: status as any } });
-      toast.success("تم تحديث الحالة");
+      toast.success(tr("تم تحديث الحالة"));
       await load();
     } catch (e: any) {
-      toast.error(e?.message || "تعذّر تحديث الحالة");
+      toast.error(e?.message || tr("تعذّر تحديث الحالة"));
     } finally {
       setActionLoading(null);
     }
@@ -273,17 +276,17 @@ function BookingDetail() {
     try {
       await markFinalPaidFn({ data: { booking_id: id } });
       hapticVibrate("success");
-      toast.success("سُجّلت الدفعة النهائية — الصور الكاملة متاحة للعميلة الآن");
+      toast.success(tr("سُجّلت الدفعة النهائية — الصور الكاملة متاحة للعميلة الآن"));
       load();
     } catch (e: any) {
-      toast.error(e?.message || "تعذّر تسجيل الدفعة");
+      toast.error(e?.message || tr("تعذّر تسجيل الدفعة"));
     } finally {
       setActionLoading(null);
     }
   };
 
   const markDelivered = async () => {
-    if (!(await confirm({ title: "تسليم الصور وإنهاء الحجز", description: "ستصل للعميلة رسالة بأن صورها جاهزة مع طلب تقييم.", confirmText: "سلّمي الصور" }))) return;
+    if (!(await confirm({ title: tr("تسليم الصور وإنهاء الحجز"), description: tr("ستصل للعميلة رسالة بأن صورها جاهزة مع طلب تقييم."), confirmText: tr("سلّمي الصور") }))) return;
     await setStage("delivered");
   };
 
@@ -293,14 +296,14 @@ function BookingDetail() {
     try {
       const res: any = await cancelFn({ data: { booking_id: id, reason: cancelReason.trim() || null } });
       if (Number(res?.refund_amount) > 0) {
-        toast.success(`أُلغي الحجز. مبلغ الاسترداد ${res.refund_amount} د.أ قيد المعالجة.`);
+        toast.success(tr("أُلغي الحجز. مبلغ الاسترداد {0} د.أ قيد المعالجة.", [res.refund_amount]));
       } else {
-        toast.success("أُلغي الحجز");
+        toast.success(tr("أُلغي الحجز"));
       }
       setCancelReason("");
       await load();
     } catch (e: any) {
-      toast.error(e?.message || "تعذّر الإلغاء");
+      toast.error(e?.message || tr("تعذّر الإلغاء"));
     } finally {
       setActionLoading(null);
     }
@@ -312,11 +315,11 @@ function BookingDetail() {
     setText("");
     setActionLoading("send");
     // Optimistic: realtime channel will reconcile, but show immediately.
-    const optimistic = { id: `tmp-${Date.now()}`, sender_id: uid, sender_name: "المصوّر", body, created_at: new Date().toISOString(), read_at: null };
+    const optimistic = { id: `tmp-${Date.now()}`, sender_id: uid, sender_name: tr("المصوّر"), body, created_at: new Date().toISOString(), read_at: null };
     setMsgs((prev) => [...prev, optimistic]);
-    const { error } = await supabase.from("messages").insert({ booking_id: id, body, sender_id: uid, sender_name: "المصوّر" });
+    const { error } = await supabase.from("messages").insert({ booking_id: id, body, sender_id: uid, sender_name: tr("المصوّر") });
     if (error) {
-      toast.error("لم تُرسل الرسالة — أعدنا النص إلى الحقل");
+      toast.error(tr("لم تُرسل الرسالة — أعدنا النص إلى الحقل"));
       setMsgs((prev) => prev.filter((m) => m.id !== optimistic.id));
       setText(body);
     }
@@ -328,11 +331,11 @@ function BookingDetail() {
     setActionLoading("contract");
     const tpl = templates.find((t) => t.id === templateId);
     const privacyLabels: Record<string, string> = {
-      public: "عام — يحق للمصوّرة استخدام لقطات للترويج",
-      no_publish: "بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي",
-      private_only: "خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث",
+      public: tr("عام — يحق للمصوّرة استخدام لقطات للترويج"),
+      no_publish: tr("بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي"),
+      private_only: tr("خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث"),
     };
-    const baseBody = tpl?.body ?? `${b.service === "cinematic_video" ? "عقد تصوير فيديو" : "عقد تصوير فوتوغرافي"} بين المصوّرة والعميل/ة ${b.client_name}.\n\nتاريخ التصوير: ${b.event_date}\nالمدّة: ${b.start_time?.slice(0,5)} - ${b.end_time?.slice(0,5)}\nالموقع: ${b.venue_name ?? "—"}\nالمجموع: ${b.total_price} د.أ\nالعربون (غير قابل للاسترداد): ${b.deposit_amount} د.أ\nرسوم الساعة الإضافية: ${b.overtime_fee_per_hour || 0} د.أ\nمستوى الخصوصية: ${privacyLabels[b.privacy_level || 'public']}\n\nالبنود الافتراضية:\n- تسليم ${b.service === "cinematic_video" ? "الفيديو" : "الصور"} خلال ${b.delivery_days_promised || 30} يومًا (تاريخ التسليم المتوقع: ${b.delivery_due_at ?? '—'}).\n- إلغاء قبل أسبوعين يعفي من المتبقّي، بعدها 50%.\n- لا يحق للعميل/ة نشر المواد الخام (RAW) أو إزالة شعار المصوّرة.`;
+    const baseBody = tpl?.body ?? tr("{0} بين المصوّرة والعميل/ة {1}. تاريخ التصوير: {2} المدّة: {3} - {4} الموقع: {5} المجموع: {6} د.أ العربون (غير قابل للاسترداد): {7} د.أ رسوم الساعة الإضافية: {8} د.أ مستوى الخصوصية: {9} البنود الافتراضية: - تسليم {10} خلال {11} يومًا (تاريخ التسليم المتوقع: {12}). - إلغاء قبل أسبوعين يعفي من المتبقّي، بعدها 50%. - لا يحق للعميل/ة نشر المواد الخام (RAW) أو إزالة شعار المصوّرة.", [b.service === "cinematic_video" ? "عقد تصوير فيديو" : "عقد تصوير فوتوغرافي", b.client_name, b.event_date, b.start_time?.slice(0,5), b.end_time?.slice(0,5), b.venue_name ?? "—", b.total_price, b.deposit_amount, b.overtime_fee_per_hour || 0, privacyLabels[b.privacy_level || 'public'], b.service === "cinematic_video" ? "الفيديو" : "الصور", b.delivery_days_promised || 30, b.delivery_due_at ?? '—']);
     const body = baseBody
       .replace(/\[اسم العميل\]/g, b.client_name)
       .replace(/\[التاريخ\]/g, b.event_date)
@@ -345,9 +348,9 @@ function BookingDetail() {
       .replace(/\[مستوى الخصوصية\]/g, privacyLabels[b.privacy_level || 'public']);
     try {
       await createContractFn({ data: { booking_id: id, body, client_name: b.client_name } });
-      toast.success("أُنشئ العقد"); load();
+      toast.success(tr("أُنشئ العقد")); load();
     } catch (e: any) {
-      toast.error(e?.message || "تعذّر إنشاء العقد");
+      toast.error(e?.message || tr("تعذّر إنشاء العقد"));
     } finally {
       setActionLoading(null);
     }
@@ -368,22 +371,22 @@ function BookingDetail() {
     const eventIn = b.event_date ? daysFromToday(b.event_date) : null;
     if (b.status === "cancelled") return null;
     if (b.status === "pending_deposit" && (b.deposit_proof_url || b.deposit_sent_at)) {
-      return { title: g("العربون وصل — راجعيه وأكّدي", "العربون وصل — راجعه وأكّد"), detail: g(`تأكّدي من تطبيق البنك أن ${b.deposit_amount} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال`, `تأكّد من تطبيق البنك أن ${b.deposit_amount} د.أ وصلت فعلاً — لا تعتمد على صورة الإيصال`), cta: "تأكيد العربون", icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
+      return { title: g(tr("العربون وصل — راجعيه وأكّدي"), tr("العربون وصل — راجعه وأكّد")), detail: g(tr("تأكّدي من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال", [b.deposit_amount]), tr("تأكّد من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمد على صورة الإيصال", [b.deposit_amount])), cta: tr("تأكيد العربون"), icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
     }
     if (b.status === "quote" || b.status === "pending_deposit") {
-      return { title: "بانتظار العربون من العميلة", detail: `الطلب وصل ${ageLabel(b.created_at)}`, cta: "ذكّريها بواتساب", icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nلتثبيت موعدك بتاريخ ${new Date(b.event_date).toLocaleDateString("ar-JO")} يرجى إرسال العربون (${b.deposit_amount} د.أ) ورفع الإثبات من هنا:\n${trackUrl}`) };
+      return { title: tr("بانتظار العربون من العميلة"), detail: tr("الطلب وصل {0}", [ageLabel(b.created_at)]), cta: tr("ذكّريها بواتساب"), icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 لتثبيت موعدك بتاريخ {1} يرجى إرسال العربون ({2} د.أ) ورفع الإثبات من هنا: {3}", [b.client_name, new Date(b.event_date).toLocaleDateString(locale("ar-JO")), b.deposit_amount, trackUrl])) };
     }
     if (stage !== "delivered" && eventIn !== null && eventIn >= 0) {
-      return { title: `التصوير ${relativeDay(eventIn)}`, detail: b.client_notes ? g("راجعي ملاحظات العميلة وقائمة اللقطات", "راجع ملاحظات العميلة وقائمة اللقطات") : g("جهّزي قائمة اللقطات", "جهّز قائمة اللقطات"), cta: "قائمة اللقطات", icon: <ListChecks className="h-4 w-4" />, run: () => setTab("production") };
+      return { title: tr("التصوير {0}", [relativeDay(eventIn)]), detail: b.client_notes ? g(tr("راجعي ملاحظات العميلة وقائمة اللقطات"), tr("راجع ملاحظات العميلة وقائمة اللقطات")) : g(tr("جهّزي قائمة اللقطات"), tr("جهّز قائمة اللقطات")), cta: tr("قائمة اللقطات"), icon: <ListChecks className="h-4 w-4" />, run: () => setTab("production") };
     }
     if (stage !== "delivered") {
       const label = STAGES.find((s) => s.key === stage)?.label ?? "";
-      return { title: `المرحلة الحالية: ${label}`, detail: b.delivery_due_at ? `التسليم ${relativeDay(daysFromToday(b.delivery_due_at))}` : g("حدّثي المرحلة لتعرف العميلة أين وصلت صورها", "حدّث المرحلة لتعرف العميلة أين وصلت صورها"), cta: g("حدّثي الإنتاج", "حدّث الإنتاج"), icon: <Edit3 className="h-4 w-4" />, run: () => setTab("production") };
+      return { title: tr("المرحلة الحالية: {0}", [label]), detail: b.delivery_due_at ? tr("التسليم {0}", [relativeDay(daysFromToday(b.delivery_due_at))]) : g(tr("حدّثي المرحلة لتعرف العميلة أين وصلت صورها"), tr("حدّث المرحلة لتعرف العميلة أين وصلت صورها")), cta: g(tr("حدّثي الإنتاج"), tr("حدّث الإنتاج")), icon: <Edit3 className="h-4 w-4" />, run: () => setTab("production") };
     }
     if (!b.final_paid_at) {
-      return { title: "سُلّمت الصور — الدفعة النهائية لم تصل", detail: `المتبقي ${Number(b.total_price) - Number(b.deposit_amount || 0)} د.أ`, cta: g("سجّلي استلام الدفعة", "سجّل استلام الدفعة"), icon: <BadgeDollarSign className="h-4 w-4" />, run: markFinalPaid, busy: actionLoading === "final" };
+      return { title: tr("سُلّمت الصور — الدفعة النهائية لم تصل"), detail: tr("المتبقي {0} د.أ", [Number(b.total_price) - Number(b.deposit_amount || 0)]), cta: g(tr("سجّلي استلام الدفعة"), tr("سجّل استلام الدفعة")), icon: <BadgeDollarSign className="h-4 w-4" />, run: markFinalPaid, busy: actionLoading === "final" };
     }
-    return { title: "اكتمل الحجز", detail: "رأي العميلة يساعد العرائس الأخريات على اختيارك", cta: g("اطلبي تقييماً", "اطلب تقييماً"), icon: <Star className="h-4 w-4" />, run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nأتمنى أن تكون الصور قد نالت إعجابك! يسعدني سماع رأيك هنا:\n${origin}/review/${b.client_tracking_token}\n\nشكراً لكِ!`) };
+    return { title: tr("اكتمل الحجز"), detail: tr("رأي العميلة يساعد العرائس الأخريات على اختيارك"), cta: g(tr("اطلبي تقييماً"), tr("اطلب تقييماً")), icon: <Star className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 أتمنى أن تكون الصور قد نالت إعجابك! يسعدني سماع رأيك هنا: {1}/review/{2} شكراً لكِ!", [b.client_name, origin, b.client_tracking_token])) };
   }, [b, actionLoading, trackUrl]);
 
   // ── تلميحات سياقية مرتبطة بهذا الحجز ──
@@ -392,20 +395,20 @@ function BookingDetail() {
     const list: { key: string; text: string; action?: { label: string; run: () => void } }[] = [];
     const eventIn = b.event_date ? daysFromToday(b.event_date) : null;
     if (b.client_notes && eventIn !== null && eventIn >= 0 && eventIn <= 2) {
-      list.push({ key: "notes", text: `ملاحظة العميلة قبل التصوير: «${b.client_notes}»` });
+      list.push({ key: "notes", text: tr("ملاحظة العميلة قبل التصوير: «{0}»", [b.client_notes]) });
     }
     if (contract && contract.status !== "signed" && b.status !== "cancelled") {
-      list.push({ key: "contract", text: "العقد لم يُوقَّع بعد.", action: { label: g("أرسلي تذكيراً", "أرسل تذكيراً"), run: () => openWhatsApp(`مرحباً ${b.client_name} 🤍\nيرجى مراجعة العقد وتوقيعه من هنا:\n${origin}/contracts/${contract.sign_token}`) } });
+      list.push({ key: "contract", text: tr("العقد لم يُوقَّع بعد."), action: { label: g(tr("أرسلي تذكيراً"), tr("أرسل تذكيراً")), run: () => openWhatsApp(tr("مرحباً {0} 🤍 يرجى مراجعة العقد وتوقيعه من هنا: {1}/contracts/{2}", [b.client_name, origin, contract.sign_token])) } });
     }
     const mine = msgs.filter((m) => m.sender_id === uid);
     const theirs = msgs.filter((m) => m.sender_id !== uid);
     const lastTheirs = theirs[theirs.length - 1];
     const lastMine = mine[mine.length - 1];
     if (lastTheirs && (!lastMine || new Date(lastTheirs.created_at) > new Date(lastMine.created_at))) {
-      list.push({ key: "reply", text: g(`العميلة كتبت لكِ ${ageLabel(lastTheirs.created_at)} ولم تردّي بعد.`, `العميلة كتبت لك ${ageLabel(lastTheirs.created_at)} ولم تردّ بعد.`), action: { label: g("افتحي المحادثة", "افتح المحادثة"), run: () => setTab("chat") } });
+      list.push({ key: "reply", text: g(tr("العميلة كتبت لكِ {0} ولم تردّي بعد.", [ageLabel(lastTheirs.created_at)]), tr("العميلة كتبت لك {0} ولم تردّ بعد.", [ageLabel(lastTheirs.created_at)])), action: { label: g(tr("افتحي المحادثة"), tr("افتح المحادثة")), run: () => setTab("chat") } });
     }
     if (b.production_stage === "delivered" && !b.final_paid_at && b.status !== "cancelled") {
-      list.push({ key: "watermark", text: g("صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّلي الدفعة النهائية.", "صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّل الدفعة النهائية.") });
+      list.push({ key: "watermark", text: g(tr("صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّلي الدفعة النهائية."), tr("صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّل الدفعة النهائية.")) });
     }
     return list.filter((h) => !dismissedHints.includes(h.key));
   }, [b, contract, msgs, uid, dismissedHints]);
@@ -415,9 +418,9 @@ function BookingDetail() {
   const remaining = Number(b.total_price) - Number(b.deposit_amount || 0);
   const eventIn = b.event_date ? daysFromToday(b.event_date) : null;
   const TABS: { key: TabKey; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { key: "overview", label: "نظرة عامة", icon: <LayoutGrid className="h-4 w-4" /> },
-    { key: "chat", label: "المحادثة", icon: <MessageSquare className="h-4 w-4" />, badge: unread },
-    { key: "production", label: "الإنتاج", icon: <ListChecks className="h-4 w-4" /> },
+    { key: "overview", label: tr("نظرة عامة"), icon: <LayoutGrid className="h-4 w-4" /> },
+    { key: "chat", label: tr("المحادثة"), icon: <MessageSquare className="h-4 w-4" />, badge: unread },
+    { key: "production", label: tr("الإنتاج"), icon: <ListChecks className="h-4 w-4" /> },
   ];
 
   return (
@@ -425,14 +428,14 @@ function BookingDetail() {
       <Header />
       <section className="container-editorial pt-8 pb-16 max-w-4xl">
         <Link to="/dashboard/bookings" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors group">
-          <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" /> الحجوزات
+          <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />{" "}{tr("الحجوزات")}
         </Link>
 
         {/* ── الرأس: الاسم والحالة والتاريخ ── */}
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="font-serif text-4xl leading-tight">{b.client_name}</h1>
+              <h1 className="font-serif text-4xl leading-tight">{tx(b.client_name)}</h1>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span
                   key={b.status}
@@ -447,7 +450,7 @@ function BookingDetail() {
               </AnimatePresence>
             </div>
             <div className="mt-1.5 text-sm text-muted-foreground">
-              {b.service === "cinematic_video" ? "فيديو سينمائي" : "تصوير فوتوغرافي"} · {new Date(b.event_date).toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long" })}
+              {b.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")} · {new Date(b.event_date).toLocaleDateString(locale("ar-JO"), { weekday: "long", day: "numeric", month: "long" })}
               {eventIn !== null && eventIn >= 0 && eventIn <= 30 && <span className="text-gold"> ({relativeDay(eventIn)})</span>}
               {" "}· {b.start_time?.slice(0,5)}–{b.end_time?.slice(0,5)}
             </div>
@@ -455,39 +458,39 @@ function BookingDetail() {
           <div className="flex items-center gap-2">
             <WhatsAppQuickSend booking={b} />
             <DropdownMenu>
-              <DropdownMenuTrigger className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-secondary transition-colors" aria-label="إجراءات أخرى">
+              <DropdownMenuTrigger className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-secondary transition-colors" aria-label={tr("إجراءات أخرى")}>
                 <MoreHorizontal className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-52" style={{ direction: "rtl" }}>
                 {trackUrl && (
                   <DropdownMenuItem onClick={() => window.open(trackUrl, "_blank")}>
-                    <Eye className="h-4 w-4 me-2" /> ماذا ترى العميلة الآن
+                    <Eye className="h-4 w-4 me-2" />{" "}{tr("ماذا ترى العميلة الآن")}
                   </DropdownMenuItem>
                 )}
                 {trackUrl && (
-                  <DropdownMenuItem onClick={async () => { await navigator.clipboard.writeText(trackUrl).catch(() => {}); toast.success("نُسخ رابط التتبّع"); }}>
-                    <Copy className="h-4 w-4 me-2" /> نسخ رابط التتبّع
+                  <DropdownMenuItem onClick={async () => { await navigator.clipboard.writeText(trackUrl).catch(() => {}); toast.success(tr("نُسخ رابط التتبّع")); }}>
+                    <Copy className="h-4 w-4 me-2" />{" "}{tr("نسخ رابط التتبّع")}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={async () => {
-                  if (!(await confirm({ title: "تجديد رابط التتبّع", description: g("الرابط القديم سيتوقف عن العمل، وستحتاجين لإرسال الرابط الجديد للعميلة.", "الرابط القديم سيتوقف عن العمل، وستحتاج لإرسال الرابط الجديد للعميلة."), confirmText: "تجديد" }))) return;
-                  try { await regenTokenFn({ data: { booking_id: id } }); toast.success("جُدّد الرابط"); await load(); }
-                  catch (e: any) { toast.error(e?.message || "تعذّر التجديد"); }
+                  if (!(await confirm({ title: tr("تجديد رابط التتبّع"), description: g(tr("الرابط القديم سيتوقف عن العمل، وستحتاجين لإرسال الرابط الجديد للعميلة."), tr("الرابط القديم سيتوقف عن العمل، وستحتاج لإرسال الرابط الجديد للعميلة.")), confirmText: tr("تجديد") }))) return;
+                  try { await regenTokenFn({ data: { booking_id: id } }); toast.success(tr("جُدّد الرابط")); await load(); }
+                  catch (e: any) { toast.error(e?.message || tr("تعذّر التجديد")); }
                 }}>
-                  <Clock className="h-4 w-4 me-2" /> تجديد رابط التتبّع
+                  <Clock className="h-4 w-4 me-2" />{" "}{tr("تجديد رابط التتبّع")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {b.status !== "cancelled" && b.status !== "completed" && (
                   <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => setCancelOpen(true)}>
-                    <XCircle className="h-4 w-4 me-2" /> إلغاء الحجز
+                    <XCircle className="h-4 w-4 me-2" />{" "}{tr("إلغاء الحجز")}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={async () => {
-                  if (!(await confirm({ title: "حذف الحجز", description: "سيُنقل للمحذوفات. يمكن استرجاعه لاحقاً من سجل التدقيق.", confirmText: "حذف", destructive: true }))) return;
-                  try { await softDeleteFn({ data: { booking_id: id } }); toast.success("حُذف الحجز"); nav({ to: "/dashboard/bookings" }); }
-                  catch (e: any) { toast.error(e?.message || "تعذّر الحذف"); }
+                  if (!(await confirm({ title: tr("حذف الحجز"), description: tr("سيُنقل للمحذوفات. يمكن استرجاعه لاحقاً من سجل التدقيق."), confirmText: tr("حذف"), destructive: true }))) return;
+                  try { await softDeleteFn({ data: { booking_id: id } }); toast.success(tr("حُذف الحجز")); nav({ to: "/dashboard/bookings" }); }
+                  catch (e: any) { toast.error(e?.message || tr("تعذّر الحذف")); }
                 }}>
-                  <Trash2 className="h-4 w-4 me-2" /> حذف الحجز
+                  <Trash2 className="h-4 w-4 me-2" />{" "}{tr("حذف الحجز")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -502,9 +505,9 @@ function BookingDetail() {
               className="flex flex-col gap-3 rounded-2xl bg-charcoal p-4 ps-5 text-ivory sm:flex-row sm:items-center sm:justify-between dark:bg-card dark:text-foreground dark:ring-1 dark:ring-gold/30"
             >
               <div className="min-w-0">
-                <div className="text-[11px] tracking-wide text-gold">الخطوة التالية</div>
-                <div className="font-medium">{next.title}</div>
-                <div className="text-xs text-ivory/60 dark:text-muted-foreground">{next.detail}</div>
+                <div className="text-[11px] tracking-wide text-gold">{tr("الخطوة التالية")}</div>
+                <div className="font-medium">{tx(next.title)}</div>
+                <div className="text-xs text-ivory/60 dark:text-muted-foreground">{tx(next.detail)}</div>
               </div>
               <button
                 onClick={next.run}
@@ -512,7 +515,7 @@ function BookingDetail() {
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-medium text-charcoal transition-transform active:scale-95 disabled:opacity-60"
               >
                 {next.busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-charcoal/30 border-t-charcoal" /> : next.icon}
-                {next.cta}
+                {tx(next.cta)}
               </button>
             </motion.div>
           </div>
@@ -530,11 +533,11 @@ function BookingDetail() {
             >
               <div className="mt-3 flex items-start gap-3 rounded-xl border border-gold/25 bg-gold/5 px-4 py-3 text-sm">
                 <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
-                <span className="flex-1">{h.text}</span>
+                <span className="flex-1">{tx(h.text)}</span>
                 {h.action && (
-                  <button onClick={h.action.run} className="shrink-0 text-xs font-medium text-gold hover:underline">{h.action.label}</button>
+                  <button onClick={h.action.run} className="shrink-0 text-xs font-medium text-gold hover:underline">{tx(h.action.label)}</button>
                 )}
-                <button onClick={() => setDismissedHints((d) => [...d, h.key])} className="shrink-0 text-muted-foreground hover:text-foreground" aria-label="إخفاء التلميح">
+                <button onClick={() => setDismissedHints((d) => [...d, h.key])} className="shrink-0 text-muted-foreground hover:text-foreground" aria-label={tr("إخفاء التلميح")}>
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
@@ -543,7 +546,7 @@ function BookingDetail() {
         </AnimatePresence>
 
         {/* ── التبويبات ── */}
-        <div role="tablist" aria-label="أقسام الحجز" className="mt-8 flex gap-1 overflow-x-auto scrollbar-none border-b border-border">
+        <div role="tablist" aria-label={tr("أقسام الحجز")} className="mt-8 flex gap-1 overflow-x-auto scrollbar-none border-b border-border">
           {TABS.map((t) => (
             <button
               key={t.key}
@@ -552,10 +555,10 @@ function BookingDetail() {
               onClick={() => { setTab(t.key); hapticVibrate("light"); }}
               className={`relative inline-flex shrink-0 items-center gap-2 px-4 py-3 text-sm transition-colors ${tab === t.key ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
-              {t.icon}
-              {t.label}
+              {tx(t.icon)}
+              {tx(t.label)}
               {!!t.badge && (
-                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1.5 text-[10px] font-bold text-charcoal tabular-nums">{t.badge}</span>
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1.5 text-[10px] font-bold text-charcoal tabular-nums">{tx(t.badge)}</span>
               )}
               {tab === t.key && (
                 <motion.span layoutId="booking-tab-indicator" className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-gold" transition={{ type: "spring", stiffness: 500, damping: 40 }} />
@@ -577,9 +580,9 @@ function BookingDetail() {
               <div className="grid gap-6 lg:grid-cols-5">
                 <div className="space-y-6 lg:col-span-3">
                   <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm">
-                    <h2 className="font-serif text-xl mb-1">العميلة والمكان</h2>
-                    <Row k="الهاتف" v={b.client_phone && (
-                      <span className="inline-flex flex-wrap items-center gap-2"><span dir="ltr">{b.client_phone}</span><CopyButton value={b.client_phone} iconOnly label="نسخ الرقم" className="px-2" />
+                    <h2 className="font-serif text-xl mb-1">{tr("العميلة والمكان")}</h2>
+                    <Row k={tr("الهاتف")} v={b.client_phone && (
+                      <span className="inline-flex flex-wrap items-center gap-2"><span dir="ltr">{tx(b.client_phone)}</span><CopyButton value={b.client_phone} iconOnly label={tr("نسخ الرقم")} className="px-2" />
                         <button
                           onClick={() => openWhatsApp(buildClientWhatsAppMessage({
                             clientName: b.client_name, photographerName: "", eventDate: b.event_date,
@@ -588,18 +591,18 @@ function BookingDetail() {
                             contractUrl: contract?.sign_token && contract?.status !== "signed" ? `${origin}/contracts/${contract.sign_token}` : null,
                           }))}
                           className="inline-flex items-center gap-1 rounded-full bg-[#25D366] px-3 py-1 text-xs font-medium text-white hover:opacity-90"
-                        >رابط المتابعة على واتساب</button>
+                        >{tr("رابط المتابعة على واتساب")}</button>
                       </span>
                     )} />
-                    <Row k="البريد" v={b.client_email && (
-                      <span className="inline-flex items-center gap-2"><span className="truncate max-w-[180px]" dir="ltr">{b.client_email}</span><CopyButton value={b.client_email} iconOnly label="نسخ البريد" className="px-2" /></span>
+                    <Row k={tr("البريد")} v={b.client_email && (
+                      <span className="inline-flex items-center gap-2"><span className="truncate max-w-[180px]" dir="ltr">{tx(b.client_email)}</span><CopyButton value={b.client_email} iconOnly label={tr("نسخ البريد")} className="px-2" /></span>
                     )} />
-                    <Row k="المكان" v={b.venue_name} />
-                    <Row k="العنوان" v={b.venue_address} />
+                    <Row k={tr("المكان")} v={b.venue_name} />
+                    <Row k={tr("العنوان")} v={b.venue_address} />
                     {b.client_notes && (
                       <div className="rounded-xl bg-secondary/50 p-3">
-                        <div className="text-xs text-muted-foreground mb-1">ملاحظات العميلة</div>
-                        <p className="whitespace-pre-wrap leading-relaxed">{b.client_notes}</p>
+                        <div className="text-xs text-muted-foreground mb-1">{tr("ملاحظات العميلة")}</div>
+                        <p className="whitespace-pre-wrap leading-relaxed">{tx(b.client_notes)}</p>
                       </div>
                     )}
                     <div className="pt-1"><PrivacyBadge level={b.privacy_level} /></div>
@@ -610,53 +613,51 @@ function BookingDetail() {
 
                 <div className="space-y-6 lg:col-span-2">
                   <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm">
-                    <h2 className="font-serif text-xl mb-1">المبالغ</h2>
-                    <Row k="السعر الأساسي" v={`${b.base_price ?? 0} د.أ`} />
-                    {Number(b.travel_fee) > 0 && <Row k="رسوم التنقّل" v={`${b.travel_fee} د.أ`} />}
-                    <Row k="الإجمالي" v={`${b.total_price} د.أ`} bold />
+                    <h2 className="font-serif text-xl mb-1">{tr("المبالغ")}</h2>
+                    <Row k={tr("السعر الأساسي")} v={tr("{0} د.أ", [b.base_price ?? 0])} />
+                    {Number(b.travel_fee) > 0 && <Row k={tr("رسوم التنقّل")} v={tr("{0} د.أ", [b.travel_fee])} />}
+                    <Row k={tr("الإجمالي")} v={tr("{0} د.أ", [b.total_price])} bold />
                     <hr className="border-border" />
-                    <Row k="العربون" v={
+                    <Row k={tr("العربون")} v={
                       <span className="inline-flex items-center gap-1.5">
                         {b.status === "confirmed" || b.status === "completed" ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <Clock className="h-3.5 w-3.5 text-amber-600" />}
-                        {b.deposit_amount} د.أ
-                      </span>
+                        {tr("{0} د.أ", [b.deposit_amount])}</span>
                     } />
-                    <Row k="المتبقي" v={
+                    <Row k={tr("المتبقي")} v={
                       <span className="inline-flex items-center gap-1.5">
                         {b.final_paid_at ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : null}
-                        {remaining.toLocaleString()} د.أ
-                      </span>
+                        {tr("{0} د.أ", [remaining.toLocaleString()])}</span>
                     } bold />
-                    {b.final_paid_at && <div className="text-xs text-emerald-700 dark:text-emerald-400">استُلم المتبقي في {new Date(b.final_paid_at).toLocaleDateString("ar-JO")}</div>}
+                    {b.final_paid_at && <div className="text-xs text-emerald-700 dark:text-emerald-400">{tr("استُلم المتبقي في {0}", [new Date(b.final_paid_at).toLocaleDateString(locale("ar-JO"))])}</div>}
                     {!b.final_paid_at && (b.status === "confirmed" || b.status === "completed") && (
                       <button onClick={markFinalPaid} disabled={actionLoading === "final"} className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm hover:border-gold/50 hover:text-gold transition-colors active:scale-95 disabled:opacity-60">
-                        <BadgeDollarSign className="h-4 w-4" /> تسجيل استلام المتبقي
+                        <BadgeDollarSign className="h-4 w-4" />{" "}{tr("تسجيل استلام المتبقي")}
                       </button>
                     )}
                   </div>
 
                   {(proofUrl || (b.status === "pending_deposit" && b.deposit_sent_at)) && (
                     <div className="rounded-2xl border border-border bg-card p-6 text-sm">
-                      <h2 className="font-serif text-xl mb-1">إثبات العربون</h2>
+                      <h2 className="font-serif text-xl mb-1">{tr("إثبات العربون")}</h2>
                       {b.status === "pending_deposit" && (
                         <p className="mb-3 rounded-xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-900 dark:bg-amber-950/20 dark:text-amber-300">
-                          <strong>{g("لا تعتمدي على صورة الإيصال.", "لا تعتمد على صورة الإيصال.")}</strong> {g("الصور سهلة التزوير — افتحي تطبيق البنك وتأكّدي أن مبلغ", "الصور سهلة التزوير — افتح تطبيق البنك وتأكّد أن مبلغ")} <strong>{b.deposit_amount} د.أ</strong> وصل فعلاً لحسابك قبل الضغط على التأكيد.
+                          <strong>{g(tr("لا تعتمدي على صورة الإيصال."), tr("لا تعتمد على صورة الإيصال."))}</strong> {g(tr("الصور سهلة التزوير — افتحي تطبيق البنك وتأكّدي أن مبلغ"), tr("الصور سهلة التزوير — افتح تطبيق البنك وتأكّد أن مبلغ"))} <strong>{tr("{0} د.أ", [b.deposit_amount])}</strong>{" "}{tr("وصل فعلاً لحسابك قبل الضغط على التأكيد.")}
                         </p>
                       )}
                       {(() => {
                         const lines = String(b.client_notes ?? "").split(/\r?\n/).filter((l) => /^(رقم العملية|اسم المحوِّل):/.test(l));
                         return lines.length > 0 && (
                           <div className="mb-3 space-y-1 rounded-xl bg-secondary/60 p-3 text-xs">
-                            {lines.slice(-2).map((l, i) => <div key={i} className="font-medium">{l}</div>)}
+                            {lines.slice(-2).map((l, i) => <div key={i} className="font-medium">{tx(l)}</div>)}
                           </div>
                         );
                       })()}
                       {proofUrl ? (
                         <button onClick={() => setProofOpen(true)} className="block w-full overflow-hidden rounded-xl border border-border bg-secondary transition-transform active:scale-[0.98]">
-                          <motion.img layoutId="proof-image" src={proofUrl} alt="إثبات تحويل العربون" className="max-h-60 w-full object-contain" />
+                          <motion.img layoutId="proof-image" src={proofUrl} alt={tr("إثبات تحويل العربون")} className="max-h-60 w-full object-contain" />
                         </button>
                       ) : (
-                        <p className="rounded-xl bg-amber-50 p-3 text-amber-900 dark:bg-amber-950/20 dark:text-amber-300">{g("أشارت العميلة إلى التحويل بدون إيصال. تحقّقي من حسابك قبل التأكيد.", "أشارت العميلة إلى التحويل بدون إيصال. تحقّق من حسابك قبل التأكيد.")}</p>
+                        <p className="rounded-xl bg-amber-50 p-3 text-amber-900 dark:bg-amber-950/20 dark:text-amber-300">{g(tr("أشارت العميلة إلى التحويل بدون إيصال. تحقّقي من حسابك قبل التأكيد."), tr("أشارت العميلة إلى التحويل بدون إيصال. تحقّق من حسابك قبل التأكيد."))}</p>
                       )}
                     </div>
                   )}
@@ -665,11 +666,11 @@ function BookingDetail() {
 
                   {b.status === "cancelled" && (
                     <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-sm">
-                      <div className="font-medium text-destructive mb-1">حجز ملغى</div>
-                      {b.cancelled_at && <div className="text-xs text-muted-foreground">بتاريخ {new Date(b.cancelled_at).toLocaleString("ar-JO")}</div>}
-                      {b.cancellation_reason && <div className="mt-1">السبب: {b.cancellation_reason}</div>}
+                      <div className="font-medium text-destructive mb-1">{tr("حجز ملغى")}</div>
+                      {b.cancelled_at && <div className="text-xs text-muted-foreground">{tr("بتاريخ {0}", [new Date(b.cancelled_at).toLocaleString(locale("ar-JO"))])}</div>}
+                      {b.cancellation_reason && <div className="mt-1">{tr("السبب: {0}", [b.cancellation_reason])}</div>}
                       {Number(b.refund_amount || 0) > 0 && (
-                        <div className="mt-1">استرداد: <strong>{b.refund_amount} د.أ</strong> — {b.refund_status === "pending" ? "قيد المعالجة" : b.refund_status === "refunded" ? "تم الردّ" : b.refund_status}</div>
+                        <div className="mt-1">{tr("استرداد:")}{" "}<strong>{tr("{0} د.أ", [b.refund_amount])}</strong> — {b.refund_status === "pending" ? tr("قيد المعالجة") : b.refund_status === "refunded" ? tr("تم الردّ") : b.refund_status}</div>
                       )}
                     </div>
                   )}
@@ -682,7 +683,7 @@ function BookingDetail() {
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto mb-4 px-1">
                   {msgs.length === 0 && (
                     <div className="py-10 text-center text-sm text-muted-foreground">
-                      {g("لا رسائل بعد. اكتبي أول رسالة — تصل للعميلة في صفحة التتبّع.", "لا رسائل بعد. اكتب أول رسالة — تصل للعميلة في صفحة التتبّع.")}
+                      {g(tr("لا رسائل بعد. اكتبي أول رسالة — تصل للعميلة في صفحة التتبّع."), tr("لا رسائل بعد. اكتب أول رسالة — تصل للعميلة في صفحة التتبّع."))}
                     </div>
                   )}
                   <AnimatePresence initial={false}>
@@ -697,10 +698,10 @@ function BookingDetail() {
                           animate={{ opacity: pending ? 0.7 : 1, y: 0, scale: 1 }}
                           className={`max-w-[85%] rounded-2xl p-3 ${mine ? "ms-auto bg-charcoal text-ivory rounded-ee-sm dark:bg-gold/20 dark:text-foreground" : "me-auto bg-secondary rounded-es-sm"}`}
                         >
-                          <div className="text-sm whitespace-pre-wrap leading-relaxed">{m.body}</div>
+                          <div className="text-sm whitespace-pre-wrap leading-relaxed">{tx(m.body)}</div>
                           <div className="mt-1 flex items-center gap-1.5 text-[10px] opacity-60">
-                            <span>{new Date(m.created_at).toLocaleString("ar-JO", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</span>
-                            {mine && <span title={m.read_at ? "قرأتها" : pending ? "يُرسل…" : "أُرسلت"}>{pending ? "…" : m.read_at ? "✓✓ قرأتها" : "✓"}</span>}
+                            <span>{new Date(m.created_at).toLocaleString(locale("ar-JO"), { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</span>
+                            {mine && <span title={m.read_at ? tr("قرأتها") : pending ? tr("يُرسل…") : tr("أُرسلت")}>{pending ? "…" : m.read_at ? tr("✓✓ قرأتها") : "✓"}</span>}
                           </div>
                         </motion.div>
                       );
@@ -715,12 +716,12 @@ function BookingDetail() {
                       onChange={(e) => setText(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
                       rows={1}
-                      placeholder={g("اكتبي رسالة… (Shift+Enter لسطر جديد)", "اكتب رسالة… (Shift+Enter لسطر جديد)")}
+                      placeholder={g(tr("اكتبي رسالة… (Shift+Enter لسطر جديد)"), tr("اكتب رسالة… (Shift+Enter لسطر جديد)"))}
                       className="w-full resize-none rounded-2xl border border-border bg-background px-4 py-2.5 text-sm focus:border-gold/60 focus:outline-none"
                     />
-                    {text && <span className="absolute -top-5 start-2 text-[10px] text-muted-foreground">المسودة محفوظة</span>}
+                    {text && <span className="absolute -top-5 start-2 text-[10px] text-muted-foreground">{tr("المسودة محفوظة")}</span>}
                   </div>
-                  <button onClick={send} disabled={!text.trim()} aria-label="إرسال" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-charcoal text-ivory transition-transform active:scale-90 disabled:opacity-40 dark:bg-gold dark:text-charcoal">
+                  <button onClick={send} disabled={!text.trim()} aria-label={tr("إرسال")} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-charcoal text-ivory transition-transform active:scale-90 disabled:opacity-40 dark:bg-gold dark:text-charcoal">
                     <Send className="h-4 w-4 -scale-x-100" />
                   </button>
                 </div>
@@ -748,16 +749,16 @@ function BookingDetail() {
             onClick={() => setProofOpen(false)}
             className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4 backdrop-blur-sm"
           >
-            <motion.img layoutId="proof-image" src={proofUrl} alt="إثبات تحويل العربون" className="max-h-[85vh] max-w-full rounded-xl object-contain" />
+            <motion.img layoutId="proof-image" src={proofUrl} alt={tr("إثبات تحويل العربون")} className="max-h-[85vh] max-w-full rounded-xl object-contain" />
             {b.status === "pending_deposit" && (
               <p className="absolute top-6 inset-x-4 mx-auto max-w-md rounded-xl bg-amber-500/90 px-4 py-2 text-center text-xs text-charcoal" onClick={(e) => e.stopPropagation()}>
-                {g("تأكّدي من تطبيق البنك أن المبلغ وصل فعلاً — الإيصال وحده لا يكفي.", "تأكّد من تطبيق البنك أن المبلغ وصل فعلاً — الإيصال وحده لا يكفي.")}
+                {g(tr("تأكّدي من تطبيق البنك أن المبلغ وصل فعلاً — الإيصال وحده لا يكفي."), tr("تأكّد من تطبيق البنك أن المبلغ وصل فعلاً — الإيصال وحده لا يكفي."))}
               </p>
             )}
             <div className="absolute bottom-6 inset-x-0 flex justify-center gap-3" onClick={(e) => e.stopPropagation()}>
-              <a href={proofUrl} target="_blank" rel="noreferrer" className="rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur hover:bg-white/20">فتح في نافذة</a>
+              <a href={proofUrl} target="_blank" rel="noreferrer" className="rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur hover:bg-white/20">{tr("فتح في نافذة")}</a>
               {b.status === "pending_deposit" && (
-                <button onClick={() => { setProofOpen(false); setStatus("confirmed"); }} className="rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal">تأكيد العربون</button>
+                <button onClick={() => { setProofOpen(false); setStatus("confirmed"); }} className="rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal">{tr("تأكيد العربون")}</button>
               )}
             </div>
           </motion.div>
@@ -766,18 +767,18 @@ function BookingDetail() {
 
       {/* نافذة الإلغاء بدل window.prompt */}
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
-        <DialogContent dir="rtl">
+        <DialogContent dir={dirOf(getLang())}>
           <DialogHeader>
-            <DialogTitle>إلغاء حجز {b.client_name}</DialogTitle>
+            <DialogTitle>{tr("إلغاء حجز {0}", [b.client_name])}</DialogTitle>
             <DialogDescription>
-              {b.status === "confirmed" ? "العربون مؤكَّد، وسيُحسب الاسترداد حسب سياستك." : "ستصل للعميلة رسالة بالإلغاء."}
+              {b.status === "confirmed" ? tr("العربون مؤكَّد، وسيُحسب الاسترداد حسب سياستك.") : tr("ستصل للعميلة رسالة بالإلغاء.")}
             </DialogDescription>
           </DialogHeader>
-          <label htmlFor="cancel-reason" className="text-sm">السبب <span className="text-muted-foreground">(اختياري — يظهر للعميلة)</span></label>
+          <label htmlFor="cancel-reason" className="text-sm">{tr("السبب")}{" "}<span className="text-muted-foreground">{tr("(اختياري — يظهر للعميلة)")}</span></label>
           <textarea id="cancel-reason" value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} rows={3} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
           <div className="flex justify-end gap-2">
-            <button onClick={() => setCancelOpen(false)} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">تراجع</button>
-            <button onClick={doCancel} className="rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground hover:bg-destructive/90">إلغاء الحجز</button>
+            <button onClick={() => setCancelOpen(false)} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{tr("تراجع")}</button>
+            <button onClick={doCancel} className="rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground hover:bg-destructive/90">{tr("إلغاء الحجز")}</button>
           </div>
         </DialogContent>
       </Dialog>
@@ -790,29 +791,29 @@ function ContractCard({ contract, templates, busy, onGenerate }: { contract: any
   const url = contract && typeof window !== "undefined" ? `${window.location.origin}/contracts/${contract.sign_token}` : "";
   return (
     <div className="rounded-2xl border border-border bg-card p-6 text-sm">
-      <h2 className="font-serif text-xl mb-3 flex items-center gap-2"><ScrollText className="h-5 w-5 text-gold" /> العقد</h2>
+      <h2 className="font-serif text-xl mb-3 flex items-center gap-2"><ScrollText className="h-5 w-5 text-gold" />{" "}{tr("العقد")}</h2>
       {contract ? (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             {contract.status === "signed"
-              ? <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300"><CheckCircle2 className="h-3.5 w-3.5" /> موقَّع</span>
-              : <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"><Clock className="h-3.5 w-3.5" /> بانتظار توقيع العميلة</span>}
+              ? <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-300"><CheckCircle2 className="h-3.5 w-3.5" />{" "}{tr("موقَّع")}</span>
+              : <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs text-amber-800 dark:bg-amber-500/15 dark:text-amber-300"><Clock className="h-3.5 w-3.5" />{" "}{tr("بانتظار توقيع العميلة")}</span>}
           </div>
           {contract.status === "signed" && contract.signed_at && (
-            <div className="text-muted-foreground">وقّعته {contract.client_name} في {new Date(contract.signed_at).toLocaleString("ar-JO")}</div>
+            <div className="text-muted-foreground">{tr("وقّعته {0} في {1}", [contract.client_name, new Date(contract.signed_at).toLocaleString(locale("ar-JO"))])}</div>
           )}
           <div className="flex flex-wrap gap-2">
-            <CopyButton value={url} label="نسخ رابط العقد" className="px-4 py-2 text-sm" />
-            <Link to="/contracts/$token" params={{ token: String(contract.sign_token) }} className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs hover:bg-secondary">عرض العقد <ArrowLeft className="h-3.5 w-3.5" /></Link>
+            <CopyButton value={url} label={tr("نسخ رابط العقد")} className="px-4 py-2 text-sm" />
+            <Link to="/contracts/$token" params={{ token: String(contract.sign_token) }} className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs hover:bg-secondary">{tr("عرض العقد")}{" "}<ArrowLeft className="h-3.5 w-3.5" /></Link>
           </div>
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-muted-foreground">{g("لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئيه الآن.", "لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئه الآن.")}</p>
+          <p className="text-muted-foreground">{g(tr("لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئيه الآن."), tr("لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئه الآن."))}</p>
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => onGenerate()} disabled={busy} className="rounded-full bg-charcoal px-4 py-2 text-ivory transition-transform active:scale-95 disabled:opacity-60 dark:bg-gold dark:text-charcoal">عقد قياسي</button>
+            <button onClick={() => onGenerate()} disabled={busy} className="rounded-full bg-charcoal px-4 py-2 text-ivory transition-transform active:scale-95 disabled:opacity-60 dark:bg-gold dark:text-charcoal">{tr("عقد قياسي")}</button>
             {templates.map((t) => (
-              <button key={t.id} onClick={() => onGenerate(t.id)} disabled={busy} className="rounded-full border border-border px-4 py-2 hover:bg-secondary transition-transform active:scale-95 disabled:opacity-60">من قالب: {t.name}</button>
+              <button key={t.id} onClick={() => onGenerate(t.id)} disabled={busy} className="rounded-full border border-border px-4 py-2 hover:bg-secondary transition-transform active:scale-95 disabled:opacity-60">{tr("من قالب: {0}", [t.name])}</button>
             ))}
           </div>
         </div>
@@ -823,17 +824,17 @@ function ContractCard({ contract, templates, busy, onGenerate }: { contract: any
 
 
 function Row({ k, v, bold }: any) {
-  return <div className="flex justify-between gap-3"><span className="text-muted-foreground">{k}</span><span className={bold ? "font-semibold" : ""}>{v || "—"}</span></div>;
+  return <div className="flex justify-between gap-3"><span className="text-muted-foreground">{tx(k)}</span><span className={bold ? "font-semibold" : ""}>{v || "—"}</span></div>;
 }
 
 function PrivacyBadge({ level }: { level?: string }) {
   const map: Record<string, { icon: any; t: string; c: string }> = {
-    public: { icon: <Eye className="h-3.5 w-3.5" />, t: "نشر ترويجي كامل", c: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" },
-    no_publish: { icon: <EyeOff className="h-3.5 w-3.5" />, t: "حفظ بدون نشر", c: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" },
-    private_only: { icon: <Lock className="h-3.5 w-3.5" />, t: "خصوصية تامة - لقطات نسائية", c: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20" },
+    public: { icon: <Eye className="h-3.5 w-3.5" />, t: tr("نشر ترويجي كامل"), c: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" },
+    no_publish: { icon: <EyeOff className="h-3.5 w-3.5" />, t: tr("حفظ بدون نشر"), c: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" },
+    private_only: { icon: <Lock className="h-3.5 w-3.5" />, t: tr("خصوصية تامة - لقطات نسائية"), c: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20" },
   };
   const x = map[level ?? "public"] ?? map.public;
-  return <div className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-sm border ${x.c}`}>{x.icon} {x.t}</div>;
+  return <div className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-sm border ${x.c}`}>{tx(x.icon)} {tx(x.t)}</div>;
 }
 
 const STAGES: { key: string; label: string; icon: any }[] = [
@@ -856,14 +857,14 @@ function ProductionPanel({ b, busy, onSetStage, onDeliver, onSaveLink, onSaveDel
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-serif text-xl">مراحل الإنتاج</h2>
+        <h2 className="font-serif text-xl">{tr("مراحل الإنتاج")}</h2>
         {nextStage && b.status !== "cancelled" && (
           <button
             onClick={() => (nextStage.key === "delivered" ? onDeliver() : onSetStage(nextStage.key))}
             disabled={busy}
             className="inline-flex items-center gap-2 rounded-full bg-charcoal px-4 py-2 text-sm text-ivory transition-transform active:scale-95 disabled:opacity-60 dark:bg-gold dark:text-charcoal"
           >
-            {g("انقلي", "انقل")} إلى «{nextStage.label}» <ArrowLeft className="h-4 w-4" />
+            {g(tr("انقلي"), tr("انقل"))}{" "}{tr("إلى «{0}»", [nextStage.label])}{" "}<ArrowLeft className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -886,13 +887,13 @@ function ProductionPanel({ b, busy, onSetStage, onDeliver, onSaveLink, onSaveDel
               <button
                 onClick={() => (s.key === "delivered" ? onDeliver() : onSetStage(s.key))}
                 disabled={busy || isCurrent || b.status === "cancelled"}
-                title={isCurrent ? "المرحلة الحالية" : g(`انقلي إلى ${s.label}`, `انقل إلى ${s.label}`)}
+                title={isCurrent ? tr("المرحلة الحالية") : g(tr("انقلي إلى {0}", [s.label]), tr("انقل إلى {0}", [s.label]))}
                 className={`relative grid h-8 w-8 place-items-center rounded-full border-2 transition-colors duration-300 ${done ? "border-gold bg-gold text-charcoal" : isCurrent ? "border-gold bg-background text-gold" : "border-border bg-background text-muted-foreground hover:border-gold/50"}`}
               >
                 {isCurrent && <span className="absolute inset-0 rounded-full border-2 border-gold animate-ping opacity-30 motion-reduce:hidden" />}
                 {done ? <CheckCircle2 className="h-4 w-4" /> : s.icon}
               </button>
-              <span className={`mt-2 text-[11px] leading-tight ${isCurrent ? "font-medium text-foreground" : "text-muted-foreground"}`}>{s.label}</span>
+              <span className={`mt-2 text-[11px] leading-tight ${isCurrent ? "font-medium text-foreground" : "text-muted-foreground"}`}>{tx(s.label)}</span>
             </li>
           );
         })}
@@ -900,22 +901,22 @@ function ProductionPanel({ b, busy, onSetStage, onDeliver, onSaveLink, onSaveDel
 
       <div className="mt-8 grid gap-6 border-t border-border pt-6 sm:grid-cols-2">
         <div>
-          <label htmlFor="selection-link" className="text-sm font-medium">رابط اختيار الصور</label>
-          <p className="mb-2 text-xs text-muted-foreground">Pixieset أو Drive — تختار منه العميلة صور الألبوم.</p>
+          <label htmlFor="selection-link" className="text-sm font-medium">{tr("رابط اختيار الصور")}</label>
+          <p className="mb-2 text-xs text-muted-foreground">{tr("Pixieset أو Drive — تختار منه العميلة صور الألبوم.")}</p>
           <div className="flex gap-2">
             <input id="selection-link" dir="ltr" value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://…" className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm" />
-            <button onClick={() => onSaveLink(link)} disabled={!linkChanged} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary transition-transform active:scale-95 disabled:opacity-40">حفظ</button>
+            <button onClick={() => onSaveLink(link)} disabled={!linkChanged} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary transition-transform active:scale-95 disabled:opacity-40">{tr("حفظ")}</button>
           </div>
-          {b.selection_link && <a href={b.selection_link} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-gold hover:underline">فتح الرابط الحالي</a>}
+          {b.selection_link && <a href={b.selection_link} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-gold hover:underline">{tr("فتح الرابط الحالي")}</a>}
         </div>
         <div>
-          <label htmlFor="delivery-link" className="text-sm font-medium">رابط التسليم النهائي</label>
-          <p className="mb-2 text-xs text-muted-foreground">Drive أو WeTransfer — يظهر للعميلة كزر «تحميل الصور».</p>
+          <label htmlFor="delivery-link" className="text-sm font-medium">{tr("رابط التسليم النهائي")}</label>
+          <p className="mb-2 text-xs text-muted-foreground">{tr("Drive أو WeTransfer — يظهر للعميلة كزر «تحميل الصور».")}</p>
           <div className="flex gap-2">
             <input id="delivery-link" dir="ltr" value={dLink} onChange={(e) => setDLink(e.target.value)} placeholder="https://drive.google.com/…" className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm" />
-            <button onClick={() => onSaveDeliveryLink(dLink)} disabled={!dLinkChanged} className="rounded-full bg-charcoal px-4 py-2 text-sm text-ivory transition-transform active:scale-95 disabled:opacity-40 dark:bg-gold dark:text-charcoal">حفظ وإرسال</button>
+            <button onClick={() => onSaveDeliveryLink(dLink)} disabled={!dLinkChanged} className="rounded-full bg-charcoal px-4 py-2 text-sm text-ivory transition-transform active:scale-95 disabled:opacity-40 dark:bg-gold dark:text-charcoal">{tr("حفظ وإرسال")}</button>
           </div>
-          {b.delivery_link && <a href={b.delivery_link} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-gold hover:underline">فتح الرابط الحالي</a>}
+          {b.delivery_link && <a href={b.delivery_link} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-gold hover:underline">{tr("فتح الرابط الحالي")}</a>}
         </div>
       </div>
     </div>
@@ -926,7 +927,7 @@ function DeliveryCountdown({ b }: { b: any }) {
   if (b.delivered_at) {
     return (
       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 flex items-center gap-2">
-        <CheckCircle2 className="h-4 w-4" /> سُلِّمت الصور في {new Date(b.delivered_at).toLocaleDateString("ar-JO")}
+        <CheckCircle2 className="h-4 w-4" />{" "}{tr("سُلِّمت الصور في {0}", [new Date(b.delivered_at).toLocaleDateString(locale("ar-JO"))])}
       </div>
     );
   }
@@ -938,8 +939,8 @@ function DeliveryCountdown({ b }: { b: any }) {
     <div className={`rounded-2xl border p-4 text-sm flex items-center gap-3 ${overdue ? "border-destructive/40 bg-destructive/10 text-destructive" : days <= 7 ? "border-amber-200 bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" : "border-border bg-card"}`}>
       <Clock className="h-4 w-4 shrink-0" />
       <div>
-        <div className="font-medium">{overdue ? `التسليم متأخر ${Math.abs(days)} ${Math.abs(days) === 1 ? "يوماً" : "أيام"}` : `التسليم ${relativeDay(days)}`}</div>
-        <div className="text-xs opacity-80">الموعد المتّفق عليه {due.toLocaleDateString("ar-JO", { day: "numeric", month: "long" })}</div>
+        <div className="font-medium">{overdue ? tr("التسليم متأخر {0} {1}", [Math.abs(days), Math.abs(days) === 1 ? "يوماً" : "أيام"]) : tr("التسليم {0}", [relativeDay(days)])}</div>
+        <div className="text-xs opacity-80">{tr("الموعد المتّفق عليه {0}", [due.toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })])}</div>
       </div>
     </div>
   );
@@ -979,7 +980,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
 
   const create = async () => {
     setBusy(true);
-    try { await ensure({ data: { booking_id: bookingId } }); await load(); toast.success("تم إنشاء معرض التسليم"); }
+    try { await ensure({ data: { booking_id: bookingId } }); await load(); toast.success(tr("تم إنشاء معرض التسليم")); }
     catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   };
 
@@ -999,12 +1000,12 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
     if (!files.length || !gallery) return;
     
     if (files.length > 30) {
-      toast.error(g("معرض المعاينة يقبل حتى 30 صورة في المرة. للتسليم الكامل استخدمي رابط التسليم الخارجي (Drive / WeTransfer).", "معرض المعاينة يقبل حتى 30 صورة في المرة. للتسليم الكامل استخدم رابط التسليم الخارجي (Drive / WeTransfer)."));
+      toast.error(g(tr("معرض المعاينة يقبل حتى 30 صورة في المرة. للتسليم الكامل استخدمي رابط التسليم الخارجي (Drive / WeTransfer)."), tr("معرض المعاينة يقبل حتى 30 صورة في المرة. للتسليم الكامل استخدم رابط التسليم الخارجي (Drive / WeTransfer).")));
       return;
     }
     const invalidTypes = files.filter(f => !f.type.startsWith("image/"));
     if (invalidTypes.length > 0) {
-      toast.error("يرجى اختيار ملفات صور فقط.");
+      toast.error(tr("يرجى اختيار ملفات صور فقط."));
       return;
     }
 
@@ -1012,12 +1013,12 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
     setProgress({ done: 0, total: files.length });
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("جلسة منتهية");
+      if (!session) throw new Error(tr("جلسة منتهية"));
       const uid = session.user.id;
 
       for (const [fi, rawFile] of files.entries()) {
         if (fi > 0) setProgress({ done: fi, total: files.length });
-        if (rawFile.size > 25 * 1024 * 1024) { toast.error(`${rawFile.name}: أكبر من 25MB`); continue; }
+        if (rawFile.size > 25 * 1024 * 1024) { toast.error(tr("{0}: أكبر من 25MB", [rawFile.name])); continue; }
 
         let f = rawFile;
         // Compression to prevent massive files from exhausting storage
@@ -1061,7 +1062,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
             .upload(previewPath, watermarked, { contentType: watermarked.type });
           if (previewErr) {
             // الأصل مرفوع بنجاح؛ سجّل مسار الأصل كبديل إن فشل المعاينة
-            toast.error(`${f.name} (معاينة): ${previewErr.message}`);
+            toast.error(tr("{0} (معاينة): {1}", [f.name, previewErr.message]));
             await add({ data: { gallery_id: gallery.id, storage_path: originalPath } });
             continue;
           }
@@ -1083,7 +1084,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
 
       await load();
       hapticVibrate("success");
-      toast.success(files.length === 1 ? "رُفعت الصورة" : `رُفعت ${files.length} صور`);
+      toast.success(files.length === 1 ? tr("رُفعت الصورة") : tr("رُفعت {0} صور", [files.length]));
       e.target.value = "";
     } catch (e: any) { toast.error(e.message); }
     finally { setUploading(false); setProgress(null); }
@@ -1100,9 +1101,9 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
       catch (e: any) { toast.error(e.message); }
       finally { setHidden((h) => h.filter((x) => x !== photoId)); }
     };
-    toast("حُذفت الصورة", {
+    toast(tr("حُذفت الصورة"), {
       duration: 5000,
-      action: { label: "تراجع", onClick: () => { settled = true; setHidden((h) => h.filter((x) => x !== photoId)); } },
+      action: { label: tr("تراجع"), onClick: () => { settled = true; setHidden((h) => h.filter((x) => x !== photoId)); } },
       onAutoClose: commit,
       onDismiss: commit,
     });
@@ -1120,30 +1121,30 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-serif text-xl flex items-center gap-2"><ImagePlus className="h-5 w-5 text-gold" /> معرض المعاينة</h2>
-        {gallery && <span className="text-xs text-muted-foreground tabular-nums">{visible.length} صورة</span>}
+        <h2 className="font-serif text-xl flex items-center gap-2"><ImagePlus className="h-5 w-5 text-gold" />{" "}{tr("معرض المعاينة")}</h2>
+        {gallery && <span className="text-xs text-muted-foreground tabular-nums">{tr("{0} صورة", [visible.length])}</span>}
       </div>
       {!gallery ? (
         <div className="rounded-xl border border-dashed border-border p-8 text-center">
           <ImagePlus className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="mx-auto mb-4 max-w-sm text-sm text-muted-foreground">معرض خاص تصل إليه العميلة من رابط التتبّع لمعاينة الصور المختارة.</p>
-          <button onClick={create} disabled={busy} className="rounded-full bg-charcoal px-5 py-2 text-sm text-ivory disabled:opacity-60 active:scale-95 transition-transform dark:bg-gold dark:text-charcoal">إنشاء المعرض</button>
+          <p className="mx-auto mb-4 max-w-sm text-sm text-muted-foreground">{tr("معرض خاص تصل إليه العميلة من رابط التتبّع لمعاينة الصور المختارة.")}</p>
+          <button onClick={create} disabled={busy} className="rounded-full bg-charcoal px-5 py-2 text-sm text-ivory disabled:opacity-60 active:scale-95 transition-transform dark:bg-gold dark:text-charcoal">{tr("إنشاء المعرض")}</button>
         </div>
       ) : (
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <label className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-transform active:scale-95 ${uploading ? "bg-secondary" : "cursor-pointer bg-charcoal text-ivory dark:bg-gold dark:text-charcoal"}`}>
               <Upload className="h-4 w-4" />
-              <span className="tabular-nums">{uploading ? (progress ? `رفع ${progress.done + 1} من ${progress.total}…` : "جاري الرفع…") : "رفع صور"}</span>
+              <span className="tabular-nums">{uploading ? (progress ? tr("رفع {0} من {1}…", [progress.done + 1, progress.total]) : tr("جاري الرفع…")) : tr("رفع صور")}</span>
               <input type="file" multiple accept="image/*" className="hidden" onChange={onPick} disabled={uploading} />
             </label>
             <button onClick={toggleDownloads} role="switch" aria-checked={!!gallery.allow_downloads} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary transition-colors">
               <span className={`relative inline-flex h-4 w-7 rounded-full transition-colors ${gallery.allow_downloads ? "bg-gold" : "bg-secondary ring-1 ring-border"}`}>
                 <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white shadow transition-all ${gallery.allow_downloads ? "start-[14px]" : "start-0.5"}`} />
               </span>
-              السماح بالتحميل
+              {tr("السماح بالتحميل")}
             </button>
-            {clientUrl && <CopyButton value={clientUrl} label="رابط العميلة" className="px-4 py-2 text-sm" />}
+            {clientUrl && <CopyButton value={clientUrl} label={tr("رابط العميلة")} className="px-4 py-2 text-sm" />}
           </div>
 
           {uploading && progress && (
@@ -1155,26 +1156,26 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
           <div className="mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-secondary/30 p-3">
             <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
               <input type="checkbox" checked={watermarkOn} onChange={(e) => setWatermarkOn(e.target.checked)} className="accent-[var(--gold)]" />
-              <span>علامة مائية</span>
+              <span>{tr("علامة مائية")}</span>
             </label>
             <input
               type="text"
               value={watermarkText}
               onChange={(e) => setWatermarkText(e.target.value)}
-              placeholder={g("© اسم المصوّرة", "© اسم المصوّر")}
+              placeholder={g(tr("© اسم المصوّرة"), tr("© اسم المصوّر"))}
               maxLength={80}
               disabled={!watermarkOn}
               className="min-w-[160px] flex-1 rounded-lg border border-input bg-background px-3 py-1.5 text-sm disabled:opacity-50"
             />
             <p className="basis-full text-xs text-muted-foreground">
-              {b.final_paid_at ? "الدفعة النهائية وصلت — العميلة ترى الصور بدون علامة." : g("تظهر العلامة للعميلة حتى تسجّلي الدفعة النهائية، ثم تُفتح الصور الأصلية تلقائياً.", "تظهر العلامة للعميلة حتى تسجّل الدفعة النهائية، ثم تُفتح الصور الأصلية تلقائياً.")}
-              {" "}{g("للتسليم بالحجم الكامل استخدمي «رابط التسليم النهائي» في تبويب الإنتاج.", "للتسليم بالحجم الكامل استخدم «رابط التسليم النهائي» في تبويب الإنتاج.")}
+              {b.final_paid_at ? tr("الدفعة النهائية وصلت — العميلة ترى الصور بدون علامة.") : g(tr("تظهر العلامة للعميلة حتى تسجّلي الدفعة النهائية، ثم تُفتح الصور الأصلية تلقائياً."), tr("تظهر العلامة للعميلة حتى تسجّل الدفعة النهائية، ثم تُفتح الصور الأصلية تلقائياً."))}
+              {" "}{g(tr("للتسليم بالحجم الكامل استخدمي «رابط التسليم النهائي» في تبويب الإنتاج."), tr("للتسليم بالحجم الكامل استخدم «رابط التسليم النهائي» في تبويب الإنتاج."))}
             </p>
           </div>
 
           {visible.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              {b.status === "completed" ? g("الحجز مكتمل والمعرض فارغ — العميلة تنتظر صورها. ارفعي دفعة أولى لتشويقها.", "الحجز مكتمل والمعرض فارغ — العميلة تنتظر صورها. ارفع دفعة أولى لتشويقها.") : "لم تُرفع صور بعد. يقبل المعرض حتى ٣٠ صورة في كل مرة."}
+              {b.status === "completed" ? g(tr("الحجز مكتمل والمعرض فارغ — العميلة تنتظر صورها. ارفعي دفعة أولى لتشويقها."), tr("الحجز مكتمل والمعرض فارغ — العميلة تنتظر صورها. ارفع دفعة أولى لتشويقها.")) : tr("لم تُرفع صور بعد. يقبل المعرض حتى ٣٠ صورة في كل مرة.")}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -1190,7 +1191,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
                     className="relative group aspect-square overflow-hidden rounded-xl bg-secondary"
                   >
                     {p.url && <BlurImage src={p.url} alt={p.caption ?? ""} />}
-                    <button onClick={() => remove(p.id)} aria-label="حذف الصورة" className="absolute top-1.5 start-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => remove(p.id)} aria-label={tr("حذف الصورة")} className="absolute top-1.5 start-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </motion.div>
@@ -1210,7 +1211,7 @@ function BlurImage({ src, alt }: { src: string; alt: string }) {
   return (
     <img
       src={src}
-      alt={alt}
+      alt={tx(alt)}
       loading="lazy"
       onLoad={() => setLoaded(true)}
       className={`h-full w-full object-cover transition-all duration-700 ${loaded ? "blur-0 scale-100" : "blur-md scale-105"}`}

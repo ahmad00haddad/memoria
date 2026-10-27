@@ -3,14 +3,15 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { Search, Shield, Star, Calendar, MessageCircle, Camera, Lock, Eye, CheckCircle2, Heart, FileCheck, Bell, Receipt, ArrowLeft, Sparkles } from "lucide-react";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/for-clients")({
   head: () => ({
     meta: [
-      { title: "للعملاء — لماذا Memoria؟ | حجز مصوّرات الأعراس بثقة" },
-      { name: "description", content: "اعثري على مصوّرة عرسك من بين مصوّرات مُتحقَّق منهنّ، شاهدي أعمالهنّ وأسعارهنّ، واحجزي بأمان مع تتبّع كامل لطلبكِ من الموافقة حتى تسليم الصور." },
-      { property: "og:title", content: "للعملاء — لماذا Memoria؟" },
-      { property: "og:description", content: "حجز مصوّرات الأعراس في الأردن بشفافية وأمان كامل." },
+      { title: t("للعملاء — لماذا Memoria؟ | حجز مصوّرات الأعراس بثقة") },
+      { name: "description", content: t("اعثري على مصوّرة عرسك من بين مصوّرات مُتحقَّق منهنّ، شاهدي أعمالهنّ وأسعارهنّ، واحجزي بأمان مع تتبّع كامل لطلبكِ من الموافقة حتى تسليم الصور.") },
+      { property: "og:title", content: t("للعملاء — لماذا Memoria؟") },
+      { property: "og:description", content: t("حجز مصوّرات الأعراس في الأردن بشفافية وأمان كامل.") },
     ],
     links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/for-clients" }],
   }),
@@ -38,23 +39,23 @@ function ForClientsPage() {
       <Header />
       <main>
         <section className="container-editorial py-16 sm:py-24 text-center">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">للعميلة</div>
-          <h1 className="font-serif text-4xl sm:text-5xl leading-tight mb-4"><RevealWords lines={["احجزي مصوّرة عرسكِ", "بثقة وأمان كامل"]} /></h1>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">{t("للعميلة")}</div>
+          <h1 className="font-serif text-4xl sm:text-5xl leading-tight mb-4"><RevealWords lines={[t("احجزي مصوّرة عرسكِ"), t("بثقة وأمان كامل")]} /></h1>
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Memoria منصّة متخصّصة في مصوّرات الأعراس في الأردن. اخترنا لكِ أفضل المصوّرات، تحقّقنا منهنّ، ووفّرنا أدوات حماية وتتبّع لكل خطوة من خطوات حجزكِ.
+            {t("Memoria منصّة متخصّصة في مصوّرات الأعراس في الأردن. اخترنا لكِ أفضل المصوّرات، تحقّقنا منهنّ، ووفّرنا أدوات حماية وتتبّع لكل خطوة من خطوات حجزكِ.")}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/search" className="bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
-              ابدئي البحث الآن <ArrowLeft className="h-4 w-4" />
+              {t("ابدئي البحث الآن")}{" "}<ArrowLeft className="h-4 w-4" />
             </Link>
-            <Link to="/guide" className="border border-border px-6 py-3 rounded-sm hover:bg-secondary">كيف يعمل الحجز؟</Link>
+            <Link to="/guide" className="border border-border px-6 py-3 rounded-sm hover:bg-secondary">{t("كيف يعمل الحجز؟")}</Link>
           </div>
         </section>
 
         <section className="container-editorial pb-16">
           <div className="text-center mb-12">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">لماذا نحن</div>
-            <h2 className="font-serif text-3xl sm:text-4xl">١٢ سبباً لاختيار Memoria</h2>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("لماذا نحن")}</div>
+            <h2 className="font-serif text-3xl sm:text-4xl">{t("١٢ سبباً لاختيار Memoria")}</h2>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f, i) => {
@@ -65,11 +66,11 @@ function ForClientsPage() {
                   <div className="grid h-11 w-11 place-items-center rounded-sm bg-gold/10 text-gold mb-4 transition-colors duration-500 group-hover:bg-gold group-hover:text-charcoal">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-serif text-xl mb-2">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                  <h3 className="font-serif text-xl mb-2">{tx(f.title)}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{tx(f.desc)}</p>
                   {(f as any).link && (
                     <a href={(f as any).link} className="inline-block mt-3 text-sm text-gold hover:underline">
-                      {(f as any).linkText} &larr;
+                      {tx((f as any).linkText)} &larr;
                     </a>
                   )}
                 </div>
@@ -82,10 +83,10 @@ function ForClientsPage() {
         <section className="bg-secondary/40 py-16">
           <div className="container-editorial text-center">
             <Sparkles className="h-10 w-10 text-gold mx-auto mb-4" />
-            <h2 className="font-serif text-3xl mb-3">جاهزة لتجدي مصوّرتك؟</h2>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">ابدئي البحث الآن وقارني الأعمال والأسعار والتوفّر في مكان واحد.</p>
+            <h2 className="font-serif text-3xl mb-3">{t("جاهزة لتجدي مصوّرتك؟")}</h2>
+            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">{t("ابدئي البحث الآن وقارني الأعمال والأسعار والتوفّر في مكان واحد.")}</p>
             <Link to="/search" className="bg-gold text-charcoal px-8 py-3 rounded-sm hover:opacity-90 inline-flex items-center gap-2">
-              ابحثي عن مصوّرة <ArrowLeft className="h-4 w-4" />
+              {t("ابحثي عن مصوّرة")}{" "}<ArrowLeft className="h-4 w-4" />
             </Link>
           </div>
         </section>

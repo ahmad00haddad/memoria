@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 export type GoogleLinkStatus = {
   configured: boolean;
@@ -34,7 +35,7 @@ export const getGoogleConnectUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { isGoogleConfigured, googleAuthUrl } = await import("@/lib/google-calendar.server");
-    if (!isGoogleConfigured()) throw new Error("ربط Google غير مفعّل بعد على المنصّة");
+    if (!isGoogleConfigured()) throw new Error(t("ربط Google غير مفعّل بعد على المنصّة"));
     return { url: await googleAuthUrl(context.userId) };
   });
 

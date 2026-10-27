@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { t, tx } from "@/i18n";
 
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 
@@ -73,26 +74,26 @@ export function Lightbox({
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <button onClick={onClose} className="absolute top-3 left-3 text-white/80 hover:text-white p-2 z-10" aria-label="إغلاق">
+      <button onClick={onClose} className="absolute top-3 end-3 text-white/80 hover:text-white p-2 z-10" aria-label={t("إغلاق")}>
         <X className="h-6 w-6" />
       </button>
       {images.length > 1 && (
         <>
           <button
             onClick={(e) => { e.stopPropagation(); prev(); }}
-            className="hidden sm:grid absolute right-3 top-1/2 -translate-y-1/2 place-items-center h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white"
-            aria-label="السابق"
+            className="hidden sm:grid absolute start-3 top-1/2 -translate-y-1/2 place-items-center h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white"
+            aria-label={t("السابق")}
           >
             <ChevronRight className="h-6 w-6" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); next(); }}
-            className="hidden sm:grid absolute left-3 top-1/2 -translate-y-1/2 place-items-center h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white"
-            aria-label="التالي"
+            className="hidden sm:grid absolute end-3 top-1/2 -translate-y-1/2 place-items-center h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white"
+            aria-label={t("التالي")}
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
-          <div className="absolute top-3 right-3 text-white/70 text-xs bg-white/10 px-2 py-1 rounded-sm">{i + 1} / {images.length}</div>
+          <div className="absolute top-3 start-3 text-white/70 text-xs bg-white/10 px-2 py-1 rounded-sm">{i + 1} / {tx(images.length)}</div>
         </>
       )}
       {/* Double Tap Heart Animation */}

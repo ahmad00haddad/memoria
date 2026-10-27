@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Copy, Check, X, CircleCheck, Star, Zap } from "lucide-react";
 import { parseFeatures, serializeFeatures, type Feature, type FeatureKind } from "@/lib/packageFeatures";
 import { hapticVibrate } from "@/lib/utils";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/pricing")({ component: PricingMgr });
 
@@ -25,9 +26,9 @@ type Rule = {
 
 const KIND_ORDER: FeatureKind[] = ["regular", "exclusive", "fast"];
 const KIND_META_ = (): Record<FeatureKind, { icon: typeof Star; title: string }> => ({
-  regular: { icon: CircleCheck, title: g("ميزة عادية — اضغطي للتغيير", "ميزة عادية — اضغط للتغيير") },
-  exclusive: { icon: Star, title: g("ميزة حصرية — اضغطي للتغيير", "ميزة حصرية — اضغط للتغيير") },
-  fast: { icon: Zap, title: g("تسليم سريع — اضغطي للتغيير", "تسليم سريع — اضغط للتغيير") },
+  regular: { icon: CircleCheck, title: g(t("ميزة عادية — اضغطي للتغيير"), t("ميزة عادية — اضغط للتغيير")) },
+  exclusive: { icon: Star, title: g(t("ميزة حصرية — اضغطي للتغيير"), t("ميزة حصرية — اضغط للتغيير")) },
+  fast: { icon: Zap, title: g(t("تسليم سريع — اضغطي للتغيير"), t("تسليم سريع — اضغط للتغيير")) },
 });
 
 function PricingMgr() {
@@ -59,7 +60,7 @@ function PricingMgr() {
         setSaved(snapshot((data ?? []) as Rule[]));
         if (prof) setDeposit({ percent: Number((prof as any).deposit_percent ?? 25), fixed: (prof as any).fixed_deposit ? Number((prof as any).fixed_deposit) : null });
       } catch (error: any) {
-        setLoadError(error?.message || "تعذّر تحميل الأسعار الآن.");
+        setLoadError(error?.message || t("تعذّر تحميل الأسعار الآن."));
       } finally {
         setLoading(false);
       }
@@ -69,18 +70,18 @@ function PricingMgr() {
   
   const injectMarketTemplates = () => {
     const templates: Rule[] = [
-      { service: "photography", package: "hourly", label: "الباقة الأساسية (4 ساعات)", price: 150, per_photo_price: 0, subtitle: "مثالية للخطبة والحفلات العائلية الصغيرة", description: "تغطية 4 ساعات\n100 صورة معدلة\nتسليم فلاش ميموري" },
-      { service: "photography", package: "full_day", label: "الباقة الذهبية (يوم كامل)", price: 250, per_photo_price: 0, subtitle: "يوم الزفاف كاملاً من التحضيرات حتى نهاية الحفل", description: "تغطية كاملة من الصالون للقاعة\nألبوم مطبوع 10 صفحات" },
-      { service: "cinematic_video", package: "full_day", label: "باقة VIP (تصوير + فيديو)", price: 400, per_photo_price: 0, subtitle: "التجربة المتكاملة صوراً وفيديو", description: "تغطية فريقين\nتصوير فيديو سينمائي\nألبوم حراري فاخر" }
+      { service: "photography", package: "hourly", label: t("الباقة الأساسية (4 ساعات)"), price: 150, per_photo_price: 0, subtitle: t("مثالية للخطبة والحفلات العائلية الصغيرة"), description: t("تغطية 4 ساعات 100 صورة معدلة تسليم فلاش ميموري") },
+      { service: "photography", package: "full_day", label: t("الباقة الذهبية (يوم كامل)"), price: 250, per_photo_price: 0, subtitle: t("يوم الزفاف كاملاً من التحضيرات حتى نهاية الحفل"), description: t("تغطية كاملة من الصالون للقاعة ألبوم مطبوع 10 صفحات") },
+      { service: "cinematic_video", package: "full_day", label: t("باقة VIP (تصوير + فيديو)"), price: 400, per_photo_price: 0, subtitle: t("التجربة المتكاملة صوراً وفيديو"), description: t("تغطية فريقين تصوير فيديو سينمائي ألبوم حراري فاخر") }
     ];
     setRules([...rules, ...withKeys(templates)]);
-    toast.success(g("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي.", "أضفنا ٣ باقات مقترحة — عدّل الأسعار ثم احفظ."));
+    toast.success(g(t("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي."), t("أضفنا ٣ باقات مقترحة — عدّل الأسعار ثم احفظ.")));
   };
 
   const add = () => setRules([...rules, ...withKeys([{ service: "photography", package: "hourly", label: "", price: 0 }])]);
   const duplicate = (i: number) => {
     const { id, _key, ...rest } = rules[i];
-    const copy = withKeys([{ ...rest, label: `${rest.label} (نسخة)` }]);
+    const copy = withKeys([{ ...rest, label: t("{0} (نسخة)", [rest.label]) }]);
     const a = [...rules];
     a.splice(i + 1, 0, ...copy);
     setRules(a);
@@ -100,15 +101,15 @@ function PricingMgr() {
       if (error) {
         setRules((cur) => (cur.some((x) => x.id === r.id) ? cur : [...cur, r]));
         toast.error(error.code === "23503"
-          ? g("لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّلي اسمها أو سعرها بدلاً من ذلك.", "لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّل اسمها أو سعرها بدلاً من ذلك.")
+          ? g(t("لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّلي اسمها أو سعرها بدلاً من ذلك."), t("لا يمكن حذف باقة مرتبطة بحجوزات سابقة — عدّل اسمها أو سعرها بدلاً من ذلك."))
           : error.message);
         return;
       }
       setSaved((sv) => JSON.stringify(JSON.parse(sv).filter((x: any) => x.id !== r.id)));
     };
-    toast(`حُذفت «${r.label || "الباقة"}»`, {
+    toast(t("حُذفت «{0}»", [r.label || "الباقة"]), {
       duration: 5000,
-      action: { label: "تراجع", onClick: () => { settled = true; setRules(before); } },
+      action: { label: t("تراجع"), onClick: () => { settled = true; setRules(before); } },
       onAutoClose: commit,
       onDismiss: commit,
     });
@@ -116,7 +117,7 @@ function PricingMgr() {
   const save = async () => {
     const filled = rules.filter((r) => r.label?.trim() || Number(r.price) > 0);
     const bad = filled.find((r) => !r.label?.trim() || !(Number(r.price) > 0));
-    if (bad) { hapticVibrate("error"); return toast.error("كل باقة تحتاج اسماً وسعراً أكبر من صفر."); }
+    if (bad) { hapticVibrate("error"); return toast.error(t("كل باقة تحتاج اسماً وسعراً أكبر من صفر.")); }
     setSaving(true);
     for (const r of filled) {
       const { _key, ...clean } = r;
@@ -138,7 +139,7 @@ function PricingMgr() {
         const { subtitle, cta_label, ...rest } = payload;
         ({ error } = await write(rest));
       }
-      if (error) { setSaving(false); return toast.error(`تعذّر حفظ "${payload.label}": ${friendlyError(error.message)}`); }
+      if (error) { setSaving(false); return toast.error(t("تعذّر حفظ \"{0}\": {1}", [payload.label, friendlyError(error.message)])); }
     }
     const { data } = await supabase.from("pricing_rules").select("*").eq("photographer_id", uid).order("price");
     setRules(withKeys((data ?? []) as Rule[]));
@@ -147,7 +148,7 @@ function PricingMgr() {
     setJustSaved(true);
     hapticVibrate("success");
     setTimeout(() => setJustSaved(false), 1800);
-    toast.success("حُفظت الباقات — تظهر الآن في ملفك العام");
+    toast.success(t("حُفظت الباقات — تظهر الآن في ملفك العام"));
   };
 
   if (loading) return <PageLoader />;
@@ -158,9 +159,9 @@ function PricingMgr() {
         <section className="container-editorial py-12 max-w-3xl">
           <BackToDashboard />
           <div className="rounded-sm border border-destructive/30 bg-card p-6 shadow-soft mt-4">
-            <h1 className="font-serif text-3xl mb-2">تعذّر فتح صفحة الأسعار</h1>
+            <h1 className="font-serif text-3xl mb-2">{t("تعذّر فتح صفحة الأسعار")}</h1>
             <p className="text-sm text-muted-foreground mb-4">{friendlyError(loadError)}</p>
-            <button onClick={() => window.location.reload()} className="bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">إعادة المحاولة</button>
+            <button onClick={() => window.location.reload()} className="bg-charcoal text-ivory px-5 py-2 rounded-sm hover:opacity-90 active:scale-95 transition-transform duration-200">{t("إعادة المحاولة")}</button>
           </div>
         </section>
         <Footer />
@@ -173,10 +174,10 @@ function PricingMgr() {
       <Header />
       <section className="container-editorial py-12 max-w-4xl">
         <BackToDashboard />
-        <h1 className="font-serif text-4xl mt-2 mb-2">إدارة الأسعار</h1>
-        <p className="text-sm text-muted-foreground mb-3">باقات التصوير والفيديو والإضافات كما تظهر للعرائس في ملفك العام.</p>
+        <h1 className="font-serif text-4xl mt-2 mb-2">{t("إدارة الأسعار")}</h1>
+        <p className="text-sm text-muted-foreground mb-3">{t("باقات التصوير والفيديو والإضافات كما تظهر للعرائس في ملفك العام.")}</p>
         {rules.length > 0 && rules.length < 3 && (
-          <p className="mb-6 flex items-center gap-2 text-xs text-muted-foreground"><Lightbulb className="h-3.5 w-3.5 text-gold" /> ثلاث باقات (أساسية، متوسطة، فاخرة) تسهّل على العروس الاختيار.</p>
+          <p className="mb-6 flex items-center gap-2 text-xs text-muted-foreground"><Lightbulb className="h-3.5 w-3.5 text-gold" />{" "}{t("ثلاث باقات (أساسية، متوسطة، فاخرة) تسهّل على العروس الاختيار.")}</p>
         )}
 
         {rules.length === 0 && (
@@ -184,37 +185,37 @@ function PricingMgr() {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer pointer-events-none" />
               <h2 className="font-serif text-2xl mb-2 flex items-center gap-2">
                 <Lightbulb className="h-6 w-6 text-gold" />
-                {g("هل أنتِ مستعجلة؟", "هل أنت مستعجل؟")}
+                {g(t("هل أنتِ مستعجلة؟"), t("هل أنت مستعجل؟"))}
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                {g("لا داعي للتفكير طويلاً! استخدمي الباقات القياسية المعتمدة في السوق الأردني بضغطة زر واحدة، ثم قومي بتعديل الأسعار بما يناسبك.", "لا داعي للتفكير طويلاً! استخدم الباقات القياسية المعتمدة في السوق الأردني بضغطة زر واحدة، ثم قم بتعديل الأسعار بما يناسبك.")}
+                {g(t("لا داعي للتفكير طويلاً! استخدمي الباقات القياسية المعتمدة في السوق الأردني بضغطة زر واحدة، ثم قومي بتعديل الأسعار بما يناسبك."), t("لا داعي للتفكير طويلاً! استخدم الباقات القياسية المعتمدة في السوق الأردني بضغطة زر واحدة، ثم قم بتعديل الأسعار بما يناسبك."))}
               </p>
               <button 
                 onClick={injectMarketTemplates}
                 className="bg-gold text-white px-6 py-2.5 rounded-sm hover:shadow-elegant hover:-translate-y-0.5 active:scale-95 transition-all duration-300 font-medium"
               >
-                استخدام الباقات القياسية الآن 🪄
+                {t("استخدام الباقات القياسية الآن 🪄")}
               </button>
             </div>
           )}
           {rules.length === 0 && false && (
           <div className="rounded-sm border border-border bg-card p-6 shadow-soft mb-6">
-            <h2 className="font-serif text-2xl mb-2">{g("ابدئي بأول باقة", "ابدأ بأول باقة")}</h2>
+            <h2 className="font-serif text-2xl mb-2">{g(t("ابدئي بأول باقة"), t("ابدأ بأول باقة"))}</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              {g("العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضيفي على الأقل باقة تصوير وباقة يوم كامل، ثم احفظيها لتظهر مباشرة في ملفك العام.", "العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضف على الأقل باقة تصوير وباقة يوم كامل، ثم احفظها لتظهر مباشرة في ملفك العام.")}
+              {g(t("العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضيفي على الأقل باقة تصوير وباقة يوم كامل، ثم احفظيها لتظهر مباشرة في ملفك العام."), t("العميل لن يستطيع فهم خدمتك أو الحجز بشكل واضح إذا لم يجد باقات جاهزة. أضف على الأقل باقة تصوير وباقة يوم كامل، ثم احفظها لتظهر مباشرة في ملفك العام."))}
             </p>
             <div className="grid gap-3 md:grid-cols-3 text-sm">
               <div className="rounded-sm border border-border bg-background p-4">
-                <div className="font-medium mb-1">تصوير 4 ساعات</div>
-                <div className="text-muted-foreground">مناسب للحفلات القصيرة أو الخطبة.</div>
+                <div className="font-medium mb-1">{t("تصوير 4 ساعات")}</div>
+                <div className="text-muted-foreground">{t("مناسب للحفلات القصيرة أو الخطبة.")}</div>
               </div>
               <div className="rounded-sm border border-border bg-background p-4">
-                <div className="font-medium mb-1">يوم زفاف كامل</div>
-                <div className="text-muted-foreground">من التحضيرات حتى نهاية الحفل.</div>
+                <div className="font-medium mb-1">{t("يوم زفاف كامل")}</div>
+                <div className="text-muted-foreground">{t("من التحضيرات حتى نهاية الحفل.")}</div>
               </div>
               <div className="rounded-sm border border-border bg-background p-4">
-                <div className="font-medium mb-1">إضافة فيديو أو ألبوم</div>
-                <div className="text-muted-foreground">خيار إضافي يرفع قيمة الطلب.</div>
+                <div className="font-medium mb-1">{t("إضافة فيديو أو ألبوم")}</div>
+                <div className="text-muted-foreground">{t("خيار إضافي يرفع قيمة الطلب.")}</div>
               </div>
             </div>
           </div>
@@ -238,51 +239,51 @@ function PricingMgr() {
             >
               <div className="flex items-start justify-between gap-3 mb-5">
                 <div className="flex gap-2">
-                  <select aria-label="نوع الخدمة" value={r.service} onChange={(e) => upd(i, "service", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
-                    <option value="photography">تصوير فوتوغرافي</option>
-                    <option value="cinematic_video">فيديو سينمائي</option>
+                  <select aria-label={t("نوع الخدمة")} value={r.service} onChange={(e) => upd(i, "service", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
+                    <option value="photography">{t("تصوير فوتوغرافي")}</option>
+                    <option value="cinematic_video">{t("فيديو سينمائي")}</option>
                   </select>
-                  <select aria-label="نوع الباقة" value={r.package} onChange={(e) => upd(i, "package", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
-                    <option value="hourly">بالساعة</option>
-                    <option value="full_day">يوم كامل</option>
-                    <option value="addon">إضافة</option>
+                  <select aria-label={t("نوع الباقة")} value={r.package} onChange={(e) => upd(i, "package", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
+                    <option value="hourly">{t("بالساعة")}</option>
+                    <option value="full_day">{t("يوم كامل")}</option>
+                    <option value="addon">{t("إضافة")}</option>
                   </select>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => duplicate(i)} aria-label="نسخ الباقة" title="نسخ الباقة" className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+                  <button onClick={() => duplicate(i)} aria-label={t("نسخ الباقة")} title={t("نسخ الباقة")} className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
                     <Copy className="h-4 w-4" />
                   </button>
-                  <button onClick={() => del(i)} aria-label="حذف الباقة" title="حذف الباقة" className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                  <button onClick={() => del(i)} aria-label={t("حذف الباقة")} title={t("حذف الباقة")} className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              <label className="block text-xs text-muted-foreground mb-1">اسم الباقة</label>
-              <input placeholder="مثال: باقة ٤ ساعات" value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="w-full bg-transparent font-serif text-2xl border-b border-border pb-2 mb-3 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
-              <input maxLength={120} aria-label="وصف قصير تحت الاسم" placeholder="سطر قصير تحت الاسم، مثال: مثالية للحفلات العائلية الأنيقة" value={r.subtitle ?? ""} onChange={(e) => upd(i, "subtitle", e.target.value)} className="w-full bg-transparent text-sm text-muted-foreground border-b border-border/60 pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
+              <label className="block text-xs text-muted-foreground mb-1">{t("اسم الباقة")}</label>
+              <input placeholder={t("مثال: باقة ٤ ساعات")} value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="w-full bg-transparent font-serif text-2xl border-b border-border pb-2 mb-3 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
+              <input maxLength={120} aria-label={t("وصف قصير تحت الاسم")} placeholder={t("سطر قصير تحت الاسم، مثال: مثالية للحفلات العائلية الأنيقة")} value={r.subtitle ?? ""} onChange={(e) => upd(i, "subtitle", e.target.value)} className="w-full bg-transparent text-sm text-muted-foreground border-b border-border/60 pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
 
               <div className="grid grid-cols-2 gap-4 mb-5">
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">السعر (د.أ)</label>
+                  <label className="block text-xs text-muted-foreground mb-1">{t("السعر (د.أ)")}</label>
                   <input type="number" min="0" inputMode="decimal" placeholder="0" value={r.price} onChange={(e) => upd(i, "price", e.target.value)} className={`w-full bg-transparent font-serif text-3xl tabular-nums border-b pb-1 outline-none transition-colors focus:border-gold ${odd ? "border-amber-500" : "border-border"}`} />
                   {odd ? (
-                    <span className="mt-1 block text-[11px] text-amber-700 dark:text-amber-400">هل السعر صحيح؟</span>
+                    <span className="mt-1 block text-[11px] text-amber-700 dark:text-amber-400">{t("هل السعر صحيح؟")}</span>
                   ) : r.package !== "addon" && price > 0 ? (
-                    <span className="mt-1 block text-[11px] text-muted-foreground tabular-nums">العربون {dep} د.أ</span>
+                    <span className="mt-1 block text-[11px] text-muted-foreground tabular-nums">{t("العربون {0} د.أ", [dep])}</span>
                   ) : null}
                 </div>
                 <div>
-                  <label className="block text-xs text-muted-foreground mb-1">سعر الصورة الإضافية</label>
-                  <input type="number" min="0" inputMode="decimal" placeholder="اختياري" value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="w-full bg-transparent font-serif text-3xl tabular-nums border-b border-border pb-1 outline-none transition-colors focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/50" />
+                  <label className="block text-xs text-muted-foreground mb-1">{t("سعر الصورة الإضافية")}</label>
+                  <input type="number" min="0" inputMode="decimal" placeholder={t("اختياري")} value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="w-full bg-transparent font-serif text-3xl tabular-nums border-b border-border pb-1 outline-none transition-colors focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/50" />
                 </div>
               </div>
 
-              <label className="block text-xs text-muted-foreground mb-1">ماذا تشمل الباقة؟ <span className="text-muted-foreground/70">— ميزة في كل سطر، والأرقام تظهر بالخط العريض تلقائياً</span></label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("ماذا تشمل الباقة؟")}{" "}<span className="text-muted-foreground/70">{t("— ميزة في كل سطر، والأرقام تظهر بالخط العريض تلقائياً")}</span></label>
               <FeatureEditor value={r.description ?? ""} onChange={(v) => upd(i, "description", v)} />
 
-              <label className="block text-xs text-muted-foreground mt-5 mb-1">نص زر الحجز <span className="text-muted-foreground/70">(اختياري)</span></label>
-              <input maxLength={40} placeholder="احجزي هذه الباقة" value={r.cta_label ?? ""} onChange={(e) => upd(i, "cta_label", e.target.value)} className="w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50" />
+              <label className="block text-xs text-muted-foreground mt-5 mb-1">{t("نص زر الحجز")}{" "}<span className="text-muted-foreground/70">{t("(اختياري)")}</span></label>
+              <input maxLength={40} placeholder={t("احجزي هذه الباقة")} value={r.cta_label ?? ""} onChange={(e) => upd(i, "cta_label", e.target.value)} className="w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50" />
             </motion.div>
             );
           })}
@@ -290,7 +291,7 @@ function PricingMgr() {
 
           <button onClick={add} className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-gold/60 hover:text-gold">
             <span className="grid h-12 w-12 place-items-center rounded-full bg-secondary"><Plus className="h-5 w-5" /></span>
-            <span className="text-sm">إضافة باقة جديدة</span>
+            <span className="text-sm">{t("إضافة باقة جديدة")}</span>
           </button>
         </div>
 
@@ -306,7 +307,7 @@ function PricingMgr() {
               <button onClick={save} disabled={saving || justSaved} className="inline-flex items-center gap-2 rounded-full bg-charcoal px-8 py-3 text-ivory shadow-elegant transition hover:opacity-90 active:scale-[0.98] disabled:opacity-80 dark:bg-gold dark:text-charcoal">
                 {saving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-ivory/30 border-t-ivory dark:border-charcoal/30 dark:border-t-charcoal" />}
                 {justSaved && <Check className="h-4 w-4" />}
-                {saving ? "نحفظ…" : justSaved ? "حُفظت" : "حفظ التغييرات"}
+                {saving ? t("نحفظ…") : justSaved ? t("حُفظت") : t("حفظ التغييرات")}
               </button>
             </motion.div>
           )}
@@ -334,17 +335,17 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
         const { icon: Icon, title } = KIND_META_()[f.kind];
         return (
           <div key={i} className="flex items-center gap-2 rounded-xl bg-secondary/60 px-2 py-1 ring-1 ring-transparent focus-within:ring-gold/50">
-            <button type="button" title={title} aria-label={title}
+            <button type="button" title={tx(title)} aria-label={tx(title)}
               onClick={() => set(i, { kind: KIND_ORDER[(KIND_ORDER.indexOf(f.kind) + 1) % KIND_ORDER.length] })}
               className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-gold transition-colors hover:bg-background">
               <Icon className={`h-4 w-4 ${f.kind === "exclusive" ? "fill-gold" : ""}`} />
             </button>
-            <input value={f.text} maxLength={90} placeholder="مثال: تغطية 6 ساعات"
+            <input value={f.text} maxLength={90} placeholder={t("مثال: تغطية 6 ساعات")}
               onChange={(e) => set(i, { text: e.target.value.replace(/^[★⚡]\s*/, "") })}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); insertAfter(i); } }}
               className="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-foreground/50" />
             {rows.length > 1 && (
-              <button type="button" aria-label="حذف الميزة" onClick={() => commit(rows.filter((_, j) => j !== i))}
+              <button type="button" aria-label={t("حذف الميزة")} onClick={() => commit(rows.filter((_, j) => j !== i))}
                 className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-destructive">
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -353,9 +354,9 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
         );
       })}
       <button type="button" onClick={() => setRows([...rows, { kind: "regular", text: "" }])} className="inline-flex items-center gap-1.5 px-2 py-1 text-xs text-muted-foreground hover:text-gold">
-        <Plus className="h-3.5 w-3.5" /> إضافة ميزة
+        <Plus className="h-3.5 w-3.5" />{" "}{t("إضافة ميزة")}
       </button>
-      <p className="px-2 text-[11px] text-muted-foreground/80">{g("اضغطي الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع", "اضغط الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع")}</p>
+      <p className="px-2 text-[11px] text-muted-foreground/80">{g(t("اضغطي الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع"), t("اضغط الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع"))}</p>
     </div>
   );
 }

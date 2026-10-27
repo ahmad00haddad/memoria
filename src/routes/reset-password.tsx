@@ -5,13 +5,14 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
   head: () => ({
     meta: [
-      { title: "إعادة تعيين كلمة المرور | Memoria" },
-      { name: "description", content: "اختاري كلمة مرور جديدة لحسابكِ." },
+      { title: t("إعادة تعيين كلمة المرور | Memoria") },
+      { name: "description", content: t("اختاري كلمة مرور جديدة لحسابكِ.") },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -37,13 +38,13 @@ function ResetPasswordPage() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 8) return toast.error("كلمة المرور يجب أن تكون 8 أحرف على الأقل");
-    if (password !== confirm) return toast.error("تأكيد كلمة المرور لا يطابق");
+    if (password.length < 8) return toast.error(t("كلمة المرور يجب أن تكون 8 أحرف على الأقل"));
+    if (password !== confirm) return toast.error(t("تأكيد كلمة المرور لا يطابق"));
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) return toast.error("تعذّر تحديث كلمة المرور. الرابط ربما انتهت صلاحيته.");
-    toast.success("تم تحديث كلمة المرور");
+    if (error) return toast.error(t("تعذّر تحديث كلمة المرور. الرابط ربما انتهت صلاحيته."));
+    toast.success(t("تم تحديث كلمة المرور"));
     nav({ to: "/dashboard", replace: true });
   };
 
@@ -52,17 +53,17 @@ function ResetPasswordPage() {
       <Header />
       <div className="container-editorial py-16 max-w-md">
         <div className="text-center mb-8">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">استعادة الوصول</div>
-          <h1 className="font-serif text-4xl">إعادة تعيين كلمة المرور</h1>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("استعادة الوصول")}</div>
+          <h1 className="font-serif text-4xl">{t("إعادة تعيين كلمة المرور")}</h1>
         </div>
         {!ready ? (
           <div className="bg-card border border-border rounded-sm p-6 shadow-soft text-center text-sm text-muted-foreground">
-            هذا الرابط غير صالح أو انتهت صلاحيته. <Link to="/forgot-password" className="text-gold underline">اطلبي رابطًا جديدًا</Link>.
+            {t("هذا الرابط غير صالح أو انتهت صلاحيته.")}{" "}<Link to="/forgot-password" className="text-gold underline">{t("اطلبي رابطًا جديدًا")}</Link>.
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4 bg-card border border-border rounded-sm p-6 shadow-soft">
             <label className="block">
-              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">كلمة المرور الجديدة</span>
+              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("كلمة المرور الجديدة")}</span>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} autoComplete="new-password"
                 className="mt-1 w-full rounded-sm border border-input bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60" />
               {password && (
@@ -72,18 +73,18 @@ function ResetPasswordPage() {
                       <span key={i} className={`h-1 flex-1 rounded-full transition-colors ${i < passwordStrength(password).score ? (passwordStrength(password).score === 1 ? "bg-destructive" : passwordStrength(password).score === 2 ? "bg-amber-500" : "bg-emerald-500") : "bg-secondary"}`} />
                     ))}
                   </span>
-                  <span className="mt-1 block text-xs text-muted-foreground">{passwordStrength(password).hint}</span>
+                  <span className="mt-1 block text-xs text-muted-foreground">{tx(passwordStrength(password).hint)}</span>
                 </span>
               )}
             </label>
             <label className="block">
-              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">تأكيد كلمة المرور</span>
+              <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("تأكيد كلمة المرور")}</span>
               <input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required minLength={8} autoComplete="new-password"
                 className={`mt-1 w-full rounded-sm border bg-background px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-gold/60 ${confirm && confirm !== password ? "border-destructive" : "border-input"}`} />
-              {confirm && <span className={`mt-1 block text-xs ${confirm === password ? "text-emerald-600" : "text-destructive"}`}>{confirm === password ? "متطابقتان ✓" : "لا تطابق كلمة المرور"}</span>}
+              {confirm && <span className={`mt-1 block text-xs ${confirm === password ? "text-emerald-600" : "text-destructive"}`}>{confirm === password ? t("متطابقتان ✓") : t("لا تطابق كلمة المرور")}</span>}
             </label>
             <button disabled={loading} className="w-full bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 disabled:opacity-60">
-              {loading ? "جاري الحفظ…" : "تحديث كلمة المرور"}
+              {loading ? t("جاري الحفظ…") : t("تحديث كلمة المرور")}
             </button>
           </form>
         )}

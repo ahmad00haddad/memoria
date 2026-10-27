@@ -3,6 +3,7 @@ import { Upload, X, CheckCircle2, AlertCircle, Loader2, Image as ImageIcon, File
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadFile, type UploadConfig, type AllowedFileType } from "@/lib/upload";
+import { t, tx } from "@/i18n";
 
 // ============================================================================
 // UploadZone.tsx — مكوّن رفع ملفات شامل مع تجربة مستخدم ممتازة
@@ -61,7 +62,7 @@ export function UploadZone({
   showPreview = true,
   className = "",
   upsert = false,
-  buttonLabel = "اختر ملفاً أو اسحبه هنا",
+  buttonLabel = t("اختر ملفاً أو اسحبه هنا"),
   compact = false,
 }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -111,7 +112,7 @@ export function UploadZone({
         setProgress(100);
         setStatus("success");
         onSuccess?.(result.path);
-        toast.success("تم رفع الملف بنجاح ✓");
+        toast.success(t("تم رفع الملف بنجاح ✓"));
         setTimeout(() => { setProgress(0); setStatus("idle"); }, 3000);
       } else {
         setProgress(0);
@@ -124,7 +125,7 @@ export function UploadZone({
       clearInterval(timer);
       setProgress(0);
       setStatus("error");
-      const msg = "تعذّر رفع الملف. تحقق من اتصالك وحاول مجدداً.";
+      const msg = t("تعذّر رفع الملف. تحقق من اتصالك وحاول مجدداً.");
       setErrorMsg(msg);
       onError?.(msg);
     }
@@ -185,7 +186,7 @@ export function UploadZone({
           ) : (
             <Upload className="h-4 w-4" />
           )}
-          {buttonLabel}
+          {tx(buttonLabel)}
         </button>
         {status === "uploading" && (
           <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
@@ -199,8 +200,8 @@ export function UploadZone({
         {status === "error" && (
           <div className="flex items-center gap-2 text-destructive text-xs">
             <AlertCircle className="h-4 w-4 shrink-0" />
-            <span>{errorMsg}</span>
-            <button onClick={retry} className="underline">أعد المحاولة</button>
+            <span>{tx(errorMsg)}</span>
+            <button onClick={retry} className="underline">{t("أعد المحاولة")}</button>
           </div>
         )}
       </div>
@@ -223,15 +224,15 @@ export function UploadZone({
         <div className="relative mb-3 rounded-md overflow-hidden border border-border">
           <img
             src={preview}
-            alt="معاينة"
+            alt={t("معاينة")}
             className="w-full max-h-48 object-cover"
             onError={() => setPreview(null)}
           />
           <button
             type="button"
             onClick={remove}
-            className="absolute top-2 left-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-            title="إزالة الصورة"
+            className="absolute top-2 end-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+            title={t("إزالة الصورة")}
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -255,7 +256,7 @@ export function UploadZone({
         {status === "uploading" ? (
           <div className="space-y-3">
             <Loader2 className="h-8 w-8 animate-spin text-gold mx-auto" />
-            <p className="text-sm text-muted-foreground">جارٍ الرفع…</p>
+            <p className="text-sm text-muted-foreground">{t("جارٍ الرفع…")}</p>
             <div className="h-2 bg-secondary rounded-full overflow-hidden max-w-xs mx-auto">
               <div
                 className="h-full bg-gold transition-all duration-300 rounded-full"
@@ -267,25 +268,25 @@ export function UploadZone({
         ) : status === "success" ? (
           <div className="space-y-2">
             <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto" />
-            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">تم رفع الملف بنجاح!</p>
+            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{t("تم رفع الملف بنجاح!")}</p>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
               className="text-xs text-muted-foreground underline"
             >
-              استبدال الملف
+              {t("استبدال الملف")}
             </button>
           </div>
         ) : status === "error" ? (
           <div className="space-y-2">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-            <p className="text-sm text-destructive font-medium">{errorMsg}</p>
+            <p className="text-sm text-destructive font-medium">{tx(errorMsg)}</p>
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); retry(); }}
               className="text-xs underline text-muted-foreground hover:text-foreground"
             >
-              إعادة المحاولة
+              {t("إعادة المحاولة")}
             </button>
           </div>
         ) : (
@@ -300,13 +301,12 @@ export function UploadZone({
                 <Upload className="h-8 w-8 text-muted-foreground/60" />
               )}
             </div>
-            <p className="text-sm font-medium">{buttonLabel}</p>
-            {placeholder && <p className="text-xs text-muted-foreground">{placeholder}</p>}
+            <p className="text-sm font-medium">{tx(buttonLabel)}</p>
+            {placeholder && <p className="text-xs text-muted-foreground">{tx(placeholder)}</p>}
             <p className="text-xs text-muted-foreground">
               {allowedTypes === "image_or_pdf"
                 ? "JPG · PNG · WebP · PDF"
-                : "JPG · PNG · WebP"} • حتى {maxMb} MB
-            </p>
+                : "JPG · PNG · WebP"}{" "}{t("• حتى {0} MB", [maxMb])}</p>
           </div>
         )}
       </div>

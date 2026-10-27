@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 // ============================================================================
 // trust.functions.ts — التحقق من المصوّرات + النزاعات + تفضيلات الإشعارات
@@ -66,7 +67,7 @@ export const requestVerification = createServerFn({ method: "POST" })
     const { computeVerificationChecks, notifyAdmins } = await import("@/lib/photographer-verification.server");
     const checks = (await computeVerificationChecks(supabaseAdmin, [userId])).get(userId) ?? [];
     const missing = checks.filter((c) => !c.ok);
-    if (missing.length) throw new Error(`أكملي أولاً: ${missing.map((c) => c.label).join("، ")}`);
+    if (missing.length) throw new Error(t("أكملي أولاً: {0}", [missing.map((c) => c.label).join("، ")]));
 
     const { error } = await (supabase as any)
       .from("profiles")
@@ -76,8 +77,8 @@ export const requestVerification = createServerFn({ method: "POST" })
 
     const { data: me } = await supabaseAdmin.from("profiles").select("display_name").eq("id", userId).maybeSingle();
     await notifyAdmins(supabaseAdmin, {
-      title: "🛡️ طلب توثيق جديد",
-      body: `${(me as any)?.display_name ?? "مصوّرة"} طلبت توثيق ملفها، وكل الشروط مكتملة.`,
+      title: t("🛡️ طلب توثيق جديد"),
+      body: t("{0} طلبت توثيق ملفها، وكل الشروط مكتملة.", [(me as any)?.display_name ?? "مصوّرة"]),
       link: "/admin/photographers",
     }).catch(() => {});
     return { ok: true };
@@ -89,7 +90,7 @@ export const raiseDispute = createServerFn({ method: "POST" })
   .inputValidator((d: { booking_id: string; reason: string; raised_by_role: "client" | "photographer" }) => {
     if (!d || !UUID_RE.test(d.booking_id)) throw new Error("invalid booking_id");
     if (!d.reason || d.reason.length < 10 || d.reason.length > 5000) {
-      throw new Error("السبب يجب أن يكون بين 10 و5000 حرف");
+      throw new Error(t("السبب يجب أن يكون بين 10 و5000 حرف"));
     }
     if (!["client", "photographer"].includes(d.raised_by_role)) throw new Error("invalid role");
     return d;
@@ -105,7 +106,7 @@ export const raiseDispute = createServerFn({ method: "POST" })
       .eq("id", data.booking_id)
       .is("deleted_at", null)
       .maybeSingle();
-    if (!bk) throw new Error("الحجز غير موجود");
+    if (!bk) throw new Error(t("الحجز غير موجود"));
 
     const isOwner = data.raised_by_role === "photographer"
       ? bk.photographer_id === userId
@@ -126,8 +127,8 @@ export const raiseDispute = createServerFn({ method: "POST" })
     if (admins && admins.length > 0) {
       const notifications = admins.map((a: any) => ({
         user_id: a.user_id,
-        title: "نزاع جديد",
-        body: `تم رفع نزاع على حجز. السبب: ${data.reason.slice(0, 120)}`,
+        title: t("نزاع جديد"),
+        body: t("تم رفع نزاع على حجز. السبب: {0}", [data.reason.slice(0, 120)]),
         link: `/admin`,
       }));
       await supabaseAdmin.from("notifications").insert(notifications);

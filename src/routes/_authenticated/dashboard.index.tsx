@@ -43,6 +43,8 @@ import { ToolIndex, Sparkline, type Tool } from "@/components/dashboard/ToolInde
 import { computeFocusItems } from "@/components/dashboard/focus";
 import { openCommandPalette } from "@/components/CommandPalette";
 import { Search } from "lucide-react";
+import { locale } from "@/i18n";
+import { tx, t as tr } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: Dashboard,
@@ -83,14 +85,14 @@ function NumStat({
       animate={compact ? "visible" : undefined}
       className={`min-w-0 rounded-2xl bg-card/60 ring-1 ring-border/70 transition-colors hover:ring-gold/40 ${compact ? "p-4" : "p-6"}`}
     >
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 [&_svg]:h-4 [&_svg]:w-4">{icon}<span>{label}</span></div>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 [&_svg]:h-4 [&_svg]:w-4">{tx(icon)}<span>{tx(label)}</span></div>
       <div className="flex items-end justify-between gap-3">
-        <div className={`font-serif leading-none tabular-nums tracking-tight ${compact ? "text-3xl" : "text-4xl"}`}>{display}</div>
-        {extra}
+        <div className={`font-serif leading-none tabular-nums tracking-tight ${compact ? "text-3xl" : "text-4xl"}`}>{tx(display)}</div>
+        {tx(extra)}
       </div>
       {sub && (
         <div className={`mt-3 text-xs truncate ${subTone === "down" ? "text-amber-700 dark:text-amber-400" : subTone === "up" ? "text-emerald-700 dark:text-emerald-400" : "text-muted-foreground"}`}>
-          {sub}
+          {tx(sub)}
         </div>
       )}
     </motion.div>
@@ -106,22 +108,22 @@ function SubscriptionBanner({ sub }: { sub: any }) {
     : periodEnds ? Math.max(0, Math.ceil((periodEnds.getTime() - Date.now()) / 86400000)) : 0;
 
   const config: Record<string, { icon: any; bg: string; text: string; cta: string }> = {
-    trial: { icon: <Sparkles className="h-5 w-5 text-gold" />, bg: "bg-gold/10 border-gold/40 dark:bg-gold/5", text: `تجربة مجانية — متبقّي ${daysLeft} يوماً`, cta: g("اشتركي الآن", "اشترك الآن") },
-    active: { icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />, bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-400", text: `اشتراك نشط - ينتهي بعد ${daysLeft} يومًا`, cta: "إدارة الاشتراك" },
-    pending_review: { icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-400", text: "بانتظار مراجعة الإدارة - الموافقة تستغرق عادةً 24 ساعة", cta: "حالة الاشتراك" },
-    expired: { icon: <AlertTriangle className="h-5 w-5 text-destructive dark:text-red-400" />, bg: "bg-destructive/10 border-destructive/40 dark:bg-red-950/40 dark:border-red-900", text: g("انتهى اشتراكك — جدّدي للاستمرار", "انتهى اشتراكك — جدّد للاستمرار"), cta: g("جدّدي الاشتراك", "جدّد الاشتراك") },
-    canceled: { icon: <AlertTriangle className="h-5 w-5 text-muted-foreground" />, bg: "bg-secondary border-border", text: "اشتراكك ملغى", cta: "إعادة التفعيل" },
+    trial: { icon: <Sparkles className="h-5 w-5 text-gold" />, bg: "bg-gold/10 border-gold/40 dark:bg-gold/5", text: tr("تجربة مجانية — متبقّي {0} يوماً", [daysLeft]), cta: g(tr("اشتركي الآن"), tr("اشترك الآن")) },
+    active: { icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />, bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-400", text: tr("اشتراك نشط - ينتهي بعد {0} يومًا", [daysLeft]), cta: tr("إدارة الاشتراك") },
+    pending_review: { icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-400", text: tr("بانتظار مراجعة الإدارة - الموافقة تستغرق عادةً 24 ساعة"), cta: tr("حالة الاشتراك") },
+    expired: { icon: <AlertTriangle className="h-5 w-5 text-destructive dark:text-red-400" />, bg: "bg-destructive/10 border-destructive/40 dark:bg-red-950/40 dark:border-red-900", text: g(tr("انتهى اشتراكك — جدّدي للاستمرار"), tr("انتهى اشتراكك — جدّد للاستمرار")), cta: g(tr("جدّدي الاشتراك"), tr("جدّد الاشتراك")) },
+    canceled: { icon: <AlertTriangle className="h-5 w-5 text-muted-foreground" />, bg: "bg-secondary border-border", text: tr("اشتراكك ملغى"), cta: tr("إعادة التفعيل") },
   };
   const c = config[sub.status] ?? config.trial;
 
   return (
     <div className={`mb-8 rounded-2xl border p-4 ps-5 flex items-center justify-between gap-4 ${c.bg}`}>
       <div className="flex items-center gap-3">
-        {c.icon}
-        <div className="text-sm font-medium">{c.text}</div>
+        {tx(c.icon)}
+        <div className="text-sm font-medium">{tx(c.text)}</div>
       </div>
       <Link to="/dashboard/subscription" className="bg-charcoal text-ivory text-xs px-4 py-2 rounded-full hover:opacity-90 whitespace-nowrap active:scale-95 transition-transform duration-200 dark:bg-gold dark:text-charcoal">
-        {c.cta}
+        {tx(c.cta)}
       </Link>
     </div>
   );
@@ -132,27 +134,27 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
   const steps = [
     {
       num: 1,
-      title: g("أكملي ملفك وأضيفي أول باقة", "أكمل ملفك وأضف أول باقة"),
-      why: "بعد هذه الخطوة يستطيع العميل رؤية اسمك وسعرك — جاهزة للحجز",
+      title: g(tr("أكملي ملفك وأضيفي أول باقة"), tr("أكمل ملفك وأضف أول باقة")),
+      why: tr("بعد هذه الخطوة يستطيع العميل رؤية اسمك وسعرك — جاهزة للحجز"),
       done: !!profile?.display_name && !!profile?.username && pricingCount > 0,
       to: pricingCount === 0 ? "/dashboard/pricing" : "/dashboard/profile",
-      cta: g("ابدئي من هنا", "ابدأ من هنا"),
+      cta: g(tr("ابدئي من هنا"), tr("ابدأ من هنا")),
     },
     {
       num: 2,
-      title: g("أضيفي طريقة استقبال العربون", "أضف طريقة استقبال العربون"),
-      why: "CliQ alias أو واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية",
+      title: g(tr("أضيفي طريقة استقبال العربون"), tr("أضف طريقة استقبال العربون")),
+      why: tr("CliQ alias أو واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية"),
       done: hasCliq,
       to: "/dashboard/profile",
-      cta: g("أضيفي بيانات الدفع", "أضف بيانات الدفع"),
+      cta: g(tr("أضيفي بيانات الدفع"), tr("أضف بيانات الدفع")),
     },
     {
       num: 3,
-      title: g("انشري ملفك وشاركيه", "انشر ملفك وشاركه"),
-      why: "بنقرة واحدة يصبح ملفك مرئياً ويمكن للعملاء طلب الحجز مباشرة",
+      title: g(tr("انشري ملفك وشاركيه"), tr("انشر ملفك وشاركه")),
+      why: tr("بنقرة واحدة يصبح ملفك مرئياً ويمكن للعملاء طلب الحجز مباشرة"),
       done: !!profile?.is_published && !!profile?.username,
       to: "/dashboard/profile",
-      cta: g("فعّلي النشر", "فعّل النشر"),
+      cta: g(tr("فعّلي النشر"), tr("فعّل النشر")),
     },
   ];
 
@@ -163,16 +165,16 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
     <div className="mb-10">
       {/* Header */}
       <div className="mb-6 text-center">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">خطوات البداية</div>
-        <h2 className="font-serif text-3xl mb-1">٣ خطوات وملفك جاهز ✨</h2>
-        <p className="text-sm text-muted-foreground">تستغرق أقل من ٥ دقائق</p>
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("خطوات البداية")}</div>
+        <h2 className="font-serif text-3xl mb-1">{tr("٣ خطوات وملفك جاهز ✨")}</h2>
+        <p className="text-sm text-muted-foreground">{tr("تستغرق أقل من ٥ دقائق")}</p>
         {/* شريط التقدم */}
         <div className="flex items-center justify-center gap-2 mt-4 max-w-[200px] mx-auto">
           {steps.map((s, i) => (
             <div key={i} className={`h-2 flex-1 rounded-full transition-all duration-500 ${s.done ? "bg-gold" : i === activeIdx ? "bg-gold/40" : "bg-secondary"}`} />
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">{doneCount} من {steps.length} مكتملة</p>
+        <p className="text-xs text-muted-foreground mt-2">{tr("{0} من {1} مكتملة", [doneCount, steps.length])}</p>
       </div>
 
       {/* الخطوات */}
@@ -197,15 +199,15 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
               }`}>
                 {s.done ? <CheckCircle2 className="h-4 w-4" /> : s.num}
               </div>
-              <h3 className="font-medium text-base mb-1.5 leading-snug">{s.title}</h3>
-              <p className="text-xs text-muted-foreground mb-5 leading-relaxed">{s.why}</p>
+              <h3 className="font-medium text-base mb-1.5 leading-snug">{tx(s.title)}</h3>
+              <p className="text-xs text-muted-foreground mb-5 leading-relaxed">{tx(s.why)}</p>
               {s.done ? (
                 <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> اكتملت ✓
+                  <CheckCircle2 className="h-3.5 w-3.5" />{" "}{tr("اكتملت ✓")}
                 </span>
               ) : isActive ? (
                 <Link to={s.to} className="inline-flex items-center gap-2 bg-charcoal text-ivory text-sm px-5 py-2.5 rounded-sm hover:opacity-90 transition-opacity active:scale-95 transition-transform duration-200">
-                  {s.cta} <ArrowLeft className="h-3.5 w-3.5" />
+                  {tx(s.cta)} <ArrowLeft className="h-3.5 w-3.5" />
                 </Link>
               ) : null}
             </div>
@@ -219,10 +221,10 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
 // ── حالة الجاهزية المبسّطة (للمستخدمة النشطة التي لم تكمل بعض الخطوات) ────────
 function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCount, onDismiss }: { profile: any; pricingCount: number; bookingCount: number; hasCliq: boolean; templatesCount: number; onDismiss: () => void }) {
   const steps = [
-    { title: "الملف الشخصي", done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url, to: "/dashboard/profile", cta: "تعديل" },
-    { title: `الأسعار${pricingCount > 0 ? ` (${pricingCount})` : ""}`, done: pricingCount > 0, to: "/dashboard/pricing", cta: "إضافة" },
-    { title: "بيانات الدفع", done: hasCliq, to: "/dashboard/profile", cta: "إعداد" },
-    { title: "النشر العام", done: !!profile?.is_published, to: "/dashboard/profile", cta: "نشر" },
+    { title: tr("الملف الشخصي"), done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url, to: "/dashboard/profile", cta: tr("تعديل") },
+    { title: tr("الأسعار{0}", [pricingCount > 0 ? ` (${pricingCount})` : ""]), done: pricingCount > 0, to: "/dashboard/pricing", cta: tr("إضافة") },
+    { title: tr("بيانات الدفع"), done: hasCliq, to: "/dashboard/profile", cta: tr("إعداد") },
+    { title: tr("النشر العام"), done: !!profile?.is_published, to: "/dashboard/profile", cta: tr("نشر") },
   ];
   const doneCount = steps.filter((s) => s.done).length;
   const allDone = doneCount === steps.length;
@@ -232,10 +234,10 @@ function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCou
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <ListChecks className="h-4 w-4 text-gold" />
-          <span className="text-sm font-medium">إعداد الحساب</span>
-          <span className="text-xs text-muted-foreground tabular-nums">({doneCount}/{steps.length})</span>
+          <span className="text-sm font-medium">{tr("إعداد الحساب")}</span>
+          <span className="text-xs text-muted-foreground tabular-nums">({tx(doneCount)}/{tx(steps.length)})</span>
         </div>
-        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200" aria-label="إخفاء">
+        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200" aria-label={tr("إخفاء")}>
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -248,17 +250,17 @@ function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCou
       {allDone ? (
         <div className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-            <PartyPopper className="h-4 w-4" /> حسابك جاهز تماماً! 🎉
+            <PartyPopper className="h-4 w-4" />{" "}{tr("حسابك جاهز تماماً! 🎉")}
           </span>
-          <button onClick={onDismiss} className="text-xs text-muted-foreground hover:text-foreground underline">إخفاء</button>
+          <button onClick={onDismiss} className="text-xs text-muted-foreground hover:text-foreground underline">{tr("إخفاء")}</button>
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
           {steps.filter((s) => !s.done).map((s) => (
             <Link key={s.title} to={s.to} className="inline-flex items-center gap-1.5 text-xs border border-border rounded-sm px-3 py-1.5 hover:bg-secondary hover:border-gold/40 transition-colors active:scale-95 transition-transform duration-200">
               <CircleDashed className="h-3 w-3 text-muted-foreground" />
-              {s.title}
-              <span className="text-gold">← {s.cta}</span>
+              {tx(s.title)}
+              <span className="text-gold">← {tx(s.cta)}</span>
             </Link>
           ))}
         </div>
@@ -318,21 +320,21 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
         {badgeText && (
           <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] ${urgent ? "bg-gold/15 text-gold" : feature ? "bg-ivory/10 text-ivory/70" : "bg-secondary text-muted-foreground"}`}>
             {(badge || urgent) && <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />}
-            {badgeText}
+            {tx(badgeText)}
           </span>
         )}
       </div>
 
-      <h3 className={`font-serif mb-1.5 ${feature ? "text-3xl" : "text-xl"}`}>{title}</h3>
-      <p className={`text-sm leading-relaxed ${feature ? "text-ivory/70 max-w-sm dark:text-muted-foreground" : "text-muted-foreground"}`}>{desc}</p>
-      {hint && <p className={`mt-2 text-xs ${feature ? "text-gold" : "text-muted-foreground/80"}`}>{hint}</p>}
+      <h3 className={`font-serif mb-1.5 ${feature ? "text-3xl" : "text-xl"}`}>{tx(title)}</h3>
+      <p className={`text-sm leading-relaxed ${feature ? "text-ivory/70 max-w-sm dark:text-muted-foreground" : "text-muted-foreground"}`}>{tx(desc)}</p>
+      {hint && <p className={`mt-2 text-xs ${feature ? "text-gold" : "text-muted-foreground/80"}`}>{tx(hint)}</p>}
 
       {figures && figures.length > 0 && (
         <div className="mt-8 grid grid-cols-2 gap-6 border-t border-current/10 pt-6">
           {figures.map((f) => (
             <div key={f.label}>
-              <div className="font-serif text-5xl leading-none tabular-nums">{f.value}</div>
-              <div className={`mt-2 text-xs ${feature ? "text-ivory/60 dark:text-muted-foreground" : "text-muted-foreground"}`}>{f.label}</div>
+              <div className="font-serif text-5xl leading-none tabular-nums">{tx(f.value)}</div>
+              <div className={`mt-2 text-xs ${feature ? "text-ivory/60 dark:text-muted-foreground" : "text-muted-foreground"}`}>{tx(f.label)}</div>
             </div>
           ))}
         </div>
@@ -340,7 +342,7 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
 
       <div className="mt-auto pt-6 flex items-center justify-between gap-3">
         <span className={`inline-flex items-center gap-2 text-sm font-medium transition-all duration-300 group-hover:gap-3 ${feature ? "text-ivory dark:text-gold" : "text-foreground group-hover:text-gold"}`}>
-          {disabled ? g("أكملي ملفك أولاً", "أكمل ملفك أولاً") : cta}
+          {disabled ? g(tr("أكملي ملفك أولاً"), tr("أكمل ملفك أولاً")) : cta}
           {!disabled && <ArrowLeft className="h-4 w-4" />}
         </span>
         {quickAction && !disabled && (
@@ -349,16 +351,16 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
             className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] ring-1 transition-colors ${feature ? "ring-ivory/20 hover:ring-gold hover:text-gold" : "ring-border hover:ring-gold/50 hover:text-gold"}`}
             onClick={(e: any) => { e.stopPropagation(); playSound('tick'); }}
           >
-            <Plus className="h-3 w-3" /> {quickAction.label}
+            <Plus className="h-3 w-3" /> {tx(quickAction.label)}
           </Link>
         )}
       </div>
     </div>
   );
 
-  if (!to || disabled) return <div className={sharedClassName}>{cardContent}</div>;
-  if (external) return <a href={to} className={sharedClassName} onClick={() => playSound('tick')}>{cardContent}</a>;
-  return <Link to={to} className={sharedClassName} onClick={() => playSound('tick')}>{cardContent}</Link>;
+  if (!to || disabled) return <div className={sharedClassName}>{tx(cardContent)}</div>;
+  if (external) return <a href={to} className={sharedClassName} onClick={() => playSound('tick')}>{tx(cardContent)}</a>;
+  return <Link to={to} className={sharedClassName} onClick={() => playSound('tick')}>{tx(cardContent)}</Link>;
 }
 
 
@@ -402,10 +404,10 @@ function CircularProgress({ value }: { value: number }) {
           className="text-gold" 
         />
       </svg>
-      <span className="absolute text-[10px] font-bold">{value}%</span>
+      <span className="absolute text-[10px] font-bold">{tx(value)}%</span>
       {value < 100 && (
         <div className="absolute top-14 bg-popover text-popover-foreground text-[10px] px-3 py-1.5 rounded-sm shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
-          {g("أكملي ملفك بنسبة 100% لزيادة الحجوزات!", "أكمل ملفك بنسبة 100% لزيادة الحجوزات!")}
+          {g(tr("أكملي ملفك بنسبة 100% لزيادة الحجوزات!"), tr("أكمل ملفك بنسبة 100% لزيادة الحجوزات!"))}
         </div>
       )}
     </div>
@@ -416,9 +418,9 @@ const LAST_VISIT_KEY = "memoria:dashboard-last-visit";
 
 function greeting() {
   const h = new Date().getHours();
-  if (h < 12) return "صباح الخير";
-  if (h < 18) return "نهارك سعيد";
-  return "مساء الخير";
+  if (h < 12) return tr("صباح الخير");
+  if (h < 18) return tr("نهارك سعيد");
+  return tr("مساء الخير");
 }
 
 function Dashboard() {
@@ -452,7 +454,7 @@ function Dashboard() {
         const { recordReferralAfterSignup } = await import("@/lib/booking.functions");
         await recordReferralAfterSignup({ data: { referral_code: pendingRef } });
         sessionStorage.removeItem("pending_referral_code");
-        toast.success("تم تطبيق رمز الإحالة بنجاح!");
+        toast.success(tr("تم تطبيق رمز الإحالة بنجاح!"));
       }
     } catch (e) { sessionStorage.removeItem("pending_referral_code"); }
     const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }, { count: tplCount }] = await Promise.all([
@@ -519,7 +521,7 @@ function Dashboard() {
   useEffect(() => {
     // أي خطأ في التحميل كان يترك اللوحة عالقة على الهيكل الرمادي حتى التحديث
     loadData()
-      .catch((e) => { console.error("[dashboard] load failed", e); toast.error(g("تعذّر تحميل اللوحة، حاولي مجدداً", "تعذّر تحميل اللوحة، حاول مجدداً")); })
+      .catch((e) => { console.error("[dashboard] load failed", e); toast.error(g(tr("تعذّر تحميل اللوحة، حاولي مجدداً"), tr("تعذّر تحميل اللوحة، حاول مجدداً"))); })
       .finally(() => setLoading(false));
   }, [navigate]);
 
@@ -530,8 +532,8 @@ function Dashboard() {
       if (session) {
         await supabase.from("profiles").update({ quickstart_dismissed_at: new Date().toISOString() } as any).eq("id", session.user.id);
       }
-      toast.success(g("أخفينا قائمة الإعداد — تجدينها في الملف الشخصي", "أخفينا قائمة الإعداد — تجدها في الملف الشخصي"));
-    } catch { toast.error(g("تعذّر الحفظ، حاولي مجدداً", "تعذّر الحفظ، حاول مجدداً")); }
+      toast.success(g(tr("أخفينا قائمة الإعداد — تجدينها في الملف الشخصي"), tr("أخفينا قائمة الإعداد — تجدها في الملف الشخصي")));
+    } catch { toast.error(g(tr("تعذّر الحفظ، حاولي مجدداً"), tr("تعذّر الحفظ، حاول مجدداً"))); }
   };
 
   if (loading) return <DashboardSkeleton />;
@@ -546,8 +548,8 @@ function Dashboard() {
     ? Math.round(((stats.monthRevenue - stats.lastMonthRevenue) / stats.lastMonthRevenue) * 100)
     : null;
   const whatsNewParts = [
-    stats.newBookings > 0 ? (stats.newBookings === 1 ? "طلب جديد" : `${stats.newBookings} طلبات جديدة`) : null,
-    stats.newReviews > 0 ? (stats.newReviews === 1 ? "تقييم جديد" : `${stats.newReviews} تقييمات جديدة`) : null,
+    stats.newBookings > 0 ? (stats.newBookings === 1 ? tr("طلب جديد") : tr("{0} طلبات جديدة", [stats.newBookings])) : null,
+    stats.newReviews > 0 ? (stats.newReviews === 1 ? tr("تقييم جديد") : tr("{0} تقييمات جديدة", [stats.newReviews])) : null,
   ].filter(Boolean);
 
   const subStatus = (() => {
@@ -557,20 +559,20 @@ function Dashboard() {
   })();
 
   const tools: Tool[] = [
-    { key: "bookings", title: "الحجوزات", to: "/dashboard/bookings", icon: <Calendar />, badge: stats.pending > 0 ? `${stats.pending} جديد` : undefined, attention: stats.pending > 0, hint: arCount(totalBookings, "حجز واحد", "حجزان", "حجوزات", "حجزاً") },
-    { key: "production", title: "متابعة الإنتاج", to: "/dashboard/production", icon: <Sparkles />, badge: stats.deliveriesDueSoon > 0 ? `${stats.deliveriesDueSoon} قريب` : undefined, attention: stats.deliveriesDueSoon > 0, hint: "من التصوير إلى التسليم" },
-    { key: "calendar", title: "التقويم", to: "/dashboard/calendar", icon: <Calendar />, hint: stats.upcoming30 > 0 ? `${stats.upcoming30} مناسبات خلال ٣٠ يوماً` : "حجب الأيام والتوفّر" },
-    { key: "pricing", title: "الأسعار", to: "/dashboard/pricing", icon: <Package />, badge: pricingCount === 0 ? "فارغة" : undefined, attention: pricingCount === 0, hint: arCount(pricingCount, "باقة واحدة", "باقتان", "باقات", "باقة") },
-    { key: "profile", title: "ملفي", to: "/dashboard/profile", icon: <Star />, badge: (!profile?.avatar_url || !profile?.cover_url) ? "ناقص" : undefined, attention: !profile?.avatar_url, hint: "الصور والنبذة وبيانات الدفع" },
-    { key: "reports", title: "التقارير", to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? `${stats.monthRevenue} د.أ هذا الشهر` : "الإيرادات وتصدير CSV" },
-    { key: "contracts", title: "العقود", to: "/dashboard/contracts", icon: <Link2 />, hint: "توقيع إلكتروني" },
-    { key: "offers", title: "عروض الأسعار", to: "/dashboard/offers", icon: <MessageCircle />, hint: "أسعار اقترحتها العرائس" },
-    { key: "whatsapp", title: "رسائل واتساب", to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: `${arCount(templatesCount, "قالب واحد", "قالبان", "قوالب", "قالباً")} جاهزة` },
-    { key: "subscription", title: "الاشتراك", to: "/dashboard/subscription", icon: <LogOut />, badge: subStatus === "expired" ? "منتهي" : subStatus === "trial" ? "تجريبي" : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? "نشط" : "التجديد وإثبات الدفع" },
-    { key: "notifications", title: "الإشعارات", to: "/notifications", icon: <Bell />, hint: "كل التنبيهات" },
-    { key: "recap", title: "سنتي", to: "/dashboard/recap", icon: <Sparkles />, hint: "ملخّص للمشاركة على إنستغرام" },
-    { key: "referrals", title: "الإحالة", to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: "١٤ يوماً مجاناً عن كل زميلة" },
-    { key: "public", title: "ملفي العام", to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ArrowLeft />, hint: "كما تراه العرائس" },
+    { key: "bookings", title: tr("الحجوزات"), to: "/dashboard/bookings", icon: <Calendar />, badge: stats.pending > 0 ? tr("{0} جديد", [stats.pending]) : undefined, attention: stats.pending > 0, hint: arCount(totalBookings, tr("حجز واحد"), tr("حجزان"), tr("حجوزات"), tr("حجزاً")) },
+    { key: "production", title: tr("متابعة الإنتاج"), to: "/dashboard/production", icon: <Sparkles />, badge: stats.deliveriesDueSoon > 0 ? tr("{0} قريب", [stats.deliveriesDueSoon]) : undefined, attention: stats.deliveriesDueSoon > 0, hint: tr("من التصوير إلى التسليم") },
+    { key: "calendar", title: tr("التقويم"), to: "/dashboard/calendar", icon: <Calendar />, hint: stats.upcoming30 > 0 ? tr("{0} مناسبات خلال ٣٠ يوماً", [stats.upcoming30]) : tr("حجب الأيام والتوفّر") },
+    { key: "pricing", title: tr("الأسعار"), to: "/dashboard/pricing", icon: <Package />, badge: pricingCount === 0 ? tr("فارغة") : undefined, attention: pricingCount === 0, hint: arCount(pricingCount, tr("باقة واحدة"), tr("باقتان"), tr("باقات"), tr("باقة")) },
+    { key: "profile", title: tr("ملفي"), to: "/dashboard/profile", icon: <Star />, badge: (!profile?.avatar_url || !profile?.cover_url) ? tr("ناقص") : undefined, attention: !profile?.avatar_url, hint: tr("الصور والنبذة وبيانات الدفع") },
+    { key: "reports", title: tr("التقارير"), to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? tr("{0} د.أ هذا الشهر", [stats.monthRevenue]) : tr("الإيرادات وتصدير CSV") },
+    { key: "contracts", title: tr("العقود"), to: "/dashboard/contracts", icon: <Link2 />, hint: tr("توقيع إلكتروني") },
+    { key: "offers", title: tr("عروض الأسعار"), to: "/dashboard/offers", icon: <MessageCircle />, hint: tr("أسعار اقترحتها العرائس") },
+    { key: "whatsapp", title: tr("رسائل واتساب"), to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: tr("{0} جاهزة", [arCount(templatesCount, "قالب واحد", "قالبان", "قوالب", "قالباً")]) },
+    { key: "subscription", title: tr("الاشتراك"), to: "/dashboard/subscription", icon: <LogOut />, badge: subStatus === "expired" ? tr("منتهي") : subStatus === "trial" ? tr("تجريبي") : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? tr("نشط") : tr("التجديد وإثبات الدفع") },
+    { key: "notifications", title: tr("الإشعارات"), to: "/notifications", icon: <Bell />, hint: tr("كل التنبيهات") },
+    { key: "recap", title: tr("سنتي"), to: "/dashboard/recap", icon: <Sparkles />, hint: tr("ملخّص للمشاركة على إنستغرام") },
+    { key: "referrals", title: tr("الإحالة"), to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: tr("١٤ يوماً مجاناً عن كل زميلة") },
+    { key: "public", title: tr("ملفي العام"), to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ArrowLeft />, hint: tr("كما تراه العرائس") },
   ];
 
   return (
@@ -586,33 +588,33 @@ function Dashboard() {
         <div className="sm:hidden mb-6 px-2 flex items-center justify-between">
           <div>
             <div className="text-xs text-muted-foreground">{greeting()}</div>
-            <h1 className="font-serif text-3xl font-bold">لوحتي</h1>
+            <h1 className="font-serif text-3xl font-bold">{tr("لوحتي")}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={openCommandPalette} aria-label="بحث" className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-secondary active:scale-95 transition-transform"><Search className="h-4 w-4" /></button>
-            <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">خروج</button>
+            <button onClick={openCommandPalette} aria-label={tr("بحث")} className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-secondary active:scale-95 transition-transform"><Search className="h-4 w-4" /></button>
+            <button onClick={signOut} className="text-sm border border-border px-3 py-1.5 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200">{tr("خروج")}</button>
           </div>
         </div>
 
         <div className="hidden sm:flex items-end justify-between mb-10">
           <div>
-            <div className="eyebrow mb-2">{new Date().toLocaleDateString("ar-JO", { weekday: "long", day: "numeric", month: "long" })}</div>
-            <h1 className="font-serif text-5xl">{greeting()}، <span className="font-script text-gold">{profile?.display_name ?? "مصوّر"}</span></h1>
+            <div className="eyebrow mb-2">{new Date().toLocaleDateString(locale("ar-JO"), { weekday: "long", day: "numeric", month: "long" })}</div>
+            <h1 className="font-serif text-5xl">{tr("{0}،", [greeting()])}{" "}<span className="font-script text-gold">{profile?.display_name ?? tr("مصوّر")}</span></h1>
             {profile?.username ? (
               <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                <Link to="/photographers/$username" params={{ username: profile.username }} className="text-gold hover:underline" dir="ltr">@{profile.username}</Link>
-                {publicUrl && <CopyButton value={publicUrl} label="نسخ رابط ملفي" />}
+                <Link to="/photographers/$username" params={{ username: profile.username }} className="text-gold hover:underline" dir="ltr">@{tx(profile.username)}</Link>
+                {publicUrl && <CopyButton value={publicUrl} label={tr("نسخ رابط ملفي")} />}
               </div>
             ) : (
-              <div className="text-sm text-muted-foreground mt-1">{g("أكملي اسم المستخدم من الملف الشخصي", "أكمل اسم المستخدم من الملف الشخصي")}</div>
+              <div className="text-sm text-muted-foreground mt-1">{g(tr("أكملي اسم المستخدم من الملف الشخصي"), tr("أكمل اسم المستخدم من الملف الشخصي"))}</div>
             )}
           </div>
           <div className="flex items-center gap-5">
             <button onClick={openCommandPalette} className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:border-gold/40 hover:text-foreground transition-colors">
-              <Search className="h-4 w-4" /> {g("ابحثي عن عروس أو صفحة", "ابحث عن عروس أو صفحة")}
+              <Search className="h-4 w-4" /> {g(tr("ابحثي عن عروس أو صفحة"), tr("ابحث عن عروس أو صفحة"))}
               <kbd className="rounded border border-border bg-secondary px-1.5 text-[10px] font-sans" dir="ltr">Ctrl K</kbd>
             </button>
-            <button onClick={signOut} className="text-sm text-muted-foreground border-b border-current/30 pb-0.5 hover:text-foreground transition-colors">تسجيل الخروج</button>
+            <button onClick={signOut} className="text-sm text-muted-foreground border-b border-current/30 pb-0.5 hover:text-foreground transition-colors">{tr("تسجيل الخروج")}</button>
           </div>
         </div>
 
@@ -624,31 +626,31 @@ function Dashboard() {
             <NewUserWelcome profile={profile} pricingCount={pricingCount} hasCliq={hasCliq} />
             <motion.div variants={staggerContainer} initial={intro ? "hidden" : false} animate="visible" className="grid gap-5 md:grid-cols-3 mb-5">
               <Card
-                title="الحجوزات"
-                desc={g("راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز.", "راجع الطلبات الواردة، أكّد العربون وتابع مراحل كل حجز.")}
-                cta="عرض الحجوزات"
+                title={tr("الحجوزات")}
+                desc={g(tr("راجعي الطلبات الواردة، أكّدي العربون وتابعي مراحل كل حجز."), tr("راجع الطلبات الواردة، أكّد العربون وتابع مراحل كل حجز."))}
+                cta={tr("عرض الحجوزات")}
                 to="/dashboard/bookings"
-                hint="لا توجد حجوزات بعد"
+                hint={tr("لا توجد حجوزات بعد")}
                 icon={<Calendar className="h-6 w-6" />}
               />
               <Card
-                title="الملف الشخصي"
-                desc="الاسم، الصورة، الباقات، بيانات الدفع وإعدادات النشر."
-                cta="تعديل الملف"
+                title={tr("الملف الشخصي")}
+                desc={tr("الاسم، الصورة، الباقات، بيانات الدفع وإعدادات النشر.")}
+                cta={tr("تعديل الملف")}
                 to="/dashboard/profile"
                 urgent={!profile?.avatar_url || !profile?.username}
-                badgeText={!profile?.avatar_url || !profile?.username ? "مطلوب للنشر" : "جاهز"}
-                hint="الخطوة الأولى لبدء استقبال الطلبات"
+                badgeText={!profile?.avatar_url || !profile?.username ? tr("مطلوب للنشر") : tr("جاهز")}
+                hint={tr("الخطوة الأولى لبدء استقبال الطلبات")}
                 icon={<Star className="h-6 w-6" />}
               />
               <Card
-                title="بطاقة الأسعار"
-                desc={g("أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة.", "أضف باقاتك ليتمكن العميل من اختيار الخدمة المناسبة.")}
-                cta="إدارة الأسعار"
+                title={tr("بطاقة الأسعار")}
+                desc={g(tr("أضيفي باقاتك ليتمكن العميل من اختيار الخدمة المناسبة."), tr("أضف باقاتك ليتمكن العميل من اختيار الخدمة المناسبة."))}
+                cta={tr("إدارة الأسعار")}
                 to="/dashboard/pricing"
                 urgent={pricingCount === 0}
-                badgeText={pricingCount === 0 ? g("ابدئي من هنا", "ابدأ من هنا") : arCount(pricingCount, "باقة واحدة", "باقتان", "باقات", "باقة")}
-                quickAction={{ label: "إضافة باقة سريعة", to: "/dashboard/pricing" }}
+                badgeText={pricingCount === 0 ? g(tr("ابدئي من هنا"), tr("ابدأ من هنا")) : arCount(pricingCount, tr("باقة واحدة"), tr("باقتان"), tr("باقات"), tr("باقة"))}
+                quickAction={{ label: tr("إضافة باقة سريعة"), to: "/dashboard/pricing" }}
                 icon={<Package className="h-6 w-6" />}
               />
             </motion.div>
@@ -664,7 +666,7 @@ function Dashboard() {
                 onClick={() => setShowAllCards((v) => !v)}
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-5 py-2 hover:bg-secondary transition-colors active:scale-95 duration-200"
               >
-                {showAllCards ? "إخفاء الأدوات الإضافية" : "عرض كل الأدوات (٩)"}
+                {showAllCards ? tr("إخفاء الأدوات الإضافية") : tr("عرض كل الأدوات (٩)")}
                 <ArrowLeft className={`h-3.5 w-3.5 transition-transform ${showAllCards ? "rotate-90" : "-rotate-90"}`} />
               </button>
             </div>
@@ -676,10 +678,10 @@ function Dashboard() {
             {!hasAnyStats && profile?.is_published && profile?.username && (
               <div className="mb-10 rounded-2xl border border-gold/30 bg-gold/5 p-5 text-sm leading-relaxed flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <strong>{g("ملفكِ منشور وجاهز.", "ملفك منشور وجاهز.")}</strong> {g("ضعي", "ضع")} رابطه في بايو إنستجرام لتبدأ العرائس بالحجز مباشرة.
+                  <strong>{g(tr("ملفكِ منشور وجاهز."), tr("ملفك منشور وجاهز."))}</strong> {g(tr("ضعي"), tr("ضع"))}{" "}{tr("رابطه في بايو إنستجرام لتبدأ العرائس بالحجز مباشرة.")}
                   <div className="mt-1 text-xs text-muted-foreground" dir="ltr">{publicUrl.replace(/^https?:\/\//, "")}</div>
                 </div>
-                {publicUrl && <CopyButton value={publicUrl} label="نسخ الرابط" className="self-start sm:self-auto px-4 py-2 text-sm" />}
+                {publicUrl && <CopyButton value={publicUrl} label={tr("نسخ الرابط")} className="self-start sm:self-auto px-4 py-2 text-sm" />}
               </div>
             )}
 
@@ -689,25 +691,25 @@ function Dashboard() {
                 <motion.div variants={staggerContainer} initial={intro ? "hidden" : false} animate="visible" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <NumStat
                     icon={<TrendingUp className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />}
-                    label="إيرادات هذا الشهر"
+                    label={tr("إيرادات هذا الشهر")}
                     value={stats.monthRevenue}
-                    suffix=" د.أ"
-                    sub={monthDelta === null ? undefined : `${monthDelta >= 0 ? "+" : ""}${monthDelta}٪ عن الشهر الماضي`}
+                    suffix={tr("د.أ")}
+                    sub={monthDelta === null ? undefined : tr("{0}{1}٪ عن الشهر الماضي", [monthDelta >= 0 ? "+" : "", monthDelta])}
                     subTone={monthDelta !== null && monthDelta < 0 ? "down" : "up"}
                     extra={<Sparkline values={stats.revenueSeries ?? []} />}
                   />
                   <NumStat
                     icon={<DollarSign className="h-5 w-5 text-amber-600" />}
-                    label="عرابين معلّقة"
+                    label={tr("عرابين معلّقة")}
                     value={stats.pendingDepositsAmount}
-                    suffix=" د.أ"
-                    sub={stats.pendingDepositNames?.length ? `من ${stats.pendingDepositNames.join("، ")}` : "لا عرابين معلّقة"}
+                    suffix={tr("د.أ")}
+                    sub={stats.pendingDepositNames?.length ? tr("من {0}", [stats.pendingDepositNames.join("، ")]) : tr("لا عرابين معلّقة")}
                   />
                   <NumStat
                     icon={<Send className="h-5 w-5 text-violet-600 dark:text-violet-400" />}
-                    label="تسليمات خلال ٧ أيام"
+                    label={tr("تسليمات خلال ٧ أيام")}
                     value={stats.deliveriesDueSoon}
-                    sub={stats.deliveriesDueSoon > 0 ? g("تابعيها في لوحة الإنتاج", "تابعها في لوحة الإنتاج") : "لا تسليمات قريبة"}
+                    sub={stats.deliveriesDueSoon > 0 ? g(tr("تابعيها في لوحة الإنتاج"), tr("تابعها في لوحة الإنتاج")) : tr("لا تسليمات قريبة")}
                   />
                 </motion.div>
 
@@ -721,10 +723,10 @@ function Dashboard() {
                       className="overflow-hidden"
                     >
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-4">
-                        <NumStat compact icon={<Calendar className="h-4 w-4 text-gold" />} label="حجوزات مؤكّدة" value={stats.confirmed} />
-                        <NumStat compact icon={<Clock className="h-4 w-4 text-amber-600" />} label="بانتظار العربون" value={stats.pending} />
-                        <NumStat compact icon={<Calendar className="h-4 w-4 text-blue-600" />} label="مناسبات خلال ٣٠ يوماً" value={stats.upcoming30} />
-                        <NumStat compact icon={<Star className="h-4 w-4 text-gold" />} label={`التقييم (${stats.reviews})`} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
+                        <NumStat compact icon={<Calendar className="h-4 w-4 text-gold" />} label={tr("حجوزات مؤكّدة")} value={stats.confirmed} />
+                        <NumStat compact icon={<Clock className="h-4 w-4 text-amber-600" />} label={tr("بانتظار العربون")} value={stats.pending} />
+                        <NumStat compact icon={<Calendar className="h-4 w-4 text-blue-600" />} label={tr("مناسبات خلال ٣٠ يوماً")} value={stats.upcoming30} />
+                        <NumStat compact icon={<Star className="h-4 w-4 text-gold" />} label={tr("التقييم ({0})", [stats.reviews])} value={stats.avgRating} fractionDigits={1} fallback={stats.avgRating ? undefined : "—"} />
                       </div>
                     </motion.div>
                   )}
@@ -735,7 +737,7 @@ function Dashboard() {
                   aria-expanded={showMoreStats}
                   className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showMoreStats ? "أرقام أقل" : "كل الأرقام"}
+                  {showMoreStats ? tr("أرقام أقل") : tr("كل الأرقام")}
                   <ArrowLeft className={`h-3 w-3 transition-transform duration-300 ${showMoreStats ? "rotate-90" : "-rotate-90"}`} />
                 </button>
               </div>
@@ -750,7 +752,7 @@ function Dashboard() {
             </AnimatePresence>
 
             <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="font-serif text-2xl">أدواتك</h2>
+              <h2 className="font-serif text-2xl">{tr("أدواتك")}</h2>
             </div>
             <ToolIndex tools={tools} />
           </>

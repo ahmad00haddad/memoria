@@ -1,15 +1,16 @@
-# Graph Report - .  (2026-07-05)
+# Graph Report - memoria  (2026-10-04)
 
 ## Corpus Check
-- cluster-only mode — file stats not available
+- 264 files · ~149,504 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1001 nodes · 1762 edges · 73 communities (60 shown, 13 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 60 edges (avg confidence: 0.57)
+- 1166 nodes · 2139 edges · 77 communities (71 shown, 6 thin omitted)
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 75 edges (avg confidence: 0.55)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `922fd187`
+- Built from commit: `976e68ea`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -61,6 +62,7 @@
 - [[_COMMUNITY_guide.tsx|guide.tsx]]
 - [[_COMMUNITY_onboarding.tsx|onboarding.tsx]]
 - [[_COMMUNITY_input-otp.tsx|input-otp.tsx]]
+- [[_COMMUNITY_dashboard.profile.tsx|dashboard.profile.tsx]]
 - [[_COMMUNITY_alert.tsx|alert.tsx]]
 - [[_COMMUNITY_WhatsAppQuickSend.tsx|WhatsAppQuickSend.tsx]]
 - [[_COMMUNITY_cancellation.functions.ts|cancellation.functions.ts]]
@@ -80,18 +82,22 @@
 - [[_COMMUNITY_Route|Route]]
 - [[_COMMUNITY_Route|Route]]
 - [[_COMMUNITY_trackUrlBase|trackUrlBase]]
+- [[_COMMUNITY_ScrollReveal.tsx|ScrollReveal.tsx]]
+- [[_COMMUNITY_production-rules.ts|production-rules.ts]]
+- [[_COMMUNITY__authenticated.tsx|_authenticated.tsx]]
+- [[_COMMUNITY_apply_ux.js|apply_ux.js]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 71 edges
-2. `FileRoutesByPath` - 49 edges
-3. `Footer()` - 37 edges
-4. `Header()` - 37 edges
-5. `supabase` - 37 edges
-6. `PageLoader()` - 19 edges
-7. `compilerOptions` - 17 edges
-8. `useConfirm()` - 14 edges
-9. `useAuthState()` - 14 edges
-10. `requireSupabaseAuth` - 14 edges
+2. `FileRoutesByPath` - 60 edges
+3. `supabase` - 40 edges
+4. `Footer()` - 38 edges
+5. `Header()` - 37 edges
+6. `PageLoader()` - 29 edges
+7. `useAuthState()` - 18 edges
+8. `compilerOptions` - 17 edges
+9. `useConfirm()` - 16 edges
+10. `requireSupabaseAuth` - 15 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `cacheFirst()` --calls--> `fetch()`  [INFERRED]
@@ -108,91 +114,91 @@
 ## Import Cycles
 - None detected.
 
-## Communities (73 total, 13 thin omitted)
+## Communities (77 total, 6 thin omitted)
 
 ### Community 0 - "dependencies"
 Cohesion: 0.03
-Nodes (61): dependencies, class-variance-authority, @cloudflare/vite-plugin, clsx, cmdk, date-fns, embla-carousel-react, @fontsource-variable/cairo (+53 more)
+Nodes (66): dependencies, browser-image-compression, canvas-confetti, class-variance-authority, @cloudflare/vite-plugin, clsx, cmdk, date-fns (+58 more)
 
 ### Community 1 - "routeTree.gen.ts"
 Cohesion: 0.03
-Nodes (60): AboutRoute, AdminIndexRoute, AdminPhotographersRoute, AdminRefundsRoute, AdminReviewsRoute, AdminRoute, AdminRouteChildren, AdminRouteWithChildren (+52 more)
+Nodes (76): Route, AboutRoute, ApiPublicHooksEmailRemindersRoute, ApiPublicHooksIcalSyncRoute, ApiPublicHooksPaymentRoute, ApiPublicIcalTokenRoute, AppRoute, AuthenticatedAdminAuditLogRoute (+68 more)
 
 ### Community 2 - "types.ts"
-Cohesion: 0.05
-Nodes (42): APP_SHELL, CACHE_STRATEGIES, cacheFirst(), networkFirst(), networkFirstWithOffline(), staleWhileRevalidate(), attachSupabaseAuth, supabaseAdmin (+34 more)
+Cohesion: 0.06
+Nodes (34): APP_SHELL, CACHE_STRATEGIES, cacheFirst(), networkFirst(), networkFirstWithOffline(), staleWhileRevalidate(), attachSupabaseAuth, AdminClient (+26 more)
 
 ### Community 3 - "confirm-dialog.tsx"
-Cohesion: 0.06
-Nodes (36): Item, ShotList(), AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter(), AlertDialogHeader() (+28 more)
+Cohesion: 0.13
+Nodes (19): Alert, AlertDescription, AlertTitle, alertVariants, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription (+11 more)
 
 ### Community 4 - "sidebar.tsx"
 Cohesion: 0.05
 Nodes (40): OnboardingWizard(), STEPS, Input, Separator, SheetContent, SheetContentProps, SheetDescription, SheetFooter() (+32 more)
 
 ### Community 5 - "carousel.tsx"
-Cohesion: 0.05
-Nodes (35): react, Carousel, CarouselApi, CarouselContent, CarouselContext, CarouselContextProps, CarouselItem, CarouselNext (+27 more)
+Cohesion: 0.07
+Nodes (24): react, Carousel, CarouselApi, CarouselContent, CarouselContext, CarouselContextProps, CarouselItem, CarouselNext (+16 more)
 
 ### Community 6 - "auth-middleware.ts"
-Cohesion: 0.07
-Nodes (25): requireSupabaseAuth, getCalendarMonthData, toggleUnavailability, createContractForBooking, getContractByToken, signContract, assertSafeIcalUrl(), parseIcalDates() (+17 more)
+Cohesion: 0.12
+Nodes (12): requireSupabaseAuth, getCalendarMonthData, toggleUnavailability, cancelBooking, clientCancelBooking, updateRefundPolicy, sendGalleryDeliveredEmail, logMove (+4 more)
 
 ### Community 7 - "devDependencies"
-Cohesion: 0.07
-Nodes (28): devDependencies, eslint, eslint-config-prettier, @eslint/js, eslint-plugin-prettier, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals (+20 more)
+Cohesion: 0.05
+Nodes (36): devDependencies, eslint, eslint-config-prettier, @eslint/js, eslint-plugin-prettier, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals (+28 more)
 
 ### Community 8 - "utils.ts"
-Cohesion: 0.09
-Nodes (13): Avatar, AvatarFallback, AvatarImage, Checkbox, HoverCardContent, Progress, RadioGroup, RadioGroupItem (+5 more)
+Cohesion: 0.07
+Nodes (16): Avatar, AvatarFallback, AvatarImage, Checkbox, HoverCardContent, Progress, RadioGroup, RadioGroupItem (+8 more)
 
 ### Community 9 - "Footer.tsx"
-Cohesion: 0.14
-Nodes (5): Footer(), Header(), Route, FEATURES, Route
+Cohesion: 0.09
+Nodes (6): Footer(), Header(), FEATURES, Route, Route, Route
 
 ### Community 10 - "cn"
-Cohesion: 0.17
-Nodes (17): Button, ButtonProps, buttonVariants, Calendar(), CalendarDayButton(), Pagination(), PaginationContent, PaginationEllipsis() (+9 more)
+Cohesion: 0.14
+Nodes (20): Badge(), BadgeProps, badgeVariants, Button, ButtonProps, buttonVariants, Calendar(), CalendarDayButton() (+12 more)
 
 ### Community 11 - "__root.tsx"
-Cohesion: 0.12
-Nodes (12): sonner, SmoothScroll(), readInitialTheme(), Theme, ThemeContext, ThemeContextValue, ThemeProvider(), useTheme() (+4 more)
+Cohesion: 0.16
+Nodes (8): lenis, sonner, PwaInstallPrompt(), SmoothScroll(), ConfirmProvider(), Toaster(), ToasterProps, RootComponent()
 
 ### Community 12 - "index.tsx"
-Cohesion: 0.13
-Nodes (16): ScrollReveal(), ScrollRevealProps, buttonHover, buttonTap, cardHover, easeOut, fadeDown, fadeLeft (+8 more)
+Cohesion: 0.12
+Nodes (14): buttonHover, buttonTap, cardHover, easeOut, fadeDown, fadeLeft, fadeRight, fadeUp (+6 more)
 
 ### Community 13 - "loading.tsx"
-Cohesion: 0.18
-Nodes (6): BackToDashboard(), PageLoader(), Rule, STAGES, CATEGORIES, VARIABLES
+Cohesion: 0.20
+Nodes (5): BackToDashboard(), PageLoader(), Rule, Payment, Sub
 
 ### Community 14 - "upload.ts"
-Cohesion: 0.16
-Nodes (19): UploadZone(), UploadZoneProps, ALLOWED_IMAGES, ALLOWED_IMAGES_AND_PDF, AllowedFileType, parseStorageError(), UploadConfig, UploadErrorType (+11 more)
+Cohesion: 0.18
+Nodes (17): UploadZone(), UploadZoneProps, ALLOWED_IMAGES, ALLOWED_IMAGES_AND_PDF, AllowedFileType, parseStorageError(), UploadConfig, UploadErrorType (+9 more)
 
 ### Community 15 - "FileRoutesByPath"
-Cohesion: 0.10
-Nodes (21): Route, Route, Route, Route, Route, Route, Route, Route (+13 more)
+Cohesion: 0.07
+Nodes (22): Route, Route, Route, Route, Route, Route, Route, Route (+14 more)
 
 ### Community 16 - "payments.server.ts"
-Cohesion: 0.13
-Nodes (12): createHyperPayProvider(), createStripeProvider(), createStripeSubscriptionCheckout(), DepositCheckoutInput, DepositCheckoutResult, getPaymentProvider(), PaymentProvider, PaymentStatus (+4 more)
+Cohesion: 0.11
+Nodes (13): createHyperPayProvider(), createStripeProvider(), createStripeSubscriptionCheckout(), DepositCheckoutInput, DepositCheckoutResult, getPaymentProvider(), PaymentProvider, PaymentStatus (+5 more)
 
 ### Community 17 - "compilerOptions"
+Cohesion: 0.07
+Nodes (26): adminDeletePhotographer, adminGrantRole, adminRenewSubscription, adminResolveDispute, adminRestorePhotographer, adminRevokeRole, adminSoftDeletePhotographer, adminTogglePublish (+18 more)
+
+### Community 18 - "components.json"
 Cohesion: 0.10
 Nodes (19): compilerOptions, allowImportingTsExtensions, jsx, lib, module, moduleResolution, noEmit, noFallthroughCasesInSwitch (+11 more)
 
-### Community 18 - "components.json"
-Cohesion: 0.11
-Nodes (18): aliases, components, hooks, lib, ui, utils, iconLibrary, registries (+10 more)
-
 ### Community 19 - "dashboard.bookings.$id.tsx"
-Cohesion: 0.16
-Nodes (11): confirmBookingAfterDeposit, markFinalPaymentReceived, saveBookingSelectionLink, updateBookingStatus, updateProductionStage, loadBitmap(), watermarkImageFile(), WatermarkOptions (+3 more)
+Cohesion: 0.14
+Nodes (14): markFinalPaymentReceived, saveBookingSelectionLink, saveDeliveryLink, updateBookingStatus, updateProductionStage, loadBitmap(), watermarkImageFile(), WatermarkOptions (+6 more)
 
 ### Community 20 - "$username.tsx"
-Cohesion: 0.14
-Nodes (8): Lightbox(), PopoverContent, submitBookingRequest, optimizedImageUrl(), responsiveSrcSet(), Pricing, Profile, Route
+Cohesion: 0.11
+Nodes (11): Lightbox(), PopoverContent, optimizedImageUrl(), responsiveSrcSet(), getPhotographerProfileData, hapticVibrate(), DepositCard(), Pricing (+3 more)
 
 ### Community 21 - "command.tsx"
 Cohesion: 0.12
@@ -203,36 +209,36 @@ Cohesion: 0.12
 Nodes (11): Menubar, MenubarCheckboxItem, MenubarContent, MenubarItem, MenubarLabel, MenubarRadioItem, MenubarSeparator, MenubarShortcut() (+3 more)
 
 ### Community 23 - "Header.tsx"
-Cohesion: 0.20
-Nodes (10): BottomNav(), Tab, AuthState, metadataSaysPhotographer(), Session, useAuthState(), Landing(), FEATURES (+2 more)
+Cohesion: 0.11
+Nodes (18): BottomNav(), Tab, items, MobileBottomNav(), NavItem, MobileTabBar(), AuthState, metadataSaysPhotographer() (+10 more)
 
 ### Community 24 - "search.tsx"
-Cohesion: 0.18
-Nodes (9): GridSkeleton(), SkeletonCard(), SkeletonCardProps, listPublishedCities, SearchInput, searchPhotographers, SearchResultItem, SearchSort (+1 more)
+Cohesion: 0.17
+Nodes (13): CompareMode(), GridSkeleton(), listPublishedCities, SearchInput, searchPhotographers, SearchResultItem, SearchSort, typoCorrect() (+5 more)
 
 ### Community 25 - "client.ts"
-Cohesion: 0.19
-Nodes (5): lovable, lovableAuth, SignInOptions, supabase, signOut()
+Cohesion: 0.24
+Nodes (11): PremiumLock(), useSubscriptionLock(), createSupabaseClient(), supabase, brokeredPreviewStorage(), Contracts(), ReportsPage(), statusLabel() (+3 more)
 
 ### Community 26 - "booking.functions.ts"
-Cohesion: 0.17
-Nodes (12): BookingItemInput, clientAddNote, clientMarkDepositSent, clientMarkReceived, getBookingByToken, getPublicDepositInfo, recordReferralAfterSignup, regenerateBookingToken (+4 more)
+Cohesion: 0.14
+Nodes (14): BookingItemInput, clientMarkDepositSent, confirmBookingAfterDeposit, getBookingByToken, getPublicDepositInfo, recordReferralAfterSignup, regenerateBookingToken, softDeleteBooking (+6 more)
 
 ### Community 27 - "email.server.ts"
-Cohesion: 0.46
-Nodes (12): appBase(), escapeAttr(), escapeHtml(), layout(), SendArgs, tplBookingCancelled(), tplBookingReceivedForClient(), tplDepositConfirmed() (+4 more)
+Cohesion: 0.43
+Nodes (13): appBase(), escapeAttr(), escapeHtml(), layout(), SendArgs, tplBookingCancelled(), tplBookingReceivedForClient(), tplDepositConfirmed() (+5 more)
 
 ### Community 28 - "track.$token.tsx"
-Cohesion: 0.19
-Nodes (8): createDepositCheckout, createSubscriptionCheckout, isPaymentsEnabled, processDepositRefund, Booking, BOOKING_STEPS, BookingTimeline(), Route
+Cohesion: 0.15
+Nodes (11): clientAddNote, clientMarkReceived, getGalleryByToken, createDepositCheckout, createSubscriptionCheckout, isPaymentsEnabled, reconcilePaymentStatus, Booking (+3 more)
 
 ### Community 29 - "gallery.functions.ts"
-Cohesion: 0.17
-Nodes (10): validateInput(), addGalleryPhoto, deleteGalleryPhoto, ensureGallery, getGalleryByToken, getGalleryForPhotographer, getMessagesByToken, isUuid() (+2 more)
+Cohesion: 0.18
+Nodes (9): validateInput(), addGalleryPhoto, deleteGalleryPhoto, ensureGallery, getGalleryForPhotographer, getMessagesByToken, isUuid(), sendMessageByToken (+1 more)
 
 ### Community 30 - "dashboard.index.tsx"
-Cohesion: 0.27
-Nodes (4): NotificationPermission(), useCountUp(), NumStat(), Route
+Cohesion: 0.13
+Nodes (8): NotificationPermission(), PullToRefresh(), PullToRefreshProps, useCountUp(), signOut(), Card(), NumStat(), Route
 
 ### Community 31 - "context-menu.tsx"
 Cohesion: 0.20
@@ -243,7 +249,7 @@ Cohesion: 0.20
 Nodes (9): DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut(), DropdownMenuSubContent (+1 more)
 
 ### Community 33 - "dashboard.bookings.index.tsx"
-Cohesion: 0.29
+Cohesion: 0.23
 Nodes (6): EmptyState(), ListSkeleton(), BookingsList(), formatDate(), STATUS_COLORS, STATUS_LABELS
 
 ### Community 34 - "faq.tsx"
@@ -275,8 +281,8 @@ Cohesion: 0.25
 Nodes (7): SelectContent, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger
 
 ### Community 41 - "MobileBottomNav.tsx"
-Cohesion: 0.33
-Nodes (4): items, MobileBottomNav(), NavItem, Route
+Cohesion: 0.11
+Nodes (18): aliases, components, hooks, lib, ui, utils, iconLibrary, registries (+10 more)
 
 ### Community 42 - "card.tsx"
 Cohesion: 0.29
@@ -291,56 +297,104 @@ Cohesion: 0.29
 Nodes (5): clientSteps, GuidePage(), photographerSteps, Route, Step
 
 ### Community 45 - "onboarding.tsx"
-Cohesion: 0.29
-Nodes (3): Form, Route, STEPS
+Cohesion: 0.20
+Nodes (16): ClientTour(), getTourState(), HIDDEN_PREFIXES, resetTour(), saveTourState(), startTour(), Step, STEPS (+8 more)
 
 ### Community 46 - "input-otp.tsx"
-Cohesion: 0.33
-Nodes (5): input-otp, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot
+Cohesion: 0.40
+Nodes (4): InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot
+
+### Community 47 - "dashboard.profile.tsx"
+Cohesion: 0.15
+Nodes (11): FormControl, FormDescription, FormFieldContext, FormFieldContextValue, FormItem, FormItemContext, FormItemContextValue, FormLabel (+3 more)
 
 ### Community 48 - "alert.tsx"
-Cohesion: 0.40
-Nodes (4): Alert, AlertDescription, AlertTitle, alertVariants
+Cohesion: 0.18
+Nodes (6): raiseDispute, requestVerification, resolveDispute, updateNotificationPreferences, verifyPhotographerStatus, Route
 
 ### Community 49 - "WhatsAppQuickSend.tsx"
 Cohesion: 0.60
 Nodes (4): Booking, normalizePhone(), substitute(), WhatsAppQuickSend()
 
 ### Community 50 - "cancellation.functions.ts"
-Cohesion: 0.40
-Nodes (3): cancelBooking, clientCancelBooking, updateRefundPolicy
+Cohesion: 0.22
+Nodes (9): Item, ShotList(), useConfirm(), processDepositRefund, AdminPhotographers(), AdminRefundsPage(), Route, BookingDetail() (+1 more)
+
+### Community 51 - "contact.tsx"
+Cohesion: 0.20
+Nodes (9): CompositeTypes, Constants, Database, DatabaseWithoutInternals, DefaultSchema, Enums, Tables, TablesInsert (+1 more)
+
+### Community 52 - "dashboard.subscription.tsx"
+Cohesion: 0.31
+Nodes (7): readInitialTheme(), Theme, ThemeContext, ThemeContextValue, ThemeProvider(), useTheme(), ThemeToggle()
 
 ### Community 53 - "sitemap[.]xml.ts"
 Cohesion: 0.50
 Nodes (4): escapeXml(), Route, STATIC_PAGES, urlEntry()
 
 ### Community 54 - "badge.tsx"
-Cohesion: 0.67
-Nodes (3): Badge(), BadgeProps, badgeVariants
+Cohesion: 0.25
+Nodes (5): adminApproveReview, adminRejectReview, listReviewsAdmin, Route, Row
 
 ### Community 55 - "tabs.tsx"
+Cohesion: 0.25
+Nodes (5): adminApproveSubscriptionPayment, adminRejectSubscriptionPayment, listSubscriptionPaymentsAdmin, PaymentRow, Route
+
+### Community 56 - "admin.index.tsx"
+Cohesion: 0.29
+Nodes (4): adminCancelBooking, listBookingsAdmin, BookingRow, Route
+
+### Community 58 - "for-clients.tsx"
+Cohesion: 0.38
+Nodes (4): createContractForBooking, getContractByToken, signContract, Route
+
+### Community 59 - "terms.tsx"
+Cohesion: 0.43
+Nodes (5): assertSafeIcalUrl(), parseIcalDates(), runIcalSyncForUser(), syncExternalIcal, Route
+
+### Community 61 - "router.tsx"
+Cohesion: 0.38
+Nodes (5): initMonitoring(), getRouter(), Register, routeTree, startInstance
+
+### Community 62 - "dashboard.bookings.tsx"
+Cohesion: 0.33
+Nodes (4): adminDeleteNotification, listNotificationsAdmin, Route, Row
+
+### Community 64 - "email.functions.ts"
+Cohesion: 0.33
+Nodes (4): listReferralsAdmin, Route, Row, STATUS_LABEL
+
+### Community 66 - "Route"
+Cohesion: 0.40
+Nodes (3): listContractsAdmin, Route, Row
+
+### Community 73 - "ScrollReveal.tsx"
 Cohesion: 0.50
-Nodes (3): TabsContent, TabsList, TabsTrigger
+Nodes (3): directionVariants, ScrollReveal(), ScrollRevealProps
+
+### Community 74 - "production-rules.ts"
+Cohesion: 0.83
+Nodes (3): canMoveBooking(), getStageOrder(), STAGES_ORDER
 
 ## Knowledge Gaps
-- **442 isolated node(s):** `$schema`, `style`, `rsc`, `tsx`, `css` (+437 more)
+- **478 isolated node(s):** `fs`, `css`, `$schema`, `style`, `rsc` (+473 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `cn()` connect `cn` to `confirm-dialog.tsx`, `sidebar.tsx`, `carousel.tsx`, `utils.ts`, `$username.tsx`, `command.tsx`, `menubar.tsx`, `search.tsx`, `context-menu.tsx`, `dropdown-menu.tsx`, `faq.tsx`, `table.tsx`, `breadcrumb.tsx`, `drawer.tsx`, `navigation-menu.tsx`, `select.tsx`, `card.tsx`, `toggle-group.tsx`, `input-otp.tsx`, `alert.tsx`, `badge.tsx`, `tabs.tsx`?**
-  _High betweenness centrality (0.235) - this node is a cross-community bridge._
-- **Why does `dependencies` connect `dependencies` to `__root.tsx`, `carousel.tsx`, `input-otp.tsx`, `devDependencies`?**
-  _High betweenness centrality (0.199) - this node is a cross-community bridge._
+- **Why does `dependencies` connect `dependencies` to `__root.tsx`, `carousel.tsx`, `devDependencies`?**
+  _High betweenness centrality (0.154) - this node is a cross-community bridge._
+- **Why does `cn()` connect `cn` to `confirm-dialog.tsx`, `sidebar.tsx`, `carousel.tsx`, `utils.ts`, `$username.tsx`, `command.tsx`, `menubar.tsx`, `context-menu.tsx`, `dropdown-menu.tsx`, `faq.tsx`, `table.tsx`, `breadcrumb.tsx`, `drawer.tsx`, `navigation-menu.tsx`, `select.tsx`, `card.tsx`, `toggle-group.tsx`, `input-otp.tsx`, `dashboard.profile.tsx`?**
+  _High betweenness centrality (0.112) - this node is a cross-community bridge._
 - **Why does `react` connect `carousel.tsx` to `dependencies`, `cn`, `sidebar.tsx`, `upload.ts`?**
-  _High betweenness centrality (0.085) - this node is a cross-community bridge._
-- **What connects `$schema`, `style`, `rsc` to the rest of the system?**
-  _442 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _High betweenness centrality (0.051) - this node is a cross-community bridge._
+- **What connects `fs`, `css`, `$schema` to the rest of the system?**
+  _478 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `dependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.03278688524590164 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.030303030303030304 - nodes in this community are weakly interconnected._
 - **Should `routeTree.gen.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.03278688524590164 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.02631578947368421 - nodes in this community are weakly interconnected._
 - **Should `types.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05387205387205387 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06382978723404255 - nodes in this community are weakly interconnected._

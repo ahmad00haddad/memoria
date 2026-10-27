@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { getLang, dirOf } from "@/i18n";
 import { useNavigate } from "@tanstack/react-router";
 import { Calendar, CalendarDays, FileText, Home, Link2, ListChecks, MessageCircle, Package, Bell, Star, TrendingUp, User, Gift, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from "@/components/ui/command";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const OPEN_COMMAND_EVENT = "memoria:open-command";
 
@@ -86,13 +89,13 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <div dir="rtl">
-        <CommandInput placeholder="ابحثي عن عروس أو صفحة أو إجراء…" />
+      <div dir={dirOf(getLang())}>
+        <CommandInput placeholder={t("ابحثي عن عروس أو صفحة أو إجراء…")} />
         <CommandList className="max-h-[60vh]">
-          <CommandEmpty>لا نتائج. جرّبي اسم العروس أو رقم هاتفها.</CommandEmpty>
+          <CommandEmpty>{t("لا نتائج. جرّبي اسم العروس أو رقم هاتفها.")}</CommandEmpty>
 
           {bookings && bookings.length > 0 && (
-            <CommandGroup heading="الحجوزات">
+            <CommandGroup heading={t("الحجوزات")}>
               {bookings.map((b) => (
                 <CommandItem
                   key={b.id}
@@ -100,21 +103,21 @@ export function CommandPalette() {
                   onSelect={() => go(() => nav({ to: "/dashboard/bookings/$id", params: { id: b.id } }))}
                 >
                   <Calendar className="me-2 text-muted-foreground" />
-                  <span className="flex-1 truncate">{b.client_name}</span>
+                  <span className="flex-1 truncate">{tx(b.client_name)}</span>
                   <span className="ms-2 text-xs text-muted-foreground">
-                    {b.event_date ? new Date(b.event_date).toLocaleDateString("ar-JO", { day: "numeric", month: "short" }) : ""} · {STATUS[b.status] ?? b.status}
+                    {b.event_date ? new Date(b.event_date).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "short" }) : ""} · {STATUS[b.status] ?? b.status}
                   </span>
                 </CommandItem>
               ))}
             </CommandGroup>
           )}
 
-          <CommandGroup heading="إجراءات سريعة">
+          <CommandGroup heading={t("إجراءات سريعة")}>
             <CommandItem value="إضافة باقة جديدة سعر" onSelect={() => go(() => nav({ to: "/dashboard/pricing" }))}>
-              <Package className="me-2 text-muted-foreground" /> إضافة باقة جديدة
+              <Package className="me-2 text-muted-foreground" />{" "}{t("إضافة باقة جديدة")}
             </CommandItem>
             <CommandItem value="حجب يوم عطلة تقويم" onSelect={() => go(() => nav({ to: "/dashboard/calendar" }))}>
-              <CalendarDays className="me-2 text-muted-foreground" /> حجب يوم في التقويم
+              <CalendarDays className="me-2 text-muted-foreground" />{" "}{t("حجب يوم في التقويم")}
             </CommandItem>
             {username && (
               <CommandItem
@@ -122,30 +125,30 @@ export function CommandPalette() {
                 onSelect={() => go(async () => {
                   try {
                     await navigator.clipboard.writeText(`${window.location.origin}/photographers/${username}`);
-                    toast.success("نُسخ رابط ملفك");
+                    toast.success(t("نُسخ رابط ملفك"));
                   } catch { toast.message(`${window.location.origin}/photographers/${username}`); }
                 })}
               >
-                <Link2 className="me-2 text-muted-foreground" /> نسخ رابط ملفي العام
+                <Link2 className="me-2 text-muted-foreground" />{" "}{t("نسخ رابط ملفي العام")}
               </CommandItem>
             )}
             {username && (
               <CommandItem value="عرض ملفي العام كما تراه العرائس" onSelect={() => go(() => window.open(`/photographers/${username}`, "_blank"))}>
-                <Star className="me-2 text-muted-foreground" /> عرض ملفي كما تراه العرائس
+                <Star className="me-2 text-muted-foreground" />{" "}{t("عرض ملفي كما تراه العرائس")}
               </CommandItem>
             )}
           </CommandGroup>
 
-          <CommandGroup heading="الصفحات">
+          <CommandGroup heading={t("الصفحات")}>
             {PAGES.map((p) => (
               <CommandItem key={p.to} value={`${p.label} ${p.keywords}`} onSelect={() => go(() => nav({ to: p.to as any }))}>
-                <p.icon className="me-2 text-muted-foreground" /> {p.label}
+                <p.icon className="me-2 text-muted-foreground" /> {tx(p.label)}
               </CommandItem>
             ))}
           </CommandGroup>
         </CommandList>
         <div className="flex items-center justify-between border-t border-border px-3 py-2 text-[11px] text-muted-foreground">
-          <span>↑↓ للتنقّل · Enter للفتح</span>
+          <span>{t("↑↓ للتنقّل · Enter للفتح")}</span>
           <CommandShortcut className="ms-0 tracking-normal">Ctrl K</CommandShortcut>
         </div>
       </div>

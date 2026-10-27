@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { g } from "@/hooks/use-gender";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 type Booking = { id?: string; event_date: string; status: string; client_name: string; start_time?: string };
 type Blocked = { id: string; date: string; reason: string | null };
@@ -54,20 +56,20 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
     <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-serif text-2xl">{cursor.toLocaleDateString("ar-JO", { month: "long", year: "numeric" })}</h2>
-          <p className="text-xs text-muted-foreground tabular-nums">{booked} محجوزة · {blockedCount} محجوبة · {monthDays.length - booked - blockedCount} متاحة</p>
+          <h2 className="font-serif text-2xl">{cursor.toLocaleDateString(locale("ar-JO"), { month: "long", year: "numeric" })}</h2>
+          <p className="text-xs text-muted-foreground tabular-nums">{t("{0} محجوزة · {1} محجوبة · {2} متاحة", [booked, blockedCount, monthDays.length - booked - blockedCount])}</p>
         </div>
         <div className="flex items-center gap-1">
           {!isCurrentMonth && (
-            <button onClick={() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); setDir(d < cursor ? -1 : 1); setCursor(d); }} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">اليوم</button>
+            <button onClick={() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); setDir(d < cursor ? -1 : 1); setCursor(d); }} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{t("اليوم")}</button>
           )}
-          <button onClick={() => shift(-1)} aria-label="الشهر السابق" className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary"><ChevronRight className="h-4 w-4" /></button>
-          <button onClick={() => shift(1)} aria-label="الشهر التالي" className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary"><ChevronLeft className="h-4 w-4" /></button>
+          <button onClick={() => shift(-1)} aria-label={t("الشهر السابق")} className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary"><ChevronRight className="h-4 w-4" /></button>
+          <button onClick={() => shift(1)} aria-label={t("الشهر التالي")} className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary"><ChevronLeft className="h-4 w-4" /></button>
         </div>
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center text-[11px] text-muted-foreground mb-1">
-        {WEEKDAYS.map((w) => <div key={w} className="py-1">{w}</div>)}
+        {WEEKDAYS.map((w) => <div key={w} className="py-1">{tx(w)}</div>)}
       </div>
 
       <div className="relative overflow-hidden">
@@ -97,7 +99,7 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
                   key={key}
                   disabled={past && !bks.length}
                   onClick={() => (bks.length ? onOpenBooking(bks[0]) : onToggle(key, blk?.id))}
-                  title={bks.length ? bks.map((b) => b.client_name).join("، ") : blk ? `محجوب${blk.reason ? ` — ${blk.reason}` : ""} · ${g("انقري", "انقر")} لفتحه` : g("انقري لحجب هذا اليوم", "انقر لحجب هذا اليوم")}
+                  title={bks.length ? bks.map((b) => b.client_name).join(t("،")) : blk ? t("محجوب{0} · {1} لفتحه", [blk.reason ? ` — ${blk.reason}` : "", g("انقري", "انقر")]) : g(t("انقري لحجب هذا اليوم"), t("انقر لحجب هذا اليوم"))}
                   className={`group relative flex aspect-square sm:aspect-auto sm:h-14 flex-col items-center justify-center rounded-xl text-sm tabular-nums transition-colors
                     ${bks.length ? "bg-gold/15 text-foreground hover:bg-gold/25" : blk ? "bg-secondary text-muted-foreground" : past ? "text-muted-foreground/40" : "hover:bg-secondary"}
                     ${isToday ? "ring-2 ring-gold/60" : ""}`}
@@ -110,7 +112,7 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
                       ))}
                     </span>
                   )}
-                  {bks.length > 1 && <span className="absolute top-1 end-1 text-[9px] text-gold">{bks.length}</span>}
+                  {bks.length > 1 && <span className="absolute top-1 end-1 text-[9px] text-gold">{tx(bks.length)}</span>}
                 </button>
               );
             })}
@@ -119,9 +121,9 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
       </div>
 
       <div className="mt-4 flex flex-wrap gap-4 text-[11px] text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-gold/30" /> حجز</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-secondary" /> محجوب (لا يظهر للعرائس)</span>
-        <span className="ms-auto">{g("انقري على يوم لحجبه أو فتحه", "انقر على يوم لحجبه أو فتحه")}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-gold/30" />{" "}{t("حجز")}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded bg-secondary" />{" "}{t("محجوب (لا يظهر للعرائس)")}</span>
+        <span className="ms-auto">{g(t("انقري على يوم لحجبه أو فتحه"), t("انقر على يوم لحجبه أو فتحه"))}</span>
       </div>
     </div>
   );

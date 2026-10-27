@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { getLang, dirOf } from "@/i18n";
 import { useRouterState } from "@tanstack/react-router";
 import { X, Gamepad2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { t } from "@/i18n";
 
 const SEEN_KEY = "game_hint_seen";
 
@@ -53,15 +55,15 @@ export function GameHint() {
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
-          dir="rtl"
-          className="fixed bottom-[72px] sm:bottom-6 right-4 left-4 sm:left-auto sm:w-80 z-50 bg-charcoal text-ivory rounded-lg p-4 shadow-elegant flex items-center gap-3"
+          dir={dirOf(getLang())}
+          className="fixed bottom-[72px] sm:bottom-6 start-4 end-4 sm:end-auto sm:w-80 z-50 bg-charcoal text-ivory rounded-lg p-4 shadow-elegant flex items-center gap-3"
         >
           <Gamepad2 className="h-5 w-5 text-gold shrink-0" />
           <div className="flex-1 text-sm">
-            <div className="font-serif font-bold">قبل ما تروحي… جرّبي تهربي من العريس!</div>
-            <a href="/game/" className="text-gold underline underline-offset-2">العبي «اهربي يا عروس»</a>
+            <div className="font-serif font-bold">{t("قبل ما تروحي… جرّبي تهربي من العريس!")}</div>
+            <a href="/game/" className="text-gold underline underline-offset-2">{t("العبي «اهربي يا عروس»")}</a>
           </div>
-          <button onClick={() => setShow(false)} aria-label="إغلاق" className="text-ivory/70 hover:text-ivory">
+          <button onClick={() => setShow(false)} aria-label={t("إغلاق")} className="text-ivory/70 hover:text-ivory">
             <X className="h-4 w-4" />
           </button>
         </motion.div>

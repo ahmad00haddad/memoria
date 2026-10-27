@@ -9,6 +9,8 @@ import {
   adminRejectSubscriptionPayment,
 } from "@/lib/admin.functions";
 import { PageLoader } from "@/components/ui/loading";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/subscriptions")({
   component: AdminSubs,
@@ -56,7 +58,7 @@ function AdminSubs() {
       const data = await listFn();
       setRows((data as PaymentRow[]) ?? []);
     } catch (e: any) {
-      toast.error(e.message || "فشل تحميل الدفعات");
+      toast.error(e.message || t("فشل تحميل الدفعات"));
     }
     setLoading(false);
   };
@@ -66,18 +68,18 @@ function AdminSubs() {
   const submitApprove = async () => {
     if (!approveRow) return;
     if (!Number.isInteger(approveMonths) || approveMonths < 1 || approveMonths > 36) {
-      toast.error("أدخل عدد أشهر بين 1 و36");
+      toast.error(t("أدخل عدد أشهر بين 1 و36"));
       return;
     }
     setApproving(true);
     try {
       await approveFn({ data: { payment_id: approveRow.id, months: approveMonths } });
-      toast.success(`تم تفعيل الاشتراك لمدة ${approveMonths} شهر ✓`);
+      toast.success(t("تم تفعيل الاشتراك لمدة {0} شهر ✓", [approveMonths]));
       setApproveRow(null);
       setApproveMonths(1);
       load();
     } catch (e: any) {
-      toast.error(e.message || "فشل تفعيل الاشتراك");
+      toast.error(e.message || t("فشل تفعيل الاشتراك"));
     }
     setApproving(false);
   };
@@ -85,18 +87,18 @@ function AdminSubs() {
   const submitReject = async () => {
     if (!rejectRow) return;
     if (!rejectReason.trim()) {
-      toast.error("أدخل سبب الرفض");
+      toast.error(t("أدخل سبب الرفض"));
       return;
     }
     setRejecting(true);
     try {
       await rejectFn({ data: { payment_id: rejectRow.id, reason: rejectReason.trim() } });
-      toast.success("تم رفض الدفعة");
+      toast.success(t("تم رفض الدفعة"));
       setRejectRow(null);
       setRejectReason("");
       load();
     } catch (e: any) {
-      toast.error(e.message || "فشل رفض الدفعة");
+      toast.error(e.message || t("فشل رفض الدفعة"));
     }
     setRejecting(false);
   };
@@ -114,19 +116,19 @@ function AdminSubs() {
     <section>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="font-serif text-2xl">مراجعة دفعات الاشتراك</h2>
+          <h2 className="font-serif text-2xl">{t("مراجعة دفعات الاشتراك")}</h2>
           <a href="https://www.zbooni.com/dashboard/orders" target="_blank" rel="noreferrer" className="text-xs text-gold inline-flex items-center gap-1 hover:underline">
-            طلبات زبوني للمطابقة <ExternalLink className="h-3 w-3" />
+            {t("طلبات زبوني للمطابقة")}{" "}<ExternalLink className="h-3 w-3" />
           </a>
         </div>
         <button onClick={load} className="text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
-          <RefreshCw className="h-3.5 w-3.5" /> تحديث
+          <RefreshCw className="h-3.5 w-3.5" />{" "}{t("تحديث")}
         </button>
       </div>
 
-      <h3 className="font-serif text-lg mb-3">قيد المراجعة ({pending.length})</h3>
+      <h3 className="font-serif text-lg mb-3">{t("قيد المراجعة ({0})", [pending.length])}</h3>
       {pending.length === 0 ? (
-        <div className="rounded-sm border border-border bg-card p-6 text-muted-foreground text-sm mb-10">لا توجد دفعات معلّقة.</div>
+        <div className="rounded-sm border border-border bg-card p-6 text-muted-foreground text-sm mb-10">{t("لا توجد دفعات معلّقة.")}</div>
       ) : (
         <div className="space-y-3 mb-10">
           {pending.map((r) => (
@@ -141,7 +143,7 @@ function AdminSubs() {
         </div>
       )}
 
-      <h3 className="font-serif text-lg mb-3">السجل ({reviewed.length})</h3>
+      <h3 className="font-serif text-lg mb-3">{t("السجل ({0})", [reviewed.length])}</h3>
       <div className="space-y-3">
         {reviewed.map((r) => (
           <PaymentCard key={r.id} r={r} url={r.proof_signed_url ?? undefined} />
@@ -152,14 +154,14 @@ function AdminSubs() {
       {approveRow && (
         <div className="fixed inset-0 bg-black/50 grid place-items-center z-50 p-4" onClick={() => !approving && setApproveRow(null)}>
           <div className="bg-card border border-border rounded-sm p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-serif text-xl mb-1">اعتماد دفعة الاشتراك</h3>
+            <h3 className="font-serif text-xl mb-1">{t("اعتماد دفعة الاشتراك")}</h3>
             <p className="text-sm text-muted-foreground mb-5">
               <span className="font-medium">{approveRow.profile?.display_name ?? "—"}</span>
-              {approveRow.profile?.username && <span className="text-xs ml-1">@{approveRow.profile.username}</span>}
-              <span className="ml-2 text-gold font-semibold">{approveRow.amount} JD</span>
+              {approveRow.profile?.username && <span className="text-xs me-1">@{tx(approveRow.profile.username)}</span>}
+              <span className="me-2 text-gold font-semibold">{tx(approveRow.amount)} JD</span>
             </p>
 
-            <label className="block text-sm font-medium mb-2">عدد أشهر الاشتراك</label>
+            <label className="block text-sm font-medium mb-2">{t("عدد أشهر الاشتراك")}</label>
             <div className="grid grid-cols-4 gap-2 mb-3">
               {[1, 3, 6, 12].map((m) => (
                 <button
@@ -167,12 +169,12 @@ function AdminSubs() {
                   onClick={() => setApproveMonths(m)}
                   className={`py-2.5 rounded-sm text-sm border transition ${approveMonths === m ? "bg-gold text-white border-gold" : "border-border hover:bg-secondary"}`}
                 >
-                  {m === 1 ? "شهر" : `${m} أشهر`}
+                  {m === 1 ? t("شهر") : t("{0} أشهر", [m])}
                 </button>
               ))}
             </div>
             <div className="flex items-center gap-2 mb-5">
-              <label className="text-sm text-muted-foreground whitespace-nowrap">عدد مخصص:</label>
+              <label className="text-sm text-muted-foreground whitespace-nowrap">{t("عدد مخصص:")}</label>
               <input
                 type="number"
                 min={1}
@@ -181,13 +183,12 @@ function AdminSubs() {
                 onChange={(e) => setApproveMonths(Math.max(1, Math.min(36, Number(e.target.value) || 1)))}
                 className="border border-border rounded-sm px-2 py-1.5 text-sm bg-background w-20 focus:outline-none focus:ring-1 focus:ring-gold"
               />
-              <span className="text-sm text-muted-foreground">شهر</span>
+              <span className="text-sm text-muted-foreground">{t("شهر")}</span>
             </div>
 
             {approveRow.method === "zbooni" && approveRow.period_months && approveMonths !== approveRow.period_months && (
               <div className="mb-4 rounded-sm border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
-                تنبيه: المصوّرة اختارت {approveRow.period_months === 12 ? "السنوي (12 شهر)" : "الشهري (شهر واحد)"} ودفعت {approveRow.amount} JOD. تأكّد من طلب زبوني قبل تغيير المدة.
-              </div>
+                {t("تنبيه: المصوّرة اختارت")}{" "}{approveRow.period_months === 12 ? t("السنوي (12 شهر)") : t("الشهري (شهر واحد)")}{" "}{t("ودفعت {0} JOD. تأكّد من طلب زبوني قبل تغيير المدة.", [approveRow.amount])}</div>
             )}
             <div className="flex gap-3">
               <button
@@ -195,14 +196,14 @@ function AdminSubs() {
                 disabled={approving}
                 className="flex-1 bg-emerald-600 text-white py-2.5 rounded-sm text-sm font-medium hover:opacity-90 transition disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >
-                {approving ? <><RefreshCw className="h-4 w-4 animate-spin" /> جاري التفعيل…</> : <><Check className="h-4 w-4" /> تفعيل الاشتراك</>}
+                {approving ? <><RefreshCw className="h-4 w-4 animate-spin" />{" "}{t("جاري التفعيل…")}</> : <><Check className="h-4 w-4" />{" "}{t("تفعيل الاشتراك")}</>}
               </button>
               <button
                 onClick={() => setApproveRow(null)}
                 disabled={approving}
                 className="px-4 py-2.5 rounded-sm text-sm border border-border hover:bg-secondary transition disabled:opacity-50"
               >
-                إلغاء
+                {t("إلغاء")}
               </button>
             </div>
           </div>
@@ -213,18 +214,18 @@ function AdminSubs() {
       {rejectRow && (
         <div className="fixed inset-0 bg-black/50 grid place-items-center z-50 p-4" onClick={() => !rejecting && setRejectRow(null)}>
           <div className="bg-card border border-border rounded-sm p-6 max-w-md w-full shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-serif text-xl mb-1">رفض الدفعة</h3>
+            <h3 className="font-serif text-xl mb-1">{t("رفض الدفعة")}</h3>
             <p className="text-sm text-muted-foreground mb-5">
               <span className="font-medium">{rejectRow.profile?.display_name ?? "—"}</span>
-              {rejectRow.profile?.username && <span className="text-xs ml-1">@{rejectRow.profile.username}</span>}
+              {rejectRow.profile?.username && <span className="text-xs me-1">@{tx(rejectRow.profile.username)}</span>}
             </p>
 
-            <label className="block text-sm font-medium mb-2">سبب الرفض <span className="text-destructive">*</span></label>
+            <label className="block text-sm font-medium mb-2">{t("سبب الرفض")}{" "}<span className="text-destructive">*</span></label>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               rows={4}
-              placeholder="اكتب سبب رفض الدفعة بوضوح ليتم إخطار المصوّرة..."
+              placeholder={t("اكتب سبب رفض الدفعة بوضوح ليتم إخطار المصوّرة...")}
               className="w-full border border-border rounded-sm px-3 py-2 text-sm bg-background resize-none focus:outline-none focus:ring-1 focus:ring-destructive mb-5"
             />
 
@@ -234,14 +235,14 @@ function AdminSubs() {
                 disabled={rejecting || !rejectReason.trim()}
                 className="flex-1 bg-destructive text-destructive-foreground py-2.5 rounded-sm text-sm font-medium hover:opacity-90 transition disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >
-                {rejecting ? <><RefreshCw className="h-4 w-4 animate-spin" /> جاري الرفض…</> : <><X className="h-4 w-4" /> رفض الدفعة</>}
+                {rejecting ? <><RefreshCw className="h-4 w-4 animate-spin" />{" "}{t("جاري الرفض…")}</> : <><X className="h-4 w-4" />{" "}{t("رفض الدفعة")}</>}
               </button>
               <button
                 onClick={() => setRejectRow(null)}
                 disabled={rejecting}
                 className="px-4 py-2.5 rounded-sm text-sm border border-border hover:bg-secondary transition disabled:opacity-50"
               >
-                إلغاء
+                {t("إلغاء")}
               </button>
             </div>
           </div>
@@ -257,42 +258,42 @@ function PaymentCard({
   return (
     <div className="rounded-sm border border-border bg-card p-4 flex flex-wrap items-center gap-4">
       <div className="flex-1 min-w-[200px]">
-        <div className="font-medium">{r.profile?.display_name ?? "—"} <span className="text-muted-foreground text-xs">@{r.profile?.username}</span></div>
-        <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString("ar-JO")}</div>
-        {r.cliq_reference && <div className="text-xs">المرجع: <span className="font-mono">{r.cliq_reference}</span></div>}
+        <div className="font-medium">{r.profile?.display_name ?? "—"} <span className="text-muted-foreground text-xs">@{tx(r.profile?.username)}</span></div>
+        <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString(locale("ar-JO"))}</div>
+        {r.cliq_reference && <div className="text-xs">{t("المرجع:")}{" "}<span className="font-mono">{tx(r.cliq_reference)}</span></div>}
         {r.method === "zbooni" && (
           <div className="text-xs font-semibold text-gold">
-            {r.period_months === 12 ? "Signature · سنوي" : "Flex · شهري"} — طابِق طلب زبوني بقيمة {r.amount} JOD ومنتج «{r.period_months === 12 ? "اشتراك سنوي" : "اشتراك شهري"}»
+            {r.period_months === 12 ? t("Signature · سنوي") : t("Flex · شهري")}{" "}{t("— طابِق طلب زبوني بقيمة {0} JOD ومنتج «", [r.amount])}{r.period_months === 12 ? t("اشتراك سنوي") : t("اشتراك شهري")}»
           </div>
         )}
-        {r.payment_reference && <div className="text-xs">رمز الدفعة: <span className="font-mono" dir="ltr">{r.payment_reference}</span></div>}
-        {r.email && <div className="text-xs">الإيميل: <span dir="ltr">{r.email}</span></div>}
+        {r.payment_reference && <div className="text-xs">{t("رمز الدفعة:")}{" "}<span className="font-mono" dir="ltr">{tx(r.payment_reference)}</span></div>}
+        {r.email && <div className="text-xs">{t("الإيميل:")}{" "}<span dir="ltr">{tx(r.email)}</span></div>}
         {r.method === "gateway" && r.status === "pending" && (
-          <div className="text-xs text-muted-foreground">PayTabs: صفحة دفع لم تكتمل — يُحسم تلقائياً، لا تعتمدها يدوياً</div>
+          <div className="text-xs text-muted-foreground">{t("PayTabs: صفحة دفع لم تكتمل — يُحسم تلقائياً، لا تعتمدها يدوياً")}</div>
         )}
         {r.method === "zbooni" && r.status === "pending" && (
           <div className={`text-xs ${r.payer_confirmed_at ? "text-emerald-600" : "text-muted-foreground"}`}>
-            {r.payer_confirmed_at ? `أكّدت الدفع ${new Date(r.payer_confirmed_at).toLocaleString("ar-JO")}` : "فتحت صفحة الدفع ولم تؤكّد بعد"}
+            {r.payer_confirmed_at ? t("أكّدت الدفع {0}", [new Date(r.payer_confirmed_at).toLocaleString(locale("ar-JO"))]) : t("فتحت صفحة الدفع ولم تؤكّد بعد")}
           </div>
         )}
-        {r.notes && <div className="text-xs text-muted-foreground italic">{r.notes}</div>}
+        {r.notes && <div className="text-xs text-muted-foreground italic">{tx(r.notes)}</div>}
       </div>
-      <div className="text-sm font-semibold">{r.amount} JD · {r.method}</div>
+      <div className="text-sm font-semibold">{tx(r.amount)} JD · {tx(r.method)}</div>
       {url && (
         <a href={url} target="_blank" rel="noreferrer" className="text-xs text-gold inline-flex items-center gap-1 hover:underline">
-          عرض الإثبات <ExternalLink className="h-3 w-3" />
+          {t("عرض الإثبات")}{" "}<ExternalLink className="h-3 w-3" />
         </a>
       )}
       <span className={`text-xs px-2 py-1 rounded-sm ${r.status === "approved" ? "bg-emerald-100 text-emerald-800" : r.status === "rejected" ? "bg-destructive/15 text-destructive" : "bg-amber-100 text-amber-800"}`}>
-        {r.status === "approved" ? "مُعتمد" : r.status === "rejected" ? "مرفوض" : "قيد المراجعة"}
+        {r.status === "approved" ? t("مُعتمد") : r.status === "rejected" ? t("مرفوض") : t("قيد المراجعة")}
       </span>
       {onApprove && (
         <div className="flex gap-2">
           <button onClick={onApprove} className="bg-emerald-600 text-white px-3 py-2 rounded-sm text-xs inline-flex items-center gap-1 hover:opacity-90">
-            <Check className="h-3.5 w-3.5" /> اعتماد
+            <Check className="h-3.5 w-3.5" />{" "}{t("اعتماد")}
           </button>
           <button onClick={onReject} className="bg-destructive text-destructive-foreground px-3 py-2 rounded-sm text-xs inline-flex items-center gap-1 hover:opacity-90">
-            <X className="h-3.5 w-3.5" /> رفض
+            <X className="h-3.5 w-3.5" />{" "}{t("رفض")}
           </button>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
+import { t } from "@/i18n";
 
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const { theme, toggle } = useTheme();
@@ -11,7 +12,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     return (
       <button
         type="button"
-        aria-label="تبديل الوضع"
+        aria-label={t("تبديل الوضع")}
         className={`relative grid h-9 w-9 place-items-center rounded-sm border border-border/60 bg-background text-foreground ${className}`}
         suppressHydrationWarning
       >
@@ -23,8 +24,8 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     <button
       type="button"
       onClick={toggle}
-      aria-label={theme === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الليلي"}
-      title={theme === "dark" ? "الوضع الفاتح" : "الوضع الليلي"}
+      aria-label={theme === "dark" ? t("تفعيل الوضع الفاتح") : t("تفعيل الوضع الليلي")}
+      title={theme === "dark" ? t("الوضع الفاتح") : t("الوضع الليلي")}
       className={`relative grid h-9 w-9 place-items-center rounded-sm border border-border/60 bg-background text-foreground hover:bg-secondary transition-colors ${className}`}
     >
       {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

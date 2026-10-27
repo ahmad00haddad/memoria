@@ -5,6 +5,8 @@ import { listAuditLogAdmin } from "@/lib/admin.functions";
 import { RefreshCw } from "lucide-react";
 import { PageLoader } from "@/components/ui/loading";
 import { toast } from "sonner";
+import { locale } from "@/i18n";
+import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin/audit-log")({
   component: AdminAuditLog,
@@ -47,7 +49,7 @@ function AdminAuditLog() {
         const data = await listFn();
         setRows((data as Row[]) ?? []);
       } catch (e: any) {
-        toast.error(e.message ?? "فشل تحميل سجل العمليات");
+        toast.error(e.message ?? t("فشل تحميل سجل العمليات"));
       }
       setLoading(false);
     })();
@@ -64,19 +66,19 @@ function AdminAuditLog() {
   return (
     <section>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h2 className="font-serif text-2xl">سجل العمليات ({rows.length})</h2>
+        <h2 className="font-serif text-2xl">{t("سجل العمليات ({0})", [rows.length])}</h2>
         <input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="بحث بالعملية أو النوع…"
+          placeholder={t("بحث بالعملية أو النوع…")}
           className="border border-border bg-card rounded-sm px-3 py-2 text-sm w-64 focus:outline-none focus:ring-1 focus:ring-gold"
         />
       </div>
 
       {filtered.length === 0 ? (
         <div className="rounded-sm border border-border bg-card p-6 text-muted-foreground text-sm text-center">
-          لا توجد سجلات.
+          {t("لا توجد سجلات.")}
         </div>
       ) : (
         <div className="space-y-2">
@@ -87,18 +89,18 @@ function AdminAuditLog() {
               <div key={r.id} className="rounded-sm border border-border bg-card overflow-hidden">
                 <button
                   onClick={() => setExpanded(isOpen ? null : r.id)}
-                  className="w-full text-right p-4 flex flex-wrap items-center gap-4 hover:bg-muted/20 transition"
+                  className="w-full text-start p-4 flex flex-wrap items-center gap-4 hover:bg-muted/20 transition"
                 >
-                  <span className={`text-xs px-2 py-0.5 rounded-sm whitespace-nowrap ${colorCls}`}>{r.action}</span>
-                  <span className="text-xs text-muted-foreground">النوع: {r.entity_type ?? "—"}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-sm whitespace-nowrap ${colorCls}`}>{tx(r.action)}</span>
+                  <span className="text-xs text-muted-foreground">{t("النوع:")}{" "}{r.entity_type ?? "—"}</span>
                   <span className="text-xs text-muted-foreground font-mono">
-                    الكيان: {r.entity_id ? r.entity_id.slice(0, 8) + "…" : "—"}
+                    {t("الكيان:")}{" "}{r.entity_id ? r.entity_id.slice(0, 8) + "…" : "—"}
                   </span>
                   <span className="text-xs text-muted-foreground font-mono">
-                    الفاعل: {r.actor_id ? r.actor_id.slice(0, 8) + "…" : "النظام"}
+                    {t("الفاعل:")}{" "}{r.actor_id ? r.actor_id.slice(0, 8) + "…" : t("النظام")}
                   </span>
-                  <span className="text-xs text-muted-foreground mr-auto">
-                    {new Date(r.created_at).toLocaleString("ar-JO")}
+                  <span className="text-xs text-muted-foreground ms-auto">
+                    {new Date(r.created_at).toLocaleString(locale("ar-JO"))}
                   </span>
                   <RefreshCw className={`h-3.5 w-3.5 text-muted-foreground transition ${isOpen ? "rotate-90" : ""}`} />
                 </button>
@@ -106,13 +108,13 @@ function AdminAuditLog() {
                   <div className="border-t border-border px-4 py-3 grid sm:grid-cols-2 gap-4 bg-muted/10 text-xs">
                     {r.before_data && (
                       <div>
-                        <div className="text-muted-foreground mb-1 font-medium">قبل:</div>
+                        <div className="text-muted-foreground mb-1 font-medium">{t("قبل:")}</div>
                         <pre className="font-mono whitespace-pre-wrap break-all text-xs">{JSON.stringify(r.before_data, null, 2)}</pre>
                       </div>
                     )}
                     {r.after_data && (
                       <div>
-                        <div className="text-muted-foreground mb-1 font-medium">بعد:</div>
+                        <div className="text-muted-foreground mb-1 font-medium">{t("بعد:")}</div>
                         <pre className="font-mono whitespace-pre-wrap break-all text-xs">{JSON.stringify(r.after_data, null, 2)}</pre>
                       </div>
                     )}

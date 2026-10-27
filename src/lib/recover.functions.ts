@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
+import { t } from "@/i18n";
 
 export const recoverTrackingLinks = createServerFn({ method: "POST" })
   .inputValidator((d: { emailOrPhone: string }) => {
     if (!d || typeof d.emailOrPhone !== "string" || d.emailOrPhone.length < 5) {
-      throw new Error("يرجى إدخال بريد إلكتروني أو رقم هاتف صحيح");
+      throw new Error(t("يرجى إدخال بريد إلكتروني أو رقم هاتف صحيح"));
     }
     return { emailOrPhone: d.emailOrPhone.trim() };
   })
@@ -26,12 +27,12 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
 
     if (error) {
       console.error("[recover] error searching bookings:", error);
-      throw new Error("حدث خطأ أثناء معالجة طلبك");
+      throw new Error(t("حدث خطأ أثناء معالجة طلبك"));
     }
 
     const successResponse = { 
       ok: true, 
-      message: "إذا كانت بياناتك مسجلة لدينا وحجوزاتك نشطة، ستصلك رسالة بروابط التتبع قريباً." 
+      message: t("إذا كانت بياناتك مسجلة لدينا وحجوزاتك نشطة، ستصلك رسالة بروابط التتبع قريباً.") 
     };
 
     if (!bookings || bookings.length === 0) {
@@ -44,19 +45,11 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
 
     // تجميع الروابط
     const linksList = bookings.map((b: any) => {
-      const pName = b.profiles?.display_name || "المصوّرة";
-      return `- حجزك مع ${pName} بتاريخ ${b.event_date}:\n${base}/track/${b.client_tracking_token}`;
+      const pName = b.profiles?.display_name || t("المصوّرة");
+      return t("- حجزك مع {0} بتاريخ {1}: {2}/track/{3}", [pName, b.event_date, base, b.client_tracking_token]);
     }).join("\n\n");
 
-    const emailHtml = `
-      <div dir="rtl" style="font-family: sans-serif;">
-        <h2>مرحباً ${bookings[0].client_name}،</h2>
-        <p>طلبتم استرداد روابط التتبع لحجوزاتكم النشطة على منصة Memoria.</p>
-        <p>إليكم روابط الحجوزات الخاصة بكم:</p>
-        <pre style="background: #f4f4f5; padding: 16px; border-radius: 8px;">${linksList}</pre>
-        <p>نتمنى لكم مناسبة سعيدة!</p>
-      </div>
-    `;
+    const emailHtml = t("<div dir=\"rtl\" style=\"font-family: sans-serif;\"> <h2>مرحباً {0}،</h2> <p>طلبتم استرداد روابط التتبع لحجوزاتكم النشطة على منصة Memoria.</p> <p>إليكم روابط الحجوزات الخاصة بكم:</p> <pre style=\"background: #f4f4f5; padding: 16px; border-radius: 8px;\">{1}</pre> <p>نتمنى لكم مناسبة سعيدة!</p> </div>", [bookings[0].client_name, linksList]);
 
     // 1. أرسل بريداً إذا كان البريد متوفراً وطابق البحث
     const clientEmail = bookings[0].client_email;
@@ -66,7 +59,7 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
         // لا ننتظر إرسال البريد (fire-and-forget جزئي لتثبيت وقت الاستجابة)
         sendEmail({
           to: clientEmail,
-          subject: "روابط تتبع حجوزاتك — Memoria",
+          subject: t("روابط تتبع حجوزاتك — Memoria"),
           html: emailHtml,
           template: "recover_tracking_links",
         }).catch(e => console.error("[recover] failed to send email", e));

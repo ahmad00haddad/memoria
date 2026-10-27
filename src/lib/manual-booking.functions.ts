@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { t } from "@/i18n";
 
 // ============================================================================
 // manual-booking.functions.ts — حجز يدوي سريع لعميلة جاءت من خارج المنصة
@@ -36,21 +37,21 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function validate(d: Input): Input {
-  if (!d || typeof d !== "object") throw new Error("بيانات غير صالحة");
+  if (!d || typeof d !== "object") throw new Error(t("بيانات غير صالحة"));
   const name = String(d.client_name ?? "").trim();
   const phone = String(d.client_phone ?? "").replace(/[^\d+]/g, "");
   const email = String(d.client_email ?? "").trim().toLowerCase();
-  if (name.length < 2 || name.length > 80) throw new Error("اكتبي اسم العميلة");
-  if (phone.replace(/\D/g, "").length < 9 || phone.length > 16) throw new Error("رقم الهاتف غير صحيح");
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("البريد الإلكتروني غير صحيح");
-  if (d.service !== "photography" && d.service !== "cinematic_video") throw new Error("نوع الخدمة غير صالح");
-  if (!DATE_RE.test(d.event_date)) throw new Error("اختاري تاريخ المناسبة");
-  if (!TIME_RE.test(d.start_time) || !TIME_RE.test(d.end_time)) throw new Error("الوقت غير صالح");
-  if (d.end_time <= d.start_time) throw new Error("وقت النهاية يجب أن يكون بعد البداية");
+  if (name.length < 2 || name.length > 80) throw new Error(t("اكتبي اسم العميلة"));
+  if (phone.replace(/\D/g, "").length < 9 || phone.length > 16) throw new Error(t("رقم الهاتف غير صحيح"));
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error(t("البريد الإلكتروني غير صحيح"));
+  if (d.service !== "photography" && d.service !== "cinematic_video") throw new Error(t("نوع الخدمة غير صالح"));
+  if (!DATE_RE.test(d.event_date)) throw new Error(t("اختاري تاريخ المناسبة"));
+  if (!TIME_RE.test(d.start_time) || !TIME_RE.test(d.end_time)) throw new Error(t("الوقت غير صالح"));
+  if (d.end_time <= d.start_time) throw new Error(t("وقت النهاية يجب أن يكون بعد البداية"));
   const total = Number(d.total_price);
   const deposit = Number(d.deposit_amount);
-  if (!Number.isFinite(total) || total < 0 || total > 100000) throw new Error("السعر غير صالح");
-  if (!Number.isFinite(deposit) || deposit < 0 || deposit > total) throw new Error("العربون لا يمكن أن يتجاوز السعر");
+  if (!Number.isFinite(total) || total < 0 || total > 100000) throw new Error(t("السعر غير صالح"));
+  if (!Number.isFinite(deposit) || deposit < 0 || deposit > total) throw new Error(t("العربون لا يمكن أن يتجاوز السعر"));
   return {
     client_name: name,
     client_phone: phone,
@@ -76,7 +77,7 @@ export const createManualBooking = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: prof } = await supabaseAdmin.from("profiles").select("id, display_name").eq("id", userId).maybeSingle();
-    if (!prof) throw new Error("الحساب غير موجود");
+    if (!prof) throw new Error(t("الحساب غير موجود"));
 
     const { data: conflict, error: cErr } = await (supabaseAdmin.rpc as any)("has_booking_conflict", {
       _pid: userId,
@@ -86,7 +87,7 @@ export const createManualBooking = createServerFn({ method: "POST" })
       _exclude: null,
     });
     if (cErr) console.error("[manual-booking] conflict check failed:", cErr.message);
-    if (conflict === true) throw new Error("عندك حجز آخر بنفس الوقت في هذا اليوم");
+    if (conflict === true) throw new Error(t("عندك حجز آخر بنفس الوقت في هذا اليوم"));
 
     const deposit = data.deposit_amount;
     const confirmed = data.deposit_received || deposit === 0;
@@ -113,7 +114,7 @@ export const createManualBooking = createServerFn({ method: "POST" })
         deposit_amount: deposit,
         privacy_level: "no_publish",
         photographer_can_publish: false,
-        photographer_notes: ["حجز يدوي (من خارج المنصة)", data.notes].filter(Boolean).join("\n"),
+        photographer_notes: [t("حجز يدوي (من خارج المنصة)"), data.notes].filter(Boolean).join("\n"),
         contract_agreed: false,
         status: confirmed ? "confirmed" : "pending_deposit",
         deposit_confirmed_at: confirmed ? now : null,
@@ -123,7 +124,7 @@ export const createManualBooking = createServerFn({ method: "POST" })
       })
       .select("id, client_tracking_token")
       .single();
-    if (error || !row) throw new Error(error?.message || "تعذّر إنشاء الحجز");
+    if (error || !row) throw new Error(error?.message || t("تعذّر إنشاء الحجز"));
 
     // عقد تلقائي من قالب المصوّرة عند التأكيد (إن وُجد قالب)
     let contractToken: string | null = null;
