@@ -356,10 +356,12 @@ function PhotographerPage() {
                     <Star className="h-3 w-3 fill-gold" />{" "}{tr("اختيار المحرّر")}
                   </span>
                 )}
-                {/* ⚡ تلميح: سرعة الرد */}
-                <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30" title={tr("هذه المصورة ترد بسرعة على طلبات الحجز")}>
-                  <span className="text-emerald-400">⚡</span>{" "}{tr("ترد سريعاً")}
-                </span>
+                {/* ⚡ سرعة الرد الحقيقية (وسيط آخر 180 يوماً، من 3 طلبات فأكثر) */}
+                {responseHours != null && (
+                  <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30" title={tr("الوقت المعتاد لرد المصوّرة على طلبات الحجز")}>
+                    <span className="text-emerald-400">⚡</span>{" "}{responseHours < 1 ? tr("تردّ خلال أقل من ساعة") : tr("تردّ خلال ~{0} ساعة", [Math.round(responseHours)])}
+                  </span>
+                )}
               </div>
               {profile.bio && (
                 <p className="max-w-md text-base sm:text-lg leading-[1.8] opacity-85 whitespace-pre-line mb-8">

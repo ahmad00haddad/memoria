@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
+import { LivePhonePreview } from "@/components/dashboard/LivePhonePreview";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
@@ -26,64 +28,6 @@ const numOr = (v: unknown, def: number) => (v === "" || v == null ? def : Number
 export const Route = createFileRoute("/_authenticated/dashboard/profile")({ component: ProfilePage });
 
 
-function LivePhonePreview({ p }: { p: any }) {
-  return (
-    <div className="hidden lg:block sticky top-24">
-      <div className="text-xs font-bold text-muted-foreground mb-3 flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        {tr("المعاينة الحية (كما تراها العروس)")}
-      </div>
-      <div className="relative w-[320px] h-[650px] bg-background border-[10px] border-charcoal rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col">
-        {/* Notch */}
-        <div className="absolute top-0 end-1/2 -translate-x-1/2 w-32 h-6 bg-charcoal rounded-b-2xl z-50"></div>
-        
-        {/* Cover */}
-        <div className="h-40 bg-secondary/50 relative overflow-hidden shrink-0">
-          {p.cover_url ? (
-            <img src={p.cover_url} className="w-full h-full object-cover" alt="Cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground/30 font-bold text-2xl">MEMORIA</div>
-          )}
-        </div>
-        
-        {/* Avatar */}
-        <div className="absolute top-28 start-6 w-20 h-20 bg-background rounded-full p-1 shadow-md z-10">
-          {p.avatar_url ? (
-             <img src={p.avatar_url} className="w-full h-full rounded-full object-cover" alt="Avatar" />
-          ) : (
-             <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center">📷</div>
-          )}
-        </div>
-
-        {/* Info */}
-        <div className="px-5 pt-12 pb-4 flex-1 overflow-y-auto">
-          <h2 className="font-serif text-xl font-bold">{p.display_name || tr("اسم المصورة")}</h2>
-          <p className="text-[10px] text-muted-foreground mb-3">{p.city || tr("المدينة")}{" "}{tr("• 100% نسبة الرد")}</p>
-          <div className="text-xs mb-4 p-3 bg-secondary/30 rounded-lg text-foreground/80 leading-relaxed border border-border/50">
-            {p.bio || g(tr("اكتبي نبذة تعريفية جذابة هنا لتظهر للعرائس..."), tr("اكتب نبذة تعريفية جذابة هنا لتظهر للعرائس..."))}
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            <div className="bg-emerald-50 text-emerald-700 text-center py-2 rounded-md text-[10px] font-bold border border-emerald-100">
-              {tr("واتساب")}
-            </div>
-            <div className="bg-charcoal text-white text-center py-2 rounded-md text-[10px] font-bold">
-              {tr("طلب حجز")}
-            </div>
-          </div>
-          
-          <h3 className="font-bold text-xs mb-2">{tr("معرض الصور")}</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="aspect-square bg-secondary/50 rounded-md"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ProfilePage() {
   useGender(); // يعيد الرسم فور تغيير صيغة المخاطبة
   const nav = useNavigate();
@@ -98,6 +42,7 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uid, setUid] = useState("");
   const [p, setP] = useState<any>({});
+  const [previewOpen, setPreviewOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const portfolioRef = useRef<HTMLInputElement>(null);
   const tourState = useTourState();
@@ -585,7 +530,36 @@ function ProfilePage() {
               <button onClick={() => { resetTour(); toast.success(tr("صفّرنا الجولة")); }} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{tr("تصفير")}</button>
             </div>
           </Card>
-      </div><LivePhonePreview p={p} /></div></section>
+      </div>
+        <div className="hidden lg:block sticky top-24">
+          <div className="text-xs font-bold text-muted-foreground mb-3 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            {tr("المعاينة الحية (كما تراها العروس)")}
+          </div>
+          <LivePhonePreview p={p} />
+        </div>
+      </div></section>
+
+      {/* الموبايل: زر عائم يفتح نفس المعاينة الحية (بما فيها التعديلات غير المحفوظة) */}
+      <button
+        onClick={() => setPreviewOpen(true)}
+        className={`lg:hidden fixed end-4 z-40 inline-flex items-center gap-2 rounded-full bg-charcoal px-4 py-3 text-sm font-medium text-ivory shadow-lg transition-[bottom] dark:bg-gold dark:text-charcoal ${isDirty ? "bottom-24" : "bottom-6"}`}
+      >
+        <Eye className="h-4 w-4" />{" "}{tr("معاينة صفحتي")}
+      </button>
+      <Sheet open={previewOpen} onOpenChange={setPreviewOpen}>
+        <SheetContent side="bottom" className="h-[92vh] overflow-y-auto rounded-t-2xl px-2">
+          <SheetHeader className="px-2 text-start">
+            <SheetTitle className="flex items-center gap-2 text-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              {tr("كما تراها العروس — تتحدّث مع كل تعديل")}
+            </SheetTitle>
+          </SheetHeader>
+          <div className="py-4 origin-top scale-[0.92]">
+            <LivePhonePreview p={p} />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* شريط الحفظ يظهر فقط عند وجود تغييرات */}
       <AnimatePresence>
