@@ -137,6 +137,7 @@ function PhotographerPage() {
   const [unavail, setUnavail] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<{ event_date: string; start_time: string; end_time: string }[]>([]);
   const [completedCount, setCompletedCount] = useState<number>(0);
+  const [responseHours, setResponseHours] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -168,7 +169,8 @@ function PhotographerPage() {
       setProfile(mergedProfile);
       if (mergedProfile) {
         const pid = mergedProfile.id;
-        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc } = await fetchProfileData({ data: { pid } });
+        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc, responseHours: rh } = await fetchProfileData({ data: { pid } });
+        setResponseHours(rh);
         setPricing(p as Pricing[]);
         setReviews(r);
         setCompletedCount(cc);
@@ -247,9 +249,8 @@ function PhotographerPage() {
   );
   if (!profile) return <FallbackPage>{tr("لا يوجد مصوّر بهذا الاسم.")}{" "}<Link to="/search" className="underline">{tr("عُد للبحث")}</Link></FallbackPage>;
 
-  // اليوم يُحجَب فقط لو كان في عدم التوفر (Google/يدوي). الحجوزات الفردية لا تحجب اليوم كاملاً
-  // بل تُعرض كفترات مشغولة بالساعات حتى يمكن حجز جلسة أخرى في نفس اليوم.
-  const blockedDates = [...new Set(unavail)];
+  // حجز واحد باليوم: أي يوم فيه حجز قائم (أو طلب ينتظر رد المصوّرة) يُحجب كاملاً.
+  const blockedDates = [...new Set([...unavail, ...bookedSlots.map((s) => s.event_date)])];
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -437,6 +438,7 @@ function PhotographerPage() {
           profile={profile}
           completedCount={completedCount}
           unavailCount={blockedDates.length}
+          responseHours={responseHours}
         />
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("الباقات")}</div>
@@ -663,7 +665,7 @@ function ProgressiveImage({ src, alt, className }: { src: string, alt?: string, 
   );
 }
 
-function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profile; completedCount: number; unavailCount: number }) {
+function TrustBadges({ profile, completedCount, unavailCount, responseHours }: { profile: Profile; completedCount: number; unavailCount: number; responseHours: number | null }) {
   const joined = profile.created_at ? new Date(profile.created_at) : null;
   const joinedLabel = joined
     ? joined.toLocaleDateString(locale("ar-JO"), { month: "long", year: "numeric" })
@@ -675,7 +677,9 @@ function TrustBadges({ profile, completedCount, unavailCount }: { profile: Profi
     { icon: CalendarCheck, label: tr("عضوة منذ"), value: joinedLabel },
     { icon: Award, label: tr("حجوزات مكتملة"), value: completedCount > 0 ? String(completedCount) : tr("جديدة") },
     { icon: Shield, label: tr("العربون"), value: depositLabel },
-    { icon: Clock, label: tr("تواريخ مشغولة"), value: String(unavailCount) },
+    responseHours != null
+      ? { icon: Clock, label: tr("تردّ عادةً خلال"), value: responseHours < 1 ? tr("أقل من ساعة") : tr("{0} ساعة", [Math.round(responseHours)]) }
+      : { icon: Clock, label: tr("تواريخ مشغولة"), value: String(unavailCount) },
   ];
   return (
     <div className="mb-10 grid grid-cols-2 md:grid-cols-4 gap-3">

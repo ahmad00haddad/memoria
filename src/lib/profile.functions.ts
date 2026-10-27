@@ -11,7 +11,7 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
     
     if (error || !result) {
       console.error("RPC Error:", error);
-      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0 };
+      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0, responseHours: null as number | null };
     }
 
     // The RPC returns a JSON object with the keys we need
@@ -22,6 +22,7 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
       unavail: r.unavail ?? [],
       bookedSlots: r.bookedSlots ?? [],
       completedCount: r.completedCount ?? 0,
+      responseHours: (r.responseHours ?? null) as number | null,
     };
   });
 

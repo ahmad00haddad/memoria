@@ -127,6 +127,12 @@ export type Database = {
       }
       bookings: {
         Row: {
+          approved_at: string | null
+          auto_cancel_kind: string | null
+          auto_cancel_notified_at: string | null
+          needs_approval: boolean
+          phone_verified_at: string | null
+          reminders_sent: string[]
           addons: Json | null
           base_price: number
           cancellation_reason: string | null
@@ -185,6 +191,12 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          approved_at?: string | null
+          auto_cancel_kind?: string | null
+          auto_cancel_notified_at?: string | null
+          needs_approval?: boolean
+          phone_verified_at?: string | null
+          reminders_sent?: string[]
           addons?: Json | null
           base_price?: number
           cancellation_reason?: string | null
@@ -243,6 +255,12 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          approved_at?: string | null
+          auto_cancel_kind?: string | null
+          auto_cancel_notified_at?: string | null
+          needs_approval?: boolean
+          phone_verified_at?: string | null
+          reminders_sent?: string[]
           addons?: Json | null
           base_price?: number
           cancellation_reason?: string | null

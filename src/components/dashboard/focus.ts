@@ -29,6 +29,9 @@ export type FocusBooking = {
   deposit_sent_at: string | null;
   final_paid_at: string | null;
   deposit_amount: number | null;
+  needs_approval?: boolean | null;
+  approved_at?: string | null;
+  phone_verified_at?: string | null;
 };
 
 const DAY = 86400000;
@@ -68,6 +71,18 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
   for (const b of bookings) {
     const name = b.client_name || t("العميلة");
     const link = { to: "/dashboard/bookings/$id", params: { id: b.id } };
+
+    // ٠) طلب ينتظر موافقتها — أعلى أولوية: بعد 24 ساعة يُلغى تلقائياً
+    if (b.needs_approval && !b.approved_at && b.phone_verified_at && (b.status === "pending_deposit" || b.status === "quote")) {
+      const left = Math.max(0, Math.ceil((new Date(b.phone_verified_at).getTime() + DAY - now) / 3600000));
+      items.push({
+        id: `approve-${b.id}`, tone: "urgent", priority: 110,
+        title: t("طلب {0} بانتظار موافقتك", [name]),
+        detail: t("باقي {0} ساعة — بعدها يُلغى الطلب تلقائياً", [left]),
+        cta: g(t("وافقي أو ارفضي"), t("وافق أو ارفض")), ...link,
+      });
+      continue;
+    }
 
     // ١) عربون وصل وينتظر التأكيد — أعلى أولوية لأنه مال ينتظر
     if (b.status === "pending_deposit" && (b.deposit_proof_url || b.deposit_sent_at)) {

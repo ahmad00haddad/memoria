@@ -121,7 +121,7 @@ function buildDefaultMessage(category: NotificationCategory, vars: TemplateVars)
         `يمكنك متابعة حالة حجزك في أي وقت من الرابط التالي:`,
         tracking_url ? tracking_url : null,
         ``,
-        `سيتواصل معك فريق Memoria قريباً لتأكيد الحجز. ✨`,
+        `المصوّرة ستراجع طلبك خلال 24 ساعة، وبعد موافقتها تظهر لكِ تفاصيل دفع العربون. ✨`,
       ].filter(Boolean).join("\n");
 
     case "confirmed":

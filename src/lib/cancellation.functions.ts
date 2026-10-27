@@ -29,10 +29,11 @@ export const cancelBooking = createServerFn({ method: "POST" })
     if (!d || typeof d.booking_id !== "string" || !UUID_RE.test(d.booking_id)) {
       throw new Error("invalid booking_id");
     }
-    if (d.reason != null && (typeof d.reason !== "string" || d.reason.length > 2000)) {
-      throw new Error("invalid reason");
-    }
-    return { booking_id: d.booking_id, reason: d.reason ?? null };
+    // السبب إلزامي: العروس لازم تعرف ليش انلغى حجزها
+    const reason = typeof d.reason === "string" ? d.reason.trim() : "";
+    if (reason.length < 3) throw new Error(tr("اكتبي سبب الإلغاء — رح يوصل للعروس"));
+    if (reason.length > 2000) throw new Error("invalid reason");
+    return { booking_id: d.booking_id, reason };
   })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
@@ -68,6 +69,7 @@ export const cancelBooking = createServerFn({ method: "POST" })
           refund_amount: Number(info.refund_amount || 0),
           by: "photographer",
           track_token: info.tracking_token,
+          reason: data.reason,
         });
         await sendEmail({
           to: info.client_email, subject: t.subject, html: t.html,

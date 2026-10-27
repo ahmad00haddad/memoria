@@ -75,10 +75,12 @@ import { Route as AuthenticatedDashboardBookingsIndexRouteImport } from './route
 import { Route as AuthenticatedDashboardBookingsIdRouteImport } from './routes/_authenticated/dashboard.bookings.$id'
 import { Route as ApiPublicGoogleCallbackRouteImport } from './routes/api/public/google/callback'
 import { Route as ApiPublicHooksBookingChangedRouteImport } from './routes/api/public/hooks/booking-changed'
+import { Route as ApiPublicHooksBookingDeadlinesRouteImport } from './routes/api/public/hooks/booking-deadlines'
 import { Route as ApiPublicHooksEmailRemindersRouteImport } from './routes/api/public/hooks/email-reminders'
 import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
 import { Route as ApiPublicHooksPaymentRouteImport } from './routes/api/public/hooks/payment'
 import { Route as ApiPublicHooksPaytabsRouteImport } from './routes/api/public/hooks/paytabs'
+import { Route as ApiPublicHooksTelegramRouteImport } from './routes/api/public/hooks/telegram'
 import { Route as ApiPublicHooksWhatsappRouteImport } from './routes/api/public/hooks/whatsapp'
 import { Route as ApiPublicIcalTokenRouteImport } from './routes/api/public/ical.$token'
 
@@ -440,6 +442,12 @@ const ApiPublicHooksBookingChangedRoute =
     path: '/api/public/hooks/booking-changed',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksBookingDeadlinesRoute =
+  ApiPublicHooksBookingDeadlinesRouteImport.update({
+    id: '/api/public/hooks/booking-deadlines',
+    path: '/api/public/hooks/booking-deadlines',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksEmailRemindersRoute =
   ApiPublicHooksEmailRemindersRouteImport.update({
     id: '/api/public/hooks/email-reminders',
@@ -459,6 +467,11 @@ const ApiPublicHooksPaymentRoute = ApiPublicHooksPaymentRouteImport.update({
 const ApiPublicHooksPaytabsRoute = ApiPublicHooksPaytabsRouteImport.update({
   id: '/api/public/hooks/paytabs',
   path: '/api/public/hooks/paytabs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksTelegramRoute = ApiPublicHooksTelegramRouteImport.update({
+  id: '/api/public/hooks/telegram',
+  path: '/api/public/hooks/telegram',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicHooksWhatsappRoute = ApiPublicHooksWhatsappRouteImport.update({
@@ -537,10 +550,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
   '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
+  '/api/public/hooks/booking-deadlines': typeof ApiPublicHooksBookingDeadlinesRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
+  '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
   '/dashboard/bookings/': typeof AuthenticatedDashboardBookingsIndexRoute
@@ -607,10 +622,12 @@ export interface FileRoutesByTo {
   '/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
   '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
+  '/api/public/hooks/booking-deadlines': typeof ApiPublicHooksBookingDeadlinesRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
+  '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
   '/dashboard/bookings': typeof AuthenticatedDashboardBookingsIndexRoute
@@ -682,10 +699,12 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/bookings/$id': typeof AuthenticatedDashboardBookingsIdRoute
   '/api/public/google/callback': typeof ApiPublicGoogleCallbackRoute
   '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
+  '/api/public/hooks/booking-deadlines': typeof ApiPublicHooksBookingDeadlinesRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
+  '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
   '/api/public/hooks/whatsapp': typeof ApiPublicHooksWhatsappRoute
   '/api/public/ical/$token': typeof ApiPublicIcalTokenRoute
   '/_authenticated/dashboard/bookings/': typeof AuthenticatedDashboardBookingsIndexRoute
@@ -757,10 +776,12 @@ export interface FileRouteTypes {
     | '/dashboard/bookings/$id'
     | '/api/public/google/callback'
     | '/api/public/hooks/booking-changed'
+    | '/api/public/hooks/booking-deadlines'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/hooks/paytabs'
+    | '/api/public/hooks/telegram'
     | '/api/public/hooks/whatsapp'
     | '/api/public/ical/$token'
     | '/dashboard/bookings/'
@@ -827,10 +848,12 @@ export interface FileRouteTypes {
     | '/dashboard/bookings/$id'
     | '/api/public/google/callback'
     | '/api/public/hooks/booking-changed'
+    | '/api/public/hooks/booking-deadlines'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/hooks/paytabs'
+    | '/api/public/hooks/telegram'
     | '/api/public/hooks/whatsapp'
     | '/api/public/ical/$token'
     | '/dashboard/bookings'
@@ -901,10 +924,12 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/bookings/$id'
     | '/api/public/google/callback'
     | '/api/public/hooks/booking-changed'
+    | '/api/public/hooks/booking-deadlines'
     | '/api/public/hooks/email-reminders'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/hooks/paytabs'
+    | '/api/public/hooks/telegram'
     | '/api/public/hooks/whatsapp'
     | '/api/public/ical/$token'
     | '/_authenticated/dashboard/bookings/'
@@ -944,10 +969,12 @@ export interface RootRouteChildren {
   BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicGoogleCallbackRoute: typeof ApiPublicGoogleCallbackRoute
   ApiPublicHooksBookingChangedRoute: typeof ApiPublicHooksBookingChangedRoute
+  ApiPublicHooksBookingDeadlinesRoute: typeof ApiPublicHooksBookingDeadlinesRoute
   ApiPublicHooksEmailRemindersRoute: typeof ApiPublicHooksEmailRemindersRoute
   ApiPublicHooksIcalSyncRoute: typeof ApiPublicHooksIcalSyncRoute
   ApiPublicHooksPaymentRoute: typeof ApiPublicHooksPaymentRoute
   ApiPublicHooksPaytabsRoute: typeof ApiPublicHooksPaytabsRoute
+  ApiPublicHooksTelegramRoute: typeof ApiPublicHooksTelegramRoute
   ApiPublicHooksWhatsappRoute: typeof ApiPublicHooksWhatsappRoute
   ApiPublicIcalTokenRoute: typeof ApiPublicIcalTokenRoute
 }
@@ -1416,6 +1443,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksBookingChangedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/booking-deadlines': {
+      id: '/api/public/hooks/booking-deadlines'
+      path: '/api/public/hooks/booking-deadlines'
+      fullPath: '/api/public/hooks/booking-deadlines'
+      preLoaderRoute: typeof ApiPublicHooksBookingDeadlinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/email-reminders': {
       id: '/api/public/hooks/email-reminders'
       path: '/api/public/hooks/email-reminders'
@@ -1442,6 +1476,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/paytabs'
       fullPath: '/api/public/hooks/paytabs'
       preLoaderRoute: typeof ApiPublicHooksPaytabsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/telegram': {
+      id: '/api/public/hooks/telegram'
+      path: '/api/public/hooks/telegram'
+      fullPath: '/api/public/hooks/telegram'
+      preLoaderRoute: typeof ApiPublicHooksTelegramRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/whatsapp': {
@@ -1611,10 +1652,12 @@ const rootRouteChildren: RootRouteChildren = {
   BlogIndexRoute: BlogIndexRoute,
   ApiPublicGoogleCallbackRoute: ApiPublicGoogleCallbackRoute,
   ApiPublicHooksBookingChangedRoute: ApiPublicHooksBookingChangedRoute,
+  ApiPublicHooksBookingDeadlinesRoute: ApiPublicHooksBookingDeadlinesRoute,
   ApiPublicHooksEmailRemindersRoute: ApiPublicHooksEmailRemindersRoute,
   ApiPublicHooksIcalSyncRoute: ApiPublicHooksIcalSyncRoute,
   ApiPublicHooksPaymentRoute: ApiPublicHooksPaymentRoute,
   ApiPublicHooksPaytabsRoute: ApiPublicHooksPaytabsRoute,
+  ApiPublicHooksTelegramRoute: ApiPublicHooksTelegramRoute,
   ApiPublicHooksWhatsappRoute: ApiPublicHooksWhatsappRoute,
   ApiPublicIcalTokenRoute: ApiPublicIcalTokenRoute,
 }

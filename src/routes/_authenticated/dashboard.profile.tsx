@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState } from "react";
@@ -541,12 +542,9 @@ function ProfilePage() {
           </Card>
 
           <Card id="sec-notifs" title={tr("الإشعارات والجولة التعريفية")} open={openSections["sec-notifs"] ?? false} onToggle={toggle}>
+            <NotifyChannelsCard />
             <div className="divide-y divide-border">
               {[
-                { key: "booking_new", label: tr("طلب حجز جديد") },
-                { key: "booking_confirmed", label: tr("تأكيد حجز") },
-                { key: "booking_cancelled", label: tr("إلغاء حجز") },
-                { key: "deposit_received", label: tr("استلام عربون") },
                 { key: "message_new", label: tr("رسالة جديدة") },
                 { key: "review_new", label: tr("تقييم جديد") },
                 { key: "subscription_expiring", label: tr("اشتراك ينتهي قريباً") },

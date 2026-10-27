@@ -79,11 +79,13 @@ async function notifyNewBooking(bookingId: string, via: string) {
   const total = Number(b.total_price ?? 0);
   const deposit = Number(b.deposit_amount ?? 0);
 
-  await supabaseAdmin.from("notifications").insert({
-    user_id: b.photographer_id,
-    title: "طلب حجز جديد",
-    body: `${b.client_name} يرغب بحجز ${summaryLabel} بتاريخ ${b.event_date}`,
+  const { notifyPhotographer } = await import("@/lib/notify.server");
+  await notifyPhotographer(b.photographer_id, {
+    title: "طلب حجز جديد بانتظار موافقتك",
+    body: `${b.client_name} تطلب ${summaryLabel} بتاريخ ${b.event_date} (${total} د.أ). عندك 24 ساعة توافقي أو ترفضي، وبعدها يُلغى الطلب تلقائياً.`,
     link: `/dashboard/bookings/${b.id}`,
+    template: "new_booking_photographer",
+    bookingId: b.id,
   });
 
   // للعروس: عند التأكيد عبر واتساب يرد الـ webhook برابط التتبع مباشرة (مجاني
@@ -105,25 +107,7 @@ async function notifyNewBooking(bookingId: string, via: string) {
   }
 
   try {
-    const { sendEmail, tplNewBookingForPhotographer, tplBookingReceivedForClient } = await import("@/lib/email.server");
-    const { data: pUser } = await supabaseAdmin.auth.admin.getUserById(b.photographer_id);
-    const photographerEmail = pUser?.user?.email;
-    if (photographerEmail) {
-      const t1 = tplNewBookingForPhotographer({
-        photographer_name: photographerName,
-        client_name: b.client_name,
-        service_label: summaryLabel,
-        event_date: String(b.event_date),
-        start_time: String(b.start_time),
-        total,
-        booking_id: b.id,
-      });
-      await sendEmail({
-        to: photographerEmail, subject: t1.subject, html: t1.html,
-        template: "new_booking_photographer",
-        related_booking_id: b.id, related_user_id: b.photographer_id,
-      });
-    }
+    const { sendEmail, tplBookingReceivedForClient } = await import("@/lib/email.server");
     if (b.client_email) {
       const t2 = tplBookingReceivedForClient({
         client_name: b.client_name,

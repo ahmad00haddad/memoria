@@ -88,7 +88,10 @@ function TrackingPage() {
   const [payLoading, setPayLoading] = useState(false);
   const [reconcileLoading, setReconcileLoading] = useState(false);
   const [payEnabled, setPayEnabled] = useState(false);
-  const isExpired = b?.status === 'pending_deposit' && (b as any)?.created_at && new Date((b as any).created_at).getTime() < Date.now() - 48 * 3600 * 1000;
+  const isExpired = b?.status === 'pending_deposit' && !!b?.deposit_due_at && new Date(b.deposit_due_at).getTime() < Date.now();
+  // طلب ينتظر موافقة المصوّرة: لا تفاصيل دفع ولا عربون قبل الموافقة
+  const awaitingApproval = !!b?.needs_approval && !b?.approved_at && (b?.status === "pending_deposit" || b?.status === "quote");
+  const hoursLeft = (iso?: string | null) => iso ? Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 3600_000)) : null;
 
   const [reference, setReference] = useState("");
   const [pickedFile, setPickedFile] = useState<File | null>(null);
@@ -356,6 +359,7 @@ function TrackingPage() {
   const ph = b.photographer;
   const stages = [
     { key: "request", label: t("طلب الحجز"), done: true, icon: <CheckCircle2 className="h-5 w-5" /> },
+    { key: "approval", label: t("موافقة المصوّرة"), done: !awaitingApproval, icon: <CheckCircle2 className="h-5 w-5" /> },
     { key: "deposit", label: t("إرسال العربون"), done: !!b.deposit_sent_at, icon: <Upload className="h-5 w-5" /> },
     { key: "confirmed", label: t("تأكيد الحجز"), done: !!b.deposit_confirmed_at || ["confirmed","completed"].includes(b.status), icon: <CheckCircle2 className="h-5 w-5" /> },
     { key: "shoot", label: t("يوم التصوير"), done: b.production_stage !== "awaiting" || !!b.delivered_at || b.status === "completed", icon: <Camera className="h-5 w-5" /> },
@@ -393,7 +397,8 @@ function TrackingPage() {
           const allDone = stages.every((x) => x.done);
           const daysToEvent = b.event_date ? Math.ceil((new Date(b.event_date).getTime() - Date.now()) / 86400000) : null;
           const here = (() => {
-            if (!b.deposit_sent_at) return { title: t("الخطوة التالية: إرسال العربون"), body: t("حوّلي {0} د.أ لتثبيت موعدك، ثم ارفعي الإيصال.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))]), cta: t("إرسال العربون"), target: "deposit-step" };
+            if (awaitingApproval) return { title: t("بانتظار موافقة {0}", [ph.display_name]), body: t("التاريخ محجوز لكِ. المصوّرة تردّ خلال {0} ساعة كحد أقصى، ويصلك إشعار فور ردّها. لا تحوّلي أي مبلغ قبل موافقتها.", [hoursLeft(b.approval_due_at) ?? 24]), cta: null, target: null };
+            if (!b.deposit_sent_at) return { title: t("الخطوة التالية: إرسال العربون"), body: hoursLeft(b.deposit_due_at) !== null ? t("المصوّرة وافقت ✓ حوّلي {0} د.أ وارفعي الإيصال خلال {1} ساعة، وإلا يُلغى الطلب ويُفتح التاريخ لغيرك.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO")), hoursLeft(b.deposit_due_at)]) : t("حوّلي {0} د.أ لتثبيت موعدك، ثم ارفعي الإيصال.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))]), cta: t("إرسال العربون"), target: "deposit-step" };
             if (!(b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status))) return { title: t("وصل إيصالك — بانتظار تأكيد المصوّرة"), body: t("تصلك رسالة فور التأكيد. عادةً خلال ساعات."), cta: null, target: null };
             if (!b.delivered_at && b.status !== "completed" && daysToEvent !== null && daysToEvent >= 0) return { title: daysToEvent === 0 ? t("اليوم يومك 🤍") : t("باقي {0} {1} على يومك", [daysToEvent, daysToEvent === 1 ? "يوم" : "يوماً"]), body: t("حجزك مؤكَّد. أضيفي الموعد لتقويمك، واكتبي للمصوّرة أي تفاصيل تهمّك."), cta: null, target: null };
             if (!b.delivered_at && b.status !== "completed") return { title: t("صورك قيد التحرير"), body: t("تعمل المصوّرة على اختيار صورك وتحريرها. ستصلك رسالة عند جاهزيتها."), cta: null, target: null };
@@ -421,7 +426,7 @@ function TrackingPage() {
                 )}
 
                 {/* خط المراحل: المنجز ذهبي، والحالي ينبض */}
-                <ol className="mt-8 grid grid-cols-6 gap-1" aria-label={t("مراحل الحجز")}>
+                <ol className="mt-8 grid grid-cols-7 gap-1" aria-label={t("مراحل الحجز")}>
                   {stages.map((st, i) => {
                     const current = !allDone && i === currentIdx;
                     return (
@@ -448,6 +453,7 @@ function TrackingPage() {
             startTime={b.start_time}
             photographerName={ph.display_name}
             steps={[
+              { label: t("موافقة المصوّرة على الطلب"), done: !awaitingApproval },
               { label: t("إرسال العربون"), done: !!b.deposit_sent_at, target: "deposit-step" },
               { label: t("تأكيد المصوّرة للحجز"), done: !!b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status) },
               ...(b.contract?.sign_token ? [{ label: t("توقيع العقد"), done: b.contract.status === "signed", target: "contract-step" }] : []),
@@ -545,13 +551,13 @@ function TrackingPage() {
         </details>
 
         {/* Deposit step */}
-        {!b.deposit_sent_at && !b.verify && b.is_demo && (
+        {!b.deposit_sent_at && !b.verify && !awaitingApproval && b.is_demo && (
           <div id="deposit-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6">
             <h2 className="font-serif text-xl mb-2">{t("نسخة تجريبية")}</h2>
             <p className="text-sm">{t("هذا حساب تجريبي للمصوّرات فقط ليروا كيف سيبدو حسابهن، لذلك التحويل وإرسال العربون غير متاحين هنا. الحجز وصفحة التتبع تعمل كما هي.")}</p>
           </div>
         )}
-        {!b.deposit_sent_at && !b.verify && !b.is_demo && (
+        {!b.deposit_sent_at && !b.verify && !awaitingApproval && !b.is_demo && b.status !== "cancelled" && (
           <div id="deposit-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="h-5 w-5 text-gold" />
@@ -641,6 +647,11 @@ function TrackingPage() {
         {b.status === "cancelled" && (
           <div className="rounded-sm border border-destructive/30 bg-destructive/5 p-4 mb-6 text-sm">
             <div className="font-medium text-destructive mb-1">{t("تم إلغاء هذا الحجز")}</div>
+            {b.cancellation_reason && <div className="mb-1">{t("السبب:")}{" "}{tx(b.cancellation_reason)}</div>}
+            {!b.deposit_sent_at && <div className="text-muted-foreground">{t("لم يُدفع أي مبلغ على هذا الطلب.")}</div>}
+            {!b.deposit_sent_at && b.event_date >= new Date().toISOString().slice(0, 10) && (
+              <a href={`/search?date=${b.event_date}`} className="mt-3 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal">{t("مصوّرات متاحات بنفس التاريخ")}</a>
+            )}
             {Number(b.refund_amount || 0) > 0 && (
               <div>{t("تمت الموافقة على استرداد {0} د.أ. الحالة:", [b.refund_amount])}{" "}{b.refund_status === "pending" ? t("قيد المعالجة") : b.refund_status}.</div>
             )}

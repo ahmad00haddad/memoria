@@ -87,7 +87,7 @@ export const createManualBooking = createServerFn({ method: "POST" })
       _exclude: null,
     });
     if (cErr) console.error("[manual-booking] conflict check failed:", cErr.message);
-    if (conflict === true) throw new Error(t("عندك حجز آخر بنفس الوقت في هذا اليوم"));
+    if (conflict === true) throw new Error(t("عندك حجز آخر في هذا اليوم"));
 
     const deposit = data.deposit_amount;
     const confirmed = data.deposit_received || deposit === 0;

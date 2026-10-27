@@ -16,6 +16,7 @@ import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken
 } from "@/lib/booking.functions";
 import { createContractForBooking } from "@/lib/contracts.functions";
 import { cancelBooking } from "@/lib/cancellation.functions";
+import { approveBookingRequest, rejectBookingRequest } from "@/lib/approval.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 import { ShotList } from "@/components/ShotList";
 import { watermarkImageFile } from "@/lib/watermark";
@@ -112,6 +113,8 @@ function BookingDetail() {
   const [tab, setTab] = useState<TabKey>("overview");
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
   // التلميحات المُغلقة تُحفظ لكل حجز حتى لا تعود للظهور في كل زيارة
   const hintsKey = `memoria.dismissed-hints.${id}`;
   const [dismissedHints, setDismissedHints] = useState<string[]>(() => {
@@ -125,6 +128,8 @@ function BookingDetail() {
   const softDeleteFn = useServerFn(softDeleteBooking);
   const regenTokenFn = useServerFn(regenerateBookingToken);
   const cancelFn = useServerFn(cancelBooking);
+  const approveFn = useServerFn(approveBookingRequest);
+  const rejectFn = useServerFn(rejectBookingRequest);
   const createContractFn = useServerFn(createContractForBooking);
   // Server functions آمنة بديلاً عن الكتابة المباشرة
   const updateStageFn = useServerFn(updateProductionStage);
@@ -138,7 +143,7 @@ function BookingDetail() {
     if (!session) return nav({ to: "/login" });
     setUid(session.user.id);
     const [{ data: bk }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
-      supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at").eq("id", id).maybeSingle(),
+      supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at, needs_approval, approved_at, phone_verified_at").eq("id", id).maybeSingle(),
       supabase.from("messages").select("id, created_at, booking_id, sender_id, sender_name, body, read_at").eq("booking_id", id).order("created_at"),
       supabase.from("contracts").select("id, status, sign_token, signed_at, client_name").eq("booking_id", id).maybeSingle(),
       supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
@@ -290,11 +295,41 @@ function BookingDetail() {
     await setStage("delivered");
   };
 
+  const doApprove = async () => {
+    if (actionLoading) return;
+    setActionLoading("approve");
+    try {
+      await approveFn({ data: { booking_id: id } });
+      hapticVibrate("success");
+      toast.success(tr("وافقتِ على الطلب — أبلغنا العروس لتحوّل العربون خلال 48 ساعة"));
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || tr("تعذّرت الموافقة"));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const doReject = async () => {
+    setActionLoading("reject");
+    try {
+      await rejectFn({ data: { booking_id: id, reason: rejectReason.trim() } });
+      setRejectOpen(false);
+      setRejectReason("");
+      toast.success(tr("رُفض الطلب وأبلغنا العروس بالسبب"));
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || tr("تعذّر الرفض"));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const doCancel = async () => {
     setCancelOpen(false);
     setActionLoading("cancel");
     try {
-      const res: any = await cancelFn({ data: { booking_id: id, reason: cancelReason.trim() || null } });
+      const res: any = await cancelFn({ data: { booking_id: id, reason: cancelReason.trim() } });
       if (Number(res?.refund_amount) > 0) {
         toast.success(tr("أُلغي الحجز. مبلغ الاسترداد {0} د.أ قيد المعالجة.", [res.refund_amount]));
       } else {
@@ -370,11 +405,19 @@ function BookingDetail() {
     const stage = b.production_stage || "awaiting";
     const eventIn = b.event_date ? daysFromToday(b.event_date) : null;
     if (b.status === "cancelled") return null;
+    if (b.needs_approval && !b.approved_at && (b.status === "pending_deposit" || b.status === "quote")) {
+      if (!b.phone_verified_at) {
+        return { title: tr("بانتظار تأكيد العروس لطلبها"), detail: tr("يصلك إشعار فور تأكيدها"), cta: tr("تحديث"), icon: <Clock className="h-4 w-4" />, run: load };
+      }
+      const left = Math.max(0, Math.ceil((new Date(b.phone_verified_at).getTime() + 24 * 3600_000 - Date.now()) / 3600_000));
+      return { title: tr("طلب جديد بانتظار موافقتك"), detail: tr("باقي {0} ساعة — بعدها يُلغى تلقائياً ويُفتح التاريخ", [left]), cta: tr("موافقة"), icon: <CheckCircle2 className="h-4 w-4" />, run: doApprove, busy: actionLoading === "approve", secondary: { label: tr("رفض"), run: () => setRejectOpen(true) } };
+    }
     if (b.status === "pending_deposit" && (b.deposit_proof_url || b.deposit_sent_at)) {
       return { title: g(tr("العربون وصل — راجعيه وأكّدي"), tr("العربون وصل — راجعه وأكّد")), detail: g(tr("تأكّدي من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال", [b.deposit_amount]), tr("تأكّد من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمد على صورة الإيصال", [b.deposit_amount])), cta: tr("تأكيد العربون"), icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
     }
     if (b.status === "quote" || b.status === "pending_deposit") {
-      return { title: tr("بانتظار العربون من العميلة"), detail: tr("الطلب وصل {0}", [ageLabel(b.created_at)]), cta: tr("ذكّريها بواتساب"), icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 لتثبيت موعدك بتاريخ {1} يرجى إرسال العربون ({2} د.أ) ورفع الإثبات من هنا: {3}", [b.client_name, new Date(b.event_date).toLocaleDateString(locale("ar-JO")), b.deposit_amount, trackUrl])) };
+      const depositLeft = Math.max(0, Math.ceil((new Date(b.approved_at || b.created_at).getTime() + 48 * 3600_000 - Date.now()) / 3600_000));
+      return { title: tr("بانتظار العربون من العميلة"), detail: tr("باقي {0} ساعة لترفع إثبات التحويل", [depositLeft]), cta: tr("ذكّريها بواتساب"), icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 لتثبيت موعدك بتاريخ {1} يرجى إرسال العربون ({2} د.أ) ورفع الإثبات من هنا: {3}", [b.client_name, new Date(b.event_date).toLocaleDateString(locale("ar-JO")), b.deposit_amount, trackUrl])) };
     }
     if (stage !== "delivered" && eventIn !== null && eventIn >= 0) {
       return { title: tr("التصوير {0}", [relativeDay(eventIn)]), detail: b.client_notes ? g(tr("راجعي ملاحظات العميلة وقائمة اللقطات"), tr("راجع ملاحظات العميلة وقائمة اللقطات")) : g(tr("جهّزي قائمة اللقطات"), tr("جهّز قائمة اللقطات")), cta: tr("قائمة اللقطات"), icon: <ListChecks className="h-4 w-4" />, run: () => setTab("production") };
@@ -445,7 +488,7 @@ function BookingDetail() {
                   transition={{ duration: 0.25 }}
                   className={`rounded-full px-3 py-1 text-xs font-medium ${statusTone[b.status] ?? "bg-secondary"}`}
                 >
-                  {statusLabels[b.status] ?? b.status}
+                  {b.needs_approval && !b.approved_at && b.status === "pending_deposit" ? tr("بانتظار موافقتك") : statusLabels[b.status] ?? b.status}
                 </motion.span>
               </AnimatePresence>
             </div>
@@ -509,6 +552,15 @@ function BookingDetail() {
                 <div className="font-medium">{tx(next.title)}</div>
                 <div className="text-xs text-ivory/60 dark:text-muted-foreground">{tx(next.detail)}</div>
               </div>
+              <div className="flex shrink-0 items-center gap-2">
+              {next.secondary && (
+                <button
+                  onClick={next.secondary.run}
+                  className="inline-flex items-center justify-center rounded-full border border-ivory/30 px-5 py-2.5 text-sm transition-transform active:scale-95 dark:border-border"
+                >
+                  {tx(next.secondary.label)}
+                </button>
+              )}
               <button
                 onClick={next.run}
                 disabled={next.busy}
@@ -517,6 +569,7 @@ function BookingDetail() {
                 {next.busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-charcoal/30 border-t-charcoal" /> : next.icon}
                 {tx(next.cta)}
               </button>
+              </div>
             </motion.div>
           </div>
         )}
@@ -774,11 +827,27 @@ function BookingDetail() {
               {b.status === "confirmed" ? tr("العربون مؤكَّد، وسيُحسب الاسترداد حسب سياستك.") : tr("ستصل للعميلة رسالة بالإلغاء.")}
             </DialogDescription>
           </DialogHeader>
-          <label htmlFor="cancel-reason" className="text-sm">{tr("السبب")}{" "}<span className="text-muted-foreground">{tr("(اختياري — يظهر للعميلة)")}</span></label>
+          <label htmlFor="cancel-reason" className="text-sm">{tr("السبب")}{" "}<span className="text-muted-foreground">{tr("(إلزامي — يصل للعروس)")}</span></label>
           <textarea id="cancel-reason" value={cancelReason} onChange={(e) => setCancelReason(e.target.value)} rows={3} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
           <div className="flex justify-end gap-2">
             <button onClick={() => setCancelOpen(false)} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{tr("تراجع")}</button>
-            <button onClick={doCancel} className="rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground hover:bg-destructive/90">{tr("إلغاء الحجز")}</button>
+            <button onClick={doCancel} disabled={cancelReason.trim().length < 3} className="rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50">{tr("إلغاء الحجز")}</button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* رفض طلب الحجز — السبب يصل للعروس */}
+      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
+        <DialogContent dir={dirOf(getLang())}>
+          <DialogHeader>
+            <DialogTitle>{tr("رفض طلب {0}", [b.client_name])}</DialogTitle>
+            <DialogDescription>{tr("لم يُدفع أي مبلغ. ستصل للعروس رسالة بالسبب ورابط لمصوّرات متاحات بنفس التاريخ، ويُفتح التاريخ فوراً.")}</DialogDescription>
+          </DialogHeader>
+          <label htmlFor="reject-reason" className="text-sm">{tr("السبب")}{" "}<span className="text-muted-foreground">{tr("(إلزامي — يصل للعروس)")}</span></label>
+          <textarea id="reject-reason" value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} rows={3} placeholder={tr("مثلاً: عندي التزام آخر بهذا التاريخ")} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setRejectOpen(false)} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{tr("تراجع")}</button>
+            <button onClick={doReject} disabled={rejectReason.trim().length < 3 || actionLoading === "reject"} className="rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50">{tr("رفض الطلب")}</button>
           </div>
         </DialogContent>
       </Dialog>

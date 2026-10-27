@@ -119,6 +119,14 @@ function appBase(): string {
 }
 
 // ---------- Templates ----------
+
+/** Plain message: each line becomes an escaped paragraph, plus one button. */
+export function tplMessage(args: { subject: string; title: string; lines: string[]; cta?: { label: string; url: string } }) {
+  return {
+    subject: args.subject,
+    html: layout(args.title, args.lines.map((l) => `<p>${escapeHtml(l)}</p>`).join(""), args.cta),
+  };
+}
 export function tplNewBookingForPhotographer(args: {
   photographer_name: string; client_name: string; service_label: string;
   event_date: string; start_time: string; total: number; booking_id: string;
@@ -134,7 +142,7 @@ export function tplNewBookingForPhotographer(args: {
         <tr><td style="padding:8px 0;color:#7a7466;">التاريخ:</td><td style="padding:8px 0;">${escapeHtml(args.event_date)} – ${escapeHtml(args.start_time)}</td></tr>
         <tr><td style="padding:8px 0;color:#7a7466;">الإجمالي:</td><td style="padding:8px 0;font-weight:600;color:#a07a32;">${args.total.toFixed(2)} د.أ</td></tr>
       </table>
-      <p>راجعي الطلب فوراً وتأكدي من توفّر التاريخ.</p>`,
+      <p>لديكِ <strong>24 ساعة</strong> لقبول الطلب أو رفضه. التاريخ محجوز لهذه العروس حتى تردّي، وبعد المهلة يُلغى الطلب تلقائياً.</p>`,
       { label: "فتح الحجز", url: `${appBase()}/dashboard/bookings/${args.booking_id}` }),
   };
 }
@@ -150,7 +158,7 @@ export function tplBookingReceivedForClient(args: {
       <p>استلمنا طلب حجزك مع <strong>${escapeHtml(args.photographer_name)}</strong> بتاريخ <strong>${escapeHtml(args.event_date)}</strong>.</p>
       <p>المبلغ الإجمالي: <strong>${args.total.toFixed(2)} د.أ</strong><br>
       العربون المطلوب لتثبيت الحجز: <strong style="color:#a07a32;">${args.deposit.toFixed(2)} د.أ</strong></p>
-      <p>من صفحة المتابعة أدناه تجدين تفاصيل الدفع، يمكنك رفع إثبات التحويل، ومتابعة حالة الحجز خطوة بخطوة.</p>`,
+      <p>التاريخ محجوز لكِ الآن. المصوّرة ستراجع طلبك خلال <strong>24 ساعة</strong>، وبعد موافقتها تظهر لكِ تفاصيل دفع العربون في صفحة المتابعة. لا تحوّلي أي مبلغ قبل موافقتها.</p>`,
       { label: "متابعة الحجز", url: `${appBase()}/track/${args.track_token}` }),
   };
 }
@@ -211,7 +219,7 @@ export function tplSubscriptionExpiring(args: {
 export function tplBookingCancelled(args: {
   client_name: string; photographer_name: string; event_date: string;
   refund_amount: number; by: "photographer" | "client";
-  track_token?: string; booking_id?: string;
+  track_token?: string; booking_id?: string; reason?: string | null;
 }) {
   // عند الإلغاء من المصوّرة: رسالة للعميل (مع معلومات الاسترداد إن وُجدت).
   // عند الإلغاء من العميل: رسالة للمصوّرة (إشعار).
@@ -224,6 +232,7 @@ export function tplBookingCancelled(args: {
       html: layout("تم إلغاء الحجز", `
         <p>مرحباً ${escapeHtml(args.client_name)},</p>
         <p>نأسف لإبلاغك بأنّه تم إلغاء حجزك مع <strong>${escapeHtml(args.photographer_name)}</strong> بتاريخ <strong>${escapeHtml(args.event_date)}</strong>.</p>
+        ${args.reason ? `<p>سبب الإلغاء: ${escapeHtml(args.reason)}</p>` : ""}
         ${refundBlock}
         <p>للاستفسار يمكنك متابعة صفحة الحجز أو التواصل مع المصوّرة.</p>`,
         args.track_token ? { label: "صفحة الحجز", url: `${appBase()}/track/${args.track_token}` } : undefined),

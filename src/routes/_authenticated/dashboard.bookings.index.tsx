@@ -379,7 +379,7 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
             </div>
           </div>
           <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${STATUS_COLORS[booking.status] ?? "bg-muted text-muted-foreground"}`}>
-            {STATUS_LABELS[booking.status] ?? booking.status}
+            {booking.needs_approval && !booking.approved_at && booking.status === "pending_deposit" ? t("بانتظار موافقتك") : STATUS_LABELS[booking.status] ?? booking.status}
           </span>
         </div>
 

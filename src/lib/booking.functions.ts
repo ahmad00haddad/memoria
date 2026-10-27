@@ -146,7 +146,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
 
     if (error) {
       const msg = error.message || "";
-      if (msg.includes("SLOT_CONFLICT")) throw new Error(tr("هذا الوقت محجوز، يرجى اختيار وقت آخر"));
+      if (msg.includes("SLOT_CONFLICT")) throw new Error(tr("هذا اليوم محجوز، يرجى اختيار يوم آخر"));
       if (msg.includes("DAY_UNAVAILABLE")) throw new Error(tr("هذا اليوم غير متاح، يرجى اختيار يوم آخر"));
       throw new Error(msg);
     }
@@ -158,6 +158,15 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     };
     // When the request was de-duplicated we must NOT re-send notifications/emails.
     const deduped = result.deduped === true;
+    if (!deduped) {
+      // طلب العروس يمر بموافقة المصوّرة قبل العربون. إن فشل الوسم نلغي الطلب بدل أن يتجاوز الموافقة.
+      const { error: naErr } = await supabaseAdmin.from("bookings")
+        .update({ needs_approval: true } as any).eq("id", row.id);
+      if (naErr) {
+        await supabaseAdmin.from("bookings").update({ deleted_at: new Date().toISOString() } as any).eq("id", row.id);
+        throw new Error(tr("تعذّر إرسال الطلب، حاولي مرة أخرى"));
+      }
+    }
     if (deduped) {
       const { data: prev } = await supabaseAdmin.from("bookings")
         .select("phone_verified_at, verify_code_wa, verify_code_email").eq("id", row.id).maybeSingle();
@@ -339,9 +348,26 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
     if (error) {
       if (error.message.includes("EXPIRED_BOOKING")) throw new Error(tr("انتهت مهلة الحجز وحُجز الموعد لعميلة أخرى. تواصلي مع المصوّرة لاختيار موعد جديد."));
       if (error.message.includes("BOOKING_NOT_VERIFIED")) throw new Error(tr("أكّدي طلب الحجز أولاً (عبر واتساب أو رمز الإيميل) قبل إرسال العربون."));
+      if (error.message.includes("BOOKING_NOT_APPROVED")) throw new Error(tr("لا تحوّلي العربون قبل موافقة المصوّرة على طلبك."));
       if (error.message.includes("BOOKING_NOT_AWAITING_DEPOSIT")) throw new Error(tr("هذا الحجز لم يعد بانتظار العربون."));
       throw new Error(error.message);
     }
+    // الإشعار داخل الموقع أدرجته دالة SQL؛ هنا الإيميل وتيليغرام فقط.
+    try {
+      const { data: bk } = await supabaseAdmin.from("bookings")
+        .select("id, photographer_id, client_name, deposit_amount").eq("client_tracking_token", data.token).maybeSingle();
+      if (bk) {
+        const { notifyPhotographer } = await import("@/lib/notify.server");
+        await notifyPhotographer(bk.photographer_id, {
+          title: "وصل إثبات العربون",
+          body: `${bk.client_name} أرسلت إثبات تحويل ${bk.deposit_amount} د.أ. تأكّدي من وصول المبلغ في تطبيق البنك ثم ثبّتي الحجز.`,
+          link: `/dashboard/bookings/${bk.id}`,
+          template: "deposit_sent_photographer",
+          bookingId: bk.id,
+          inApp: false,
+        });
+      }
+    } catch (e) { console.error("[booking] deposit-sent notify failed", e); }
     return { ok: true };
   });
 
@@ -479,12 +505,13 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: bk, error } = await supabase
       .from("bookings")
-      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id, client_phone, client_tracking_token, client_name, event_date, total_price, deposit_checkout_session_id")
+      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id, client_phone, client_tracking_token, client_name, event_date, total_price, deposit_checkout_session_id, needs_approval, approved_at")
       .eq("id", data.booking_id)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!bk) throw new Error(tr("الحجز غير موجود"));
     if (bk.photographer_id !== userId) throw new Error("forbidden");
+    if ((bk as any).needs_approval && !(bk as any).approved_at) throw new Error(tr("وافقي على الطلب أولاً"));
 
     // محاولة المصالحة التلقائية إذا كانت هناك جلسة دفع
     if (bk.deposit_checkout_session_id && !bk.deposit_confirmed_at) {
