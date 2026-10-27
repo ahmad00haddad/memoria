@@ -16,6 +16,12 @@
     // Telegram bot for photographer notifications; TELEGRAM_BOT_TOKEN and
     // TELEGRAM_WEBHOOK_SECRET are Worker secrets.
     "TELEGRAM_BOT_USERNAME": "MemoriaJoBot",
+    // Zbooni product pages per plan (fixed price each); legacy 7/70 use the store defaults.
+    "ZBOONI_STORE_URL": "https://memoriaa.zbooni.com",
+    "ZBOONI_BASIC_MONTHLY_URL": "https://memoriaa.zbooni.com/products/shtrk-basic-shhry",
+    "ZBOONI_BASIC_YEARLY_URL": "https://memoriaa.zbooni.com/products/shtrk-basic-snwy-12-shhr",
+    "ZBOONI_PRO_MONTHLY_URL": "https://memoriaa.zbooni.com/products/shtrk-pro-shhry",
+    "ZBOONI_PRO_YEARLY_URL": "https://memoriaa.zbooni.com/products/shtrk-pro-snwy-12-shhr",
     "SUPABASE_URL": "https://qrpkfanblpjiqgkufnrb.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_dMDE64mY-OTPE7PXzJ-SsA_lpt3mIDW"
   }
