@@ -809,6 +809,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ token: string; verify: VerifyInfo | null } | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [pkgListOpen, setPkgListOpen] = useState(false);
   const [consent, setConsent] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -878,6 +879,23 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     return a1 < b2 && b1 < a2;
   });
 
+  // هل يتّسع وقت الباقة في اليوم المختار؟ (نوافذ فارغة بين 08:00 و 24:00)
+  const pkgHours = (pkg: Pricing) => {
+    if (pkg.package === "full_day") return 13;
+    if (pkg.package !== "hourly") return 0;
+    const m = /(\d+)\s*ساعة|(\d+)\s*ساعات|\((\d+)\s*ساع/.exec(pkg.label) || /(\d+)\s*hours?/i.exec(pkg.label);
+    return m ? Number(m[1] || m[2] || m[3]) : 4;
+  };
+  const packageFits = (pkg: Pricing) => {
+    const need = pkgHours(pkg) * 60;
+    if (!f.event_date || !need || daySlots.length === 0) return true;
+    const busy = daySlots.map((x) => [toMin(x.start_time), toMin(x.end_time) || 1440] as const).sort((a, b) => a[0] - b[0]);
+    let cursor = 480, longest = 0;
+    for (const [b1, b2] of busy) { longest = Math.max(longest, b1 - cursor); cursor = Math.max(cursor, b2); }
+    longest = Math.max(longest, 1440 - cursor);
+    return longest >= need;
+  };
+
   const blockedDateObjs = blockedDates.map((d) => {
     const [y, m, day] = d.split("-").map(Number);
     return new Date(y, m - 1, day);
@@ -907,6 +925,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   // عند اختيار الباقة من زر "احجزي هذه الباقة" خارج النموذج
   useEffect(() => {
     if (pickedPackageId && pickedPackageId !== f.package_id) onSelectPackage(pickedPackageId);
+    setPkgListOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pickedPackageId]);
 
@@ -1234,53 +1253,43 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
             </motion.div>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={tr("من")} type="time" v={f.start_time} on={(v) => setF({ ...f, start_time: v })} />
-          <Field label={tr("إلى")} type="time" v={f.end_time} on={(v) => setF({ ...f, end_time: v })} />
-        </div>
+        {/* الباقات تُعرض بالتفصيل في قسم الباقات فقط؛ هنا اختيار مختصر */}
         <div className="sm:col-span-2">
-          <label className="text-sm text-muted-foreground">{tr("الباقة الأساسية")}</label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 md:gap-4 mt-2">
-              {mainPackages.map((r, idx) => {
-                const isSelected = f.package_id === r.id;
-                // Same single anchor as the public price card ("الأكثر طلباً").
-                const isVIP = mainPackages.length >= 3 && idx === 1;
+          <label className="text-sm text-muted-foreground">{tr("الباقة")}</label>
+          {selected && !pkgListOpen ? (
+            <div className="mt-1 flex items-center justify-between gap-3 rounded-sm border border-gold bg-gold/5 px-3 py-2.5">
+              <span className="min-w-0 text-sm">
+                <Check className="me-1.5 inline h-4 w-4 text-gold" />
+                <span className="font-medium">{tx(selected.label)}</span>
+                <span className="text-muted-foreground"> · {Number(selected.price).toLocaleString(locale("ar-JO"))} {tr("د.أ")}</span>
+              </span>
+              <button type="button" onClick={() => setPkgListOpen(true)} className="shrink-0 text-xs underline underline-offset-4 hover:text-gold">{tr("تغيير")}</button>
+            </div>
+          ) : (
+            <div role="radiogroup" className="mt-1 divide-y divide-border rounded-sm border border-border">
+              {mainPackages.map((r) => {
+                const on = f.package_id === r.id;
+                const fits = packageFits(r);
                 return (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => onSelectPackage(r.id)}
-                    className={`relative text-start rounded-xl border p-3.5 md:p-4 transition-all duration-300 flex flex-col focus:outline-none ${
-                      isSelected 
-                        ? (isVIP ? "border-gold bg-gold/5 shadow-[0_0_15px_rgba(201,162,39,0.2)] md:-translate-y-2 ring-1 ring-gold" : "border-gold bg-gold/5 ring-1 ring-gold md:-translate-y-1") 
-                        : (isVIP ? "border-gold/50 bg-background hover:-translate-y-1 hover:border-gold shadow-sm" : "border-border bg-background hover:-translate-y-1 hover:border-foreground/30")
-                    }`}
-                  >
-                    {isVIP && (
-                      <div className="absolute -top-3 end-1/2 -translate-x-1/2 bg-gold text-white text-[11px] font-bold px-3 py-0.5 rounded-full whitespace-nowrap shadow-sm z-10">
-                        {tr("👑 الخيار المفضل")}
-                      </div>
-                    )}
-                    
-                    <div className="flex justify-between items-start mb-2 w-full">
-                      <div className={`font-serif font-bold ${isSelected ? 'text-gold' : 'text-foreground'}`}>
-                        {tx(r.label)}
-                      </div>
-                    </div>
-                    
-                    <div className="text-xl font-bold md:mb-3">
-                      {tx(r.price)} <span className="text-xs font-normal text-muted-foreground">{tr("د.أ")}</span>
-                    </div>
-                    
-                    {r.description && (
-                      <div className={`text-xs text-muted-foreground leading-relaxed mt-2 md:mt-auto whitespace-pre-line border-t border-border pt-2 ${isSelected ? "" : "hidden md:block"}`}>
-                        {tx(r.description)}
-                      </div>
-                    )}
+                  <button key={r.id} type="button" role="radio" aria-checked={on}
+                    onClick={() => { onSelectPackage(r.id); setPkgListOpen(false); }}
+                    className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-start text-sm transition-colors ${on ? "bg-gold/5" : "hover:bg-secondary"}`}>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border ${on ? "border-gold bg-gold" : "border-border"}`}>{on && <span className="h-1.5 w-1.5 rounded-full bg-background" />}</span>
+                      <span className="truncate">{tx(r.label)}</span>
+                      {!fits && <span className="shrink-0 text-[11px] text-destructive">{tr("لا يتّسع وقتها في هذا اليوم")}</span>}
+                    </span>
+                    <span className="shrink-0 tabular-nums">{Number(r.price).toLocaleString(locale("ar-JO"))} <span className="text-xs text-muted-foreground">{tr("د.أ")}</span></span>
                   </button>
                 );
               })}
             </div>
+          )}
+          <button type="button" onClick={() => document.getElementById("packages")?.scrollIntoView({ behavior: "smooth" })} className="mt-1.5 text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground">{tr("تفاصيل كل باقة")}</button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={tr("من")} type="time" v={f.start_time} on={(v) => setF({ ...f, start_time: v })} />
+          <Field label={tr("إلى")} type="time" v={f.end_time} on={(v) => setF({ ...f, end_time: v })} />
         </div>
         {isBlocked && <p className="text-sm text-destructive sm:col-span-2">{tr("⚠️ هذا اليوم غير متاح")}</p>}
         {hasConflict && <p className="text-sm text-destructive sm:col-span-2">{tr("⚠️ يتعارض مع فترة محجوزة")}</p>}

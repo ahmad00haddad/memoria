@@ -3364,7 +3364,8 @@
  ],
  "الباقة": [
   "src/routes/offer.$token.tsx",
-  "src/components/dashboard/ManualBookingSheet.tsx"
+  "src/components/dashboard/ManualBookingSheet.tsx",
+  "src/routes/photographers/$username.tsx"
  ],
  "السعر المعلن": [
   "src/routes/offer.$token.tsx"
@@ -11034,5 +11035,32 @@
  ],
  "دائرية": [
   "src/lib/page-settings.ts"
+ ],
+ "الوقت المعتاد لرد المصوّرة على طلبات الحجز": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تردّ خلال أقل من ساعة": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تردّ خلال ~{0} ساعة": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تردّ عادةً خلال": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "أقل من ساعة": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "{0} ساعة": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تغيير": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "لا يتّسع وقتها في هذا اليوم": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تفاصيل كل باقة": [
+  "src/routes/photographers/$username.tsx"
  ]
 }
