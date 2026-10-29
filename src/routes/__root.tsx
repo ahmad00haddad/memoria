@@ -354,7 +354,9 @@ function RootComponent() {
   // tracking/contract links people open from WhatsApp). When its arch opens,
   // bumping the epoch remounts the page so its own entrance builds in view.
   const introEligible = !/^\/(dashboard|admin|notifications|track|contracts|review|login|forgot-password|reset-password|recover|onboarding|app|api)/.test(pathname);
-  const [showIntro] = useState(() => intro && introEligible);
+  const [showIntro] = useState(() => intro && introEligible && !(typeof window !== "undefined" && window.parent !== window));
+  const [embedded, setEmbedded] = useState(false);
+  useEffect(() => setEmbedded(window.parent !== window), []);
   const [epoch, setEpoch] = useState(0);
   const onIntroReveal = useCallback(() => setEpoch(1), []);
 
@@ -392,9 +394,12 @@ function RootComponent() {
             </AnimatePresence>
             <MobileTabBar />
             <PhotographerCommandPalette />
+            {/* داخل معاينة الإعدادات: الصفحة فقط، بلا جولات أو نوافذ ترويجية */}
+            {!embedded && <>
             <PwaInstallPrompt />
             <GameHint />
             <ClientTour />
+            </>}
             <Toaster position="top-center" richColors closeButton />
            </MotionConfig>
           </LazyMotion>
