@@ -880,8 +880,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
   const pkgHours = (pkg: Pricing) => {
     if (pkg.package === "full_day") return 13;
     if (pkg.package !== "hourly") return 0;
-    const m = /(\d+)\s*ساعة|(\d+)\s*ساعات|\((\d+)\s*ساع/.exec(pkg.label) || /(\d+)\s*hours?/i.exec(pkg.label);
-    return m ? Number(m[1] || m[2] || m[3]) : 4;
+    return labelHours(pkg.label);
   };
   const packageFits = (pkg: Pricing) => {
     const need = pkgHours(pkg) * 60;
@@ -909,8 +908,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
     let start = f.start_time, end = f.end_time;
     if (pkg.package === "full_day") { start = start || "10:00"; end = end || "23:00"; }
     else if (pkg.package === "hourly") {
-      const m = /(\d+)\s*ساعة|(\d+)\s*ساعات|\((\d+)\s*ساع/.exec(pkg.label) || /(\d+)\s*hours?/i.exec(pkg.label);
-      const hours = m ? Number(m[1] || m[2] || m[3]) : 4;
+      const hours = labelHours(pkg.label);
       start = start || "18:00";
       const endHour = (18 + hours) % 24;
       end = end || `${String(endHour).padStart(2, "0")}:00`;
@@ -1563,6 +1561,16 @@ function FallbackPage({ children }: { children: React.ReactNode }) {
   );
 }
 
+
+// عدد ساعات الباقة من اسمها: "4 ساعات"، "(٦ ساعات)"، "ساعتان"، "ساعة"، "3 hours" — وإلا 4
+function labelHours(label: string): number {
+  const l = label.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+  const m = /(\d+)\s*(?:ساع|hours?)/i.exec(l);
+  if (m) return Number(m[1]);
+  if (/ساعت(?:ان|ين)|two hours/i.test(l)) return 2;
+  if (/(?:^|[\s(])ساعة(?:[\s)]|$)|one hour/i.test(l)) return 1;
+  return 4;
+}
 
 function StickyBookBar({ name, onBook }: { name: string; onBook: () => void }) {
   const [hidden, setHidden] = useState(false);
