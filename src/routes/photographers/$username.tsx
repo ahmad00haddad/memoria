@@ -34,7 +34,7 @@ import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
 import { locale } from "@/i18n";
 import { t as tr, tx, getLang, setLang, LANG_COOKIE } from "@/i18n";
-import { sanitizePageSettings, themeStyle, type PageSettings } from "@/lib/page-settings";
+import { sanitizePageSettings, applyPageTheme, type PageSettings } from "@/lib/page-settings";
 
 const GALLERY_GRID: Record<PageSettings["gallery_layout"], string> = {
   grid: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2",
@@ -165,9 +165,31 @@ function PhotographerPage() {
 
   const [loadFailed, setLoadFailed] = useState(false);
 
+  // معاينة حيّة من صفحة الإعدادات (iframe من نفس الموقع فقط) — لا تُحفظ شيئاً
+  const [psPreview, setPsPreview] = useState<PageSettings | null>(null);
+  useEffect(() => {
+    if (window.parent === window) return;
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin || e.data?.type !== "memoria:page-settings") return;
+      setPsPreview(sanitizePageSettings(e.data.settings));
+    };
+    window.addEventListener("message", onMsg);
+    window.parent.postMessage({ type: "memoria:preview-ready" }, window.location.origin);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
+  // ثيم الصفحة: ألوان وخطوط على <html> طوال وجود الزائرة في الصفحة
+  const activePs = profile ? (psPreview ?? sanitizePageSettings(profile.page_settings)) : null;
+  const activeKey = activePs ? JSON.stringify(activePs) : "";
+  useEffect(() => {
+    if (!activePs) return;
+    return applyPageTheme(activePs);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeKey]);
+
   // لغة الصفحة الافتراضية التي اختارتها المصوّرة — فقط إن لم تختر الزائرة لغة من قبل
   useEffect(() => {
-    if (!profile) return;
+    if (!profile || window.parent !== window) return;
     const want = sanitizePageSettings(profile.page_settings).default_lang;
     if (want === "auto" || want === getLang()) return;
     if (document.cookie.split("; ").some((c) => c.startsWith(LANG_COOKIE + "="))) return;
@@ -292,7 +314,7 @@ function PhotographerPage() {
   };
   const pickPackage = (id: string) => { setPickedPackageId(id); setTimeout(() => scrollTo("book"), 50); };
 
-  const ps = sanitizePageSettings(profile.page_settings);
+  const ps = activePs ?? sanitizePageSettings(profile.page_settings);
   const gallerySection = (
     <>
       {/* GALLERY */}
@@ -360,7 +382,7 @@ function PhotographerPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0" style={themeStyle(ps)} data-font={ps.font}>
+    <div className="min-h-screen bg-background pb-20 lg:pb-0">
       {ps.announcement && (
         <div className="relative z-30 bg-gold px-4 py-2 pt-[calc(0.5rem+3.5rem)] sm:pt-2 text-center text-sm text-gold-foreground">{ps.announcement}</div>
       )}

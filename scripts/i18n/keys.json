@@ -281,7 +281,8 @@
   "src/components/site/PwaInstallPrompt.tsx",
   "src/components/Lightbox.tsx",
   "src/components/dashboard/ManualBookingSheet.tsx",
-  "src/components/OnboardingWizard.tsx"
+  "src/components/OnboardingWizard.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "ذاكرة يومكِ · الأردن": [
   "src/components/site/Header.tsx",
@@ -4997,7 +4998,8 @@
  ],
  "معاينة": [
   "src/components/UploadZone.tsx",
-  "src/routes/_authenticated/admin.bookings.tsx"
+  "src/routes/_authenticated/admin.bookings.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "إزالة الصورة": [
   "src/components/UploadZone.tsx",
@@ -5796,7 +5798,8 @@
   "src/content/seo.ts"
  ],
  "ليلة الحنّاء": [
-  "src/content/seo.ts"
+  "src/content/seo.ts",
+  "src/lib/page-settings.ts"
  ],
  "مصورة حنّاء في الأردن": [
   "src/content/seo.ts"
@@ -10857,5 +10860,179 @@
  ],
  "ألوان صفحتك ولغتها وأقسامها": [
   "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "تم الحفظ — صفحتك العامة تحدّثت": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "تعذّر قراءة ألوان الصورة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "اخترنا {0} بلمسة {1} لتناسب صورة غلافك": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "لديك {0} صور فقط، ستظهر كلها": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "لم تضيفي صوراً للمعرض بعد": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "سيظهر القسم بعد أول تقييم": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "لا توجد ملاحظات حجز مكتوبة في ملفك": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "إعدادات صفحتك": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "كل تغيير يظهر فوراً في المعاينة ولا يُنشر حتى تضغطي حفظ. الألوان مضبوطة لتبقى النصوص واضحة دائماً.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "كل تغيير يظهر فوراً في المعاينة ولا يُنشر حتى تضغط حفظ. الألوان مضبوطة لتبقى النصوص واضحة دائماً.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "فتح صفحتي": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الألوان": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نقرأ ألوان الصورة…": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "طابقي ألوان صورة غلافك": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نختار اللوحة واللمسة الأقرب لصورتك": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "لون اللمسة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "حسب اللوحة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الوضع": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "كما في اللوحة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الغلاف العلوي": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "زوايا البطاقات والأزرار": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الخطوط": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "كل خيار زوج متناسق: خط للعناوين وخط للنص، بالعربية والإنجليزية.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الترتيب بعد الغلاف": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "أرقام الغلاف (التقييم، الموقع، الباقات)": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نص عادي فقط، بدون روابط. اتركيه فارغاً لاستخدام النص الافتراضي.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نص عادي فقط، بدون روابط. اتركه فارغاً لاستخدام النص الافتراضي.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "معاينة حيّة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "غير محفوظة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "حفظ ونشر": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "عاج وذهب": [
+  "src/lib/page-settings.ts"
+ ],
+ "حجر البتراء": [
+  "src/lib/page-settings.ts"
+ ],
+ "ورد مجفّف": [
+  "src/lib/page-settings.ts"
+ ],
+ "بستان زيتون": [
+  "src/lib/page-settings.ts"
+ ],
+ "ملح البحر الميت": [
+  "src/lib/page-settings.ts"
+ ],
+ "فيلم أبيض وأسود": [
+  "src/lib/page-settings.ts"
+ ],
+ "مخمل عنّابي": [
+  "src/lib/page-settings.ts"
+ ],
+ "كحلي ملكي": [
+  "src/lib/page-settings.ts"
+ ],
+ "حبر وفضّة": [
+  "src/lib/page-settings.ts"
+ ],
+ "شمبانيا": [
+  "src/lib/page-settings.ts"
+ ],
+ "تيراكوتا": [
+  "src/lib/page-settings.ts"
+ ],
+ "نحاسي": [
+  "src/lib/page-settings.ts"
+ ],
+ "وردي مغبّر": [
+  "src/lib/page-settings.ts"
+ ],
+ "برقوقي": [
+  "src/lib/page-settings.ts"
+ ],
+ "زيتوني": [
+  "src/lib/page-settings.ts"
+ ],
+ "فيروزي": [
+  "src/lib/page-settings.ts"
+ ],
+ "ياقوتي": [
+  "src/lib/page-settings.ts"
+ ],
+ "فضّي": [
+  "src/lib/page-settings.ts"
+ ],
+ "فحمي": [
+  "src/lib/page-settings.ts"
+ ],
+ "دعوة كلاسيكية": [
+  "src/lib/page-settings.ts"
+ ],
+ "أزياء راقية": [
+  "src/lib/page-settings.ts"
+ ],
+ "معرض فنّي": [
+  "src/lib/page-settings.ts"
+ ],
+ "خط الرقعة": [
+  "src/lib/page-settings.ts"
+ ],
+ "مجلّة": [
+  "src/lib/page-settings.ts"
+ ],
+ "هادئ وخفيف": [
+  "src/lib/page-settings.ts"
+ ],
+ "حادّة": [
+  "src/lib/page-settings.ts"
+ ],
+ "ناعمة": [
+  "src/lib/page-settings.ts"
+ ],
+ "دائرية": [
+  "src/lib/page-settings.ts"
  ]
 }

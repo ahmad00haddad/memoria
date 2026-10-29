@@ -32,7 +32,7 @@ async function ask(batch) {
       model: MODEL,
       stream: false,
       format: "json",
-      options: { temperature: 0.2, num_ctx: 8192 },
+      options: { temperature: 0.2, num_ctx: 4096 },
       messages: [
         { role: "system", content: SYSTEM },
         { role: "user", content: JSON.stringify(input, null, 1) },

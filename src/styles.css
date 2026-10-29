@@ -10,6 +10,19 @@
 @import "@fontsource/aref-ruqaa/arabic-400.css";
 @import "@fontsource/aref-ruqaa/arabic-700.css";
 @import "@fontsource-variable/cormorant-garamond";
+/* أزواج خطوط إعدادات الصفحة — @font-face فقط، يُحمَّل الملف عند الاستخدام */
+@import "@fontsource/el-messiri/600.css";
+@import "@fontsource-variable/reem-kufi";
+@import "@fontsource-variable/readex-pro";
+@import "@fontsource-variable/alexandria";
+@import "@fontsource-variable/noto-naskh-arabic";
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/bodoni-moda";
+@import "@fontsource/instrument-serif/latin-400.css";
+@import "@fontsource/dm-serif-display/latin-400.css";
+@import "@fontsource-variable/newsreader";
+@import "@fontsource-variable/eb-garamond";
+@import "@fontsource-variable/geist";
 /* English body face. @font-face only: the browser fetches it on English pages alone. */
 @import "@fontsource-variable/jost";
 
@@ -480,7 +493,9 @@
   .calligraphy-write { -webkit-mask-image: none; mask-image: none; transition: none; }
 }
 
-/* خط العناوين في الصفحة العامة (إعدادات المصوّرة) — بادئة html لتغلب قواعد html[lang] */
-html [data-font="modern"] :is(h1, h2, h3, .font-serif) { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.01em; }
-html[lang="en"] [data-font="romantic"] :is(h1, h2, h3) { font-style: italic; font-weight: 400; }
-html[lang="ar"] [data-font="romantic"] :is(h1, h2, h3) { font-family: "Aref Ruqaa", var(--font-serif); letter-spacing: 0; }
+/* خطوط الصفحة العامة (إعدادات المصوّرة) — المتغيّرات من src/lib/page-settings.ts.
+   البادئة html[data-pfont][dir|lang] أقوى من قواعد [dir="rtl"] و html[lang="en"] أعلاه. */
+html[data-pfont][dir="rtl"] :is(body, button, input, textarea, select, [dir="rtl"]) { font-family: var(--pf-ar-body); }
+html[data-pfont][dir="rtl"] :is(h1, h2, h3, .font-serif) { font-family: var(--pf-ar-display); font-weight: var(--pf-ar-display-w); font-style: normal; }
+html[data-pfont][lang="en"] :is(body, button, input, textarea, select, .font-sans) { font-family: var(--pf-en-body); }
+html[data-pfont][lang="en"] :is(h1, h2, h3, .font-serif) { font-family: var(--pf-en-display); font-weight: var(--pf-en-display-w); font-style: normal; }

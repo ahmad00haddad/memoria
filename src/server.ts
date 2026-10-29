@@ -104,7 +104,8 @@ const worker = {
         "img-src 'self' data: blob: https:; " +
         "style-src 'self' 'unsafe-inline'; " +
         "font-src 'self' data:; " +
-        "frame-ancestors 'none'; " +
+        // صفحة المصوّرة تُعرض داخل معاينة الإعدادات (نفس الموقع فقط)؛ الباقي لا يُؤطَّر
+        `frame-ancestors ${new URL(request.url).pathname.startsWith("/photographers/") ? "'self'" : "'none'"}; ` +
         "base-uri 'self'; " +
         "form-action 'self';"
       );
