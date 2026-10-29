@@ -668,7 +668,7 @@ function Dashboard() {
                 onClick={() => setShowAllCards((v) => !v)}
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-sm px-5 py-2 hover:bg-secondary transition-colors active:scale-95 duration-200"
               >
-                {showAllCards ? tr("إخفاء الأدوات الإضافية") : tr("عرض كل الأدوات (٩)")}
+                {showAllCards ? tr("إخفاء الأدوات الإضافية") : tr("عرض كل الأدوات")}
                 <ArrowLeft className={`h-3.5 w-3.5 transition-transform ${showAllCards ? "rotate-90" : "-rotate-90"}`} />
               </button>
             </div>

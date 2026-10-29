@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Bell, Menu } from "lucide-react";
+import { Bell, Menu, Settings } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -155,6 +155,9 @@ export function Header() {
             <>
               <NavLink to="/dashboard/bookings" className="hidden sm:inline-flex">{t("الحجوزات")}</NavLink>
               <NavLink to="/dashboard/calendar" className="hidden md:inline-flex">{t("التقويم")}</NavLink>
+              <Link to="/dashboard/settings" aria-label={t("الإعدادات")} title={t("الإعدادات")} className="grid h-9 w-9 place-items-center rounded-sm text-muted-foreground hover:bg-secondary hover:text-foreground">
+                <Settings className="h-[18px] w-[18px]" />
+              </Link>
             </>
           ) : authed ? (
             // ── مسجّل دخول: عرض الروابط الكاملة ──
