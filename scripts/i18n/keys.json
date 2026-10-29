@@ -11062,5 +11062,32 @@
  ],
  "تفاصيل كل باقة": [
   "src/routes/photographers/$username.tsx"
+ ],
+ "الحجوزات في اليوم": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "كم حجزاً تستقبلين من صفحتك في اليوم الواحد؟": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "كم حجزاً تستقبل من صفحتك في اليوم الواحد؟": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "حجز واحد في اليوم": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "أكثر من حجز إذا اتّسع الوقت": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "تنبيه: تنسيق أكثر من حجز في اليوم نفسه مسؤوليتكِ أنتِ. سيظهر للعروس أن لديكِ حجزاً آخر في ذلك اليوم، وسنطلب منها التواصل معكِ والتأكد من وقتكِ قبل دفع العربون.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "تنبيه: تنسيق أكثر من حجز في اليوم نفسه مسؤوليتك أنت. سيظهر للعروس أن لديك حجزاً آخر في ذلك اليوم، وسنطلب منها التواصل معك والتأكد من وقتك قبل دفع العربون.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "يوجد حجز آخر لدى المصوّرة في هذا اليوم": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد إرسال الطلب.": [
+  "src/routes/photographers/$username.tsx"
  ]
 }

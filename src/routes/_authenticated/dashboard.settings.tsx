@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Eye, Lock, RotateCcw, Check, Languages, Palette, Type, LayoutGrid, ListOrdered, Megaphone, Wand2, Smartphone, X, Info } from "lucide-react";
+import { Eye, Lock, RotateCcw, Check, Languages, Palette, Type, LayoutGrid, ListOrdered, Megaphone, Wand2, Smartphone, X, Info, CalendarDays } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
@@ -216,6 +216,14 @@ function SettingsPage() {
                 <Toggle label={tr("شارات الثقة")} on={s.show_trust_badges} set={(v) => set("show_trust_badges", v)} />
                 <Toggle label={tr("ملاحظات الحجز")} hint={warnNotes} on={s.show_booking_notes} set={(v) => set("show_booking_notes", v)} />
               </div>
+            </Block>
+
+            <Block icon={<CalendarDays />} title={tr("الحجوزات في اليوم")} hint={g(tr("كم حجزاً تستقبلين من صفحتك في اليوم الواحد؟"), tr("كم حجزاً تستقبل من صفحتك في اليوم الواحد؟"))}>
+              <Choices value={s.bookings_per_day} onChange={(v) => set("bookings_per_day", v)}
+                options={[{ value: "one", label: tr("حجز واحد في اليوم") }, { value: "multi", label: tr("أكثر من حجز إذا اتّسع الوقت") }]} />
+              {s.bookings_per_day === "multi" && (
+                <Note>{g(tr("تنبيه: تنسيق أكثر من حجز في اليوم نفسه مسؤوليتكِ أنتِ. سيظهر للعروس أن لديكِ حجزاً آخر في ذلك اليوم، وسنطلب منها التواصل معكِ والتأكد من وقتكِ قبل دفع العربون."), tr("تنبيه: تنسيق أكثر من حجز في اليوم نفسه مسؤوليتك أنت. سيظهر للعروس أن لديك حجزاً آخر في ذلك اليوم، وسنطلب منها التواصل معك والتأكد من وقتك قبل دفع العربون."))}</Note>
+              )}
             </Block>
 
             <Block icon={<Megaphone />} title={tr("نصوص قصيرة")} hint={g(tr("نص عادي فقط، بدون روابط. اتركيه فارغاً لاستخدام النص الافتراضي."), tr("نص عادي فقط، بدون روابط. اتركه فارغاً لاستخدام النص الافتراضي."))}>

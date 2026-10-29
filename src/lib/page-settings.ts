@@ -70,6 +70,7 @@ export type PageSettings = {
   gallery_layout: K<typeof LAYOUTS>;
   gallery_count: (typeof GALLERY_COUNTS)[number];
   section_order: "packages_first" | "gallery_first";
+  bookings_per_day: "one" | "multi";
   show_gallery: boolean;
   show_reviews: boolean;
   show_stats: boolean;
@@ -91,6 +92,7 @@ export const DEFAULT_PAGE_SETTINGS: PageSettings = {
   gallery_layout: "grid",
   gallery_count: 12,
   section_order: "packages_first",
+  bookings_per_day: "one",
   show_gallery: true,
   show_reviews: true,
   show_stats: true,
@@ -129,6 +131,7 @@ export function sanitizePageSettings(raw: unknown): PageSettings {
     gallery_layout: oneOf(r.gallery_layout, keysOf(LAYOUTS), d.gallery_layout),
     gallery_count: (GALLERY_COUNTS as readonly number[]).includes(count) ? (count as PageSettings["gallery_count"]) : d.gallery_count,
     section_order: oneOf(r.section_order, ["packages_first", "gallery_first"] as const, d.section_order),
+    bookings_per_day: oneOf(r.bookings_per_day, ["one", "multi"] as const, d.bookings_per_day),
     show_gallery: bool(r.show_gallery, d.show_gallery),
     show_reviews: bool(r.show_reviews, d.show_reviews),
     show_stats: bool(r.show_stats, d.show_stats),

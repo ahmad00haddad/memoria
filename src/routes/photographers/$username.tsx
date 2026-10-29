@@ -297,8 +297,10 @@ function PhotographerPage() {
   );
   if (!profile) return <FallbackPage>{tr("لا يوجد مصوّر بهذا الاسم.")}{" "}<Link to="/search" className="underline">{tr("عُد للبحث")}</Link></FallbackPage>;
 
-  // حجز واحد باليوم: أي يوم فيه حجز قائم (أو طلب ينتظر رد المصوّرة) يُحجب كاملاً.
-  const blockedDates = [...new Set([...unavail, ...bookedSlots.map((s) => s.event_date)])];
+  // افتراضياً حجز واحد باليوم: أي يوم فيه حجز قائم (أو طلب ينتظر رد المصوّرة) يُحجب كاملاً.
+  // إن سمحت المصوّرة بأكثر من حجز، يبقى اليوم مفتوحاً ويُمنع تداخل الأوقات فقط.
+  const multiPerDay = activePs?.bookings_per_day === "multi";
+  const blockedDates = [...new Set([...unavail, ...(multiPerDay ? [] : bookedSlots.map((s) => s.event_date))])];
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -630,7 +632,7 @@ function PhotographerPage() {
       {/* BOOKING + DEPOSIT */}
       <section id="book" className="bg-secondary/40 py-16">
         <div className="container-editorial grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} bookedSlots={bookedSlots} pickedPackageId={pickedPackageId} />
+          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} bookedSlots={bookedSlots} multiPerDay={multiPerDay} pickedPackageId={pickedPackageId} />
           <DepositCard profile={profile} cliqAlias={deposit.cliq_alias} bankInfo={deposit.bank_info} />
         </div>
       </section>
@@ -794,7 +796,7 @@ function SavedBookingsBanner() {
   );
 }
 
-function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; pickedPackageId?: string }) {
+function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiPerDay, pickedPackageId }: { profile: Profile; pricing: Pricing[]; blockedDates: string[]; bookedSlots: { event_date: string; start_time: string; end_time: string }[]; multiPerDay?: boolean; pickedPackageId?: string }) {
   const storageKey = `memoria.booking-draft.${profile.username}`;
   const initial = {
     client_name: "", client_phone: "", client_email: "", event_date: "", start_time: "", end_time: "",
@@ -1245,6 +1247,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, picked
           {daysUntil !== null && daysUntil < 7 && !isBlocked && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-sm p-2">
               💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{tr("ننصحكِ بإرسال الطلب الآن والتواصل مع المصوّرة فوراً عبر الواتساب لتأكيد التفرّغ.")}
+            </motion.div>
+          )}
+          {multiPerDay && daySlots.length > 0 && !isBlocked && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} role="note" className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-sm p-2.5 leading-relaxed">
+              <strong>{tr("يوجد حجز آخر لدى المصوّرة في هذا اليوم")}</strong>
+              {" "}({daySlots.map((x) => `${x.start_time.slice(0, 5)}–${x.end_time.slice(0, 5)}`).join("، ")}).{" "}
+              {tr("المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد إرسال الطلب.")}
             </motion.div>
           )}
         </div>

@@ -3368,5 +3368,14 @@
  "{0} ساعة": "{0} hours",
  "تغيير": "Change",
  "لا يتّسع وقتها في هذا اليوم": "Doesn't fit this day",
- "تفاصيل كل باقة": "See package details"
+ "تفاصيل كل باقة": "See package details",
+ "الحجوزات في اليوم": "Bookings per day",
+ "كم حجزاً تستقبلين من صفحتك في اليوم الواحد؟": "How many bookings can you take from your page on the same day?",
+ "كم حجزاً تستقبل من صفحتك في اليوم الواحد؟": "How many bookings can you take from your page on the same day?",
+ "حجز واحد في اليوم": "One booking per day",
+ "أكثر من حجز إذا اتّسع الوقت": "Several, if the times don't overlap",
+ "تنبيه: تنسيق أكثر من حجز في اليوم نفسه مسؤوليتكِ أنتِ. سيظهر للعروس أن لديكِ حجزاً آخر في ذلك اليوم، وسنطلب منها التواصل معكِ والتأكد من وقتكِ قبل دفع العربون.": "Note: fitting several bookings into one day is your responsibility. Brides will see that you already have a booking that day, and we'll ask them to contact you and confirm your time before paying the deposit.",
+ "تنبيه: تنسيق أكثر من حجز في اليوم نفسه مسؤوليتك أنت. سيظهر للعروس أن لديك حجزاً آخر في ذلك اليوم، وسنطلب منها التواصل معك والتأكد من وقتك قبل دفع العربون.": "Note: fitting several bookings into one day is your responsibility. Brides will see that you already have a booking that day, and we'll ask them to contact you and confirm your time before paying the deposit.",
+ "يوجد حجز آخر لدى المصوّرة في هذا اليوم": "The photographer already has a booking on this day",
+ "المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد إرسال الطلب.": "She accepts more than one booking per day, but please contact her and confirm she's free at your time before paying the deposit or taking any other step. You'll find her number on your booking tracking page after you send the request."
 }
