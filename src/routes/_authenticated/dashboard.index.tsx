@@ -1,5 +1,5 @@
 import { arCount } from "@/lib/ar-count";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, Settings } from "lucide-react";
 import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
@@ -565,6 +565,7 @@ function Dashboard() {
     { key: "calendar", title: tr("التقويم"), to: "/dashboard/calendar", icon: <Calendar />, hint: stats.upcoming30 > 0 ? tr("{0} مناسبات خلال ٣٠ يوماً", [stats.upcoming30]) : tr("حجب الأيام والتوفّر") },
     { key: "pricing", title: tr("الأسعار"), to: "/dashboard/pricing", icon: <Package />, badge: pricingCount === 0 ? tr("فارغة") : undefined, attention: pricingCount === 0, hint: arCount(pricingCount, tr("باقة واحدة"), tr("باقتان"), tr("باقات"), tr("باقة")) },
     { key: "profile", title: tr("ملفي"), to: "/dashboard/profile", icon: <Star />, badge: (!profile?.avatar_url || !profile?.cover_url) ? tr("ناقص") : undefined, attention: !profile?.avatar_url, hint: tr("الصور والنبذة وبيانات الدفع") },
+    { key: "settings", title: tr("الإعدادات"), to: "/dashboard/settings", icon: <Settings />, hint: tr("ألوان صفحتك ولغتها وأقسامها") },
     { key: "reports", title: tr("التقارير"), to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? tr("{0} د.أ هذا الشهر", [stats.monthRevenue]) : tr("الإيرادات وتصدير CSV") },
     { key: "contracts", title: tr("العقود"), to: "/dashboard/contracts", icon: <Link2 />, hint: tr("توقيع إلكتروني") },
     { key: "offers", title: tr("عروض الأسعار"), to: "/dashboard/offers", icon: <MessageCircle />, hint: tr("أسعار اقترحتها العرائس") },

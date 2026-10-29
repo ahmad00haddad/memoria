@@ -2840,7 +2840,8 @@
   "src/routes/photographers/$username.tsx"
  ],
  "«كل صورة قصة، وكل قصة تستحق الفخامة»": [
-  "src/routes/photographers/$username.tsx"
+  "src/routes/photographers/$username.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "بطاقة الأسعار": [
   "src/routes/photographers/$username.tsx",
@@ -2902,7 +2903,8 @@
   "src/routes/photographers/$username.tsx"
  ],
  "آراء العملاء": [
-  "src/routes/photographers/$username.tsx"
+  "src/routes/photographers/$username.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "تقييمات من حجوزات مكتملة فقط": [
   "src/routes/photographers/$username.tsx"
@@ -3888,7 +3890,8 @@
   "src/routes/_authenticated/dashboard.contracts.tsx",
   "src/routes/_authenticated/dashboard.pricing.tsx",
   "src/routes/_authenticated/dashboard.production.tsx",
-  "src/routes/_authenticated/dashboard.profile.tsx"
+  "src/routes/_authenticated/dashboard.profile.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "جاري الإلغاء…": [
   "src/routes/track.$token.tsx",
@@ -8143,7 +8146,8 @@
  ],
  "حفظ": [
   "src/routes/_authenticated/dashboard.bookings.$id.tsx",
-  "src/routes/_authenticated/dashboard.profile.tsx"
+  "src/routes/_authenticated/dashboard.profile.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "فتح الرابط الحالي": [
   "src/routes/_authenticated/dashboard.bookings.$id.tsx"
@@ -8899,7 +8903,8 @@
  ],
  "ملفي": [
   "src/routes/_authenticated/dashboard.index.tsx",
-  "src/routes/_authenticated/dashboard.profile.tsx"
+  "src/routes/_authenticated/dashboard.profile.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "ناقص": [
   "src/routes/_authenticated/dashboard.index.tsx"
@@ -9658,7 +9663,8 @@
   "src/routes/_authenticated/dashboard.profile.tsx"
  ],
  "معرض الأعمال": [
-  "src/routes/_authenticated/dashboard.profile.tsx"
+  "src/routes/_authenticated/dashboard.profile.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "· أضيفي {0} لتظهري في البحث": [
   "src/routes/_authenticated/dashboard.profile.tsx"
@@ -9913,7 +9919,8 @@
   "src/routes/_authenticated/dashboard.profile.tsx"
  ],
  "لديك تغييرات غير محفوظة": [
-  "src/routes/_authenticated/dashboard.profile.tsx"
+  "src/routes/_authenticated/dashboard.profile.tsx",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "{0}٪": [
   "src/routes/_authenticated/dashboard.profile.tsx",
@@ -10684,5 +10691,171 @@
  ],
  "حدث خطأ غير متوقع. لا تقلقي، بياناتك بأمان.": [
   "src/routes/_authenticated.tsx"
+ ],
+ "تم حفظ الإعدادات — صفحتك العامة تحدّثت": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "تعذّر الحفظ، حاولي مرة أخرى": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "إرجاع كل الإعدادات للوضع الافتراضي؟ (لن يُحفظ حتى تضغطي حفظ)": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "إرجاع كل الإعدادات للوضع الافتراضي؟ (لن يُحفظ حتى تضغط حفظ)": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "صفحتك العامة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الإعدادات": [
+  "src/routes/_authenticated/dashboard.settings.tsx",
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "اختاري شكل صفحتك وما يظهر فيها. كل الخيارات آمنة ويمكن إرجاعها بأي وقت.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "اختر شكل صفحتك وما يظهر فيها. كل الخيارات آمنة ويمكن إرجاعها بأي وقت.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "معاينة صفحتي": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "لغة الصفحة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "اللغة التي تفتح بها صفحتك لأول مرة. الزائرة تستطيع التبديل دائماً من الزر في الأعلى.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "تلقائي (حسب الزائرة)": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "العربية": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "ألوان الصفحة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "ثيمات جاهزة ومتناسقة، مختارة لتبقى النصوص واضحة.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "خط العناوين": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "طريقة العرض": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "عدد الصور الظاهرة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الأقسام": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الباقات وزر الحجز ثابتان دائماً حتى تستطيع العرائس الحجز.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الترتيب بعد الواجهة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الباقات أولاً": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الأعمال أولاً": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الباقات والأسعار": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نموذج الحجز": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "تظهر فقط عند وجود تقييمات": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "أرقام الواجهة (التقييم، الموقع، الباقات)": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "شارات الثقة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "ملاحظات الحجز": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "زر واتساب": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نصوص قصيرة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نص عادي فقط — بدون روابط. اتركيه فارغاً لاستخدام النص الافتراضي.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "عبارة بطاقة الغلاف": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "شريط إعلان أعلى الصفحة": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "مثال: مواعيد صيف ٢٠٢٧ متاحة الآن": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "إرجاع الإعدادات الافتراضية": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "الصور والنبذة وبيانات الدفع تُعدَّل من": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "جارٍ الحفظ…": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "ظاهر دائماً": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "ذهبي كلاسيكي": [
+  "src/lib/page-settings.ts"
+ ],
+ "وردي ناعم": [
+  "src/lib/page-settings.ts"
+ ],
+ "أخضر زيتوني": [
+  "src/lib/page-settings.ts"
+ ],
+ "عنّابي": [
+  "src/lib/page-settings.ts"
+ ],
+ "كحلي ليلي": [
+  "src/lib/page-settings.ts"
+ ],
+ "لؤلؤي": [
+  "src/lib/page-settings.ts"
+ ],
+ "كلاسيكي": [
+  "src/lib/page-settings.ts"
+ ],
+ "عناوين بخط مزخرف أنيق": [
+  "src/lib/page-settings.ts"
+ ],
+ "عصري": [
+  "src/lib/page-settings.ts"
+ ],
+ "عناوين بسيطة ونظيفة": [
+  "src/lib/page-settings.ts"
+ ],
+ "رومانسي": [
+  "src/lib/page-settings.ts"
+ ],
+ "عناوين مائلة ناعمة": [
+  "src/lib/page-settings.ts"
+ ],
+ "مربعات متساوية": [
+  "src/lib/page-settings.ts"
+ ],
+ "صور عريضة": [
+  "src/lib/page-settings.ts"
+ ],
+ "شبكة متداخلة": [
+  "src/lib/page-settings.ts"
+ ],
+ "ألوان صفحتك ولغتها وأقسامها": [
+  "src/routes/_authenticated/dashboard.index.tsx"
  ]
 }

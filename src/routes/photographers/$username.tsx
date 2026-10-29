@@ -33,7 +33,20 @@ import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT } from "@/lib/validatio
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
 import { locale } from "@/i18n";
-import { t as tr, tx } from "@/i18n";
+import { t as tr, tx, getLang, setLang, LANG_COOKIE } from "@/i18n";
+import { sanitizePageSettings, themeStyle, type PageSettings } from "@/lib/page-settings";
+
+const GALLERY_GRID: Record<PageSettings["gallery_layout"], string> = {
+  grid: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2",
+  wide: "grid grid-cols-1 sm:grid-cols-2 gap-3",
+  masonry: "grid grid-cols-2 md:grid-cols-4 auto-rows-[160px] sm:auto-rows-[200px] grid-flow-dense gap-2",
+};
+// شبكة متداخلة: كل خامس صورة كبيرة، وكل ثالثة طويلة
+function galleryCell(layout: PageSettings["gallery_layout"], i: number) {
+  if (layout === "wide") return "aspect-[4/3]";
+  if (layout === "masonry") return i % 5 === 0 ? "col-span-2 row-span-2" : i % 3 === 1 ? "row-span-2" : "";
+  return "aspect-square";
+}
 
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
@@ -116,6 +129,7 @@ type Profile = {
   deposit_percent: number; travel_fee_per_km: number; free_km: number;
   is_featured?: boolean; is_demo?: boolean;
   tagline?: string | null; booking_notes?: string | null;
+  page_settings?: unknown;
   bank_info?: string | null; fixed_deposit?: number | null;
   is_published?: boolean;
   created_at?: string | null;
@@ -150,6 +164,15 @@ function PhotographerPage() {
   const fetchProfileData = useServerFn(getPhotographerProfileData);
 
   const [loadFailed, setLoadFailed] = useState(false);
+
+  // لغة الصفحة الافتراضية التي اختارتها المصوّرة — فقط إن لم تختر الزائرة لغة من قبل
+  useEffect(() => {
+    if (!profile) return;
+    const want = sanitizePageSettings(profile.page_settings).default_lang;
+    if (want === "auto" || want === getLang()) return;
+    if (document.cookie.split("; ").some((c) => c.startsWith(LANG_COOKIE + "="))) return;
+    setLang(want);
+  }, [profile]);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -160,7 +183,7 @@ function PhotographerPage() {
       const normalizedUsername = username.trim().toLowerCase();
       const { data: prof, error: profErr } = await supabase
         .from("profiles")
-        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit,verification_status,verified_at")
+        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit,verification_status,verified_at,page_settings")
         .eq("username", normalizedUsername)
         .eq("is_published", true)
         .maybeSingle();
@@ -269,8 +292,78 @@ function PhotographerPage() {
   };
   const pickPackage = (id: string) => { setPickedPackageId(id); setTimeout(() => scrollTo("book"), 50); };
 
+  const ps = sanitizePageSettings(profile.page_settings);
+  const gallerySection = (
+    <>
+      {/* GALLERY */}
+      {ps.show_gallery && (profile.portfolio_urls?.length ?? 0) > 0 && (
+        <section className="container-editorial pb-16">
+          <div className="text-center mb-8">
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("مختارات")}</div>
+            <h2 className="font-serif text-3xl">{tr("مختارات من الأعمال")}</h2>
+          </div>
+          <div className={GALLERY_GRID[ps.gallery_layout]}>
+            {profile.portfolio_urls!.slice(0, ps.gallery_count).map((item, i) => {
+              const { src: u, link } = splitPortfolioItem(item);
+              const motionProps = {
+                initial: intro ? { opacity: 0, y: 18 } : false,
+                whileInView: { opacity: 1, y: 0 },
+                viewport: { once: true, amount: 0.3 },
+                transition: { duration: 0.8, delay: (i % 4) * 0.08, ease: EASE_OUT },
+              } as const;
+              const img = <ProgressiveImage src={u} alt={tr("{0} — معرض الأعمال {1}", [profile.display_name, i + 1])} className="w-full h-full object-cover hover:scale-105 transition" />;
+              // صورة مربوطة برابط (فيديو/ألبوم) تفتح الرابط بدل العارض
+              return link ? (
+                <motion.a
+                  key={i}
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  aria-label={tr("فتح العمل على {0}", [linkLabel(link)])}
+                  className={`group relative block ${galleryCell(ps.gallery_layout, i)} bg-secondary rounded-sm overflow-hidden`}
+                  {...motionProps}
+                >
+                  {tx(img)}
+                  <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 transition group-hover:bg-black/35">
+                    <span className="grid h-12 w-12 place-items-center rounded-full bg-white/90 text-charcoal shadow">
+                      {/youtube|vimeo/i.test(linkLabel(link)) ? <Play className="h-5 w-5 fill-current" /> : <ExternalLink className="h-5 w-5" />}
+                    </span>
+                  </span>
+                  <span className="pointer-events-none absolute bottom-2 start-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white">{linkLabel(link)}</span>
+                </motion.a>
+              ) : (
+                <motion.button
+                  type="button"
+                  key={i}
+                  onClick={() => setLightboxIdx(i)}
+                  className={`block ${galleryCell(ps.gallery_layout, i)} bg-secondary rounded-sm overflow-hidden cursor-zoom-in`}
+                  {...motionProps}
+                >
+                  {tx(img)}
+                </motion.button>
+              );
+            })}
+          </div>
+          <AnimatePresence>
+          {lightboxIdx !== null && (
+            <Lightbox
+              images={(profile.portfolio_urls ?? []).slice(0, ps.gallery_count).map((x) => splitPortfolioItem(x).src)}
+              index={lightboxIdx}
+              onClose={() => setLightboxIdx(null)}
+            />
+          )}
+          </AnimatePresence>
+        </section>
+      )}
+
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0">
+    <div className="min-h-screen bg-background pb-20 lg:pb-0" style={themeStyle(ps)} data-font={ps.font}>
+      {ps.announcement && (
+        <div className="relative z-30 bg-gold px-4 py-2 pt-[calc(0.5rem+3.5rem)] sm:pt-2 text-center text-sm text-gold-foreground">{ps.announcement}</div>
+      )}
       {/* Idea 8: Scroll Progress Bar */}
       <motion.div
         id="scroll-progress-bar"
@@ -392,11 +485,11 @@ function PhotographerPage() {
             </div>
 
             {/* Magazine-style stats row */}
-            <div className="mt-12 grid grid-cols-3 gap-4 border-t border-ivory/10 pt-6">
+            {ps.show_stats && <div className="mt-12 grid grid-cols-3 gap-4 border-t border-ivory/10 pt-6">
               <Stat label={tr("التقييم")} value={reviews.length ? <CountTo onMount to={avgRating} decimals={1} locale="en" delay={0.6} /> : "—"} sub={reviews.length ? tr("{0} مراجعة", [reviews.length]) : tr("جديد")} />
               <Stat label={tr("الموقع")} value={profile.city || "—"} sub={profile.base_location || tr("الأردن")} />
               <Stat label={tr("الباقات")} value={<CountTo onMount to={pricing.filter((p) => p.package !== "addon").length} locale="en" delay={0.7} duration={1} />} sub={tr("باقة احترافية")} />
-            </div>
+            </div>}
           </motion.div>
 
           {/* RIGHT — full-bleed cover (cols 6..12) with subtle scale-in */}
@@ -423,7 +516,7 @@ function PhotographerPage() {
                   {tr("مختارة من المعرض")}
                 </div>
                 <div className="font-serif text-base leading-snug">
-                  {tr("«كل صورة قصة، وكل قصة تستحق الفخامة»")}
+                  {ps.hero_quote || tr("«كل صورة قصة، وكل قصة تستحق الفخامة»")}
                 </div>
                 {profile.city && (
                   <div className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -436,15 +529,17 @@ function PhotographerPage() {
         </div>
       </section>
 
+      {ps.section_order === "gallery_first" && gallerySection}
+
       {/* PACKAGES */}
       <section id="packages" className="container-editorial py-16">
         {/* TRUST BADGES — placed above packages so it informs the booking decision */}
-        <TrustBadges
+        {ps.show_trust_badges && <TrustBadges
           profile={profile}
           completedCount={completedCount}
           unavailCount={blockedDates.length}
           responseHours={responseHours}
-        />
+        />}
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("الباقات")}</div>
           <h2 className="font-serif text-3xl sm:text-4xl">{tr("بطاقة الأسعار")}</h2>
@@ -508,66 +603,7 @@ function PhotographerPage() {
         )}
       </section>
 
-      {/* GALLERY */}
-      {(profile.portfolio_urls?.length ?? 0) > 0 && (
-        <section className="container-editorial pb-16">
-          <div className="text-center mb-8">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("مختارات")}</div>
-            <h2 className="font-serif text-3xl">{tr("مختارات من الأعمال")}</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {profile.portfolio_urls!.slice(0, 12).map((item, i) => {
-              const { src: u, link } = splitPortfolioItem(item);
-              const motionProps = {
-                initial: intro ? { opacity: 0, y: 18 } : false,
-                whileInView: { opacity: 1, y: 0 },
-                viewport: { once: true, amount: 0.3 },
-                transition: { duration: 0.8, delay: (i % 4) * 0.08, ease: EASE_OUT },
-              } as const;
-              const img = <ProgressiveImage src={u} alt={tr("{0} — معرض الأعمال {1}", [profile.display_name, i + 1])} className="w-full h-full object-cover hover:scale-105 transition" />;
-              // صورة مربوطة برابط (فيديو/ألبوم) تفتح الرابط بدل العارض
-              return link ? (
-                <motion.a
-                  key={i}
-                  href={link}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  aria-label={tr("فتح العمل على {0}", [linkLabel(link)])}
-                  className="group relative block aspect-square bg-secondary rounded-sm overflow-hidden"
-                  {...motionProps}
-                >
-                  {tx(img)}
-                  <span className="pointer-events-none absolute inset-0 grid place-items-center bg-black/20 transition group-hover:bg-black/35">
-                    <span className="grid h-12 w-12 place-items-center rounded-full bg-white/90 text-charcoal shadow">
-                      {/youtube|vimeo/i.test(linkLabel(link)) ? <Play className="h-5 w-5 fill-current" /> : <ExternalLink className="h-5 w-5" />}
-                    </span>
-                  </span>
-                  <span className="pointer-events-none absolute bottom-2 start-2 rounded-full bg-black/60 px-2 py-0.5 text-[11px] text-white">{linkLabel(link)}</span>
-                </motion.a>
-              ) : (
-                <motion.button
-                  type="button"
-                  key={i}
-                  onClick={() => setLightboxIdx(i)}
-                  className="block aspect-square bg-secondary rounded-sm overflow-hidden cursor-zoom-in"
-                  {...motionProps}
-                >
-                  {tx(img)}
-                </motion.button>
-              );
-            })}
-          </div>
-          <AnimatePresence>
-          {lightboxIdx !== null && (
-            <Lightbox
-              images={(profile.portfolio_urls ?? []).slice(0, 12).map((x) => splitPortfolioItem(x).src)}
-              index={lightboxIdx}
-              onClose={() => setLightboxIdx(null)}
-            />
-          )}
-          </AnimatePresence>
-        </section>
-      )}
+      {ps.section_order === "packages_first" && gallerySection}
 
       {/* BOOKING + DEPOSIT */}
       <section id="book" className="bg-secondary/40 py-16">
@@ -578,7 +614,7 @@ function PhotographerPage() {
       </section>
 
       {/* NOTES */}
-      {profile.booking_notes && (
+      {ps.show_booking_notes && profile.booking_notes && (
         <section className="container-editorial py-12">
           <div className="rounded-sm border border-border bg-card p-6 max-w-2xl mx-auto">
             <h3 className="font-serif text-xl mb-3">{tr("ملاحظات مهمة")}</h3>
@@ -588,7 +624,7 @@ function PhotographerPage() {
       )}
 
       {/* REVIEWS */}
-      {reviews.length > 0 && (
+      {ps.show_reviews && reviews.length > 0 && (
         <section className="container-editorial pb-12">
           <h2 className="font-serif text-2xl mb-2 text-center">{tr("آراء العملاء")}</h2>
           <div className="flex justify-center mb-4">
@@ -617,7 +653,7 @@ function PhotographerPage() {
           {profile.instagram && (
             <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label={tr("إنستغرام")} className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
           )}
-          {profile.whatsapp && (
+          {ps.show_whatsapp && profile.whatsapp && (
             <a href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(tr("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي.."))}`} target="_blank" rel="noreferrer" aria-label={tr("واتساب")} className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
           )}
           <button
@@ -636,7 +672,7 @@ function PhotographerPage() {
       <Footer />
 
       {/* شريط حجز ثابت على الموبايل — يختفي عندما يكون نموذج الحجز ظاهراً */}
-      <StickyBookBar name={profile.display_name} whatsapp={profile.whatsapp} onBook={() => scrollTo("book")} />
+      <StickyBookBar name={profile.display_name} whatsapp={ps.show_whatsapp ? profile.whatsapp : null} onBook={() => scrollTo("book")} />
     </div>
   );
 }

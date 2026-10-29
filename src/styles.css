@@ -479,3 +479,8 @@
 @media (prefers-reduced-motion: reduce) {
   .calligraphy-write { -webkit-mask-image: none; mask-image: none; transition: none; }
 }
+
+/* خط العناوين في الصفحة العامة (إعدادات المصوّرة) — بادئة html لتغلب قواعد html[lang] */
+html [data-font="modern"] :is(h1, h2, h3, .font-serif) { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.01em; }
+html[lang="en"] [data-font="romantic"] :is(h1, h2, h3) { font-style: italic; font-weight: 400; }
+html[lang="ar"] [data-font="romantic"] :is(h1, h2, h3) { font-family: "Aref Ruqaa", var(--font-serif); letter-spacing: 0; }

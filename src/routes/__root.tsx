@@ -337,7 +337,9 @@ function RootComponent() {
   const [intro] = useState(readIntro);
   useEffect(() => { markIntroSeen(); }, []);
   // ?lang=en in a shared link sticks for the rest of the visit
+  // (only then: no cookie = no choice yet, so a photographer's default language can apply)
   useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has("lang")) return;
     document.cookie = `${LANG_COOKIE}=${getLang()}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`;
   }, []);
   // The soft page entrances play on every visit to public pages. Inside the app

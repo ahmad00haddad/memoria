@@ -69,6 +69,7 @@ import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_aut
 import { Route as AuthenticatedDashboardRecapRouteImport } from './routes/_authenticated/dashboard.recap'
 import { Route as AuthenticatedDashboardReferralsRouteImport } from './routes/_authenticated/dashboard.referrals'
 import { Route as AuthenticatedDashboardReportsRouteImport } from './routes/_authenticated/dashboard.reports'
+import { Route as AuthenticatedDashboardSettingsRouteImport } from './routes/_authenticated/dashboard.settings'
 import { Route as AuthenticatedDashboardSubscriptionRouteImport } from './routes/_authenticated/dashboard.subscription'
 import { Route as AuthenticatedDashboardWhatsappTemplatesRouteImport } from './routes/_authenticated/dashboard.whatsapp-templates'
 import { Route as AuthenticatedDashboardBookingsIndexRouteImport } from './routes/_authenticated/dashboard.bookings.index'
@@ -407,6 +408,12 @@ const AuthenticatedDashboardReportsRoute =
     path: '/reports',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardSettingsRoute =
+  AuthenticatedDashboardSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedDashboardSubscriptionRoute =
   AuthenticatedDashboardSubscriptionRouteImport.update({
     id: '/subscription',
@@ -543,6 +550,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
   '/dashboard/whatsapp-templates': typeof AuthenticatedDashboardWhatsappTemplatesRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -615,6 +623,7 @@ export interface FileRoutesByTo {
   '/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
   '/dashboard/whatsapp-templates': typeof AuthenticatedDashboardWhatsappTemplatesRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -692,6 +701,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/_authenticated/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/_authenticated/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
+  '/_authenticated/dashboard/settings': typeof AuthenticatedDashboardSettingsRoute
   '/_authenticated/dashboard/subscription': typeof AuthenticatedDashboardSubscriptionRoute
   '/_authenticated/dashboard/whatsapp-templates': typeof AuthenticatedDashboardWhatsappTemplatesRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -769,6 +779,7 @@ export interface FileRouteTypes {
     | '/dashboard/recap'
     | '/dashboard/referrals'
     | '/dashboard/reports'
+    | '/dashboard/settings'
     | '/dashboard/subscription'
     | '/dashboard/whatsapp-templates'
     | '/admin/'
@@ -841,6 +852,7 @@ export interface FileRouteTypes {
     | '/dashboard/recap'
     | '/dashboard/referrals'
     | '/dashboard/reports'
+    | '/dashboard/settings'
     | '/dashboard/subscription'
     | '/dashboard/whatsapp-templates'
     | '/admin'
@@ -917,6 +929,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/recap'
     | '/_authenticated/dashboard/referrals'
     | '/_authenticated/dashboard/reports'
+    | '/_authenticated/dashboard/settings'
     | '/_authenticated/dashboard/subscription'
     | '/_authenticated/dashboard/whatsapp-templates'
     | '/_authenticated/admin/'
@@ -1401,6 +1414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardReportsRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/settings': {
+      id: '/_authenticated/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof AuthenticatedDashboardSettingsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/dashboard/subscription': {
       id: '/_authenticated/dashboard/subscription'
       path: '/subscription'
@@ -1569,6 +1589,7 @@ interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardRecapRoute: typeof AuthenticatedDashboardRecapRoute
   AuthenticatedDashboardReferralsRoute: typeof AuthenticatedDashboardReferralsRoute
   AuthenticatedDashboardReportsRoute: typeof AuthenticatedDashboardReportsRoute
+  AuthenticatedDashboardSettingsRoute: typeof AuthenticatedDashboardSettingsRoute
   AuthenticatedDashboardSubscriptionRoute: typeof AuthenticatedDashboardSubscriptionRoute
   AuthenticatedDashboardWhatsappTemplatesRoute: typeof AuthenticatedDashboardWhatsappTemplatesRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
@@ -1588,6 +1609,7 @@ const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
     AuthenticatedDashboardRecapRoute: AuthenticatedDashboardRecapRoute,
     AuthenticatedDashboardReferralsRoute: AuthenticatedDashboardReferralsRoute,
     AuthenticatedDashboardReportsRoute: AuthenticatedDashboardReportsRoute,
+    AuthenticatedDashboardSettingsRoute: AuthenticatedDashboardSettingsRoute,
     AuthenticatedDashboardSubscriptionRoute:
       AuthenticatedDashboardSubscriptionRoute,
     AuthenticatedDashboardWhatsappTemplatesRoute:
