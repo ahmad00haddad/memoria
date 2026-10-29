@@ -675,9 +675,6 @@ function PhotographerPage() {
           {profile.instagram && (
             <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label={tr("إنستغرام")} className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
           )}
-          {ps.show_whatsapp && profile.whatsapp && (
-            <a href={`https://wa.me/${(profile.whatsapp || "").replace(/[^0-9]/g, "")}?text=${encodeURIComponent(tr("مرحباً! شاهدت أعمالك الرائعة على منصة Memoria، وأود الاستفسار عن باقات التصوير لحفل زفافي.."))}`} target="_blank" rel="noreferrer" aria-label={tr("واتساب")} className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><MessageCircle className="h-5 w-5 text-green-600" /></a>
-          )}
           <button
             type="button"
             aria-label={tr("مشاركة الملف")}
@@ -694,7 +691,7 @@ function PhotographerPage() {
       <Footer />
 
       {/* شريط حجز ثابت على الموبايل — يختفي عندما يكون نموذج الحجز ظاهراً */}
-      <StickyBookBar name={profile.display_name} whatsapp={ps.show_whatsapp ? profile.whatsapp : null} onBook={() => scrollTo("book")} />
+      <StickyBookBar name={profile.display_name} onBook={() => scrollTo("book")} />
     </div>
   );
 }
@@ -1567,7 +1564,7 @@ function FallbackPage({ children }: { children: React.ReactNode }) {
 }
 
 
-function StickyBookBar({ name, whatsapp, onBook }: { name: string; whatsapp?: string | null; onBook: () => void }) {
+function StickyBookBar({ name, onBook }: { name: string; onBook: () => void }) {
   const [hidden, setHidden] = useState(false);
   useEffect(() => {
     const el = document.getElementById("book");
@@ -1586,17 +1583,6 @@ function StickyBookBar({ name, whatsapp, onBook }: { name: string; whatsapp?: st
           <div className="text-[11px] text-muted-foreground">{tr("احجزي مع")}</div>
           <div className="font-serif text-sm truncate">{tx(name)}</div>
         </div>
-        {whatsapp && (
-          <a
-            href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}?text=${encodeURIComponent(tr("مرحباً! شاهدت أعمالك على ميموريا وأود الاستفسار عن باقات التصوير لحفل زفافي."))}`}
-            target="_blank"
-            rel="noreferrer"
-            className="h-11 w-11 grid place-items-center rounded-full border border-border"
-            aria-label={tr("واتساب")}
-          >
-            <MessageCircle className="h-4 w-4 text-green-600" />
-          </a>
-        )}
         <button onClick={onBook} className="rounded-full bg-charcoal px-6 py-3 text-sm font-medium text-ivory transition-transform active:scale-95 dark:bg-gold dark:text-charcoal">
           {tr("احجزي موعدك")}
         </button>
