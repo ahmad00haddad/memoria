@@ -8,6 +8,7 @@
 // ============================================================================
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { applyExternalDays } from "@/lib/ical-sync.functions";
+import { nextDay } from "@/lib/validation";
 
 const TZ = "Asia/Amman";
 export const GOOGLE_SCOPES = [
@@ -205,7 +206,7 @@ export async function pushBookings(userId: string, token: string, calendarId: st
         location: b.venue_name ?? "",
         description: `حجز ميموريا\n${appUrl()}/dashboard/bookings/${b.id}`,
         start: { dateTime: `${b.event_date}T${b.start_time.slice(0, 8)}`, timeZone: TZ },
-        end: { dateTime: `${b.event_date}T${b.end_time.slice(0, 8)}`, timeZone: TZ },
+        end: { dateTime: `${b.end_time <= b.start_time ? nextDay(b.event_date) : b.event_date}T${b.end_time.slice(0, 8)}`, timeZone: TZ },
         colorId: b.status === "pending_deposit" ? "5" : "10",
       };
       try {

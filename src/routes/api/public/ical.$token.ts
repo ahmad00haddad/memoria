@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { nextDay } from "@/lib/validation";
 
 // تقويم المصوّرة بصيغة iCal للاشتراك من Google/Apple/Outlook.
 // الأوقات محلية بتوقيت عمّان (TZID) كي لا تنزاح الحجوزات حسب منطقة تقويم المشترك.
@@ -65,7 +66,7 @@ export const Route = createFileRoute("/api/public/ical/$token")({
             `UID:booking-${b.id}@memoria-jo`,
             `DTSTAMP:${stamp}`,
             `DTSTART;TZID=Asia/Amman:${fmt(b.event_date, b.start_time)}`,
-            `DTEND;TZID=Asia/Amman:${fmt(b.event_date, b.end_time)}`,
+            `DTEND;TZID=Asia/Amman:${fmt(b.end_time <= b.start_time ? nextDay(b.event_date) : b.event_date, b.end_time)}`,
             `SUMMARY:${esc(`${b.client_name} (${STATUS_AR[b.status] ?? b.status})`)}`,
             `LOCATION:${esc(b.venue_name ?? "")}`,
             "END:VEVENT");

@@ -141,6 +141,11 @@ function SignPage() {
               <div className="font-semibold">{t("تم التوقيع")}</div>
               <div className="text-sm text-muted-foreground">{t("بواسطة {0} · {1}", [contract.client_name, new Date(contract.signed_at).toLocaleString(locale("ar"))])}</div>
               <div className="font-serif italic text-xl mt-2">{tx(contract.client_signature)}</div>
+              {contract.signed_body_sha256 && (
+                <div className="mt-2 text-[11px] text-muted-foreground break-all" dir="ltr">
+                  {t("بصمة العقد (لا تتغيّر بعد التوقيع):")} <span className="font-mono">{contract.signed_body_sha256}</span>
+                </div>
+              )}
             </div>
             <button onClick={() => window.print()} className="print:hidden inline-flex items-center gap-2 border border-emerald-600 text-emerald-700 px-3 py-2 rounded-sm hover:bg-emerald-100 text-sm">
               <Printer className="h-4 w-4" />{" "}{t("طباعة / حفظ PDF")}

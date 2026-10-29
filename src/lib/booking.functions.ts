@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT } from "./validation";
+import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT, sessionMinutes } from "./validation";
 
 type BookingItemInput = { rule_id: string; qty: number };
 
@@ -31,8 +31,7 @@ function validateInput(d: SubmitInput): SubmitInput {
   d.client_phone = phone;
   if (!isDate(d.event_date)) throw new Error(tr("اختاري تاريخ المناسبة"));
   if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error(tr("اختاري وقت البداية والنهاية"));
-  const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
-  const duration = toMin(d.end_time) - toMin(d.start_time);
+  const duration = sessionMinutes(d.start_time, d.end_time);
   if (duration <= 0) throw new Error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
   if (duration < 30) throw new Error(tr("الحد الأدنى لمدة الحجز هو 30 دقيقة"));
   // التاريخ يجب أن يكون اليوم أو في المستقبل
@@ -104,8 +103,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     if (profErr || !profile) throw new Error(tr("المصوّرة غير موجودة"));
 
     // احترام الحد الأدنى لمدة الجلسة الذي حدّدته المصوّرة
-    const toMinutes = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
-    const bookedMinutes = toMinutes(data.end_time) - toMinutes(data.start_time);
+    const bookedMinutes = sessionMinutes(data.start_time, data.end_time);
     const minMinutes = Number(profile.min_session_minutes ?? 0);
     if (minMinutes > 0 && bookedMinutes < minMinutes) {
       throw new Error(tr("الحد الأدنى لمدة الجلسة لدى هذه المصوّرة هو {0} ساعة", [Math.round(minMinutes / 60 * 10) / 10]));

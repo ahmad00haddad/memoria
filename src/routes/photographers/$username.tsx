@@ -29,7 +29,7 @@ import { MapPin } from "lucide-react";
 import { Zap, CircleCheck } from "lucide-react";
 import { parseFeatures, emphasizeNumbers } from "@/lib/packageFeatures";
 import { useConfirm } from "@/components/ui/confirm-dialog";
-import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT } from "@/lib/validation";
+import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT, sessionMinutes } from "@/lib/validation";
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
 import { locale } from "@/i18n";
@@ -879,8 +879,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const daySlots = bookedSlots.filter((s) => s.event_date === f.event_date);
   const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
   const hasConflict = !!(f.event_date && f.start_time && f.end_time) && daySlots.some((s) => {
-    const a1 = toMin(f.start_time), a2 = toMin(f.end_time);
-    const b1 = toMin(s.start_time), b2 = toMin(s.end_time);
+    const a1 = toMin(f.start_time), a2 = a1 + sessionMinutes(f.start_time, f.end_time);
+    const b1 = toMin(s.start_time), b2 = b1 + sessionMinutes(s.start_time, s.end_time);
     return a1 < b2 && b1 < a2;
   });
 
@@ -893,7 +893,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const packageFits = (pkg: Pricing) => {
     const need = pkgHours(pkg) * 60;
     if (!f.event_date || !need || daySlots.length === 0) return true;
-    const busy = daySlots.map((x) => [toMin(x.start_time), toMin(x.end_time) || 1440] as const).sort((a, b) => a[0] - b[0]);
+    const busy = daySlots.map((x) => [toMin(x.start_time), Math.min(1440, toMin(x.start_time) + (sessionMinutes(x.start_time, x.end_time) || 1440))] as const).sort((a, b) => a[0] - b[0]);
     let cursor = 480, longest = 0;
     for (const [b1, b2] of busy) { longest = Math.max(longest, b1 - cursor); cursor = Math.max(cursor, b2); }
     longest = Math.max(longest, 1440 - cursor);
@@ -1017,7 +1017,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     if (!Number.isFinite(price) || price < minPrice || price >= listed) {
       return toast.error(tr("اقترحي سعراً بين {0} و{1} د.أ", [minPrice.toLocaleString(locale("ar-JO")), (listed - 1).toLocaleString(locale("ar-JO"))]));
     }
-    if (toMin(f.end_time) <= toMin(f.start_time)) return toast.error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
+    if (sessionMinutes(f.start_time, f.end_time) <= 0) return toast.error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
     if (isBlocked) return toast.error(tr("هذا اليوم غير متاح، الرجاء اختيار يوم آخر"));
     if (hasConflict) return toast.error(tr("هذا الوقت محجوز، اختاري وقتاً مختلفاً"));
     setOfferSending(true);

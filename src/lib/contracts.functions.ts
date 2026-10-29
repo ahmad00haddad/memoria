@@ -19,7 +19,7 @@ export const signContract = createServerFn({ method: "POST" })
       signed_at: new Date().toISOString(),
       client_signature: data.signature,
       client_name: data.client_name,
-    }).eq("id", c.id);
+    }).eq("id", c.id).eq("status", "pending");
     if (error) throw error;
     await supabaseAdmin.from("notifications").insert({
       user_id: c.photographer_id,
@@ -35,7 +35,7 @@ export const getContractByToken = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: c } = await supabaseAdmin.from("contracts").select(
-      "id, body, client_name, status, signed_at, client_signature, booking_id, photographer_id"
+      "id, body, client_name, status, signed_at, client_signature, signed_body_sha256, booking_id, photographer_id"
     ).eq("sign_token", data.token).maybeSingle();
     if (!c) return null;
     const { data: b } = await supabaseAdmin.from("bookings").select(

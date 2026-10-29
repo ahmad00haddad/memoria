@@ -33,3 +33,18 @@ export function isEmail(raw: string): boolean {
 }
 
 export const EMAIL_HINT = "البريد الإلكتروني غير صحيح. مثال: name@gmail.com";
+
+// مدّة الجلسة بالدقائق. نهاية قبل البداية = تنتهي بعد منتصف الليل (عرس 20:00–02:00).
+// نهاية = بداية تُعاد 0 (غير صالحة).
+export function sessionMinutes(start: string, end: string): number {
+  const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
+  const d = toMin(end) - toMin(start);
+  return d < 0 ? d + 1440 : d;
+}
+
+// تاريخ اليوم التالي (YYYY-MM-DD) لنهاية جلسة تقطع منتصف الليل
+export function nextDay(date: string): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+}

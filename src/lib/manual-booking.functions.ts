@@ -47,7 +47,7 @@ function validate(d: Input): Input {
   if (d.service !== "photography" && d.service !== "cinematic_video") throw new Error(t("نوع الخدمة غير صالح"));
   if (!DATE_RE.test(d.event_date)) throw new Error(t("اختاري تاريخ المناسبة"));
   if (!TIME_RE.test(d.start_time) || !TIME_RE.test(d.end_time)) throw new Error(t("الوقت غير صالح"));
-  if (d.end_time <= d.start_time) throw new Error(t("وقت النهاية يجب أن يكون بعد البداية"));
+  if (d.end_time.slice(0, 5) === d.start_time.slice(0, 5)) throw new Error(t("وقت النهاية يجب أن يكون بعد البداية"));
   const total = Number(d.total_price);
   const deposit = Number(d.deposit_amount);
   if (!Number.isFinite(total) || total < 0 || total > 100000) throw new Error(t("السعر غير صالح"));

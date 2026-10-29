@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getLang, dirOf } from "@/i18n";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT } from "./validation";
+import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT, sessionMinutes } from "./validation";
 import { t as tr } from "@/i18n";
 
 // ============================================================================
@@ -49,8 +49,7 @@ function validateOffer(d: OfferInput): OfferInput {
   d.client_phone = phone;
   if (!isDate(d.event_date)) throw new Error(tr("اختاري تاريخ المناسبة"));
   if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error(tr("اختاري وقت البداية والنهاية"));
-  const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return (h || 0) * 60 + (m || 0); };
-  const duration = toMin(d.end_time) - toMin(d.start_time);
+  const duration = sessionMinutes(d.start_time, d.end_time);
   if (duration <= 0) throw new Error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
   if (duration < 30) throw new Error(tr("الحد الأدنى لمدة الحجز هو 30 دقيقة"));
   const todayStr = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().split("T")[0];

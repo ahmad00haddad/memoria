@@ -3442,5 +3442,11 @@
  "لا تحوّلي العربون قبل موافقة المصوّرة على طلبك.": "Don't transfer the deposit before the photographer approves your request.",
  "وافقي على الطلب أولاً": "Approve the request first",
  "اكتبي سبب الإلغاء — رح يوصل للعروس": "Write the reason — the bride will see it",
- "لا يمكن إلغاء هذا الحجز من هنا — يرجى التواصل مع المصوّرة": "This booking can't be cancelled here — please contact the photographer"
+ "لا يمكن إلغاء هذا الحجز من هنا — يرجى التواصل مع المصوّرة": "This booking can't be cancelled here — please contact the photographer",
+ "إذا ألغت العميلة بعد دفع العربون يُرجَع لها كاملاً": "If the client cancels after paying the deposit, it is refunded in full",
+ "إذا ألغت العميلة بعد دفع العربون يُرجَع لها {0}% منه": "If the client cancels after paying the deposit, {0}% of it is refunded",
+ "إذا ألغت العميلة بعد دفع العربون لا يُرجَع": "If the client cancels after paying the deposit, it is not refunded",
+ "{0}. إذا ألغت المصوّرة الحجز تُرجع العربون كاملاً. العربون يُحوَّل مباشرة للمصوّرة والمنصّة ليست طرفاً فيه. تغيير الموعد يعني إلغاء الحجز، إلا إذا وافقت المصوّرة على نقل العربون.": "{0}. If the photographer cancels, she returns the full deposit. The deposit is paid directly to the photographer; the platform is not a party to it. Changing the date means cancelling, unless the photographer agrees to move the deposit.",
+ "{0} بين المصوّرة والعميل/ة {1}. تاريخ التصوير: {2} المدّة: {3} - {4} الموقع: {5} المجموع: {6} د.أ العربون: {7} د.أ رسوم الساعة الإضافية: {8} د.أ مستوى الخصوصية: {9} البنود الافتراضية: - تسليم {10} خلال {11} يومًا (تاريخ التسليم المتوقع: {12}). - العربون والإلغاء: {13} - لا يحق للعميل/ة نشر المواد الخام (RAW) أو إزالة شعار المصوّرة.": "{0} between the photographer and the client {1}. Shoot date: {2} Time: {3} - {4} Venue: {5} Total: {6} JOD Deposit: {7} JOD Overtime fee per hour: {8} JOD Privacy level: {9} Default terms: - {10} delivered within {11} days (expected delivery date: {12}). - Deposit and cancellation: {13} - The client may not publish RAW files or remove the photographer’s logo.",
+ "بصمة العقد (لا تتغيّر بعد التوقيع):": "Contract fingerprint (cannot change after signing):"
 }

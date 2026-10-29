@@ -370,7 +370,16 @@ function BookingDetail() {
       no_publish: tr("بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي"),
       private_only: tr("خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث"),
     };
-    const baseBody = tpl?.body ?? tr("{0} بين المصوّرة والعميل/ة {1}. تاريخ التصوير: {2} المدّة: {3} - {4} الموقع: {5} المجموع: {6} د.أ العربون (غير قابل للاسترداد): {7} د.أ رسوم الساعة الإضافية: {8} د.أ مستوى الخصوصية: {9} البنود الافتراضية: - تسليم {10} خلال {11} يومًا (تاريخ التسليم المتوقع: {12}). - إلغاء قبل أسبوعين يعفي من المتبقّي، بعدها 50%. - لا يحق للعميل/ة نشر المواد الخام (RAW) أو إزالة شعار المصوّرة.", [b.service === "cinematic_video" ? "عقد تصوير فيديو" : "عقد تصوير فوتوغرافي", b.client_name, b.event_date, b.start_time?.slice(0,5), b.end_time?.slice(0,5), b.venue_name ?? "—", b.total_price, b.deposit_amount, b.overtime_fee_per_hour || 0, privacyLabels[b.privacy_level || 'public'], b.service === "cinematic_video" ? "الفيديو" : "الصور", b.delivery_days_promised || 30, b.delivery_due_at ?? '—']);
+    // بند العربون من سياسة المصوّرة الفعلية — نفس النص الذي وافقت عليه العروس قبل التحويل
+    const { data: pol } = await supabase.from("profiles")
+      .select("deposit_refund_policy, deposit_refund_percent").eq("id", b.photographer_id).maybeSingle();
+    const depositClause = (pol as any)?.deposit_refund_policy === "full"
+      ? tr("إذا ألغت العميلة بعد دفع العربون يُرجَع لها كاملاً")
+      : (pol as any)?.deposit_refund_policy === "partial"
+        ? tr("إذا ألغت العميلة بعد دفع العربون يُرجَع لها {0}% منه", [Number((pol as any)?.deposit_refund_percent || 0)])
+        : tr("إذا ألغت العميلة بعد دفع العربون لا يُرجَع");
+    const depositTerms = tr("{0}. إذا ألغت المصوّرة الحجز تُرجع العربون كاملاً. العربون يُحوَّل مباشرة للمصوّرة والمنصّة ليست طرفاً فيه. تغيير الموعد يعني إلغاء الحجز، إلا إذا وافقت المصوّرة على نقل العربون.", [depositClause]);
+    const baseBody = tpl?.body ?? tr("{0} بين المصوّرة والعميل/ة {1}. تاريخ التصوير: {2} المدّة: {3} - {4} الموقع: {5} المجموع: {6} د.أ العربون: {7} د.أ رسوم الساعة الإضافية: {8} د.أ مستوى الخصوصية: {9} البنود الافتراضية: - تسليم {10} خلال {11} يومًا (تاريخ التسليم المتوقع: {12}). - العربون والإلغاء: {13} - لا يحق للعميل/ة نشر المواد الخام (RAW) أو إزالة شعار المصوّرة.", [b.service === "cinematic_video" ? "عقد تصوير فيديو" : "عقد تصوير فوتوغرافي", b.client_name, b.event_date, b.start_time?.slice(0,5), b.end_time?.slice(0,5), b.venue_name ?? "—", b.total_price, b.deposit_amount, b.overtime_fee_per_hour || 0, privacyLabels[b.privacy_level || 'public'], b.service === "cinematic_video" ? "الفيديو" : "الصور", b.delivery_days_promised || 30, b.delivery_due_at ?? '—', depositTerms]);
     const body = baseBody
       .replace(/\[اسم العميل\]/g, b.client_name)
       .replace(/\[التاريخ\]/g, b.event_date)
@@ -380,7 +389,8 @@ function BookingDetail() {
       .replace(/\[المجموع\]/g, String(b.total_price))
       .replace(/\[العربون\]/g, String(b.deposit_amount))
       .replace(/\[رسوم الساعة الإضافية\]/g, String(b.overtime_fee_per_hour || 0))
-      .replace(/\[مستوى الخصوصية\]/g, privacyLabels[b.privacy_level || 'public']);
+      .replace(/\[مستوى الخصوصية\]/g, privacyLabels[b.privacy_level || 'public'])
+      .replace(/\[سياسة العربون\]/g, depositTerms);
     try {
       await createContractFn({ data: { booking_id: id, body, client_name: b.client_name } });
       toast.success(tr("أُنشئ العقد")); load();
