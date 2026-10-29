@@ -191,6 +191,19 @@ export function tplEventReminder24h(args: {
   };
 }
 
+export function tplBalanceDue(args: {
+  client_name: string; photographer_name: string; remaining: number; track_token: string;
+}) {
+  return {
+    subject: "تذكير: باقي مبلغ التصوير",
+    html: layout("باقي مبلغ التصوير", `
+      <p>مرحباً ${escapeHtml(args.client_name)},</p>
+      <p>ألف مبروك 🤍 نتمنى أن يكون يومك جميلاً.</p>
+      <p>باقي مبلغ التصوير مع <strong>${escapeHtml(args.photographer_name)}</strong>: <strong>${args.remaining.toFixed(2)} د.أ</strong>. حوّليه لها بنفس طريقة العربون حتى تحفظي حقّها وحقّك وتستلمي صورك.</p>`,
+      { label: "صفحة الحجز", url: `${appBase()}/track/${args.track_token}` }),
+  };
+}
+
 export function tplGalleryDelivered(args: {
   client_name: string; photographer_name: string; track_token: string;
 }) {
@@ -225,7 +238,7 @@ export function tplBookingCancelled(args: {
   // عند الإلغاء من العميل: رسالة للمصوّرة (إشعار).
   if (args.by === "photographer") {
     const refundBlock = args.refund_amount > 0
-      ? `<p>سيتم رد عربون بقيمة <strong style="color:#a07a32;">${args.refund_amount.toFixed(2)} د.أ</strong> حسب سياسة الاسترداد.</p>`
+      ? `<p>بما أن الإلغاء من المصوّرة، عليها إرجاع العربون كاملاً لكِ مباشرة: <strong style="color:#a07a32;">${args.refund_amount.toFixed(2)} د.أ</strong>.</p>`
       : "";
     return {
       subject: "تم إلغاء حجزك",
@@ -242,7 +255,8 @@ export function tplBookingCancelled(args: {
     subject: `ألغى ${args.client_name} طلب الحجز`,
     html: layout("ألغى العميل الحجز", `
       <p>مرحباً ${escapeHtml(args.photographer_name)},</p>
-      <p>قام <strong>${escapeHtml(args.client_name)}</strong> بإلغاء طلب الحجز بتاريخ <strong>${escapeHtml(args.event_date)}</strong> قبل التأكيد. أصبح الموعد متاحاً مجدداً.</p>`,
+      <p>قام <strong>${escapeHtml(args.client_name)}</strong> بإلغاء الحجز بتاريخ <strong>${escapeHtml(args.event_date)}</strong>. أصبح الموعد متاحاً مجدداً.</p>
+      ${args.refund_amount > 0 ? `<p>حسب سياسة العربون التي اخترتِها، عليكِ إرجاع <strong>${args.refund_amount.toFixed(2)} د.أ</strong> للعروس مباشرة.</p>` : ""}`,
       args.booking_id ? { label: "فتح الحجز", url: `${appBase()}/dashboard/bookings/${args.booking_id}` } : undefined),
   };
 }

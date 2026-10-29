@@ -5274,7 +5274,8 @@
   "src/content/blog.ts"
  ],
  "فريق التصوير": [
-  "src/content/blog.ts"
+  "src/content/blog.ts",
+  "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "هل تعمل المصوّرة وحدها أم معها مساعدة أو مصوّرة ثانية أو مصوّر فيديو؟ العرس الكبير بقاعة واسعة وعدة مواقع يستفيد من فريق أكبر، وذلك يرفع التكلفة. بينما حفل صغير قد تكفيه مصوّرة واحدة بكفاءة.": [
   "src/content/blog.ts"
@@ -6754,7 +6755,8 @@
   "src/routes/_authenticated/admin.disputes.tsx",
   "src/routes/_authenticated/admin.photographers.tsx",
   "src/routes/_authenticated/admin.refunds.tsx",
-  "src/routes/_authenticated/admin.subscriptions.tsx"
+  "src/routes/_authenticated/admin.subscriptions.tsx",
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
  ],
  "بحث بالاسم أو الهاتف أو المصوّرة…": [
   "src/routes/_authenticated/admin.bookings.tsx"
@@ -6784,7 +6786,8 @@
  ],
  "إلغاء الحجز": [
   "src/routes/_authenticated/admin.bookings.tsx",
-  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx",
+  "src/routes/track.$token.tsx"
  ],
  "لا توجد نتائج تطابق البحث": [
   "src/routes/_authenticated/admin.bookings.tsx"
@@ -7156,7 +7159,8 @@
   "src/routes/_authenticated/admin.photographers.tsx"
  ],
  "رفض طلب {0}": [
-  "src/routes/_authenticated/admin.photographers.tsx"
+  "src/routes/_authenticated/admin.photographers.tsx",
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
  ],
  "سيصلها إشعار بما ينقص: {0}": [
   "src/routes/_authenticated/admin.photographers.tsx"
@@ -7165,7 +7169,8 @@
   "src/routes/_authenticated/admin.photographers.tsx"
  ],
  "رفض الطلب": [
-  "src/routes/_authenticated/admin.photographers.tsx"
+  "src/routes/_authenticated/admin.photographers.tsx",
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
  ],
  "إلغاء توثيق {0}": [
   "src/routes/_authenticated/admin.photographers.tsx"
@@ -7466,7 +7471,8 @@
  "رفض": [
   "src/routes/_authenticated/admin.reviews.tsx",
   "src/routes/_authenticated/admin.subscriptions.tsx",
-  "src/routes/_authenticated/dashboard.offers.tsx"
+  "src/routes/_authenticated/dashboard.offers.tsx",
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
  ],
  "فشل تحميل الأدوار": [
   "src/routes/_authenticated/admin.roles.tsx"
@@ -11089,5 +11095,203 @@
  ],
  "المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد إرسال الطلب.": [
   "src/routes/photographers/$username.tsx"
+ ],
+ "سياسة المصوّرة: إذا ألغيتِ بعد دفع العربون، تُرجع لكِ العربون كاملاً ({0} د.أ).": [
+  "src/routes/track.$token.tsx"
+ ],
+ "سياسة المصوّرة: إذا ألغيتِ بعد دفع العربون، تُرجع لكِ {0}% منه ({1} د.أ).": [
+  "src/routes/track.$token.tsx"
+ ],
+ "سياسة المصوّرة: العربون لا يُرجَع إذا ألغيتِ بعد دفعه.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "العربون يُحوَّل مباشرة للمصوّرة، والمنصّة لا تستلمه ولا تُرجعه. أي استرجاع أو مسامحة يتم بينكِ وبين المصوّرة، والقرار لها.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "التأجيل غير متاح من المنصّة: تغيير الموعد يعني إلغاء الحجز، إلا إذا وافقت المصوّرة على نقل العربون لموعد جديد بعد تواصلكما.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "اقرئي شروط العربون ووافقي عليها أولاً.": [
+  "src/routes/track.$token.tsx",
+  "src/lib/booking.functions.ts",
+  "src/lib/payments.functions.ts"
+ ],
+ "موافقة المصوّرة": [
+  "src/routes/track.$token.tsx"
+ ],
+ "بانتظار موافقة {0}": [
+  "src/routes/track.$token.tsx"
+ ],
+ "التاريخ محجوز لكِ. المصوّرة تردّ خلال {0} ساعة كحد أقصى، ويصلك إشعار فور ردّها. لا تحوّلي أي مبلغ قبل موافقتها.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "المصوّرة وافقت ✓ حوّلي {0} د.أ وارفعي الإيصال خلال {1} ساعة، وإلا يُلغى الطلب ويُفتح التاريخ لغيرك.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "موافقة المصوّرة على الطلب": [
+  "src/routes/track.$token.tsx"
+ ],
+ "قبل التحويل، اقرئي هذا:": [
+  "src/routes/track.$token.tsx"
+ ],
+ "قرأت وفهمت، وأوافق على هذه الشروط.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "تحتاجين لإلغاء الحجز؟": [
+  "src/routes/track.$token.tsx"
+ ],
+ "لم تدفعي عربوناً بعد، فالإلغاء بدون أي تبعات.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "باقي المبلغ: {0} د.أ": [
+  "src/routes/track.$token.tsx"
+ ],
+ "حوّلي باقي المبلغ للمصوّرة بنفس طريقة العربون، حتى تحفظي حقّها وحقّكِ وتستلمي صورك. بعض المصوّرات يسلّمن الصور بعد وصول المبلغ فقط.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "السبب:": [
+  "src/routes/track.$token.tsx"
+ ],
+ "لم يُدفع أي مبلغ على هذا الطلب.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "مصوّرات متاحات بنفس التاريخ": [
+  "src/routes/track.$token.tsx"
+ ],
+ "سيتم إلغاء الحجز نهائياً ويُفتح التاريخ لغيرك.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "فهمت، وأريد الإلغاء.": [
+  "src/routes/track.$token.tsx"
+ ],
+ "العربون إذا ألغت العروس": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "تظهر للعروس قبل أن تحوّل العربون، وتوافق عليها. العربون يُحوَّل لك مباشرة، والمنصّة لا تستلمه ولا تُرجعه.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "لا يُرجَع": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "يُرجَع جزء منه": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "يُرجَع كاملاً": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نسبة الإرجاع": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "إذا ألغيتِ أنتِ الحجز بعد العربون، عليكِ إرجاعه كاملاً للعروس.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "إذا ألغيت أنت الحجز بعد العربون، عليك إرجاعه كاملاً للعروس.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "يظهر في صفحتك، وتستطيع العرائس البحث به.": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "نسائي بالكامل": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "رجالي (للجاهات)": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "مختلط": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "غير محدّد": [
+  "src/routes/_authenticated/dashboard.settings.tsx"
+ ],
+ "وافقتِ على الطلب — أبلغنا العروس لتحوّل العربون خلال 48 ساعة": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "تعذّرت الموافقة": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "رُفض الطلب وأبلغنا العروس بالسبب": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "تعذّر الرفض": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "أُلغي الحجز. أرجعي العربون للعروس مباشرة: {0} د.أ": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "بانتظار تأكيد العروس لطلبها": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "يصلك إشعار فور تأكيدها": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "طلب جديد بانتظار موافقتك": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "باقي {0} ساعة — بعدها يُلغى تلقائياً ويُفتح التاريخ": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "موافقة": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "باقي {0} ساعة لترفع إثبات التحويل": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "العروس لم تحوّل باقي المبلغ بعد ({0} د.أ). ننصحكِ بانتظار وصوله وتذكيرها قبل تسليم الصور، لضمان حقّكِ.": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "العروس لم تحوّل باقي المبلغ بعد ({0} د.أ). ننصحك بانتظار وصوله وتذكيرها قبل تسليم الصور، لضمان حقّك.": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "ذكّرها بواتساب": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "مرحباً {0} 🤍 ألف مبروك! باقي مبلغ التصوير {1} د.أ — يرجى تحويله حتى أسلّمك الصور. التفاصيل هنا: {2}": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "بانتظار موافقتك": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "بما أن الإلغاء منكِ، عليكِ إرجاع العربون كاملاً للعروس مباشرة.": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "(إلزامي — يصل للعروس)": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "لم يُدفع أي مبلغ. ستصل للعروس رسالة بالسبب ورابط لمصوّرات متاحات بنفس التاريخ، ويُفتح التاريخ فوراً.": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "مثلاً: عندي التزام آخر بهذا التاريخ": [
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+ ],
+ "فريق نسائي": [
+  "src/routes/search.tsx"
+ ],
+ "فريق رجالي": [
+  "src/routes/search.tsx",
+  "src/routes/photographers/$username.tsx"
+ ],
+ "فريق نسائي بالكامل": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "فريق مختلط": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "هذا اليوم محجوز، يرجى اختيار يوم آخر": [
+  "src/lib/booking.functions.ts"
+ ],
+ "تعذّر إرسال الطلب، حاولي مرة أخرى": [
+  "src/lib/booking.functions.ts"
+ ],
+ "لا تحوّلي العربون قبل موافقة المصوّرة على طلبك.": [
+  "src/lib/booking.functions.ts"
+ ],
+ "وافقي على الطلب أولاً": [
+  "src/lib/booking.functions.ts"
+ ],
+ "اكتبي سبب الإلغاء — رح يوصل للعروس": [
+  "src/lib/cancellation.functions.ts"
+ ],
+ "لا يمكن إلغاء هذا الحجز من هنا — يرجى التواصل مع المصوّرة": [
+  "src/lib/cancellation.functions.ts"
  ]
 }

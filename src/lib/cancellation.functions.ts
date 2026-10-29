@@ -104,7 +104,7 @@ export const cancelBooking = createServerFn({ method: "POST" })
     };
   });
 
-// ----- العميل يلغي الحجز (قبل التأكيد) -----
+// ----- العروس تلغي الحجز: مجاناً قبل العربون، وبعده حسب سياسة المصوّرة المعلنة -----
 export const clientCancelBooking = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string; reason?: string | null }) => {
     if (!d || typeof d.token !== "string" || !TOKEN_RE.test(d.token)) throw new Error("invalid token");
@@ -123,7 +123,7 @@ export const clientCancelBooking = createServerFn({ method: "POST" })
     if (error) {
       const m = error.message || "";
       if (m.includes("CLIENT_CANCEL_NOT_ALLOWED")) {
-        throw new Error(tr("لا يمكن الإلغاء بعد تأكيد الحجز — يرجى التواصل مع المصوّرة"));
+        throw new Error(tr("لا يمكن إلغاء هذا الحجز من هنا — يرجى التواصل مع المصوّرة"));
       }
       if (m.includes("invalid token")) throw new Error(tr("رابط غير صالح"));
       throw new Error(m);
@@ -143,7 +143,7 @@ export const clientCancelBooking = createServerFn({ method: "POST" })
           client_name: info.client_name || tr("العميل"),
           photographer_name: prof?.display_name || tr("المصوّرة"),
           event_date: String(info.event_date),
-          refund_amount: 0,
+          refund_amount: Number(info.refund_amount || 0),
           by: "client",
           booking_id: info.booking_id,
         });

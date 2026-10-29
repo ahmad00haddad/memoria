@@ -326,9 +326,16 @@ export async function isDemoBookingToken(admin: any, token: string): Promise<boo
   return !!prof?.is_demo;
 }
 
+// وقت موافقة العروس على شروط العربون (إثبات أنها قرأتها قبل الدفع) — يُسجَّل أول مرة فقط
+export async function stampDepositTerms(admin: any, token: string) {
+  await admin.from("bookings").update({ deposit_terms_accepted_at: new Date().toISOString() })
+    .eq("client_tracking_token", token).is("deposit_terms_accepted_at", null);
+}
+
 export const clientMarkDepositSent = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string; proof_path?: string | null; reference?: string | null; note?: string | null }) => {
+  .inputValidator((d: { token: string; terms_accepted?: boolean; proof_path?: string | null; reference?: string | null; note?: string | null }) => {
     if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
+    if (d.terms_accepted !== true) throw new Error(tr("اقرئي شروط العربون ووافقي عليها أولاً."));
     if (typeof d.proof_path !== "string" || !d.proof_path || d.proof_path.length > 500) throw new Error(tr("ارفعي صورة إيصال التحويل"));
     if (typeof d.reference !== "string" || d.reference.trim().length < 3) throw new Error(tr("اكتبي رقم العملية المرجعي"));
     if (typeof d.note !== "string" || d.note.trim().length < 3) throw new Error(tr("اكتبي اسم صاحب الحساب المحوِّل"));
@@ -339,6 +346,7 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (await isDemoBookingToken(supabaseAdmin, data.token)) throw new Error(DEMO_PAYMENT_MESSAGE);
+    await stampDepositTerms(supabaseAdmin, data.token);
     const { error } = await supabaseAdmin.rpc("client_mark_deposit_sent", {
       _token: data.token,
       _proof_path: (data.proof_path ?? null) as any,

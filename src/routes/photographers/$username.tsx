@@ -130,6 +130,7 @@ type Profile = {
   is_featured?: boolean; is_demo?: boolean;
   tagline?: string | null; booking_notes?: string | null;
   page_settings?: unknown;
+  team_gender?: "female" | "male" | "mixed" | null;
   bank_info?: string | null; fixed_deposit?: number | null;
   is_published?: boolean;
   created_at?: string | null;
@@ -205,7 +206,7 @@ function PhotographerPage() {
       const normalizedUsername = username.trim().toLowerCase();
       const { data: prof, error: profErr } = await supabase
         .from("profiles")
-        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit,verification_status,verified_at,page_settings")
+        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit,verification_status,verified_at,page_settings,team_gender")
         .eq("username", normalizedUsername)
         .eq("is_published", true)
         .maybeSingle();
@@ -471,6 +472,11 @@ function PhotographerPage() {
               </h1>
               <div className="flex flex-wrap items-center gap-2 mb-6">
                 {profile.verification_status === "verified" && <VerifiedBadge />}
+                {profile.team_gender && (
+                  <span className="inline-flex items-center text-[11px] tracking-wide bg-secondary text-foreground px-3 py-1.5 rounded-full border border-border">
+                    {profile.team_gender === "female" ? tr("فريق نسائي بالكامل") : profile.team_gender === "male" ? tr("فريق رجالي") : tr("فريق مختلط")}
+                  </span>
+                )}
                 {profile.is_featured && (
                   <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-gold/15 text-gold px-3 py-1.5 rounded-full border border-gold/30">
                     <Star className="h-3 w-3 fill-gold" />{" "}{tr("اختيار المحرّر")}

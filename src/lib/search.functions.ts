@@ -36,6 +36,7 @@ export type SearchResultItem = {
   avg_rating: number;
   review_count: number;
   is_demo?: boolean;
+  team_gender?: "female" | "male" | "mixed" | null;
 };
 
 function validate(d: SearchInput): SearchInput {
@@ -78,14 +79,16 @@ export const searchPhotographers = createServerFn({ method: "POST" })
 
     const names = (rows ?? []).map((r: any) => r.username);
     const demo = new Set<string>();
+    const team = new Map<string, SearchResultItem["team_gender"]>();
     const pro = new Set<string>();
     const startFrom = new Map<string, number>();
     if (names.length) {
-      const { data: profs } = await supabase.from("profiles").select("id, username, is_demo").in("username", names);
+      const { data: profs } = await supabase.from("profiles").select("id, username, is_demo, team_gender").in("username", names);
       const byId = new Map<string, string>();
       for (const f of (profs ?? []) as any[]) {
         byId.set(f.id, f.username);
         if (f.is_demo) demo.add(f.username);
+        if (f.team_gender) team.set(f.username, f.team_gender);
       }
       if (byId.size) {
         // باقة Pro: شارة التوثيق وترتيب أعلى بالبحث
@@ -107,6 +110,7 @@ export const searchPhotographers = createServerFn({ method: "POST" })
 
     let out: SearchResultItem[] = (rows ?? []).map((r: any) => ({
       is_demo: demo.has(r.username),
+      team_gender: team.get(r.username) ?? null,
       username: r.username,
       display_name: r.display_name,
       city: r.city,

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Eye, Lock, RotateCcw, Check, Languages, Palette, Type, LayoutGrid, ListOrdered, Megaphone, Wand2, Smartphone, X, Info, CalendarDays } from "lucide-react";
+import { Eye, Lock, RotateCcw, Check, Languages, Palette, Type, LayoutGrid, ListOrdered, Megaphone, Wand2, Smartphone, X, Info, CalendarDays, Wallet, Users } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
@@ -16,20 +16,28 @@ import {
   paletteVars, resolveMode, sanitizePageSettings, suggestFromImage, type PageSettings,
 } from "@/lib/page-settings";
 import { savePageSettings } from "@/lib/page-settings.functions";
+import { updateRefundPolicy } from "@/lib/cancellation.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({ component: SettingsPage });
 
 type Owner = { username: string; cover_url: string | null; avatar_url: string | null; whatsapp: string | null; photos: number; reviews: number; notes: boolean };
 
+type Biz = { policy: "none" | "partial" | "full"; percent: string; team: "" | "female" | "male" | "mixed" };
+const DEFAULT_BIZ: Biz = { policy: "none", percent: "50", team: "" };
+
 function SettingsPage() {
   useGender();
   const nav = useNavigate();
   const saveFn = useServerFn(savePageSettings);
+  const refundFn = useServerFn(updateRefundPolicy);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [owner, setOwner] = useState<Owner | null>(null);
   const [saved, setSaved] = useState<PageSettings>(DEFAULT_PAGE_SETTINGS);
   const [s, setS] = useState<PageSettings>(DEFAULT_PAGE_SETTINGS);
+  // تُحفظ في أعمدة الملف (لا في page_settings) لأن السيرفر والبحث يعتمدان عليها
+  const [biz, setBiz] = useState<Biz>(DEFAULT_BIZ);
+  const [savedBiz, setSavedBiz] = useState<Biz>(DEFAULT_BIZ);
   const [matching, setMatching] = useState(false);
   const [mobilePreview, setMobilePreview] = useState(false);
 
@@ -39,7 +47,7 @@ function SettingsPage() {
       const uid = session?.user.id;
       if (!uid) return nav({ to: "/login" });
       const [{ data }, { data: priv }, { count: reviews }] = await Promise.all([
-        (supabase as any).from("profiles").select("username,page_settings,cover_url,avatar_url,portfolio_urls,booking_notes").eq("id", uid).maybeSingle(),
+        (supabase as any).from("profiles").select("username,page_settings,cover_url,avatar_url,portfolio_urls,booking_notes,deposit_refund_policy,deposit_refund_percent,team_gender").eq("id", uid).maybeSingle(),
         (supabase as any).from("photographer_private").select("whatsapp").eq("user_id", uid).maybeSingle(),
         (supabase as any).from("reviews").select("id", { count: "exact", head: true }).eq("photographer_id", uid).eq("is_published", true),
       ]);
@@ -55,11 +63,19 @@ function SettingsPage() {
       });
       setSaved(clean);
       setS(clean);
+      const b: Biz = {
+        policy: (["none", "partial", "full"].includes(data?.deposit_refund_policy) ? data.deposit_refund_policy : "none") as Biz["policy"],
+        percent: String(data?.deposit_refund_percent ?? 50),
+        team: (["female", "male", "mixed"].includes(data?.team_gender) ? data.team_gender : "") as Biz["team"],
+      };
+      setBiz(b);
+      setSavedBiz(b);
       setLoading(false);
     })();
   }, []);
 
-  const dirty = useMemo(() => JSON.stringify(s) !== JSON.stringify(saved), [s, saved]);
+  const bizDirty = JSON.stringify(biz) !== JSON.stringify(savedBiz);
+  const dirty = useMemo(() => JSON.stringify(s) !== JSON.stringify(saved), [s, saved]) || bizDirty;
   const set = <K extends keyof PageSettings>(k: K, v: PageSettings[K]) => setS((x) => ({ ...x, [k]: v }));
 
   // تنبيه قبل مغادرة الصفحة بتغييرات غير محفوظة
@@ -73,6 +89,17 @@ function SettingsPage() {
   const save = async () => {
     setSaving(true);
     try {
+      if (bizDirty) {
+        if (biz.policy !== savedBiz.policy || biz.percent !== savedBiz.percent) {
+          await refundFn({ data: { policy: biz.policy, percent: biz.policy === "partial" ? Number(biz.percent) : null } });
+        }
+        if (biz.team !== savedBiz.team) {
+          const { data: { session } } = await supabase.auth.getSession();
+          const { error } = await (supabase as any).from("profiles").update({ team_gender: biz.team || null }).eq("id", session?.user.id);
+          if (error) throw error;
+        }
+        setSavedBiz(biz);
+      }
       const res = await saveFn({ data: { settings: s } });
       setSaved(res.settings);
       setS(res.settings);
@@ -226,6 +253,26 @@ function SettingsPage() {
               )}
             </Block>
 
+            <Block icon={<Wallet />} title={tr("العربون إذا ألغت العروس")} hint={tr("تظهر للعروس قبل أن تحوّل العربون، وتوافق عليها. العربون يُحوَّل لك مباشرة، والمنصّة لا تستلمه ولا تُرجعه.")}>
+              <Choices value={biz.policy} onChange={(v) => setBiz((x) => ({ ...x, policy: v }))}
+                options={[{ value: "none", label: tr("لا يُرجَع") }, { value: "partial", label: tr("يُرجَع جزء منه") }, { value: "full", label: tr("يُرجَع كاملاً") }]} />
+              {biz.policy === "partial" && (
+                <label className="mt-4 flex items-center gap-2 text-sm">
+                  {tr("نسبة الإرجاع")}
+                  <input type="number" inputMode="numeric" min={1} max={99} value={biz.percent}
+                    onChange={(e) => setBiz((x) => ({ ...x, percent: String(Math.min(99, Math.max(1, Number(e.target.value) || 1))) }))}
+                    className="w-20 rounded-md border border-border bg-background px-2 py-1.5 text-center" />
+                  %
+                </label>
+              )}
+              <Note>{g(tr("إذا ألغيتِ أنتِ الحجز بعد العربون، عليكِ إرجاعه كاملاً للعروس."), tr("إذا ألغيت أنت الحجز بعد العربون، عليك إرجاعه كاملاً للعروس."))}</Note>
+            </Block>
+
+            <Block icon={<Users />} title={tr("فريق التصوير")} hint={tr("يظهر في صفحتك، وتستطيع العرائس البحث به.")}>
+              <Choices value={biz.team} onChange={(v) => setBiz((x) => ({ ...x, team: v }))}
+                options={[{ value: "female", label: tr("نسائي بالكامل") }, { value: "male", label: tr("رجالي (للجاهات)") }, { value: "mixed", label: tr("مختلط") }, { value: "", label: tr("غير محدّد") }]} />
+            </Block>
+
             <Block icon={<Megaphone />} title={tr("نصوص قصيرة")} hint={g(tr("نص عادي فقط، بدون روابط. اتركيه فارغاً لاستخدام النص الافتراضي."), tr("نص عادي فقط، بدون روابط. اتركه فارغاً لاستخدام النص الافتراضي."))}>
               <TextField label={tr("عبارة بطاقة الغلاف")} placeholder={tr("«كل صورة قصة، وكل قصة تستحق الفخامة»")} value={s.hero_quote} max={QUOTE_MAX} onChange={(v) => set("hero_quote", v)} />
               <TextField className="mt-4" label={tr("شريط إعلان أعلى الصفحة")} placeholder={tr("مثال: مواعيد صيف ٢٠٢٧ متاحة الآن")} value={s.announcement} max={ANNOUNCE_MAX} onChange={(v) => set("announcement", v)} />
@@ -286,7 +333,7 @@ function SettingsPage() {
             <div className="container-editorial flex items-center justify-between gap-3">
               <span className="text-sm text-muted-foreground">{tr("لديك تغييرات غير محفوظة")}</span>
               <div className="flex gap-2">
-                <button type="button" onClick={() => setS(saved)} disabled={saving} className="rounded-sm border border-border px-4 py-2 text-sm hover:bg-secondary">{tr("تراجع")}</button>
+                <button type="button" onClick={() => { setS(saved); setBiz(savedBiz); }} disabled={saving} className="rounded-sm border border-border px-4 py-2 text-sm hover:bg-secondary">{tr("تراجع")}</button>
                 <button type="button" onClick={save} disabled={saving} className="rounded-sm bg-foreground px-5 py-2 text-sm font-medium text-background disabled:opacity-60">
                   {saving ? tr("جارٍ الحفظ…") : tr("حفظ ونشر")}
                 </button>

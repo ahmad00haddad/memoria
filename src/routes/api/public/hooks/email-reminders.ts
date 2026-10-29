@@ -103,6 +103,46 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         }
 
         // ===================================================================
+        // 1b) باقي المبلغ — اليوم التالي للمناسبة، مرة واحدة لكل حجز
+        // ===================================================================
+        try {
+          const { tplBalanceDue } = await import("@/lib/email.server");
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          const { data: due } = await (supabaseAdmin as any)
+            .from("bookings")
+            .select("id, photographer_id, client_email, client_name, total_price, deposit_amount, client_tracking_token")
+            .eq("event_date", yesterday.toISOString().slice(0, 10))
+            .in("status", ["confirmed", "completed"])
+            .is("final_paid_at", null)
+            .is("deleted_at", null);
+          for (const bk of (due ?? []) as any[]) {
+            const remaining = Number(bk.total_price || 0) - Number(bk.deposit_amount || 0);
+            if (!bk.client_email || remaining <= 0) continue;
+            const { data: prior } = await supabaseAdmin
+              .from("email_log").select("id")
+              .eq("template", "balance_due").eq("related_booking_id", bk.id).limit(1);
+            if (prior && prior.length > 0) continue;
+            const { data: prof } = await supabaseAdmin
+              .from("profiles").select("display_name").eq("id", bk.photographer_id).maybeSingle();
+            const t = tplBalanceDue({
+              client_name: bk.client_name || "عروستنا",
+              photographer_name: prof?.display_name || "المصوّرة",
+              remaining,
+              track_token: bk.client_tracking_token,
+            });
+            const r = await sendEmail({
+              to: bk.client_email, subject: t.subject, html: t.html,
+              template: "balance_due", related_booking_id: bk.id,
+            });
+            if (r.ok) results.reminders++; else results.errors++;
+          }
+        } catch (e) {
+          console.error("[email-reminders] balance-due reminder failed:", e);
+          results.errors++;
+        }
+
+        // ===================================================================
         // 2+3) تذكيرات انتهاء الاشتراك — 7 أيام و3 أيام
         // ===================================================================
         for (const daysLeft of [7, 3]) {

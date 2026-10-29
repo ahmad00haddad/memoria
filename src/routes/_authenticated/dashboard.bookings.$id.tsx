@@ -331,7 +331,7 @@ function BookingDetail() {
     try {
       const res: any = await cancelFn({ data: { booking_id: id, reason: cancelReason.trim() } });
       if (Number(res?.refund_amount) > 0) {
-        toast.success(tr("أُلغي الحجز. مبلغ الاسترداد {0} د.أ قيد المعالجة.", [res.refund_amount]));
+        toast.success(tr("أُلغي الحجز. أرجعي العربون للعروس مباشرة: {0} د.أ", [res.refund_amount]));
       } else {
         toast.success(tr("أُلغي الحجز"));
       }
@@ -450,11 +450,22 @@ function BookingDetail() {
     if (lastTheirs && (!lastMine || new Date(lastTheirs.created_at) > new Date(lastMine.created_at))) {
       list.push({ key: "reply", text: g(tr("العميلة كتبت لكِ {0} ولم تردّي بعد.", [ageLabel(lastTheirs.created_at)]), tr("العميلة كتبت لك {0} ولم تردّ بعد.", [ageLabel(lastTheirs.created_at)])), action: { label: g(tr("افتحي المحادثة"), tr("افتح المحادثة")), run: () => setTab("chat") } });
     }
+    const remainingDue = Number(b.total_price || 0) - Number(b.deposit_amount || 0);
+    if (b.production_stage !== "delivered" && !b.final_paid_at && remainingDue > 0 && eventIn !== null && eventIn < 0 && b.status !== "cancelled") {
+      list.push({
+        key: "balance",
+        text: g(
+          tr("العروس لم تحوّل باقي المبلغ بعد ({0} د.أ). ننصحكِ بانتظار وصوله وتذكيرها قبل تسليم الصور، لضمان حقّكِ.", [remainingDue]),
+          tr("العروس لم تحوّل باقي المبلغ بعد ({0} د.أ). ننصحك بانتظار وصوله وتذكيرها قبل تسليم الصور، لضمان حقّك.", [remainingDue]),
+        ),
+        action: { label: g(tr("ذكّريها بواتساب"), tr("ذكّرها بواتساب")), run: () => openWhatsApp(tr("مرحباً {0} 🤍 ألف مبروك! باقي مبلغ التصوير {1} د.أ — يرجى تحويله حتى أسلّمك الصور. التفاصيل هنا: {2}", [b.client_name, remainingDue, trackUrl])) },
+      });
+    }
     if (b.production_stage === "delivered" && !b.final_paid_at && b.status !== "cancelled") {
       list.push({ key: "watermark", text: g(tr("صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّلي الدفعة النهائية."), tr("صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّل الدفعة النهائية.")) });
     }
     return list.filter((h) => !dismissedHints.includes(h.key));
-  }, [b, contract, msgs, uid, dismissedHints]);
+  }, [b, contract, msgs, uid, dismissedHints, trackUrl]);
 
   if (loading || !b) return <PageLoader />;
 
@@ -824,7 +835,7 @@ function BookingDetail() {
           <DialogHeader>
             <DialogTitle>{tr("إلغاء حجز {0}", [b.client_name])}</DialogTitle>
             <DialogDescription>
-              {b.status === "confirmed" ? tr("العربون مؤكَّد، وسيُحسب الاسترداد حسب سياستك.") : tr("ستصل للعميلة رسالة بالإلغاء.")}
+              {(b.status === "confirmed" || (b.deposit_sent_at && Number(b.deposit_amount || 0) > 0)) ? tr("بما أن الإلغاء منكِ، عليكِ إرجاع العربون كاملاً للعروس مباشرة.") : tr("ستصل للعميلة رسالة بالإلغاء.")}
             </DialogDescription>
           </DialogHeader>
           <label htmlFor="cancel-reason" className="text-sm">{tr("السبب")}{" "}<span className="text-muted-foreground">{tr("(إلزامي — يصل للعروس)")}</span></label>

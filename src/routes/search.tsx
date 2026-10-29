@@ -53,6 +53,7 @@ function SearchPage() {
   const [minRating, setMinRating] = useState<number>(0);
   // ✅ فلتر "موثّقة" — يعرض فقط المصوّرات المميّزات (اجتزن مراجعة الأدمن)
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [teamFilter, setTeamFilter] = useState<"" | "female" | "male">("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [compareList, setCompareList] = useState<SearchResultItem[]>([]);
   const [availableThisWeek, setAvailableThisWeek] = useState(false);
@@ -139,11 +140,12 @@ function SearchPage() {
   const displayResults = results
     .filter((r) => (minRating > 0 ? r.avg_rating >= minRating : true))
     .filter((r) => (verifiedOnly ? r.verification_status === "verified" : true))
+    .filter((r) => (teamFilter ? r.team_gender === teamFilter : true))
     .filter((r) => (favsOnly ? favs.includes(r.username) : true));
 
   const hasFilters = useMemo(
-    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0 || verifiedOnly || favsOnly),
-    [city, minPrice, maxPrice, date, debouncedQ, minRating, verifiedOnly, favsOnly],
+    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0 || verifiedOnly || favsOnly || teamFilter),
+    [city, minPrice, maxPrice, date, debouncedQ, minRating, verifiedOnly, favsOnly, teamFilter],
   );
 
   const clearAll = () => {
@@ -157,6 +159,7 @@ function SearchPage() {
     setMinRating(0);
     setVerifiedOnly(false);
     setFavsOnly(false);
+    setTeamFilter("");
   };
 
   // شرائح الفلاتر النشطة — كل شريحة تُزال بنقرة
@@ -166,6 +169,7 @@ function SearchPage() {
     (minPrice || maxPrice) && { k: "price", label: minPrice && maxPrice ? tr("{0}–{1} د.أ", [minPrice, maxPrice]) : minPrice ? tr("من {0} د.أ", [minPrice]) : tr("حتى {0} د.أ", [maxPrice]), clear: () => { setMinPrice(""); setMaxPrice(""); } },
     minRating > 0 && { k: "rating", label: tr("{0}+ نجوم", [minRating]), clear: () => setMinRating(0) },
     verifiedOnly && { k: "verified", label: tr("موثّقة"), clear: () => setVerifiedOnly(false) },
+    teamFilter && { k: "team", label: teamFilter === "female" ? tr("فريق نسائي") : tr("فريق رجالي"), clear: () => setTeamFilter("") },
     favsOnly && { k: "favs", label: tr("مفضّلتي"), clear: () => setFavsOnly(false) },
   ].filter(Boolean) as { k: string; label: string; clear: () => void }[];
   const drawerFilterCount = [date, minPrice || maxPrice, sort !== "featured"].filter(Boolean).length;
@@ -472,6 +476,16 @@ function SearchPage() {
                   >
                     <BadgeCheck className="h-3 w-3" />{" "}{tr("موثّقة فقط")}
                   </button>
+                  {([["female", tr("فريق نسائي")], ["male", tr("فريق رجالي")]] as const).map(([v, label]) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setTeamFilter((x) => (x === v ? "" : v))}
+                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${teamFilter === v ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
                   {favs.length > 0 && (
                     <button
                       type="button"

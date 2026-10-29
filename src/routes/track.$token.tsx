@@ -92,6 +92,25 @@ function TrackingPage() {
   // طلب ينتظر موافقة المصوّرة: لا تفاصيل دفع ولا عربون قبل الموافقة
   const awaitingApproval = !!b?.needs_approval && !b?.approved_at && (b?.status === "pending_deposit" || b?.status === "quote");
   const hoursLeft = (iso?: string | null) => iso ? Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 3600_000)) : null;
+  // قواعد واضحة من البداية: العربون بين العروس والمصوّرة، والمنصّة لا تستلمه ولا تُرجعه
+  const todayYmd = new Date().toLocaleDateString("en-CA");
+  const depositPaid = !!(b?.deposit_sent_at || b?.deposit_confirmed_at) && Number(b?.deposit_amount || 0) > 0;
+  const canCancel = !!b && ["quote", "pending_deposit", "confirmed"].includes(b.status) && b.event_date >= todayYmd;
+  const remainingDue = b ? Math.max(0, Number(b.total_price || 0) - Number(b.deposit_amount || 0)) : 0;
+  const showBalanceDue = !!b && ["confirmed", "completed"].includes(b.status) && !b.final_paid_at && remainingDue > 0
+    && (b.event_date < todayYmd || (!!b.production_stage && b.production_stage !== "awaiting"));
+  const refundLine = () => {
+    const dep = Number(b?.deposit_amount || 0);
+    const pol = b?.photographer?.deposit_refund_policy;
+    if (pol === "full") return t("سياسة المصوّرة: إذا ألغيتِ بعد دفع العربون، تُرجع لكِ العربون كاملاً ({0} د.أ).", [dep]);
+    if (pol === "partial") {
+      const pct = Number(b?.photographer?.deposit_refund_percent || 0);
+      return t("سياسة المصوّرة: إذا ألغيتِ بعد دفع العربون، تُرجع لكِ {0}% منه ({1} د.أ).", [pct, Math.round(dep * pct) / 100]);
+    }
+    return t("سياسة المصوّرة: العربون لا يُرجَع إذا ألغيتِ بعد دفعه.");
+  };
+  const platformNote = t("العربون يُحوَّل مباشرة للمصوّرة، والمنصّة لا تستلمه ولا تُرجعه. أي استرجاع أو مسامحة يتم بينكِ وبين المصوّرة، والقرار لها.");
+  const postponeNote = t("التأجيل غير متاح من المنصّة: تغيير الموعد يعني إلغاء الحجز، إلا إذا وافقت المصوّرة على نقل العربون لموعد جديد بعد تواصلكما.");
 
   const [reference, setReference] = useState("");
   const [pickedFile, setPickedFile] = useState<File | null>(null);
@@ -114,6 +133,8 @@ function TrackingPage() {
   // ✅ إصلاح: Dialog حقيقي بدلاً من window.prompt
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [cancelAck, setCancelAck] = useState(false);
+  const [termsOk, setTermsOk] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   // حارس polling: لا نستبدل الحالة أثناء تفاعل المستخدم مع رفع/إلغاء/دفع
@@ -124,6 +145,7 @@ function TrackingPage() {
     try {
       const data = await get({ data: { token } });
       setB(data);
+      if ((data as any)?.deposit_terms_accepted_at) setTermsOk(true);
     } catch (e: any) {
       console.error("[track] load failed", e);
       toast.error(t("تعذّر تحميل الحجز، حاولي التحديث بعد قليل"));
@@ -211,6 +233,10 @@ function TrackingPage() {
       toast.error(t("اكتبي رقم العملية المرجعي الظاهر في إيصال التحويل."), { id: "upload-receipt" });
       return;
     }
+    if (!termsOk) {
+      toast.error(t("اقرئي شروط العربون ووافقي عليها أولاً."), { id: "upload-receipt" });
+      return;
+    }
     if (note.trim().length < 3) {
       toast.error(t("اكتبي اسم صاحب الحساب الذي حوّلتِ منه."), { id: "upload-receipt" });
       return;
@@ -265,7 +291,7 @@ function TrackingPage() {
 
       // 2. Update booking
       // The RPC drops _reference, so it also goes in the note the photographer sees
-      await sendDeposit({ data: { token, proof_path: path, reference: reference.trim(),
+      await sendDeposit({ data: { token, terms_accepted: true, proof_path: path, reference: reference.trim(),
           note: t("رقم العملية: {0} اسم المحوِّل: {1}", [reference.trim(), note.trim()]) } });
       toast.success(t("تم إرسال الإيصال بنجاح. سنقوم بتأكيد الحجز قريباً."), { id: "upload-receipt" });
       setReference(""); setNote(""); setPickedFile(null);
@@ -300,7 +326,8 @@ function TrackingPage() {
   const onPayOnline = async () => {
     setPayLoading(true);
     try {
-      const res: any = await checkoutFn({ data: { token } });
+      if (!termsOk) { toast.error(t("اقرئي شروط العربون ووافقي عليها أولاً.")); return; }
+      const res: any = await checkoutFn({ data: { token, terms_accepted: true } });
       if (!res?.configured || !res?.url) {
         toast.error(t("الدفع الإلكتروني غير متاح حالياً. استخدمي CliQ."));
         return;
@@ -565,13 +592,24 @@ function TrackingPage() {
             </div>
             <p className="text-sm mb-4">{t("حوّلي مبلغ")}{" "}<span className="font-semibold">{t("{0} د.أ", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))])}</span>{" "}{t("ثم ارفعي إثبات التحويل أدناه.")}</p>
 
+            <div className="mb-4 rounded-sm border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-900 dark:text-amber-200 space-y-1.5">
+              <div className="font-medium">{t("قبل التحويل، اقرئي هذا:")}</div>
+              <p>{refundLine()}</p>
+              <p>{postponeNote}</p>
+              <p>{platformNote}</p>
+              <label className="flex items-start gap-2 pt-1 font-medium cursor-pointer">
+                <input type="checkbox" className="mt-1 h-4 w-4" checked={termsOk} onChange={(e) => setTermsOk(e.target.checked)} />
+                <span>{t("قرأت وفهمت، وأوافق على هذه الشروط.")}</span>
+              </label>
+            </div>
+
             {payEnabled && b.status !== "cancelled" && (
               <div className="bg-card border border-emerald-200 rounded-sm p-3 mb-4">
                 <div className="text-xs uppercase tracking-[0.2em] text-emerald-700 mb-2">{t("طريقة سريعة — دفع إلكتروني")}</div>
                 {/* Fix #1: الزر معطل بالكامل أثناء التحميل لمنع النقر المتكرر والدفع المزدوج */}
                 <button
                   onClick={onPayOnline}
-                  disabled={payLoading}
+                  disabled={payLoading || !termsOk}
                   aria-disabled={payLoading}
                   className="w-full bg-emerald-600 text-white py-2.5 rounded-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed transition-opacity"
                 >
@@ -622,7 +660,7 @@ function TrackingPage() {
                   <span className="block text-xs text-muted-foreground">{pickedFile ? t("{0} ميجا — اضغطي للتغيير", [(pickedFile.size / 1024 / 1024).toFixed(1)]) : t("مطلوب — صورة أو لقطة شاشة للإيصال")}</span>
                 </span>
               </label>
-              <button onClick={onSendDeposit} disabled={uploading}
+              <button onClick={onSendDeposit} disabled={uploading || !termsOk}
                       className="bg-gold text-charcoal py-3 rounded-sm font-medium hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
                 <Upload className="h-4 w-4" /> {uploading ? t("جاري الإرسال…") : t("تم إرسال العربون")}
               </button>
@@ -631,16 +669,35 @@ function TrackingPage() {
           </div>
         )}
 
-        {/* Client cancellation — only before confirmation */}
-        {(b.status === "quote" || b.status === "pending_deposit") && (
-          <div className="rounded-sm border border-border bg-card p-4 mb-6 flex items-center justify-between gap-3 text-sm">
-            <div>
-              <div className="font-medium">{t("تحتاجين لإلغاء الطلب؟")}</div>
-              <div className="text-xs text-muted-foreground">{t("يمكن الإلغاء فقط قبل تأكيد المصوّرة للحجز.")}</div>
+        {/* Bride cancellation — free before the deposit; after it the photographer's declared policy applies */}
+        {canCancel && (
+          <div className="rounded-sm border border-border bg-card p-4 mb-6 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="font-medium">{depositPaid ? t("تحتاجين لإلغاء الحجز؟") : t("تحتاجين لإلغاء الطلب؟")}</div>
+                <div className="text-xs text-muted-foreground">{depositPaid ? refundLine() : t("لم تدفعي عربوناً بعد، فالإلغاء بدون أي تبعات.")}</div>
+              </div>
+              <button onClick={onClientCancel} className="text-destructive border border-destructive/30 px-3 py-2 rounded-sm hover:bg-destructive/10 inline-flex items-center gap-2 shrink-0">
+                <XCircle className="h-4 w-4" />{" "}{depositPaid ? t("إلغاء الحجز") : t("إلغاء الطلب")}
+              </button>
             </div>
-            <button onClick={onClientCancel} className="text-destructive border border-destructive/30 px-3 py-2 rounded-sm hover:bg-destructive/10 inline-flex items-center gap-2 shrink-0">
-              <XCircle className="h-4 w-4" />{" "}{t("إلغاء الطلب")}
-            </button>
+            {depositPaid && <p className="mt-3 text-xs text-muted-foreground">{postponeNote}</p>}
+          </div>
+        )}
+
+        {showBalanceDue && (
+          <div className="rounded-2xl border border-gold/40 bg-gold/5 p-5 mb-6 text-sm">
+            <div className="font-serif text-lg mb-1">{t("باقي المبلغ: {0} د.أ", [remainingDue.toLocaleString(locale("ar-JO"))])}</div>
+            <p className="text-muted-foreground mb-3">{t("حوّلي باقي المبلغ للمصوّرة بنفس طريقة العربون، حتى تحفظي حقّها وحقّكِ وتستلمي صورك. بعض المصوّرات يسلّمن الصور بعد وصول المبلغ فقط.")}</p>
+            {ph.cliq_alias && (
+              <div className="bg-card border border-border rounded-sm p-3 flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">CliQ Alias</div>
+                  <div className="font-mono text-lg">{tx(ph.cliq_alias)}</div>
+                </div>
+                <CopyButton value={ph.cliq_alias} label={t("نسخ")} />
+              </div>
+            )}
           </div>
         )}
 
@@ -762,15 +819,26 @@ function TrackingPage() {
       {showCancelDialog && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div role="dialog" aria-modal="true" aria-labelledby="cancel-dialog-title" className="bg-background border border-border rounded-xl shadow-2xl max-w-md w-full p-6">
-            <h2 id="cancel-dialog-title" className="font-serif text-xl mb-2">{t("إلغاء طلب الحجز")}</h2>
+            <h2 id="cancel-dialog-title" className="font-serif text-xl mb-2">{depositPaid ? t("إلغاء الحجز") : t("إلغاء طلب الحجز")}</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              {t("سيتم إلغاء طلبك نهائياً. لا يمكن الإلغاء بعد تأكيد المصوّرة للحجز.")}
+              {t("سيتم إلغاء الحجز نهائياً ويُفتح التاريخ لغيرك.")}
             </p>
 
             {/* سياسة الاسترداد */}
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4 text-sm">
               <p className="font-medium text-amber-800 dark:text-amber-300 mb-1">{t("سياسة العربون:")}</p>
-              <p className="text-amber-700 dark:text-amber-400">{t("العربون غير قابل للاسترداد بعد التحويل، لأنه يُحوَّل مباشرة للمصوّرة ويثبّت الموعد.")}</p>
+              {depositPaid ? (
+                <div className="space-y-1.5 text-amber-700 dark:text-amber-400">
+                  <p>{refundLine()}</p>
+                  <p>{platformNote}</p>
+                  <label className="flex items-start gap-2 pt-1 font-medium text-amber-900 dark:text-amber-200 cursor-pointer">
+                    <input type="checkbox" className="mt-1 h-4 w-4" checked={cancelAck} onChange={(e) => setCancelAck(e.target.checked)} />
+                    <span>{t("فهمت، وأريد الإلغاء.")}</span>
+                  </label>
+                </div>
+              ) : (
+                <p className="text-amber-700 dark:text-amber-400">{t("لم تدفعي عربوناً بعد، فالإلغاء بدون أي تبعات.")}</p>
+              )}
             </div>
 
             <label className="block text-sm font-medium mb-2">
@@ -791,7 +859,7 @@ function TrackingPage() {
 
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => { setShowCancelDialog(false); setCancelReason(""); }}
+                onClick={() => { setShowCancelDialog(false); setCancelReason(""); setCancelAck(false); }}
                 disabled={cancelLoading}
                 className="px-4 py-2 text-sm border border-border rounded-md hover:bg-muted transition-colors disabled:opacity-50"
               >
@@ -799,7 +867,7 @@ function TrackingPage() {
               </button>
               <button
                 onClick={handleConfirmCancel}
-                disabled={cancelLoading}
+                disabled={cancelLoading || (depositPaid && !cancelAck)}
                 className="px-4 py-2 text-sm bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {cancelLoading && <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}

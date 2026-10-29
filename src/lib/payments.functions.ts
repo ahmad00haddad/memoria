@@ -29,10 +29,11 @@ function appBase(): string {
 }
 
 export const createDepositCheckout = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string }) => {
+  .inputValidator((d: { token: string; terms_accepted?: boolean }) => {
     if (!d || typeof d.token !== "string" || !TOKEN_RE.test(d.token)) {
       throw new Error("invalid token");
     }
+    if (d.terms_accepted !== true) throw new Error(t("اقرئي شروط العربون ووافقي عليها أولاً."));
     return d;
   })
   .handler(async ({ data }) => {
@@ -51,8 +52,9 @@ export const createDepositCheckout = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!bk) throw new Error(t("الحجز غير موجود"));
 
-    const { isDemoBookingToken, DEMO_PAYMENT_MESSAGE } = await import("@/lib/booking.functions");
+    const { isDemoBookingToken, DEMO_PAYMENT_MESSAGE, stampDepositTerms } = await import("@/lib/booking.functions");
     if (await isDemoBookingToken(supabaseAdmin, data.token)) throw new Error(DEMO_PAYMENT_MESSAGE);
+    await stampDepositTerms(supabaseAdmin, data.token);
 
     if (bk.deposit_confirmed_at || bk.status === "confirmed") {
       throw new Error(t("تم تأكيد العربون لهذا الحجز مسبقاً"));
