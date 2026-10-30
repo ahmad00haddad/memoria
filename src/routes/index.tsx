@@ -134,6 +134,15 @@ function Landing() {
   const [featured, setFeatured] = useState<any[]>([]);
   const [featuredStatus, setFeaturedStatus] = useState<"loading" | "ok" | "error">("loading");
   const [featuredReload, setFeaturedReload] = useState(0);
+  // آراء العرائس: تقييمات منشورة حقيقية فقط؛ القسم يختفي إن لم توجد
+  const [realReviews, setRealReviews] = useState<{ client_name: string; comment: string }[]>([]);
+  useEffect(() => {
+    (supabase as any).from("reviews").select("client_name, comment, rating")
+      .eq("is_published", true).not("comment", "is", null).gte("rating", 4)
+      .order("created_at", { ascending: false }).limit(3)
+      .then(({ data }: any) => setRealReviews((data ?? []).filter((r: any) => r.comment?.trim().length >= 10)))
+      .catch(() => {});
+  }, []);
   const [trialDaysLeft, setTrialDaysLeft] = useState<number | null>(null);
   const [showRoleGate, setShowRoleGate] = useState(false);
   const { loading: authLoading, authed, isPhotographer, userId } = useAuthState();
@@ -305,7 +314,7 @@ function Landing() {
                 className="font-serif text-[2.4rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]"
               >
                 {tr("من أول بحث")}
-                <span className="block font-script text-gold text-[2.8rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
+                <span className="block font-script text-gold text-[2.8rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.5] mt-1 sm:mt-3 lg:-me-10">
                   <Calligraphy onMount delay={0.9} duration={2}><Shimmer onMount delay={3.2}>{tr("حتى تستلمي صوركِ")}</Shimmer></Calligraphy>
                 </span>
               </motion.h1>
@@ -544,7 +553,7 @@ function Landing() {
       </ScrollReveal>
 
       {/* Testimonials — one lead quote, two supporting, staggered */}
-      {(visitorRole !== "photographer" && !isPhotographer) && (
+      {(visitorRole !== "photographer" && !isPhotographer) && realReviews.length > 0 && (
         <ScrollReveal delay={0.1}>
         <motion.section
           className="relative bg-charcoal text-ivory py-20 lg:py-28 overflow-hidden grain-overlay"
@@ -555,20 +564,21 @@ function Landing() {
         >
           <SettleIn className="pointer-events-none absolute -top-10 start-6 origin-top-right font-serif text-[16rem] leading-none text-gold/10 select-none">”</SettleIn>
           <div className="container-editorial relative">
-            <div className="eyebrow mb-3">{tr("تجارب حقيقية")}</div>
+            <div className="eyebrow mb-3">{tr("من حجوزات مكتملة")}</div>
             <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-14">{tr("آراء العرائس")}</h2>
             <div className="grid gap-12 lg:grid-cols-12">
               <motion.figure variants={fadeUp} className="lg:col-span-7">
                 <PhraseQuote
                   className="font-serif text-2xl sm:text-3xl leading-[1.7] text-ivory"
-                  phrases={[tr("تجربة رائعة من البداية للنهاية."), tr("أسعار واضحة وبدون مفاجآت،"), tr("والمصورة كانت لطيفة جداً وصورها خيالية."), tr("أنقذتني من ضياع الأوقات والبحث العشوائي.")]}
+                  phrases={[realReviews[0].comment]}
                 />
-                <SignedName name={tr("سارة الأحمد")} />
+                <SignedName name={realReviews[0].client_name} />
               </motion.figure>
-              <div className="lg:col-span-4 lg:col-start-9 space-y-10 lg:pt-24">
-                <Quote name={tr("دانة وليد")} text={tr("أكثر شيء عجبني هو وضوح التفاصيل وحساب العربون مباشرة بدون إحراج، وكل شيء كان منظم ويوم عرسي كان مثالي بدون أي تأخير.")} />
-                <Quote name={tr("لين المجالي")} text={tr("ميزة التوفر الفوري خلتني أقدر أرتب أموري خلال ساعات، بدل ما أنتظر أيام عشان أسمع رد المصورات. الصور وصلتني أسرع من المتوقع، شكراً ميموريا.")} />
-              </div>
+              {realReviews.length > 1 && (
+                <div className="lg:col-span-4 lg:col-start-9 space-y-10 lg:pt-24">
+                  {realReviews.slice(1).map((r, i) => <Quote key={i} name={r.client_name} text={r.comment} />)}
+                </div>
+              )}
             </div>
           </div>
         </motion.section>
