@@ -1,4 +1,5 @@
 import { t as tr, locale } from "@/i18n";
+import { Term } from "@/components/Term";
 
 // خطوات الحجز كما تحدث فعلاً، تُعرض للعروس قبل إرسال الطلب حتى لا تتفاجأ بأي خطوة.
 // الترتيب يطابق مسار الموافقة: طلب ← تأكيد الرقم ← موافقة (24 س) ← عربون (48 س) ← العرس ← المتبقي ← التسليم.
@@ -32,7 +33,7 @@ export function BookingJourney({ deposit, remaining }: { deposit: number; remain
           </li>
         ))}
       </ol>
-      <p className="mt-3 text-xs text-muted-foreground">{tr("تتابعين كل خطوة من رابط يصلكِ بعد الإرسال.")}</p>
+      <p className="mt-3 text-xs text-muted-foreground">{tr("تتابعين كل خطوة من رابط يصلكِ بعد الإرسال.")} <Term k="tracking" /></p>
     </details>
   );
 }

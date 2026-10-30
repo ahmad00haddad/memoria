@@ -422,7 +422,7 @@ function CalendarPage() {
         <h2 className="font-serif text-xl mb-3">{t("الحجوزات القادمة")}</h2>
         <div className="rounded-sm border border-border bg-card overflow-hidden">
           {bookings.filter((b) => new Date(b.event_date) >= new Date(Date.now() - 86400000)).length === 0
-            ? <p className="p-4 text-sm text-muted-foreground">{t("لا حجوزات قادمة.")}</p>
+            ? <p className="p-4 text-sm text-muted-foreground">{t("لا حجوزات قادمة.")}{" "}{g(t("إذا كان عندكِ موعد خارج المنصّة، احجبي يومه من التقويم أعلاه حتى لا يصلكِ طلب عليه."), t("إذا كان عندك موعد خارج المنصّة، احجب يومه من التقويم أعلاه حتى لا يصلك طلب عليه."))}</p>
             : bookings.filter((b) => new Date(b.event_date) >= new Date(Date.now() - 86400000)).map((b, i) => (
               <div key={i} className="flex items-center justify-between p-3 border-b border-border last:border-0">
                 <div>

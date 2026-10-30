@@ -31,7 +31,6 @@ import {
   RefreshCw,
   Plus, Package, Download, Link2, LogOut, CheckCircle2 as CheckCircleIcon } from "lucide-react";
 import { toast } from "sonner";
-import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { NotificationPermission } from "@/components/NotificationPermission";
 import { staggerContainer, fadeUp } from "@/lib/animations";
 import { useCountUp } from "@/hooks/use-count-up";
@@ -220,50 +219,53 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
 }
 
 // ── حالة الجاهزية المبسّطة (للمستخدمة النشطة التي لم تكمل بعض الخطوات) ────────
-function QuickStart({ profile, pricingCount, bookingCount, hasCliq, templatesCount, onDismiss }: { profile: any; pricingCount: number; bookingCount: number; hasCliq: boolean; templatesCount: number; onDismiss: () => void }) {
+function QuickStart({ profile, pricingCount, hasCliq, onDismiss }: { profile: any; pricingCount: number; bookingCount: number; hasCliq: boolean; templatesCount: number; onDismiss: () => void }) {
+  // قائمة إعداد واحدة: الخطوة الأولى منجزة سلفاً (إنشاء الحساب) كي لا تبدأ المصوّرة من الصفر،
+  // وتظهر خطوة تالية واحدة واضحة مع سبب قصير، والباقي كروابط صغيرة.
   const steps = [
-    { title: tr("الملف الشخصي"), done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url, to: "/dashboard/profile", cta: tr("تعديل") },
-    { title: tr("الأسعار{0}", [pricingCount > 0 ? ` (${pricingCount})` : ""]), done: pricingCount > 0, to: "/dashboard/pricing", cta: tr("إضافة") },
-    { title: tr("بيانات الدفع"), done: hasCliq, to: "/dashboard/profile", cta: tr("إعداد") },
-    { title: tr("النشر العام"), done: !!profile?.is_published, to: "/dashboard/profile", cta: tr("نشر") },
+    { title: tr("إنشاء الحساب"), why: "", done: true, to: "/dashboard", cta: "" },
+    { title: tr("صورتك واسمك"), why: tr("أول ما تراه العروس عند فتح صفحتك."), done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url, to: "/dashboard/profile", cta: g(tr("أضيفي صورتك"), tr("أضف صورتك")) },
+    { title: tr("أول باقة"), why: tr("بدون باقة لا تستطيع العروس أن ترى سعراً أو ترسل طلباً."), done: pricingCount > 0, to: "/dashboard/pricing", cta: g(tr("أضيفي باقة"), tr("أضف باقة")) },
+    { title: tr("طريقة استلام العربون"), why: tr("CliQ أو رقم واتساب، تظهر للعروس بعد موافقتك على طلبها فقط."), done: hasCliq, to: "/dashboard/profile", cta: g(tr("أضيفيها"), tr("أضفها")) },
+    { title: tr("نشر صفحتك"), why: tr("بعد النشر تظهر صفحتك في البحث وتبدأ الطلبات."), done: !!profile?.is_published, to: "/dashboard/profile", cta: g(tr("انشري صفحتك"), tr("انشر صفحتك")) },
   ];
   const doneCount = steps.filter((s) => s.done).length;
-  const allDone = doneCount === steps.length;
+  const pct = Math.round((doneCount / steps.length) * 100);
+  const next = steps.find((s) => !s.done);
 
   return (
     <div className="mb-8 rounded-2xl ring-1 ring-border/70 bg-card p-4 sm:p-5">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2">
           <ListChecks className="h-4 w-4 text-gold" />
-          <span className="text-sm font-medium">{tr("إعداد الحساب")}</span>
-          <span className="text-xs text-muted-foreground tabular-nums">({tx(doneCount)}/{tx(steps.length)})</span>
+          <span className="text-sm font-medium">{next ? tr("صفحتك جاهزة {0}%", [pct]) : tr("صفحتك جاهزة")}</span>
         </div>
         <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200" aria-label={tr("إخفاء")}>
           <X className="h-4 w-4" />
         </button>
       </div>
-      {/* شريط تقدم */}
       <div className="flex gap-1.5 mb-4">
         {steps.map((s, i) => (
           <div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${s.done ? "bg-gold" : "bg-secondary"}`} />
         ))}
       </div>
-      {allDone ? (
+      {!next ? (
         <div className="flex items-center justify-between gap-3">
           <span className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-            <PartyPopper className="h-4 w-4" />{" "}{tr("حسابك جاهز تماماً! 🎉")}
+            <PartyPopper className="h-4 w-4" />{" "}{g(tr("صفحتك منشورة وجاهزة لاستقبال الطلبات. شاركي رابطها على إنستغرام."), tr("صفحتك منشورة وجاهزة لاستقبال الطلبات. شارك رابطها على إنستغرام."))}
           </span>
           <button onClick={onDismiss} className="text-xs text-muted-foreground hover:text-foreground underline">{tr("إخفاء")}</button>
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2">
-          {steps.filter((s) => !s.done).map((s) => (
-            <Link key={s.title} to={s.to} className="inline-flex items-center gap-1.5 text-xs border border-border rounded-sm px-3 py-1.5 hover:bg-secondary hover:border-gold/40 transition-colors active:scale-95 transition-transform duration-200">
-              <CircleDashed className="h-3 w-3 text-muted-foreground" />
-              {tx(s.title)}
-              <span className="text-gold">← {tx(s.cta)}</span>
-            </Link>
-          ))}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-xs text-muted-foreground">{tr("الخطوة التالية")}</div>
+            <div className="font-medium">{tx(next.title)}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">{tx(next.why)}</div>
+          </div>
+          <Link to={next.to} className="inline-flex items-center justify-center gap-1.5 rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal active:scale-95 transition-transform shrink-0">
+            {tx(next.cta)}
+          </Link>
         </div>
       )}
     </div>
@@ -533,7 +535,7 @@ function Dashboard() {
       if (session) {
         await supabase.from("profiles").update({ quickstart_dismissed_at: new Date().toISOString() } as any).eq("id", session.user.id);
       }
-      toast.success(g(tr("أخفينا قائمة الإعداد — تجدينها في الملف الشخصي"), tr("أخفينا قائمة الإعداد — تجدها في الملف الشخصي")));
+      toast.success(tr("أخفينا قائمة الإعداد"));
     } catch { toast.error(g(tr("تعذّر الحفظ، حاولي مجدداً"), tr("تعذّر الحفظ، حاول مجدداً"))); }
   };
 
@@ -583,7 +585,6 @@ function Dashboard() {
         <div className="hidden sm:block">
           <Header />
         </div>
-        <OnboardingWizard shouldShow={onboardingNeeded} />
 
         <section className="container-editorial py-6 sm:py-14 max-w-6xl">
         {/* Mobile Large Title */}

@@ -33,6 +33,7 @@ import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT, sessionMinutes } from 
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
 import { BookingJourney } from "@/components/BookingJourney";
+import { Term } from "@/components/Term";
 import { locale } from "@/i18n";
 import { t as tr, tx, getLang, setLang, LANG_COOKIE } from "@/i18n";
 import { sanitizePageSettings, applyPageTheme, type PageSettings } from "@/lib/page-settings";
@@ -1397,7 +1398,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
               </div>
             ))}
             <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">{tr("المجموع")}</span><span className="font-semibold">{tr("{0} د.أ", [total.toLocaleString(locale("ar-JO"))])}</span></div>
-            <div className="flex justify-between text-gold"><span>{tr("العربون المطلوب")}</span><span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span></div>
+            <div className="flex justify-between text-gold"><span>{tr("العربون المطلوب")} <Term k="deposit" /></span><span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span></div>
           </motion.div>
         )}
         {selected && <BookingJourney deposit={deposit} remaining={Math.max(0, total - deposit)} />}

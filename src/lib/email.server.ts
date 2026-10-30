@@ -204,6 +204,24 @@ export function tplBalanceDue(args: {
   };
 }
 
+export function tplSetupReminder(args: { name: string; hasPhoto: boolean; hasPackage: boolean; day: number }) {
+  // خطوة واحدة واضحة: أول ما ينقص من الإعداد
+  const next = !args.hasPhoto
+    ? "أضيفي صورتك واسمك. هذا أول ما تراه العروس."
+    : !args.hasPackage
+      ? "أضيفي أول باقة بسعرها. بدونها لا تستطيع العروس إرسال طلب."
+      : "صفحتك شبه جاهزة. راجعيها وانشريها لتظهر في البحث.";
+  return {
+    subject: args.day === 1 ? "صفحتك على ميموريا تنتظرك" : "خطوة واحدة وتظهر صفحتك للعرائس",
+    html: layout("أكملي إعداد صفحتك", `
+      <p>مرحباً${args.name ? " " + escapeHtml(args.name) : ""},</p>
+      <p>سجّلتِ في ميموريا ولم تُنشر صفحتك بعد، لذلك لا تراها العرائس في البحث.</p>
+      <p><strong>الخطوة التالية:</strong> ${next}</p>
+      <p>الإعداد كله يأخذ حوالي 5 دقائق، ويُحفظ أول بأول.</p>`,
+      { label: "أكملي الإعداد", url: `${appBase()}/onboarding` }),
+  };
+}
+
 export function tplGalleryDelivered(args: {
   client_name: string; photographer_name: string; track_token: string;
 }) {

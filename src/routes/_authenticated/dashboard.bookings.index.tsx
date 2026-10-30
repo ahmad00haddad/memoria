@@ -1,6 +1,7 @@
 import { friendlyError } from "@/lib/friendlyErrors";
 import { getLang, dirOf } from "@/i18n";
 import { g } from "@/hooks/use-gender";
+import { ShareLinkButton } from "@/components/dashboard/ShareLinkButton";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
@@ -260,7 +261,7 @@ function BookingsList() {
 
         {!loading && !loadError && displayed.length === 0 && (
           list.length === 0 ? (
-            <EmptyState icon={Inbox} title={t("لا حجوزات بعد")} description={t("عندما تطلب عروس موعداً من ملفك العام سيظهر الطلب هنا فوراً.")} />
+            <EmptyState icon={Inbox} title={t("لا حجوزات بعد")} description={g(t("عندما تطلب عروس موعداً من صفحتك يظهر الطلب هنا فوراً، ويصلكِ إشعار. أسرع طريق لأول طلب: شاركي رابط صفحتك في إنستغرام وواتساب."), t("عندما تطلب عروس موعداً من صفحتك يظهر الطلب هنا فوراً، ويصلك إشعار. أسرع طريق لأول طلب: شارك رابط صفحتك في إنستغرام وواتساب."))} action={<ShareLinkButton />} />
           ) : (
             <div className="rounded-2xl border border-dashed border-border py-12 text-center">
               <CheckCircle2 className="mx-auto mb-3 h-8 w-8 text-emerald-600" />

@@ -3047,7 +3047,8 @@
  ],
  "الخطوة التالية": [
   "src/routes/photographers/$username.tsx",
-  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx",
+  "src/routes/_authenticated/dashboard.index.tsx"
  ],
  "هذا حساب تجريبي، لذلك لا يوجد تحويل للعربون. يمكنك فتح صفحة تتبع الحجز لترى كيف تبدو.": [
   "src/routes/photographers/$username.tsx"
@@ -9634,7 +9635,8 @@
   "src/routes/_authenticated/dashboard.profile.tsx"
  ],
  "طريقة استلام العربون": [
-  "src/routes/_authenticated/dashboard.profile.tsx"
+  "src/routes/_authenticated/dashboard.profile.tsx",
+  "src/routes/_authenticated/dashboard.index.tsx"
  ],
  "ملفك مكتمل": [
   "src/routes/_authenticated/dashboard.profile.tsx"
@@ -10682,7 +10684,8 @@
   "src/routes/_authenticated/onboarding.tsx"
  ],
  "أول باقة": [
-  "src/routes/_authenticated/onboarding.tsx"
+  "src/routes/_authenticated/onboarding.tsx",
+  "src/routes/_authenticated/dashboard.index.tsx"
  ],
  "CliQ / واتساب": [
   "src/routes/_authenticated/onboarding.tsx"
@@ -11253,7 +11256,8 @@
   "src/routes/_authenticated/dashboard.bookings.$id.tsx"
  ],
  "بانتظار موافقتك": [
-  "src/routes/_authenticated/dashboard.bookings.$id.tsx"
+  "src/routes/_authenticated/dashboard.bookings.$id.tsx",
+  "src/routes/_authenticated/dashboard.bookings.index.tsx"
  ],
  "بما أن الإلغاء منكِ، عليكِ إرجاع العربون كاملاً للعروس مباشرة.": [
   "src/routes/_authenticated/dashboard.bookings.$id.tsx"
@@ -11474,5 +11478,107 @@
  ],
  "يُرجَع {0}%": [
   "src/routes/_authenticated/onboarding.tsx"
+ ],
+ "إنشاء الحساب": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "صورتك واسمك": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "أول ما تراه العروس عند فتح صفحتك.": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "أضيفي صورتك": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "أضف صورتك": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "بدون باقة لا تستطيع العروس أن ترى سعراً أو ترسل طلباً.": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "أضيفي باقة": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "أضف باقة": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "CliQ أو رقم واتساب، تظهر للعروس بعد موافقتك على طلبها فقط.": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "أضيفيها": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "أضفها": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "نشر صفحتك": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "بعد النشر تظهر صفحتك في البحث وتبدأ الطلبات.": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "انشري صفحتك": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "انشر صفحتك": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "صفحتك جاهزة {0}%": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "صفحتك جاهزة": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "صفحتك منشورة وجاهزة لاستقبال الطلبات. شاركي رابطها على إنستغرام.": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "صفحتك منشورة وجاهزة لاستقبال الطلبات. شارك رابطها على إنستغرام.": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "أخفينا قائمة الإعداد": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "عرض كل الأدوات": [
+  "src/routes/_authenticated/dashboard.index.tsx"
+ ],
+ "عندما تطلب عروس موعداً من صفحتك يظهر الطلب هنا فوراً، ويصلكِ إشعار. أسرع طريق لأول طلب: شاركي رابط صفحتك في إنستغرام وواتساب.": [
+  "src/routes/_authenticated/dashboard.bookings.index.tsx"
+ ],
+ "عندما تطلب عروس موعداً من صفحتك يظهر الطلب هنا فوراً، ويصلك إشعار. أسرع طريق لأول طلب: شارك رابط صفحتك في إنستغرام وواتساب.": [
+  "src/routes/_authenticated/dashboard.bookings.index.tsx"
+ ],
+ "العرض هو سعر تقترحه عروس أقل من سعر باقتك. يظهر هنا لتقبليه أو ترفضيه، ولا يُحجز شيء قبل موافقتك.": [
+  "src/routes/_authenticated/dashboard.offers.tsx"
+ ],
+ "إذا كان عندكِ موعد خارج المنصّة، احجبي يومه من التقويم أعلاه حتى لا يصلكِ طلب عليه.": [
+  "src/routes/_authenticated/dashboard.calendar.tsx"
+ ],
+ "إذا كان عندك موعد خارج المنصّة، احجب يومه من التقويم أعلاه حتى لا يصلك طلب عليه.": [
+  "src/routes/_authenticated/dashboard.calendar.tsx"
+ ],
+ "العربون مبلغ صغير من سعر الباقة تحوّلينه للمصوّرة مباشرة بعد موافقتها، فيُثبَّت لكِ الموعد. يُخصم من المبلغ الكلّي.": [
+  "src/components/Term.tsx"
+ ],
+ "باقي المبلغ هو السعر الكلّي ناقص العربون. تحوّلينه للمصوّرة بعد العرس، وبعض المصوّرات يسلّمن الصور بعد وصوله.": [
+  "src/components/Term.tsx"
+ ],
+ "كل مصوّرة تحدّد ماذا يحدث للعربون إذا ألغيتِ: لا يُرجَع، أو يُرجَع جزء منه، أو كله. تقرئينها وتوافقين عليها قبل التحويل.": [
+  "src/components/Term.tsx"
+ ],
+ "رابط خاص بحجزكِ يصلكِ بعد الإرسال. منه تتابعين موافقة المصوّرة والعربون والعقد وصوركِ، بدون حساب أو كلمة سر.": [
+  "src/components/Term.tsx"
+ ],
+ "ما معنى هذا؟": [
+  "src/components/Term.tsx"
+ ],
+ "نُسخ رابط صفحتك": [
+  "src/components/dashboard/ShareLinkButton.tsx"
+ ],
+ "انسخي رابط صفحتك وشاركيه": [
+  "src/components/dashboard/ShareLinkButton.tsx"
+ ],
+ "انسخ رابط صفحتك وشاركه": [
+  "src/components/dashboard/ShareLinkButton.tsx"
  ]
 }

@@ -64,7 +64,7 @@ function OffersPage() {
         <h1 className="font-serif text-4xl mb-2">{t("عروض العرائس")}</h1>
         <p className="text-sm text-muted-foreground mb-8">{t("لا يُحجز الموعد قبل قبولك. عند القبول يُنشأ الحجز بالسعر المعروض ويصل العروس رابط التتبّع. العرض صالح ٣ أيام.")}</p>
 
-        {sorted.length === 0 && <div className="rounded-sm border border-border bg-card p-6 text-sm text-muted-foreground">{t("لا توجد عروض بعد.")}</div>}
+        {sorted.length === 0 && <div className="rounded-sm border border-border bg-card p-6 text-sm text-muted-foreground">{t("لا توجد عروض بعد.")}{" "}{t("العرض هو سعر تقترحه عروس أقل من سعر باقتك. يظهر هنا لتقبليه أو ترفضيه، ولا يُحجز شيء قبل موافقتك.")}</div>}
 
         <div className="space-y-4">
           {sorted.map((o) => {

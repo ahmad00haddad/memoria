@@ -1,6 +1,8 @@
 // Cloudflare Cron (wrangler.jsonc → triggers.crons) يصل إلى Nitro كـ hook "cloudflare:scheduled"،
 // لا إلى src/server.ts. نوجّهه داخلياً إلى مسارات الـ hooks عبر nitroApp.fetch (بدون طلب شبكة خارجي).
 const PATHS = ["/api/public/hooks/booking-deadlines", "/api/public/hooks/ical-sync"];
+// تذكيرات الإيميل مصمّمة لتعمل مرة يومياً (منع التكرار فيها بنافذة 20 ساعة)، فتُستدعى في أول دورة بعد 06:00 UTC فقط
+const DAILY_PATHS = ["/api/public/hooks/email-reminders"];
 
 export default (nitroApp: any) => {
   nitroApp.hooks.hook("cloudflare:scheduled", async ({ env }: { env: Record<string, string | undefined> }) => {
@@ -9,7 +11,9 @@ export default (nitroApp: any) => {
       return;
     }
     const base = env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
-    for (const path of PATHS) {
+    const now = new Date();
+    const daily = now.getUTCHours() === 6 && now.getUTCMinutes() < 30;
+    for (const path of daily ? [...PATHS, ...DAILY_PATHS] : PATHS) {
       try {
         const res = await nitroApp.fetch(
           new Request(`${base}${path}`, {

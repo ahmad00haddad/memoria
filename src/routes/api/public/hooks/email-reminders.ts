@@ -143,6 +143,41 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         }
 
         // ===================================================================
+        // 1c) مصوّرة لم تُكمل إعداد صفحتها — بعد يوم وبعد 3 أيام من التسجيل، مرة واحدة لكل منهما
+        // ===================================================================
+        try {
+          const { tplSetupReminder } = await import("@/lib/email.server");
+          for (const day of [1, 3]) {
+            const to = new Date(Date.now() - day * 86400000).toISOString();
+            const from = new Date(Date.now() - (day + 1) * 86400000).toISOString();
+            const { data: stalled } = await (supabaseAdmin as any)
+              .from("profiles")
+              .select("id, display_name, avatar_url, is_published, is_demo, onboarding_completed_at")
+              .gte("created_at", from).lt("created_at", to)
+              .is("onboarding_completed_at", null)
+              .eq("is_published", false);
+            for (const p of (stalled ?? []) as any[]) {
+              if (p.is_demo) continue;
+              const template = `setup_reminder_${day}d`;
+              const { data: prior } = await supabaseAdmin
+                .from("email_log").select("id").eq("template", template).eq("related_user_id", p.id).limit(1);
+              if (prior && prior.length > 0) continue;
+              const { data: u } = await supabaseAdmin.auth.admin.getUserById(p.id);
+              const email = u?.user?.email;
+              if (!email) continue;
+              const { count: pkgCount } = await supabaseAdmin
+                .from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", p.id);
+              const t = tplSetupReminder({ name: p.display_name || "", hasPhoto: !!p.avatar_url, hasPackage: (pkgCount ?? 0) > 0, day });
+              const r = await sendEmail({ to: email, subject: t.subject, html: t.html, template, related_user_id: p.id });
+              if (r.ok) results.reminders++; else results.errors++;
+            }
+          }
+        } catch (e) {
+          console.error("[email-reminders] setup reminder failed:", e);
+          results.errors++;
+        }
+
+        // ===================================================================
         // 2+3) تذكيرات انتهاء الاشتراك — 7 أيام و3 أيام
         // ===================================================================
         for (const daysLeft of [7, 3]) {

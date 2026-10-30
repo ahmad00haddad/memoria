@@ -12,6 +12,7 @@ import {
   clientAddNote,
 } from "@/lib/booking.functions";
 import { clientCancelBooking } from "@/lib/cancellation.functions";
+import { Term } from "@/components/Term";
 import { createDepositCheckout, isPaymentsEnabled, reconcilePaymentStatus } from "@/lib/payments.functions";
 import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -591,12 +592,12 @@ function TrackingPage() {
           <div id="deposit-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Clock className="h-5 w-5 text-gold" />
-              <h2 className="font-serif text-xl">{t("إرسال العربون")}</h2>
+              <h2 className="font-serif text-xl">{t("إرسال العربون")} <Term k="deposit" /></h2>
             </div>
             <p className="text-sm mb-4">{t("حوّلي مبلغ")}{" "}<span className="font-semibold">{t("{0} د.أ", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))])}</span>{" "}{t("ثم ارفعي إثبات التحويل أدناه.")}</p>
 
             <div className="mb-4 rounded-sm border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-900 dark:text-amber-200 space-y-1.5">
-              <div className="font-medium">{t("قبل التحويل، اقرئي هذا:")}</div>
+              <div className="font-medium">{t("قبل التحويل، اقرئي هذا:")} <Term k="refund" /></div>
               <p>{refundLine()}</p>
               <p>{postponeNote}</p>
               <p>{platformNote}</p>
@@ -690,7 +691,7 @@ function TrackingPage() {
 
         {showBalanceDue && (
           <div className="rounded-2xl border border-gold/40 bg-gold/5 p-5 mb-6 text-sm">
-            <div className="font-serif text-lg mb-1">{t("باقي المبلغ: {0} د.أ", [remainingDue.toLocaleString(locale("ar-JO"))])}</div>
+            <div className="font-serif text-lg mb-1">{t("باقي المبلغ: {0} د.أ", [remainingDue.toLocaleString(locale("ar-JO"))])} <Term k="balance" /></div>
             <p className="text-muted-foreground mb-3">{t("حوّلي باقي المبلغ للمصوّرة بنفس طريقة العربون، حتى تحفظي حقّها وحقّكِ وتستلمي صورك. بعض المصوّرات يسلّمن الصور بعد وصول المبلغ فقط.")}</p>
             {ph.cliq_alias && (
               <div className="bg-card border border-border rounded-sm p-3 flex items-center justify-between">
