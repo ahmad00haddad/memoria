@@ -16,7 +16,7 @@ export function Footer() {
       <div className="container-editorial py-12 grid gap-8 sm:grid-cols-5 text-sm">
         <div>
           <div className="font-serif text-xl mb-2">Memoria <span className="text-muted-foreground text-base">{t("· ميموريا")}</span></div>
-          <p className="text-muted-foreground leading-relaxed">{t("ذاكرة يومكِ، محفوظة بأمان. شركة أردنية مسجلة (ذ.م.م) متخصّصة في حجز وتوثيق خدمات التصوير.")}</p>
+          <p className="text-muted-foreground leading-relaxed">{t("ذاكرة يومكِ، محفوظة بأمان. منصّة لحجز مصوّرات الأعراس والمناسبات في الأردن.")}</p>
           <p className="text-xs text-muted-foreground mt-3">{t("للدعم:")}{" "}<a href="mailto:ahmad000haddad@gmail.com" className="inline-block py-1.5 hover:text-gold">ahmad000haddad@gmail.com</a></p>
         </div>
         <div>
