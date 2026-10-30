@@ -33,6 +33,8 @@ type Form = {
   avatar_url: string;
   cliq_alias: string;
   whatsapp: string;
+  refund_policy: "none" | "partial" | "full";
+  refund_percent: string;
   pkg_label: string;
   pkg_price: string;
   pkg_service: "photography" | "cinematic_video";
@@ -50,7 +52,7 @@ const STEPS_ = () => [
   { icon: Sparkles, title: g(tr("مرحباً بكِ في Memoria"), tr("مرحباً بك في Memoria")), desc: tr("٤ خطوات قصيرة تستغرق أقل من ٥ دقائق — بعدها ملفك جاهز لاستقبال أول حجز.") },
   { icon: Camera, title: tr("معلوماتك الأساسية"), desc: g(tr("الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بكِ."), tr("الاسم الذي يراه العميل، اسم المستخدم للرابط، والمدينة. بعد هذه الخطوة يكون لديك رابط ملف خاص بك.")) },
   { icon: DollarSign, title: tr("أول باقة أسعار"), desc: g(tr("بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لكِ باب الحجوزات."), tr("بدون باقة لن يستطيع العميل رؤية أسعارك أو طلب الحجز — خطوة واحدة تفتح لك باب الحجوزات.")) },
-  { icon: Wallet, title: tr("بيانات الدفع والتواصل"), desc: tr("CliQ alias ورقم واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية تماماً.") },
+  { icon: Wallet, title: tr("الدفع والعربون"), desc: tr("أين تستلمين العربون، وماذا يحدث له إذا ألغت العروس.") },
   { icon: Eye, title: tr("نشر ملفك"), desc: g(tr("راجعي البيانات ثم انشري بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم."), tr("راجع البيانات ثم انشر بنقرة — يمكنك تحديث كل شيء لاحقاً من لوحة التحكم.")) },
 ];
 
@@ -68,7 +70,7 @@ function Onboarding() {
   const avatarRef = useRef<HTMLInputElement>(null);
   const [f, setF] = useState<Form>({
     display_name: "", username: "", city: "", bio: "", avatar_url: "",
-    cliq_alias: "", whatsapp: "",
+    cliq_alias: "", whatsapp: "", refund_policy: "none", refund_percent: "50",
     pkg_label: "", pkg_price: "", pkg_service: "photography", pkg_type: "hourly",
   });
 
@@ -92,6 +94,8 @@ function Onboarding() {
         avatar_url: p?.avatar_url ?? "",
         cliq_alias: priv?.cliq_alias ?? "",
         whatsapp: priv?.whatsapp ?? "",
+        refund_policy: (["none", "partial", "full"].includes((p as any)?.deposit_refund_policy) ? (p as any).deposit_refund_policy : "none"),
+        refund_percent: String((p as any)?.deposit_refund_percent ?? 50),
         pkg_label: first?.label ?? "",
         pkg_price: first?.price ? String(first.price) : "",
         pkg_service: first?.service ?? "photography",
@@ -178,6 +182,12 @@ function Onboarding() {
         whatsapp: f.whatsapp.trim() || null,
       }, { onConflict: "user_id" });
       if (error) { toast.error(error.message || tr("تعذّر حفظ بيانات التواصل")); return false; }
+      const pct = Math.min(99, Math.max(1, Number(f.refund_percent) || 50));
+      const { error: polErr } = await supabase.from("profiles").update({
+        deposit_refund_policy: f.refund_policy,
+        deposit_refund_percent: f.refund_policy === "partial" ? pct : null,
+      } as any).eq("id", uid);
+      if (polErr) { toast.error(polErr.message || tr("تعذّر حفظ سياسة العربون")); return false; }
     }
     return true;
   };
@@ -403,6 +413,22 @@ function Onboarding() {
                 <input value={f.whatsapp} onChange={(e) => upd("whatsapp", e.target.value)} className={inputCx} placeholder="+9627XXXXXXXX" dir="ltr" />
               </Field>
               <p className="text-xs text-muted-foreground">{tr("لن تظهر هذه البيانات إلا للعملاء الذين أكّدوا حجزهم فعلياً.")}</p>
+              <Field label={tr("إذا ألغت العروس بعد دفع العربون")}>
+                <div role="radiogroup" className="grid gap-2 sm:grid-cols-3">
+                  {([["none", tr("لا يُرجَع")], ["partial", tr("يُرجَع جزء منه")], ["full", tr("يُرجَع كاملاً")]] as const).map(([v, label]) => (
+                    <button key={v} type="button" role="radio" aria-checked={f.refund_policy === v} onClick={() => upd("refund_policy", v)}
+                      className={`rounded-sm border px-3 py-2 text-sm transition ${f.refund_policy === v ? "border-gold bg-gold/10 font-medium" : "border-border hover:bg-secondary"}`}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+              {f.refund_policy === "partial" && (
+                <Field label={tr("نسبة الإرجاع %")}>
+                  <input type="number" inputMode="numeric" min={1} max={99} value={f.refund_percent} onChange={(e) => upd("refund_percent", e.target.value)} className={inputCx} dir="ltr" />
+                </Field>
+              )}
+              <p className="text-xs text-muted-foreground">{tr("تقرأ العروس هذه السياسة وتوافق عليها قبل أن تحوّل العربون. العربون يُحوَّل لكِ مباشرة، والمنصّة لا تستلمه ولا تُرجعه. وإذا ألغيتِ أنتِ الحجز، تُرجعين العربون كاملاً. يمكنكِ تغييرها لاحقاً من الإعدادات.")}</p>
             </div>
           )}
 
@@ -414,6 +440,7 @@ function Onboarding() {
                 <Row k={tr("المدينة")} v={f.city} onEdit={() => goTo(1)} />
                 <Row k={tr("أول باقة")} v={tr("{0} — {1} د.أ", [f.pkg_label, f.pkg_price])} onEdit={() => goTo(2)} />
                 <Row k={tr("CliQ / واتساب")} v={[f.cliq_alias, f.whatsapp].filter(Boolean).join(" · ") || "—"} onEdit={() => goTo(3)} />
+                <Row k={tr("العربون إذا ألغت العروس")} v={f.refund_policy === "full" ? tr("يُرجَع كاملاً") : f.refund_policy === "partial" ? tr("يُرجَع {0}%", [f.refund_percent]) : tr("لا يُرجَع")} onEdit={() => goTo(3)} />
               </div>
               <div className="rounded-sm border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40 p-4 text-emerald-800 dark:text-emerald-300 text-sm">
                 {tr("عند الضغط على \"نشر ملفي\" سيصبح ملفك مرئياً للعملاء ويمكنهم بدء الحجز مباشرة.")}

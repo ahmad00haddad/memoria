@@ -11165,19 +11165,23 @@
   "src/routes/track.$token.tsx"
  ],
  "العربون إذا ألغت العروس": [
-  "src/routes/_authenticated/dashboard.settings.tsx"
+  "src/routes/_authenticated/dashboard.settings.tsx",
+  "src/routes/_authenticated/onboarding.tsx"
  ],
  "تظهر للعروس قبل أن تحوّل العربون، وتوافق عليها. العربون يُحوَّل لك مباشرة، والمنصّة لا تستلمه ولا تُرجعه.": [
   "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "لا يُرجَع": [
-  "src/routes/_authenticated/dashboard.settings.tsx"
+  "src/routes/_authenticated/dashboard.settings.tsx",
+  "src/routes/_authenticated/onboarding.tsx"
  ],
  "يُرجَع جزء منه": [
-  "src/routes/_authenticated/dashboard.settings.tsx"
+  "src/routes/_authenticated/dashboard.settings.tsx",
+  "src/routes/_authenticated/onboarding.tsx"
  ],
  "يُرجَع كاملاً": [
-  "src/routes/_authenticated/dashboard.settings.tsx"
+  "src/routes/_authenticated/dashboard.settings.tsx",
+  "src/routes/_authenticated/onboarding.tsx"
  ],
  "نسبة الإرجاع": [
   "src/routes/_authenticated/dashboard.settings.tsx"
@@ -11410,5 +11414,65 @@
  ],
  "ذاكرة يومكِ، محفوظة بأمان. منصّة لحجز مصوّرات الأعراس والمناسبات في الأردن.": [
   "src/components/site/Footer.tsx"
+ ],
+ "ترسلين الطلب الآن، ولا تدفعين شيئاً.": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "تؤكّدين رقمكِ برسالة واتساب أو برمز يصلكِ على الإيميل.": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "المصوّرة توافق أو تعتذر خلال 24 ساعة. التاريخ محجوز لكِ خلالها.": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "بعد موافقتها تحوّلين العربون ({0} د.أ) لها مباشرة خلال 48 ساعة، وترفعين صورة الإيصال.": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "بعد موافقتها يتأكّد حجزكِ.": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "بعد العرس تحوّلين باقي المبلغ ({0} د.أ).": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "يوم العرس تصوّركِ المصوّرة كما اتفقتما.": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "تستلمين صوركِ من صفحة متابعة الحجز.": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "ماذا يحدث بعد إرسال الطلب؟": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "اعرضي": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "تتابعين كل خطوة من رابط يصلكِ بعد الإرسال.": [
+  "src/components/BookingJourney.tsx"
+ ],
+ "ننصحكِ بإرسال الطلب الآن. يصل للمصوّرة إشعار فوراً، ورقمها يظهر لكِ في صفحة المتابعة بعد الإرسال.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "باقي المبلغ": [
+  "src/routes/track.$token.tsx"
+ ],
+ "الدفع والعربون": [
+  "src/routes/_authenticated/onboarding.tsx"
+ ],
+ "أين تستلمين العربون، وماذا يحدث له إذا ألغت العروس.": [
+  "src/routes/_authenticated/onboarding.tsx"
+ ],
+ "تعذّر حفظ سياسة العربون": [
+  "src/routes/_authenticated/onboarding.tsx"
+ ],
+ "إذا ألغت العروس بعد دفع العربون": [
+  "src/routes/_authenticated/onboarding.tsx"
+ ],
+ "نسبة الإرجاع %": [
+  "src/routes/_authenticated/onboarding.tsx"
+ ],
+ "تقرأ العروس هذه السياسة وتوافق عليها قبل أن تحوّل العربون. العربون يُحوَّل لكِ مباشرة، والمنصّة لا تستلمه ولا تُرجعه. وإذا ألغيتِ أنتِ الحجز، تُرجعين العربون كاملاً. يمكنكِ تغييرها لاحقاً من الإعدادات.": [
+  "src/routes/_authenticated/onboarding.tsx"
+ ],
+ "يُرجَع {0}%": [
+  "src/routes/_authenticated/onboarding.tsx"
  ]
 }

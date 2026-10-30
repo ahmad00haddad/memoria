@@ -32,6 +32,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT, sessionMinutes } from "@/lib/validation";
 import { PhotographerProfileTip } from "@/components/PhotographerProfileTip";
 import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
+import { BookingJourney } from "@/components/BookingJourney";
 import { locale } from "@/i18n";
 import { t as tr, tx, getLang, setLang, LANG_COOKIE } from "@/i18n";
 import { sanitizePageSettings, applyPageTheme, type PageSettings } from "@/lib/page-settings";
@@ -1252,7 +1253,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           </Popover>
           {daysUntil !== null && daysUntil < 7 && !isBlocked && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-sm p-2">
-              💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{tr("ننصحكِ بإرسال الطلب الآن والتواصل مع المصوّرة فوراً عبر الواتساب لتأكيد التفرّغ.")}
+              💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{tr("ننصحكِ بإرسال الطلب الآن. يصل للمصوّرة إشعار فوراً، ورقمها يظهر لكِ في صفحة المتابعة بعد الإرسال.")}
             </motion.div>
           )}
           {multiPerDay && daySlots.length > 0 && !isBlocked && (
@@ -1399,6 +1400,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
             <div className="flex justify-between text-gold"><span>{tr("العربون المطلوب")}</span><span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span></div>
           </motion.div>
         )}
+        {selected && <BookingJourney deposit={deposit} remaining={Math.max(0, total - deposit)} />}
         <label className="sm:col-span-2 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed cursor-pointer">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-gold" />
           <span>

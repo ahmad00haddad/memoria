@@ -390,6 +390,9 @@ function TrackingPage() {
     { key: "deposit", label: t("إرسال العربون"), done: !!b.deposit_sent_at, icon: <Upload className="h-5 w-5" /> },
     { key: "confirmed", label: t("تأكيد الحجز"), done: !!b.deposit_confirmed_at || ["confirmed","completed"].includes(b.status), icon: <CheckCircle2 className="h-5 w-5" /> },
     { key: "shoot", label: t("يوم التصوير"), done: b.production_stage !== "awaiting" || !!b.delivered_at || b.status === "completed", icon: <Camera className="h-5 w-5" /> },
+    ...(Math.max(0, Number(b.total_price || 0) - Number(b.deposit_amount || 0)) > 0
+      ? [{ key: "balance", label: t("باقي المبلغ"), done: !!b.final_paid_at || b.status === "completed", icon: <CheckCircle2 className="h-5 w-5" /> }]
+      : []),
     { key: "editing", label: t("التحرير"), done: ["editing","delivered","completed"].includes(b.production_stage) || !!b.delivered_at || b.status === "completed", icon: <ImageIcon className="h-5 w-5" /> },
     { key: "delivered", label: t("التسليم"), done: !!b.delivered_at || b.status === "completed", icon: <Truck className="h-5 w-5" /> },
   ];
@@ -453,7 +456,7 @@ function TrackingPage() {
                 )}
 
                 {/* خط المراحل: المنجز ذهبي، والحالي ينبض */}
-                <ol className="mt-8 grid grid-cols-7 gap-1" aria-label={t("مراحل الحجز")}>
+                <ol className={`mt-8 grid gap-1 ${stages.length > 7 ? "grid-cols-8" : "grid-cols-7"}`} aria-label={t("مراحل الحجز")}>
                   {stages.map((st, i) => {
                     const current = !allDone && i === currentIdx;
                     return (
