@@ -365,14 +365,16 @@ function BookingDetail() {
     if (!b || actionLoading === "contract") return;
     setActionLoading("contract");
     const tpl = templates.find((t) => t.id === templateId);
+    // بند العربون من سياسة المصوّرة الفعلية — نفس النص الذي وافقت عليه العروس قبل التحويل
+    const { data: pol } = await supabase.from("profiles")
+      .select("deposit_refund_policy, deposit_refund_percent, team_gender").eq("id", b.photographer_id).maybeSingle();
     const privacyLabels: Record<string, string> = {
       public: tr("عام — يحق للمصوّرة استخدام لقطات للترويج"),
       no_publish: tr("بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي"),
-      private_only: tr("خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث"),
+      private_only: (pol as any)?.team_gender === "female"
+        ? tr("خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث")
+        : tr("خصوصية تامة — لا نشر ولا مشاركة مع طرف ثالث"),
     };
-    // بند العربون من سياسة المصوّرة الفعلية — نفس النص الذي وافقت عليه العروس قبل التحويل
-    const { data: pol } = await supabase.from("profiles")
-      .select("deposit_refund_policy, deposit_refund_percent").eq("id", b.photographer_id).maybeSingle();
     const depositClause = (pol as any)?.deposit_refund_policy === "full"
       ? tr("إذا ألغت العميلة بعد دفع العربون يُرجَع لها كاملاً")
       : (pol as any)?.deposit_refund_policy === "partial"
@@ -921,7 +923,7 @@ function PrivacyBadge({ level }: { level?: string }) {
   const map: Record<string, { icon: any; t: string; c: string }> = {
     public: { icon: <Eye className="h-3.5 w-3.5" />, t: tr("نشر ترويجي كامل"), c: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" },
     no_publish: { icon: <EyeOff className="h-3.5 w-3.5" />, t: tr("حفظ بدون نشر"), c: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" },
-    private_only: { icon: <Lock className="h-3.5 w-3.5" />, t: tr("خصوصية تامة - لقطات نسائية"), c: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20" },
+    private_only: { icon: <Lock className="h-3.5 w-3.5" />, t: tr("خصوصية تامة"), c: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20" },
   };
   const x = map[level ?? "public"] ?? map.public;
   return <div className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-sm border ${x.c}`}>{tx(x.icon)} {tx(x.t)}</div>;

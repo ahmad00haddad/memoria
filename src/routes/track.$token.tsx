@@ -810,6 +810,7 @@ function TrackingPage() {
               if (ok) window.open(`https://wa.me/${ph.whatsapp.replace(/[^0-9]/g,'')}`, "_blank");
             }}>{tx(ph.whatsapp)}</button></div>}
             {ph.phone && <div>{t("هاتف: {0}", [ph.phone])}</div>}
+            {!ph.whatsapp && !ph.phone && <div className="text-muted-foreground">{t("يظهر رقم المصوّرة هنا بعد موافقتها على طلبكِ. حتى ذلك الحين راسليها من هذه الصفحة.")}</div>}
           </div>
         </div>
 

@@ -79,8 +79,8 @@ export const cancelBooking = createServerFn({ method: "POST" })
       if (info.client_phone) {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
         const refundNote = Number(info.refund_amount || 0) > 0
-          ? tr("سيتم رد العربون بقيمة {0} دينار خلال 3-5 أيام عمل.", [info.refund_amount])
-          : tr("وفقاً لسياسة الاسترداد لا يوجد استرداد للعربون في هذه الحالة.");
+          ? tr("بما أن الإلغاء من المصوّرة، عليها إرجاع العربون كاملاً ({0} دينار) لكِ مباشرة.", [info.refund_amount])
+          : tr("لم يُحوَّل أي عربون لهذا الحجز، فلا شيء مستحق عليكِ.");
         await sendWhatsAppNotification(
           info.photographer_id,
           info.client_phone,

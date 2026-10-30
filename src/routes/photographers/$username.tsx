@@ -1254,14 +1254,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           </Popover>
           {daysUntil !== null && daysUntil < 7 && !isBlocked && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-sm p-2">
-              💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{tr("ننصحكِ بإرسال الطلب الآن. يصل للمصوّرة إشعار فوراً، ورقمها يظهر لكِ في صفحة المتابعة بعد الإرسال.")}
+              💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{tr("ننصحكِ بإرسال الطلب الآن. يصل للمصوّرة إشعار فوراً، ورقمها يظهر لكِ في صفحة المتابعة بعد موافقتها.")}
             </motion.div>
           )}
           {multiPerDay && daySlots.length > 0 && !isBlocked && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} role="note" className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-sm p-2.5 leading-relaxed">
               <strong>{tr("يوجد حجز آخر لدى المصوّرة في هذا اليوم")}</strong>
               {" "}({daySlots.map((x) => `${x.start_time.slice(0, 5)}–${x.end_time.slice(0, 5)}`).join("، ")}).{" "}
-              {tr("المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد إرسال الطلب.")}
+              {tr("المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد موافقتها على الطلب.")}
             </motion.div>
           )}
         </div>
@@ -1357,7 +1357,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
             {[
               { v: "public", t: tr("صور قابلة للنشر"), d: tr("يحق للمصوّرة استخدام لقطات للترويج") },
-              { v: "private_only", t: tr("خصوصية تامة"), d: tr("فريق نسائي فقط — لا مشاركة مع أي طرف ثالث") },
+              { v: "private_only", t: tr("خصوصية تامة"), d: profile.team_gender === "female" ? tr("فريق نسائي فقط — لا مشاركة مع أي طرف ثالث") : tr("لا نشر ولا مشاركة مع أي طرف ثالث") },
             ].map((o) => (
               <button key={o.v} type="button" onClick={() => setF({ ...f, privacy_level: o.v as any })}
                 className={`text-start rounded-sm border p-3 text-sm transition ${f.privacy_level === o.v ? "border-gold bg-gold/5" : "border-border hover:bg-secondary"}`}>
