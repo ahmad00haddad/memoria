@@ -19,15 +19,15 @@ import { t as tr, tx, locale } from "@/i18n";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: tr("Memoria · ميموريا — منصّة تصوير المناسبات في الأردن") },
-      { name: "description", content: tr("احجزي مصوّرة أعراس ومناسبات موثّقة في الأردن. باقات واضحة، عربون CliQ مباشر، وتقييمات من حجوزات مكتملة فقط.") },
-      { property: "og:title", content: tr("Memoria · ميموريا — تصوير المناسبات") },
-      { property: "og:description", content: tr("منصّة لحجز مصوّرات المناسبات بثقة — أسعار شفافة، عربون مباشر، وتقييمات موثّقة.") },
+      { title: tr("Memoria · ميموريا | حجز مصوّرات المناسبات في الأردن") },
+      { name: "description", content: tr("احجزي مصوّرة لعرسكِ أو مناسبتكِ في الأردن. سعر كل باقة مكتوب، والعربون تحوّلينه للمصوّرة مباشرة، والتقييمات لا تُكتب إلا بعد حجز مكتمل.") },
+      { property: "og:title", content: tr("Memoria · ميموريا | تصوير المناسبات") },
+      { property: "og:description", content: tr("احجزي مصوّرة مناسبتكِ بعد أن ترين أسعارها وأيامها المتاحة وتقييمات عرائس حجزن قبلكِ.") },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://memoria-production.ahmad000haddad.workers.dev/" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: tr("Memoria · ميموريا") },
-      { name: "twitter:description", content: tr("احجزي مصوّرة مناسباتك بثقة.") },
+      { name: "twitter:description", content: tr("اختاري مصوّرتكِ واعرفي أيامها المتاحة.") },
       { property: "og:image", content: "https://memoria-production.ahmad000haddad.workers.dev/og-default.png" },
       { name: "twitter:image", content: "https://memoria-production.ahmad000haddad.workers.dev/og-default.png" },
     ],
@@ -72,7 +72,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
       >
         <h1 className="font-serif text-4xl sm:text-5xl mb-3">{tr("أهلاً بكِ 👋")}</h1>
         <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto">
-          {tr("أخبرينا من أنتِ حتى نُوجّهكِ مباشرةً لما يناسبكِ — بدون ضياع")}
+          {tr("أخبرينا من أنتِ، ونفتح لكِ الصفحة المناسبة.")}
         </p>
       </motion.div>
 
@@ -92,7 +92,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
           <motion.div className="text-4xl mb-4" variants={{ hidden: { scale: 0.6, opacity: 0 }, visible: { scale: [0.6, 1.25, 1], opacity: 1, transition: { duration: 0.9, delay: 0.35, ease: EASE_OUT } } }}>🌸</motion.div>
           <div className="font-serif text-2xl mb-2">{tr("عروس أو أهل الزفاف")}</div>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">
-            {tr("ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فوراً بدون واتساب.")}
+            {tr("تصفّحي المصوّرات وأيامهن المتاحة، وأرسلي طلب الحجز من الصفحة نفسها.")}
           </p>
           <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
             {tr("ابحثي الآن")}{" "}<ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -108,7 +108,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
           <motion.div className="text-4xl mb-4" variants={{ hidden: { scale: 0.6, opacity: 0 }, visible: { scale: [0.6, 1.25, 1], opacity: 1, transition: { duration: 0.9, delay: 0.35, ease: EASE_OUT } } }}>📷</motion.div>
           <div className="font-serif text-2xl mb-2">{tr("مصوّرة محترفة")}</div>
           <p className="text-sm text-ivory/70 leading-relaxed mb-6 flex-1">
-            {tr("أنشئي ملفكِ، حدّدي أسعاركِ، واستقبلي حجوزاتكِ — تجربة مجانية ١٤ يوماً بدون بطاقة.")}
+            {tr("جرّبي المنصّة ١٤ يوماً مجاناً ومن غير بطاقة دفع. خلالها تجهّزين ملفكِ وأسعاركِ وتبدئين باستقبال الطلبات.")}
           </p>
           <div className="inline-flex items-center gap-2 text-sm text-gold font-medium">
             {tr("انضمّي مجاناً")}{" "}<ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -124,7 +124,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
         onClick={() => onSelect("guest")}
         className="mt-8 text-xs text-muted-foreground hover:text-foreground underline transition-colors"
       >
-        {tr("تخطّي — سأستكشف بنفسي")}
+        {tr("تخطّي، سأتصفّح بنفسي")}
       </motion.button>
     </motion.div>
   );
@@ -298,21 +298,21 @@ function Landing() {
               animate="visible"
             >
               <motion.p variants={fadeUp} className="eyebrow">
-                {tr("منصّة الحجوزات الأكثر فخامة لمصوّري الأعراس في الأردن")}
+                {tr("منصّة حجز مصوّرات الأعراس في الأردن")}
               </motion.p>
               <motion.h1
                 variants={fadeUp}
                 className="font-serif text-[2.4rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]"
               >
-                {tr("من النقرة الأولى")}
+                {tr("من أول بحث")}
                 <span className="block font-script text-gold text-[2.8rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.05] -mt-1 lg:-me-10">
-                  <Calligraphy onMount delay={0.9} duration={2}><Shimmer onMount delay={3.2}>{tr("إلى الذكرى الأبدية")}</Shimmer></Calligraphy>
+                  <Calligraphy onMount delay={0.9} duration={2}><Shimmer onMount delay={3.2}>{tr("حتى تستلمي صوركِ")}</Shimmer></Calligraphy>
                 </span>
               </motion.h1>
               <motion.p variants={fadeUp} className="text-lg text-muted-foreground max-w-md leading-loose">
                 {visitorRole === "photographer" || isPhotographer
-                  ? tr("ارتقِ بعملكِ الاحترافي. استقبلي حجوزاتكِ، ديري مواعيدكِ، واحصلي على عربونكِ بأمان.")
-                  : tr("احجزي مصوّرة عرسك خلال دقائق. أسعار شفافة، مواعيد متاحة لحظيًا، وعربون موثّق.")}
+                  ? tr("طلبات الحجز ومواعيدكِ في مكان واحد، والعروس ترفع إيصال العربون بنفسها.")
+                  : tr("اطّلعي على سعر كل باقة والأيام المتاحة قبل أي محادثة، وأرسلي طلب الحجز خلال دقائق.")}
               </motion.p>
               {visitorRole !== "photographer" && !isPhotographer && (
                 <motion.form
@@ -377,10 +377,10 @@ function Landing() {
                   >
                     <Star className="h-3.5 w-3.5 fill-gold text-gold" />
                   </motion.span>
-                  {tr("تقييمات حقيقية من عملاء سابقات")}
+                  {tr("تقييمات من عرائس أكملن حجزهن")}
                 </div>
                 <span className="hidden sm:block h-3 w-px bg-border" />
-                <div className="hidden sm:block">{tr("حجز فوري بدون واتساب")}</div>
+                <div className="hidden sm:block">{tr("طلب الحجز من الصفحة مباشرة")}</div>
               </motion.div>
             </motion.div>
 
@@ -451,7 +451,7 @@ function Landing() {
                   <span className="text-[11px] text-gold border border-gold/30 px-1.5 py-0.5 rounded-sm">{tr("مثال تقديري")}</span>
                 </div>
                 <div className="font-serif text-3xl tabular-nums">~<CountTo onMount from={200} to={320} delay={1.1} duration={1.8} /> <span className="text-sm text-muted-foreground">{tr("د.أ")}</span></div>
-                <div className="text-xs text-muted-foreground leading-relaxed mt-1">{tr("٤ ساعات تصوير + ٥٠ صورة معدّلة — الأسعار تختلف حسب المصوّر")}</div>
+                <div className="text-xs text-muted-foreground leading-relaxed mt-1">{tr("٤ ساعات تصوير و٥٠ صورة معدّلة. كل مصوّرة تحدّد سعرها.")}</div>
               </motion.div>
             </motion.div>
           </div>
@@ -476,7 +476,7 @@ function Landing() {
               <h2 className="font-serif text-4xl sm:text-5xl">{tr("من أنت؟")}</h2>
             </div>
             <p className="lg:col-span-6 lg:col-start-7 text-muted-foreground leading-loose max-w-md">
-              {tr("مكان واحد يجمع العروس بمصوّرتها — من أول نظرة على المعرض حتى استلام الصور.")}
+              {tr("العروس والمصوّرة تتابعان الحجز من المكان نفسه، من تصفّح المعرض حتى استلام الصور.")}
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-12">
@@ -484,7 +484,7 @@ function Landing() {
               <RoleCard
                 index={tr("٠١")}
                 title={tr("العروس وأهل الزفاف")}
-                desc={tr("ابحثي عن مصوّرتكِ المفضّلة، شاهدي المواعيد المتاحة، واحجزي فورًا.")}
+                desc={tr("قارني بين المصوّرات واعرفي من المتاحة في تاريخ عرسكِ.")}
                 cta={tr("ابحثي عن مصوّرة")}
                 href="/search"
               />
@@ -494,7 +494,7 @@ function Landing() {
                 <RoleCard
                   index={tr("٠٢")}
                   title={tr("مصوّرة محترفة")}
-                  desc={tr("أنشئي ملفكِ، حدّدي أسعاركِ واربطي تقويمكِ — ودعي النظام يدير حجوزاتكِ.")}
+                  desc={tr("اكتبي باقاتكِ وأسعاركِ واربطي تقويم Google، فلا تصلكِ طلبات إلا على أيامكِ المتاحة.")}
                   cta={tr("انضمي إلى المنصة")}
                   href="/photographers/join"
                   highlight
@@ -503,7 +503,7 @@ function Landing() {
                 <RoleCard
                   index={tr("٠٢")}
                   title={tr("حسابك جاهز")}
-                  desc={tr("أنتِ مسجّلة بالفعل. انتقلي مباشرة إلى لوحة التحكم لإدارة الباقات والحجوزات والاشتراك.")}
+                  desc={tr("الباقات والحجوزات والاشتراك تجدينها في لوحة التحكم.")}
                   cta={tr("افتحي لوحة التحكم")}
                   href="/dashboard"
                   highlight
@@ -529,15 +529,15 @@ function Landing() {
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-28">
               <div className="eyebrow mb-3">{tr("سير العمل")}</div>
-              <h2 className="font-serif text-4xl sm:text-5xl mb-4">{tr("حلّ كامل")}<br /><span className="font-script text-gold"><Calligraphy delay={0.2}><Shimmer delay={2.2}>{tr("لكل مشكلة")}</Shimmer></Calligraphy></span></h2>
-              <p className="text-muted-foreground leading-loose max-w-xs">{tr("كل ما كان يضيع في محادثات الواتساب، صار في مكانه الصحيح.")}</p>
+              <h2 className="font-serif text-4xl sm:text-5xl mb-4">{tr("كيف يمشي الحجز")}<br /><span className="font-script text-gold"><Calligraphy delay={0.2}><Shimmer delay={2.2}>{tr("خطوة بخطوة")}</Shimmer></Calligraphy></span></h2>
+              <p className="text-muted-foreground leading-loose max-w-xs">{tr("التفاصيل التي كانت تضيع بين رسائل الواتساب تُكتب الآن في الحجز نفسه.")}</p>
             </div>
           </div>
           <ol className="lg:col-span-7 lg:col-start-6">
-            <Feature n="01" icon={MessageSquareOff} title={tr("بدون واتساب")} desc={tr("جميع التفاصيل تُدخل عبر النموذج: الموقع، الوقت، نوع التصوير.")} />
-            <Feature n="02" icon={Calendar} title={tr("تقويم ذكي")} desc={tr("مزامنة Google Calendar مع فاصل ساعتين بين الجلسات لمراعاة الازدحام.")} />
-            <Feature n="03" icon={Receipt} title={tr("سعر فوري")} desc={tr("حاسبة ديناميكية تشمل الساعات، الإضافات، ورسوم التنقّل بالكيلومتر.")} />
-            <Feature last n="04" icon={ShieldCheck} title={tr("عربون موثّق")} desc={tr("تحويل CliQ مباشر للمصوّرة، مع إثبات مرفوع وتأكيد موثّق لكل حجز.")} />
+            <Feature n="01" icon={MessageSquareOff} title={tr("نموذج واحد")} desc={tr("تكتب العروس المكان والوقت ونوع التصوير مرة واحدة، وتقرؤها المصوّرة جاهزة.")} />
+            <Feature n="02" icon={Calendar} title={tr("تقويم متزامن")} desc={tr("الحجوزات تظهر في Google Calendar، والأيام المحجوزة تُغلق تلقائياً على صفحة المصوّرة.")} />
+            <Feature n="03" icon={Receipt} title={tr("سعر فوري")} desc={tr("السعر يُحسب أمامكِ مع الإضافات وأجرة المسافة بالكيلومتر.")} />
+            <Feature last n="04" icon={ShieldCheck} title={tr("إيصال العربون")} desc={tr("تحوّل العروس العربون للمصوّرة مباشرة وترفع الإيصال، والمصوّرة تؤكّد الاستلام.")} />
           </ol>
         </div>
       </motion.section>
