@@ -35,13 +35,16 @@ const TIER_FEATURES: Record<Tier, string[]> = {
   ],
   pro: [
     "كل ما في Basic",
-    "شارة التوثيق ✓ تظهر للعرائس",
-    "ظهور أعلى في نتائج البحث",
-    `باقات بلا حد وحتى ${PRO_PHOTOS} صورة`,
-    "العقود الرقمية وعروض الأسعار",
+    "شارة التوثيق ✓ أمام كل عروس تزور صفحتك",
+    "أول النتائج في البحث، قبل حسابات Basic",
+    `باقات بلا حد و${PRO_PHOTOS} صورة — ٣ أضعاف Basic`,
+    "عروض الأسعار والعقود الرقمية",
     "قوالب واتساب والتقارير",
   ],
 };
+
+// مزايا Pro السنوي تحديداً
+const PRO_YEARLY_EXTRAS = ["سعر ثابت لسنة كاملة بدفعة واحدة", "لا انقطاع وسط موسم الأعراس"];
 
 type Sub = {
   id: string;
@@ -227,7 +230,7 @@ function SubscriptionPage() {
         {showPayment && effectiveStatus !== "pending_review" && (
           <div className="mt-10">
             <h2 className="font-serif text-2xl mb-1">{g(t("اختاري باقتك"), t("اختر باقتك"))}</h2>
-            <p className="text-sm text-muted-foreground mb-4">{t("السنوي بـPro أوفر 40 د.أ — ودفعة واحدة بالسنة.")}</p>
+            <p className="text-sm text-muted-foreground mb-4">{t("Pro السنوي: شهران مجاناً، وبـ20 د.أ فقط أكثر من Basic بالسنة.")}</p>
             {legacy && (
               <div className="mb-4 rounded-sm border border-gold/40 bg-gold/5 p-3 text-sm">
                 {g(t("أنتِ من أوائل المشتركات: باقة Pro بسعرك القديم ({0} د.أ شهري / {1} د.أ سنوي) حتى {2}.", [LEGACY_PRICES.monthly, LEGACY_PRICES.yearly, legacyEnds]), t("أنت من أوائل المشتركين: باقة Pro بسعرك القديم ({0} د.أ شهري / {1} د.أ سنوي) حتى {2}.", [LEGACY_PRICES.monthly, LEGACY_PRICES.yearly, legacyEnds]))}
@@ -257,16 +260,18 @@ function SubscriptionPage() {
                   >
                     {k === "pro" && (
                       <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">
-                        {saving > 0 ? `${g(t("وفّري"), t("وفّر"))} ${t("{0} د.أ", [saving])}` : t("كل الميزات")}
+                        {saving > 0 ? t("شهران مجاناً — {0} {1} د.أ", [g(t("وفّري"), t("وفّر")), saving]) : t("كل الميزات")}
                       </span>
                     )}
                     <div className="font-serif text-lg leading-tight">{TIER_NAME[k]}</div>
                     <div className="font-serif text-3xl mt-1">{tx(price)} <span className="text-sm font-sans">{t("د.أ")}</span> <span className="text-xs text-muted-foreground font-sans">{period === "yearly" ? t("/ سنة") : t("/ شهر")}</span></div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {period === "yearly" ? t("≈ {0} د.أ للشهر", [(price / 12).toFixed(1)]) : t("دفعة لشهر كامل")}
+                      {period === "yearly"
+                        ? (k === "basic" ? t("نفس سعر الشهري × ١٢ — بلا توفير") : t("≈ {0} د.أ للشهر", [(price / 12).toFixed(1)]))
+                        : t("دفعة لشهر كامل")}
                     </div>
                     <ul className="mt-3 space-y-1 text-xs">
-                      {TIER_FEATURES[k].map((f) => (
+                      {(k === "pro" && period === "yearly" ? [...TIER_FEATURES.pro, ...PRO_YEARLY_EXTRAS] : TIER_FEATURES[k]).map((f) => (
                         <li key={f} className="flex gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-gold mt-0.5" />{tx(f)}</li>
                       ))}
                     </ul>

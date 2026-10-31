@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, X } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { useAuthState } from "@/hooks/use-auth-state";
@@ -31,14 +31,29 @@ const BASIC_FEATURES = [
   `حتى ${BASIC_LIMITS.packages} باقات و${BASIC_LIMITS.photos} صورة`,
 ];
 
+// ما ينقص Basic — يظهر مشطوباً حتى تكون المقارنة واضحة
+const BASIC_MISSING = [
+  "بدون شارة التوثيق ✓",
+  "تظهر بعد حسابات Pro في البحث",
+  "بدون عقود رقمية ولا عروض أسعار",
+  "بدون قوالب واتساب ولا تقارير",
+];
+
 const PRO_FEATURES = [
   "كل ما في Basic",
-  "شارة التوثيق ✓ أمام العرائس",
-  "ظهور أعلى في نتائج البحث",
-  `باقات بلا حد وحتى ${PRO_PHOTOS} صورة`,
-  "عقود رقمية بتوقيع إلكتروني",
-  "عروض الأسعار وقوالب واتساب",
+  "شارة التوثيق ✓ أمام كل عروس تزور صفحتكِ",
+  "أول النتائج في البحث، قبل حسابات Basic",
+  `باقات بلا حد و${PRO_PHOTOS} صورة — ٣ أضعاف Basic`,
+  "عروض الأسعار: العروس تقترح سعراً وأنتِ تقرّرين",
+  "عقود رقمية بتوقيع إلكتروني تحفظ حقّكِ",
+  "قوالب واتساب جاهزة لكل مرحلة من الحجز",
   "تقارير الدخل والحجوزات",
+];
+
+// مزايا الدفع السنوي لـPro تحديداً
+const PRO_YEARLY_EXTRAS = [
+  "سعر ثابت لسنة كاملة بدفعة واحدة",
+  "لا تجديد كل شهر ولا انقطاع وسط موسم الأعراس",
 ];
 
 function PricingPage() {
@@ -98,7 +113,16 @@ function PricingPage() {
             <div className="text-4xl font-serif my-4">
               {yearly ? PRICES.basic.yearly : PRICES.basic.monthly} <span className="text-xl font-sans">{t("د.أ")}</span> <span className="text-sm text-muted-foreground">{per}</span>
             </div>
+            {yearly && <p className="-mt-2 mb-4 text-xs text-muted-foreground">{t("نفس سعر الشهري × ١٢ — بلا أي توفير")}</p>}
             <FeatureList items={BASIC_FEATURES} />
+            <ul className="mb-6 -mt-3 space-y-2">
+              {BASIC_MISSING.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground/80">
+                  <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <span>{tx(f)}</span>
+                </li>
+              ))}
+            </ul>
             <Link
               to={authLoading || isPhotographer ? "/dashboard/subscription" : "/photographers/join"}
               className="block text-center w-full border border-foreground/70 text-foreground py-3 rounded-sm hover:bg-secondary transition-colors"
@@ -118,19 +142,29 @@ function PricingPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 1.3, ease: EASE_OUT }}
             >
-              {t("كل الميزات")}
+              {yearly ? t("العرض الأقوى") : t("كل الميزات")}
             </motion.div>
             <div className="text-xs uppercase tracking-[0.25em] text-gold mb-2">{t("للمحترفات")}</div>
             <h3 className="font-serif text-2xl mb-1">Pro</h3>
             <div className="text-4xl font-serif my-4">
+              {yearly && <span className="me-2 text-xl text-muted-foreground line-through decoration-gold/70">{PRICES.pro.monthly * 12}</span>}
               {yearly ? PRICES.pro.yearly : PRICES.pro.monthly} <span className="text-xl font-sans">{t("د.أ")}</span> <span className="text-sm text-muted-foreground">{per}</span>
             </div>
-            <div className="-mt-2 mb-4 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs text-gold">
+            <div className="-mt-2 mb-3 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-medium text-gold">
               {yearly
-                ? t("أوفر {0} د.أ — ≈ {1} د.أ للشهر", [proSaving, (PRICES.pro.yearly / 12).toFixed(1)])
+                ? t("شهران مجاناً — وفّري {0} د.أ", [proSaving])
                 : t("بزيادة {0} د.أ فقط عن Basic", [PRICES.pro.monthly - PRICES.basic.monthly])}
             </div>
-            <FeatureList items={PRO_FEATURES} />
+            {yearly ? (
+              <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
+                {t("فقط {0} د.أ بالسنة أكثر من Basic — أقل من {1} د.أ بالشهر مقابل كل ميزات Pro.", [PRICES.pro.yearly - PRICES.basic.yearly, Math.ceil((PRICES.pro.yearly - PRICES.basic.yearly) / 12)])}
+              </p>
+            ) : (
+              <button type="button" onClick={() => setPeriod("yearly")} className="mb-5 block text-start text-sm text-gold underline underline-offset-4">
+                {t("ادفعي سنوياً ووفّري {0} د.أ (شهران مجاناً)", [proSaving])}
+              </button>
+            )}
+            <FeatureList items={yearly ? [...PRO_FEATURES, ...PRO_YEARLY_EXTRAS] : PRO_FEATURES} />
             <Link
               to={authLoading || isPhotographer ? "/dashboard/subscription" : "/photographers/join"}
               className="block text-center w-full bg-primary text-primary-foreground py-3 rounded-sm shadow-soft hover:opacity-90 transition-opacity"
