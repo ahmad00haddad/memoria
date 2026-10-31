@@ -257,7 +257,7 @@ function SubscriptionPage() {
                   >
                     {k === "pro" && (
                       <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">
-                        {saving > 0 ? `${g(t("وفّري"), t("وفّر"))} ${t("{0} د.أ", [saving])}` : t("الأكثر اختياراً")}
+                        {saving > 0 ? `${g(t("وفّري"), t("وفّر"))} ${t("{0} د.أ", [saving])}` : t("كل الميزات")}
                       </span>
                     )}
                     <div className="font-serif text-lg leading-tight">{TIER_NAME[k]}</div>

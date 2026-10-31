@@ -596,8 +596,8 @@ function Landing() {
         >
           <div className="flex items-end justify-between gap-6 mb-12 flex-wrap">
             <div>
-              <div className="eyebrow mb-3">{tr("المميّزون")}</div>
-              <h2 className="font-serif text-4xl sm:text-5xl">{tr("مصوّرون بأعلى التقييمات")}</h2>
+              <div className="eyebrow mb-3">{tr("مختارات ميموريا")}</div>
+              <h2 className="font-serif text-4xl sm:text-5xl">{tr("مصوّرات اخترناهنّ لكِ")}</h2>
             </div>
             <Link to="/search" className="group/all relative text-sm pb-1 hover:text-gold transition-colors">
               {tr("كل المصوّرات")}

@@ -118,7 +118,7 @@ function PricingPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.7, delay: 1.3, ease: EASE_OUT }}
             >
-              {t("الأكثر اختياراً")}
+              {t("كل الميزات")}
             </motion.div>
             <div className="text-xs uppercase tracking-[0.25em] text-gold mb-2">{t("للمحترفات")}</div>
             <h3 className="font-serif text-2xl mb-1">Pro</h3>

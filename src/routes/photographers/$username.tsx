@@ -580,19 +580,13 @@ function PhotographerPage() {
           <p className="text-center text-muted-foreground">{tr("لم تُحدَّد الباقات بعد.")}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 relative">
-            {pricing.filter((p) => p.package !== "addon").map((p, idx, arr) => {
-              const isPopular = arr.length >= 3 && idx === 1;
+            {pricing.filter((p) => p.package !== "addon").map((p, idx) => {
               // على الهاتف نعرض أول ٣ باقات فقط حتى تضغط «عرض كل الباقات»
               const collapsed = !showAllPkgs && idx >= 3;
               const features = parseFeatures(p.description);
               return (
                 <RiseIn key={p.id} index={idx} className={`h-full ${collapsed ? "hidden sm:block" : ""}`}>
-                <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant ${isPopular ? 'border-gold border-2 ring-1 ring-gold/20 shadow-[0_0_20px_rgba(201,162,39,0.15)]' : 'border-border'}`}>
-                  {isPopular && (
-                    <span className="absolute -top-3 end-1/2 -translate-x-1/2 bg-gradient-gold text-charcoal px-3 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider">
-                      {tr("الباقة الأكثر طلباً")}
-                    </span>
-                  )}
+                <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant border-border`}>
                   <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")}</div>
                   <h3 className="font-serif text-2xl mb-1">{tx(p.label)}</h3>
                   {p.subtitle && <p className="text-sm text-muted-foreground">{tx(p.subtitle)}</p>}
@@ -609,7 +603,7 @@ function PhotographerPage() {
                       ))}
                     </ul>
                   )}
-                  <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm transition-transform duration-150 ease-out active:scale-[0.97] ${isPopular ? 'bg-gold text-charcoal font-medium hover:bg-gold/90' : 'bg-charcoal text-ivory hover:opacity-90'}`}>{p.cta_label?.trim() || tr("احجزي هذه الباقة")}</button>
+                  <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm transition-transform duration-150 ease-out active:scale-[0.97] bg-charcoal text-ivory hover:opacity-90`}>{p.cta_label?.trim() || tr("احجزي هذه الباقة")}</button>
                   {pickedPackageId === p.id && <DrawFrame key={`pick-${p.id}`} duration={1.2} />}
                 </div>
                 </RiseIn>
@@ -617,15 +611,7 @@ function PhotographerPage() {
             })}
           </div>
         )}
-        
-        {/* High Demand Hint */}
-        {completedCount >= 3 && (
-          <div className="mt-8 flex justify-center">
-            <span className="inline-flex items-center gap-2 text-xs text-amber-700 bg-amber-50 px-4 py-2 rounded-sm border border-amber-200">
-              <span className="animate-pulse">🔥</span> <strong>{tr("طلب عالي:")}</strong>{" "}{tr("تم حجز هذه المصوّرة مرات عديدة مؤخراً. سارعي بتأكيد حجزكِ!")}
-            </span>
-          </div>
-        )}
+
         {!showAllPkgs && pricing.filter((p) => p.package !== "addon").length > 3 && (
           <button
             type="button"
