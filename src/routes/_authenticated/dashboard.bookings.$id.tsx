@@ -37,6 +37,7 @@ import {
 import { AlertTriangle } from "lucide-react";
 import { locale } from "@/i18n";
 import { t as tr, tx } from "@/i18n";
+import { usePlan } from "@/hooks/use-plan";
 
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({
   component: BookingDetail,
@@ -131,6 +132,7 @@ function BookingDetail() {
   const approveFn = useServerFn(approveBookingRequest);
   const rejectFn = useServerFn(rejectBookingRequest);
   const createContractFn = useServerFn(createContractForBooking);
+  const { isBasic } = usePlan();
   // Server functions آمنة بديلاً عن الكتابة المباشرة
   const updateStageFn = useServerFn(updateProductionStage);
   const markFinalPaidFn = useServerFn(markFinalPaymentReceived);
@@ -255,7 +257,7 @@ function BookingDetail() {
       toast.success(tr("حجز جديد مؤكَّد 🎉 أبلغنا العميلة"));
       await load();
       const { data: existing } = await supabase.from("contracts").select("id").eq("booking_id", id).maybeSingle();
-      if (!existing) {
+      if (!existing && !isBasic) {
         await generateContract();
         toast.success(tr("أنشأنا العقد تلقائياً"));
       }

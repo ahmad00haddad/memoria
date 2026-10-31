@@ -21,7 +21,7 @@ function PrivacyPage() {
       <main className="container-editorial py-12 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("سياسة الخصوصية")}</div>
         <h1 className="font-serif text-4xl mb-4">{tr("خصوصيتكِ أمانة")}</h1>
-        <p className="text-sm text-muted-foreground mb-8">{tr("آخر تحديث: {0}", [new Date().toLocaleDateString(locale("ar-JO"))])}</p>
+        <p className="text-sm text-muted-foreground mb-8">{tr("آخر تحديث: {0}", [new Date("2026-10-27").toLocaleDateString(locale("ar-JO"))])}</p>
 
         <section className="prose prose-sm dark:prose-invert max-w-none space-y-6 leading-loose">
           <Block t={tr("1. البيانات التي نجمعها")}>

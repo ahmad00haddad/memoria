@@ -70,6 +70,10 @@ export const createContractForBooking = createServerFn({ method: "POST" })
     if (!bk) throw new Error("Booking not found");
     if (bk.photographer_id !== userId) throw new Error("Forbidden");
 
+    // العقود الرقمية من ميزات Pro (التجربة = Pro)
+    const { data: tier } = await supabase.rpc("photographer_tier", { _pid: userId });
+    if (tier !== "pro") throw new Error(t("العقود الرقمية متاحة في باقة Pro — رقّي اشتراكك لإرسال عقد للعروس."));
+
     // لا تكرّري عقدًا قائمًا
     const { data: existing } = await supabase
       .from("contracts").select("id").eq("booking_id", data.booking_id).maybeSingle();

@@ -134,6 +134,8 @@ export const searchPhotographers = createServerFn({ method: "POST" })
       const dir = data.sort === "price_asc" ? 1 : -1;
       out.sort((a, b) => (a.min_price == null ? 1 : b.min_price == null ? -1 : (a.min_price - b.min_price) * dir));
     }
+    // الحسابات التجريبية دائماً في آخر النتائج حتى لا تختلط بالمصوّرات الحقيقيات
+    out = [...out.filter((r) => !r.is_demo), ...out.filter((r) => r.is_demo)];
     return out.slice(0, limit);
   });
 

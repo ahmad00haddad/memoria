@@ -57,7 +57,7 @@ export const Route = createFileRoute("/photographers/$username")({
     try {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name,bio,city,cover_url,avatar_url")
+        .select("display_name,bio,city,cover_url,avatar_url,team_gender")
         .eq("username", params.username.trim().toLowerCase())
         .eq("is_published", true)
         .maybeSingle();
@@ -70,19 +70,21 @@ export const Route = createFileRoute("/photographers/$username")({
     const p = loaderData?.seo as any;
     const name = p?.display_name || params.username;
     const city = p?.city ? tr(" في {0}", [p.city]) : "";
-    const desc = p?.bio?.slice(0, 155) || tr("استعرض أعمال وأسعار المصوّرة {0}{1} واحجز موعدك مباشرة عبر Memoria.", [name, city]);
+    const desc = p?.bio?.slice(0, 155) || tr("استعرضي أعمال وأسعار {0}{1} واحجزي موعدكِ مباشرة عبر Memoria.", [name, city]);
+    // فريق رجالي أو مختلط: لا نصفه بـ«مصوّرة»
+    const role = p?.team_gender && p.team_gender !== "female" ? tr("تصوير أعراس") : tr("مصوّرة أعراس");
     const rawImage = p?.cover_url || p?.avatar_url || undefined;
     const image = rawImage && rawImage.startsWith("/") ? `https://memoria-production.ahmad000haddad.workers.dev${rawImage}` : rawImage;
     const url = `https://memoria-production.ahmad000haddad.workers.dev/photographers/${params.username}`;
     const meta: Array<Record<string, string>> = [
-      { title: tr("{0} — مصوّرة أعراس{1} | Memoria", [name, city]) },
+      { title: tr("{0} — {1}{2} | Memoria", [name, role, city]) },
       { name: "description", content: desc },
-      { property: "og:title", content: tr("{0} — مصوّرة أعراس{1}", [name, city]) },
+      { property: "og:title", content: tr("{0} — {1}{2}", [name, role, city]) },
       { property: "og:description", content: desc },
       { property: "og:type", content: "profile" },
       { property: "og:url", content: url },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: tr("{0} — مصوّرة أعراس{1}", [name, city]) },
+      { name: "twitter:title", content: tr("{0} — {1}{2}", [name, role, city]) },
       { name: "twitter:description", content: desc },
     ];
     if (image) {
@@ -155,6 +157,7 @@ function PhotographerPage() {
   const [unavail, setUnavail] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<{ event_date: string; start_time: string; end_time: string }[]>([]);
   const [completedCount, setCompletedCount] = useState<number>(0);
+  const [acceptsBookings, setAcceptsBookings] = useState(true);
   const [responseHours, setResponseHours] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
@@ -218,7 +221,8 @@ function PhotographerPage() {
       setProfile(mergedProfile);
       if (mergedProfile) {
         const pid = mergedProfile.id;
-        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc, responseHours: rh, isPro } = await fetchProfileData({ data: { pid } });
+        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc, responseHours: rh, isPro, acceptsBookings: ab } = await fetchProfileData({ data: { pid } });
+        setAcceptsBookings(ab !== false);
         // شارة التوثيق وعروض الأسعار لباقة Pro فقط
         setProfile(isPro ? { ...mergedProfile, is_pro: true } : { ...mergedProfile, is_pro: false, verification_status: null });
         setResponseHours(rh);
@@ -298,7 +302,7 @@ function PhotographerPage() {
       <button onClick={() => setReloadKey((k) => k + 1)} className="underline text-gold">{tr("إعادة المحاولة")}</button>
     </FallbackPage>
   );
-  if (!profile) return <FallbackPage>{tr("لا يوجد مصوّر بهذا الاسم.")}{" "}<Link to="/search" className="underline">{tr("عُد للبحث")}</Link></FallbackPage>;
+  if (!profile) return <FallbackPage>{tr("لا توجد صفحة بهذا الاسم.")}{" "}<Link to="/search" className="underline">{tr("عودي للبحث")}</Link></FallbackPage>;
 
   // افتراضياً حجز واحد باليوم: أي يوم فيه حجز قائم (أو طلب ينتظر رد المصوّرة) يُحجب كاملاً.
   // إن سمحت المصوّرة بأكثر من حجز، يبقى اليوم مفتوحاً ويُمنع تداخل الأوقات فقط.
@@ -442,7 +446,7 @@ function PhotographerPage() {
             <div>
               {profile.is_demo && (
                 <div className="mb-4 inline-block rounded-full border border-gold/60 bg-charcoal/60 px-4 py-1.5 text-xs text-ivory backdrop-blur">
-                  {tr("نسخة تجريبية للمصوّرات فقط، لتري كيف سيبدو حسابك. الحجز يعمل بشكل طبيعي، أما التحويل فغير متاح.")}
+                  {tr("حساب تجريبي لعرض شكل الصفحة، وليس مصوّرة حقيقية. أي طلب هنا للتجربة فقط ولا يُحجز به موعد.")}
                 </div>
               )}
               <div className="text-[11px] uppercase tracking-[0.5em] text-gold mb-4">
@@ -626,7 +630,15 @@ function PhotographerPage() {
       {/* BOOKING + DEPOSIT */}
       <section id="book" className="bg-secondary/40 py-16">
         <div className="container-editorial grid gap-8 lg:grid-cols-[1.2fr_1fr]">
-          <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} bookedSlots={bookedSlots} multiPerDay={multiPerDay} pickedPackageId={pickedPackageId} />
+          {acceptsBookings || profile.is_demo ? (
+            <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} bookedSlots={bookedSlots} multiPerDay={multiPerDay} pickedPackageId={pickedPackageId} />
+          ) : (
+            <div className="rounded-sm border border-border bg-card p-8 text-center">
+              <h2 className="font-serif text-2xl mb-2">{tr("الحجز غير متاح حالياً")}</h2>
+              <p className="text-sm text-muted-foreground leading-loose mb-5">{tr("هذه المصوّرة لا تستقبل طلبات حجز جديدة عبر ميموريا في الوقت الحالي.")}</p>
+              <Link to="/search" className="inline-block bg-charcoal text-ivory px-5 py-2 rounded-sm text-sm">{tr("ابحثي عن مصوّرة متاحة")}</Link>
+            </div>
+          )}
           <DepositCard profile={profile} cliqAlias={deposit.cliq_alias} bankInfo={deposit.bank_info} />
         </div>
       </section>

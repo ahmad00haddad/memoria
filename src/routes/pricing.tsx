@@ -100,7 +100,7 @@ function PricingPage() {
             </div>
             <FeatureList items={BASIC_FEATURES} />
             <Link
-              to={authLoading || isPhotographer ? "/dashboard/subscription" : "/login"}
+              to={authLoading || isPhotographer ? "/dashboard/subscription" : "/photographers/join"}
               className="block text-center w-full border border-foreground/70 text-foreground py-3 rounded-sm hover:bg-secondary transition-colors"
             >
               {t("اختاري Basic")}
@@ -132,7 +132,7 @@ function PricingPage() {
             </div>
             <FeatureList items={PRO_FEATURES} />
             <Link
-              to={authLoading || isPhotographer ? "/dashboard/subscription" : "/login"}
+              to={authLoading || isPhotographer ? "/dashboard/subscription" : "/photographers/join"}
               className="block text-center w-full bg-primary text-primary-foreground py-3 rounded-sm shadow-soft hover:opacity-90 transition-opacity"
             >
               {t("اختاري Pro")}

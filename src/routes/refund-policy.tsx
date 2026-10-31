@@ -24,7 +24,7 @@ function RefundPolicyPage() {
       <main className="container-editorial py-12 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("سياسة الإلغاء والاسترداد")}</div>
         <h1 className="font-serif text-4xl mb-4">{tr("سياسة الإلغاء والاسترداد")}</h1>
-        <p className="text-sm text-muted-foreground mb-8">{tr("آخر تحديث: {0}", [new Date().toLocaleDateString(locale("ar-JO"))])}</p>
+        <p className="text-sm text-muted-foreground mb-8">{tr("آخر تحديث: {0}", [new Date("2026-10-31").toLocaleDateString(locale("ar-JO"))])}</p>
 
         <section className="space-y-6 leading-loose">
           <Block t={tr("1. مبدأ عام")}>

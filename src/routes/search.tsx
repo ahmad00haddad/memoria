@@ -821,7 +821,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
 
           {p.is_demo && (
             <div className={`absolute ${p.is_featured ? "top-11" : "top-3"} start-3 z-10 text-[11px] bg-black/60 text-white px-2.5 py-1 rounded-full backdrop-blur-sm`}>
-              {tr("نسخة تجريبية للمصوّرات")}
+              {tr("حساب تجريبي — ليس مصوّرة حقيقية")}
             </div>
           )}
 

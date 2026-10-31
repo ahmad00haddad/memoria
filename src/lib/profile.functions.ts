@@ -7,14 +7,17 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
     const { pid } = data;
 
     // Use the RPC to fetch all data bypassing RLS (since we don't have Service Role Key)
-    const [{ data: result, error }, { data: tier }] = await Promise.all([
+    const [{ data: result, error }, { data: tier }, { data: subActive, error: subErr }] = await Promise.all([
       (supabase as any).rpc("get_public_profile_data", { p_id: pid }),
       supabase.rpc("photographer_tier", { _pid: pid }),
+      (supabase as any).rpc("is_subscription_active", { _photographer_id: pid }),
     ]);
+    // اشتراك منتهٍ: الصفحة تبقى، لكن الحجز متوقف (الخادم يرفضه أصلاً). عند خطأ لا نحجب.
+    const acceptsBookings = subErr ? true : subActive !== false;
     
     if (error || !result) {
       console.error("RPC Error:", error);
-      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0, responseHours: null as number | null, isPro: tier === "pro" };
+      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0, responseHours: null as number | null, isPro: tier === "pro", acceptsBookings };
     }
 
     // The RPC returns a JSON object with the keys we need
@@ -28,6 +31,7 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
       responseHours: (r.responseHours ?? null) as number | null,
       // شارة التوثيق تظهر لباقة Pro فقط
       isPro: tier === "pro",
+      acceptsBookings,
     };
   });
 
