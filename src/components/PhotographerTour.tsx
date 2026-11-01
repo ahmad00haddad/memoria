@@ -222,10 +222,9 @@ export function PhotographerTour() {
       // عنصر داخل <details> مطوي (مثل مزامنة التقويم): نفتحه أولاً
       const det = el.closest("details");
       if (det && !det.open) det.open = true;
-      el.classList.add("tour-spot");
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 300);
-    return () => { window.clearInterval(timer); el?.classList.remove("tour-spot"); };
+    return () => window.clearInterval(timer);
   }, [st.status, st.min, st.step, here, s?.target, s?.section]);
 
   if (!inDashboard || st.status !== "active" || !s) return null;
@@ -238,7 +237,8 @@ export function PhotographerTour() {
 
   return (
     <>
-      <style>{`.tour-spot{outline:3px solid var(--gold);outline-offset:4px;border-radius:10px;animation:tourPulse 1.4s ease-in-out infinite;position:relative;z-index:30}@keyframes tourPulse{0%,100%{outline-color:color-mix(in oklab,var(--gold) 100%,transparent)}50%{outline-color:color-mix(in oklab,var(--gold) 35%,transparent)}}`}</style>
+      {/* الإبراز بقاعدة CSS على data-tour لا بصنف على العنصر: الصفحة قد تعيد رسم العنصر بعد التحميل */}
+      <style>{`${here && !st.min && s.target ? `[data-tour="${s.target}"]` : ".tour-spot"}{outline:3px solid var(--gold);outline-offset:4px;border-radius:10px;animation:tourPulse 1.4s ease-in-out infinite;position:relative;z-index:30}@keyframes tourPulse{0%,100%{outline-color:color-mix(in oklab,var(--gold) 100%,transparent)}50%{outline-color:color-mix(in oklab,var(--gold) 35%,transparent)}}`}</style>
       <AnimatePresence mode="wait">
         {st.min ? (
           <motion.button
