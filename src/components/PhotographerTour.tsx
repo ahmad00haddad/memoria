@@ -137,7 +137,7 @@ function steps(): Step[] {
         G("افتحي الطلب من الإشعار.", "افتح الطلب من الإشعار."),
         G("وافقي أو اعتذري خلال 24 ساعة.", "وافق أو اعتذر خلال 24 ساعة."),
         G("العروس تحوّل العربون على CliQ خلال 48 ساعة.", "العروس تحوّل العربون على CliQ خلال 48 ساعة."),
-        G("افتحي تطبيق البنك وتأكّدي أن المبلغ وصل، ثم اضغطي «تثبيت الحجز».", "افتح تطبيق البنك وتأكّد أن المبلغ وصل، ثم اضغط «تثبيت الحجز»."),
+        G("افتحي تطبيق البنك وتأكّدي أن المبلغ وصل، ثم اضغطي «تأكيد العربون».", "افتح تطبيق البنك وتأكّد أن المبلغ وصل، ثم اضغط «تأكيد العربون»."),
         G("بعد العرس: استلمي باقي المبلغ وسلّمي الصور.", "بعد العرس: استلم باقي المبلغ وسلّم الصور."),
       ],
     },
@@ -234,7 +234,12 @@ export function PhotographerTour() {
 
   const done = !!(s.done && prog && s.done(prog));
   const last = st.step === list.length - 1;
-  const go = (step: number) => write({ ...st, step, min: false });
+  // كل انتقال (التالي/السابق) يفتح صفحة تلك الخطوة مباشرة
+  const go = (step: number) => {
+    write({ ...st, step, min: false });
+    const page = list[step]?.page;
+    if (page && page !== pathname) nav({ to: page as any });
+  };
   const next = () => (last ? write({ ...st, status: "done" }) : go(st.step + 1));
   const close = () => write({ ...st, status: "hidden" });
 

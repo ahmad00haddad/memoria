@@ -46,13 +46,13 @@ export function LivePhonePreview({ p }: { p: any }) {
           <div className="absolute inset-0 bg-gradient-to-tr from-charcoal/40 via-transparent to-transparent" />
           <div className="absolute bottom-3 end-3 max-w-[170px] rounded-sm border border-border bg-ivory/95 p-2.5 text-charcoal shadow">
             <div className="text-[8px] uppercase tracking-[0.25em] text-muted-foreground mb-1">{tr("مختارة من المعرض")}</div>
-            <div className="font-serif text-[11px] leading-snug">{tr("«كل صورة قصة، وكل قصة تستحق الفخامة»")}</div>
+            <div className="font-serif text-[11px] leading-snug">{(p as any).page_settings?.hero_quote || tr("من أعمال {0}", [p.display_name || ""])}</div>
             {p.city && <div className="mt-1.5 inline-flex items-center gap-1 text-[9px] text-muted-foreground"><MapPin className="h-2.5 w-2.5" /> {tx(p.city)}</div>}
           </div>
         </div>
 
         <div className="px-5 pt-5">
-          <div className="text-[9px] uppercase tracking-[0.4em] text-gold mb-3">{p.tagline || "WEDDING PHOTOGRAPHY"}</div>
+          <div className="text-[9px] uppercase tracking-[0.4em] text-gold mb-3">{p.tagline || tr("تصوير أعراس")}</div>
           {p.avatar_url && (
             <img src={p.avatar_url} className="mb-3 h-16 w-16 rounded-full object-cover ring-2 ring-gold/60" alt="" />
           )}
@@ -84,10 +84,9 @@ export function LivePhonePreview({ p }: { p: any }) {
 
           <div className="w-full rounded-sm border border-ivory/40 py-2 text-center text-xs mb-5">{tr("الباقات")}</div>
 
-          <div className="grid grid-cols-3 gap-2 border-t border-ivory/10 pt-3 mb-6 text-center">
+          <div className="grid grid-cols-2 gap-2 border-t border-ivory/10 pt-3 mb-6 text-center">
             <div><div className="text-[9px] text-muted-foreground">{tr("التقييم")}</div><div className="font-serif text-sm">{ratings.length ? avg.toFixed(1) : "—"}</div></div>
             <div><div className="text-[9px] text-muted-foreground">{tr("الموقع")}</div><div className="font-serif text-sm truncate">{p.city || "—"}</div></div>
-            <div><div className="text-[9px] text-muted-foreground">{tr("الباقات")}</div><div className="font-serif text-sm">{mains.length}</div></div>
           </div>
 
           <div className="text-center text-[9px] uppercase tracking-[0.3em] text-gold">{tr("الباقات")}</div>

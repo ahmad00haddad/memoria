@@ -686,7 +686,7 @@ function BookingDetail() {
                     <div className="pt-1"><PrivacyBadge level={b.privacy_level} /></div>
                   </div>
 
-                  <ContractCard contract={contract} templates={templates} busy={actionLoading === "contract"} onGenerate={generateContract} />
+                  <ContractCard contract={contract} templates={templates} busy={actionLoading === "contract"} onGenerate={generateContract} isBasic={isBasic} />
                 </div>
 
                 <div className="space-y-6 lg:col-span-2">
@@ -881,7 +881,7 @@ function BookingDetail() {
   );
 }
 
-function ContractCard({ contract, templates, busy, onGenerate }: { contract: any; templates: any[]; busy: boolean; onGenerate: (id?: string) => void }) {
+function ContractCard({ contract, templates, busy, onGenerate, isBasic }: { contract: any; templates: any[]; busy: boolean; onGenerate: (id?: string) => void; isBasic?: boolean }) {
   const url = contract && typeof window !== "undefined" ? `${window.location.origin}/contracts/${contract.sign_token}` : "";
   return (
     <div className="rounded-2xl border border-border bg-card p-6 text-sm">
@@ -903,7 +903,7 @@ function ContractCard({ contract, templates, busy, onGenerate }: { contract: any
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-muted-foreground">{g(tr("لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئيه الآن."), tr("لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئه الآن."))}</p>
+          <p className="text-muted-foreground">{isBasic ? tr("العقود الرقمية ضمن باقة Pro.") : g(tr("لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئيه الآن."), tr("لا يوجد عقد بعد. يُنشأ تلقائياً عند تأكيد العربون، أو أنشئه الآن."))}</p>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => onGenerate()} disabled={busy} className="rounded-full bg-charcoal px-4 py-2 text-ivory transition-transform active:scale-95 disabled:opacity-60 dark:bg-gold dark:text-charcoal">{tr("عقد قياسي")}</button>
             {templates.map((t) => (
