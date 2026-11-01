@@ -136,7 +136,7 @@ function Onboarding() {
       if (!f.pkg_price || Number(f.pkg_price) <= 0) return g(tr("أدخلي سعراً صحيحاً للباقة."), tr("أدخل سعراً صحيحاً للباقة."));
     }
     if (step === 3) {
-      if (!f.cliq_alias.trim() && !f.whatsapp.trim()) return g(tr("أضيفي CliQ أو رقم واتساب على الأقل."), tr("أضف CliQ أو رقم واتساب على الأقل."));
+      if (!f.cliq_alias.trim()) return g(tr("أضيفي CliQ alias — العروس تحوّل لكِ العربون عليه بعد موافقتكِ."), tr("أضف CliQ alias — العروس تحوّل لك العربون عليه بعد موافقتك."));
       if (f.whatsapp.trim() && !/^\+?\d{9,15}$/.test(f.whatsapp.trim().replace(/[\s-]/g, ""))) {
         return g(tr("رقم واتساب غير صحيح — أدخلي رقماً دولياً مثل +9627XXXXXXXX."), tr("رقم واتساب غير صحيح — أدخل رقماً دولياً مثل +9627XXXXXXXX."));
       }
@@ -406,7 +406,7 @@ function Onboarding() {
 
           {step === 3 && (
             <div className="space-y-4">
-              <Field label={tr("CliQ alias (لاستقبال العربون)")}>
+              <Field label={tr("CliQ alias (لاستقبال العربون) *")}>
                 <input value={f.cliq_alias} onChange={(e) => upd("cliq_alias", e.target.value)} className={inputCx} placeholder="SARA.PHOTO" dir="ltr" />
               </Field>
               <Field label={tr("رقم واتساب (للتواصل مع العميل)")}>

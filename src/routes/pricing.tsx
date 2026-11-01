@@ -15,7 +15,7 @@ export const Route = createFileRoute("/pricing")({
       { title: t("الباقات والأسعار — Memoria · ميموريا") },
       { name: "description", content: t("باقات اشتراك مرنة للمصوّرات على منصّة ميموريا — بدون عمولة على الحجوزات، وأدوات كاملة لإدارة الأعمال.") },
       { property: "og:title", content: t("الباقات والأسعار — Memoria") },
-      { property: "og:description", content: t("اشتراك شهري ثابت بدون نسبة من حجوزاتك.") },
+      { property: "og:description", content: t("اشتراك ثابت شهري أو سنوي، بدون نسبة من حجوزاتك.") },
       { property: "og:url", content: "https://memoria-production.ahmad000haddad.workers.dev/pricing" },
     ],
     links: [{ rel: "canonical", href: "https://memoria-production.ahmad000haddad.workers.dev/pricing" }],

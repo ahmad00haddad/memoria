@@ -144,7 +144,7 @@ function AppDownloadPage() {
             {tx(platformHeadline[platform])}
           </h1>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto">
-            {t("بدون متجر · يعمل بدون إنترنت · سريع كتطبيق أصلي")}
+            {t("بدون متجر · يفتح بسرعة · أيقونة على شاشتك الرئيسية")}
           </p>
         </motion.div>
 
@@ -156,7 +156,7 @@ function AppDownloadPage() {
           className="grid grid-cols-3 gap-3 text-center text-xs"
         >
           {[
-            { icon: Wifi, label: t("يعمل أوفلاين") },
+            { icon: Wifi, label: t("بدون متجر") },
             { icon: Zap, label: t("سريع جداً") },
             { icon: Bell, label: t("إشعارات فورية") },
           ].map(({ icon: Icon, label }) => (

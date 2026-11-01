@@ -72,15 +72,15 @@ export function SubscriptionGuard() {
         <div className="min-w-0 flex-1 text-sm leading-relaxed">
           <div className={`font-semibold ${expired ? "text-destructive" : "text-amber-800 dark:text-amber-300"}`}>
             {expired
-              ? t("اشتراكك منتهي — ملفك مخفي الآن عن العرائس")
+              ? t("اشتراكك منتهي — ملفك مخفي من البحث")
               : `${s.trial ? t("تجربتك المجانية تنتهي") : t("اشتراكك ينتهي")} ${when}`}
           </div>
           {/* على الهاتف يكفي العنوان والزر؛ التفاصيل للشاشات الأكبر */}
           <div className={`text-foreground/80 ${expired ? "" : "hidden sm:block"}`}>
             {expired ? (
-              <>{t("رابط ملفك")}{s.username ? <> <span dir="ltr" className="font-mono">@{tx(s.username)}</span></> : null}{" "}{t("متوقّف، ولن تصلك طلبات حجز جديدة حتى التجديد.")}</>
+              <>{t("رابط ملفك")}{s.username ? <> <span dir="ltr" className="font-mono">@{tx(s.username)}</span></> : null}{" "}{t("يفتح للعرائس لكن الحجز فيه متوقف، ولن تصلك طلبات جديدة حتى التجديد.")}</>
             ) : (
-              <>{t("بعدها يختفي ملفك من البحث ويتوقف رابط البايو وطلبات الحجز الجديدة.")}</>
+              <>{t("بعدها يختفي ملفك من البحث، ورابط البايو يفتح بلا إمكانية حجز، وتتوقف الطلبات الجديدة.")}</>
             )}
             {s.upcoming > 0 && (
               <>{" "}{t("لديك")}{" "}<strong>{arCount(s.upcoming, t("حجز قادم"), t("حجزان قادمان"), t("حجوزات قادمة"), t("حجزاً قادماً"))}</strong>{" "}{t("— تبقى متابعتها تعمل كالمعتاد.")}</>

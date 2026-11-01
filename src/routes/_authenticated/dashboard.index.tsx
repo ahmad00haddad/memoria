@@ -110,7 +110,7 @@ function SubscriptionBanner({ sub }: { sub: any }) {
   const config: Record<string, { icon: any; bg: string; text: string; cta: string }> = {
     trial: { icon: <Sparkles className="h-5 w-5 text-gold" />, bg: "bg-gold/10 border-gold/40 dark:bg-gold/5", text: tr("تجربة مجانية — متبقّي {0} يوماً", [daysLeft]), cta: g(tr("اشتركي الآن"), tr("اشترك الآن")) },
     active: { icon: <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />, bg: "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-900/50 dark:text-emerald-400", text: tr("اشتراك نشط - ينتهي بعد {0} يومًا", [daysLeft]), cta: tr("إدارة الاشتراك") },
-    pending_review: { icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-400", text: tr("بانتظار مراجعة الإدارة - الموافقة تستغرق عادةً 24 ساعة"), cta: tr("حالة الاشتراك") },
+    pending_review: { icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />, bg: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-400", text: tr("بانتظار مطابقة الدفعة — نفعّل اشتراكك عادةً خلال ساعات"), cta: tr("حالة الاشتراك") },
     expired: { icon: <AlertTriangle className="h-5 w-5 text-destructive dark:text-red-400" />, bg: "bg-destructive/10 border-destructive/40 dark:bg-red-950/40 dark:border-red-900", text: g(tr("انتهى اشتراكك — جدّدي للاستمرار"), tr("انتهى اشتراكك — جدّد للاستمرار")), cta: g(tr("جدّدي الاشتراك"), tr("جدّد الاشتراك")) },
     canceled: { icon: <AlertTriangle className="h-5 w-5 text-muted-foreground" />, bg: "bg-secondary border-border", text: tr("اشتراكك ملغى"), cta: tr("إعادة التفعيل") },
   };

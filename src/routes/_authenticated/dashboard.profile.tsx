@@ -264,7 +264,7 @@ function ProfilePage() {
               <CompletionRing value={pct} />
               <div>
                 <div className="font-medium">{pct === 100 ? tr("ملفك مكتمل") : tr("ملفك مكتمل {0}٪", [pct])}</div>
-                <div className="text-xs text-muted-foreground">{pct === 100 ? tr("جاهز ليظهر بأفضل صورة في البحث.") : tr("الملفات المكتملة تظهر أعلى نتائج البحث.")}</div>
+                <div className="text-xs text-muted-foreground">{pct === 100 ? tr("جاهز ليظهر بأفضل صورة في البحث.") : tr("الملف المكتمل يقنع العروس أسرع.")}</div>
               </div>
             </div>
             <button
@@ -302,7 +302,7 @@ function ProfilePage() {
             <div className="mt-6">
               <div className="mb-1 flex items-baseline justify-between">
                 <span className="text-sm">{tr("معرض الأعمال")}</span>
-                <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{tx(portfolioCount)}/{tx(MAX_PORTFOLIO_PHOTOS)} {portfolioCount < 5 ? g(tr("· أضيفي {0} لتظهري في البحث", [5 - portfolioCount]), tr("· أضف {0} لتظهر في البحث", [5 - portfolioCount])) : tr("صورة")}</span>
+                <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{tx(portfolioCount)}/{tx(MAX_PORTFOLIO_PHOTOS)} {portfolioCount < 5 ? g(tr("· ننصح بإضافة {0} على الأقل", [5 - portfolioCount]), tr("· ننصح بإضافة {0} على الأقل", [5 - portfolioCount])) : tr("صورة")}</span>
               </div>
               <p className="mb-3 text-xs text-muted-foreground">{tr("الصورة الأولى هي ما تراه العروس في نتائج البحث.")}</p>
               {isBasic && <BasicLimitNote used={portfolioCount} max={BASIC_LIMITS.photos} what={tr("صور المعرض")} />}

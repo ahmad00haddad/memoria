@@ -20,23 +20,23 @@ export function Footer() {
           <p className="text-xs text-muted-foreground mt-3">{t("للدعم:")}{" "}<a href="mailto:ahmad000haddad@gmail.com" className="inline-block py-1.5 hover:text-gold">ahmad000haddad@gmail.com</a></p>
         </div>
         <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">{t("للعملاء")}</div>
+          <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">{t("للعرائس")}</div>
           <ul className="space-y-2">
-            <li><Link to="/search" className="inline-block py-1.5 hover:text-gold">{t("ابحث عن مصوّر")}</Link></li>
+            <li><Link to="/search" className="inline-block py-1.5 hover:text-gold">{t("ابحثي عن مصوّرة")}</Link></li>
             <li><Link to="/for-clients" className="inline-block py-1.5 hover:text-gold">{t("لماذا ميموريا")}</Link></li>
             <li><Link to="/faq" className="inline-block py-1.5 hover:text-gold">{t("الأسئلة الشائعة")}</Link></li>
             <li><Link to="/app" className="inline-block py-1.5 hover:text-gold">{t("حمّل التطبيق")}</Link></li>
             <li><Link to="/guide" className="inline-block py-1.5 hover:text-gold">{t("كيف يعمل النظام")}</Link></li>
             <li><a href="/game/" className="inline-block py-1.5 hover:text-gold">{t("العبي: اهربي يا عروس")}</a></li>
-            <li><button onClick={() => startTour()} className="inline-block py-1.5 hover:text-gold text-start">{t("أعد الجولة التعريفية")}</button></li>
+            <li><button onClick={() => startTour()} className="inline-block py-1.5 hover:text-gold text-start">{t("أعيدي الجولة التعريفية")}</button></li>
           </ul>
         </div>
         <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">{t("للمصوّرين")}</div>
+          <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">{t("للمصوّرات")}</div>
           <ul className="space-y-2">
-            {!authLoading && !authed && !isPhotographer && <li><Link to="/photographers/join" className="inline-block py-1.5 hover:text-gold">{t("انضم إلى المنصة")}</Link></li>}
+            {!authLoading && !authed && !isPhotographer && <li><Link to="/photographers/join" className="inline-block py-1.5 hover:text-gold">{t("انضمّي إلى المنصّة")}</Link></li>}
             <li><Link to="/for-photographers" className="inline-block py-1.5 hover:text-gold">{t("مزايا للمصوّرات")}</Link></li>
-            <li><Link to="/pricing" className="inline-block py-1.5 hover:text-gold">{t("باقات المصوّرين")}</Link></li>
+            <li><Link to="/pricing" className="inline-block py-1.5 hover:text-gold">{t("باقات المصوّرات")}</Link></li>
             <li><Link to={authed ? "/dashboard" : "/login"} className="inline-block py-1.5 hover:text-gold">{authed ? t("لوحة التحكم") : t("تسجيل الدخول")}</Link></li>
           </ul>
         </div>

@@ -200,7 +200,7 @@ function SearchPage() {
           </div>
 
           <div className="hidden sm:block text-center mb-6 md:mb-8">
-            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("دليل المصوّرين")}</div>
+            <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("دليل المصوّرات")}</div>
             <h1 className="font-serif text-3xl md:text-4xl">{tr("اعثري على مصوّرة عرسك")}</h1>
             <p className="text-sm text-muted-foreground mt-2">
             {results.length > 0
@@ -422,7 +422,7 @@ function SearchPage() {
               onChange={(e) => setSort(e.target.value as SearchSort)}
               className="rounded-sm border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gold/60"
             >
-              <option value="featured">{tr("المميّزات أولاً")}</option>
+              <option value="featured">{tr("المقترحة أولاً")}</option>
               <option value="rating">{tr("الأعلى تقييماً")}</option>
               <option value="price_asc">{tr("السعر: الأقل أولاً")}</option>
               <option value="price_desc">{tr("السعر: الأعلى أولاً")}</option>
