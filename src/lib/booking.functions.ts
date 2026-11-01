@@ -100,9 +100,9 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     const total = items.reduce((s, x) => s + x.price * x.qty, 0);
 
     // Photographer's deposit configuration
-    const { data: profile, error: profErr } = await supabaseAdmin
+    const { data: profile, error: profErr } = await (supabaseAdmin as any)
       .from("profiles")
-      .select("id, display_name, username, fixed_deposit, deposit_percent, min_session_minutes")
+      .select("id, display_name, username, fixed_deposit, deposit_percent, min_session_minutes, gender")
       .eq("id", data.photographer_id)
       .single();
     if (profErr || !profile) throw new Error(tr("المصوّرة غير موجودة"));
@@ -170,7 +170,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
         hours: m.hours != null ? Number(m.hours) : null, deliverable_count: m.deliverable_count ?? null, delivery_days: days,
         shooter: m.shooter ?? null, overtime_fee: m.overtime_fee != null ? Number(m.overtime_fee) : null,
         excludes: m.excludes ?? null, unedited_included: !!m.unedited_included, revision_rounds: m.revision_rounds ?? null,
-        addons: items.filter((x) => x.kind === "addon"), taken_at: new Date().toISOString(),
+        addons: items.filter((x) => x.kind === "addon"), gender: (profile as any).gender ?? "female", taken_at: new Date().toISOString(),
       };
       const promised: Record<string, unknown> = { package_snapshot: snapshot };
       if (m.service === "photography" && m.deliverable_count != null) promised.photos_promised = m.deliverable_count;

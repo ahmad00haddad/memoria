@@ -433,7 +433,7 @@ function Onboarding() {
                 <select value={f.pkg_shooter} onChange={(e) => upd("pkg_shooter", e.target.value as any)} className={inputCx}>
                   <option value="me">{tr("أنا بنفسي")}</option>
                   <option value="me_team">{tr("أنا مع فريقي")}</option>
-                  <option value="team">{tr("مصوّرة من فريقي")}</option>
+                  <option value="team">{tr("فريقي بدوني (أنا لن أحضر)")}</option>
                 </select>
               </Field>
               <p className="text-xs text-muted-foreground">{g(tr("يظهر للعروس على الباقة. باقي التفاصيل (الساعات، عدد الصور…) اختيارية من صفحة الأسعار."), tr("يظهر للعروس على الباقة. باقي التفاصيل (الساعات، عدد الصور…) اختيارية من صفحة الأسعار."))}</p>

@@ -24,7 +24,7 @@ import { hapticVibrate } from "@/lib/utils";
 import { playSound } from "@/lib/sounds";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { useIntro } from "@/lib/intro";
-import { PackageFacts, missingDisclosures, type PackageDisclosure } from "@/components/PackageFacts";
+import { PackageFacts, hasFacts, type PackageDisclosure } from "@/components/PackageFacts";
 import { CountTo, DrawFrame, DrawIcon, EASE_DRAW, EASE_OUT, RevealWords, RiseIn } from "@/components/site/Reveal";
 import { MapPin } from "lucide-react";
 import { Zap, CircleCheck } from "lucide-react";
@@ -136,6 +136,7 @@ type Profile = {
   tagline?: string | null; booking_notes?: string | null;
   page_settings?: unknown;
   team_gender?: "female" | "male" | "mixed" | null;
+  gender?: "female" | "male" | null;
   bank_info?: string | null; fixed_deposit?: number | null;
   is_published?: boolean;
   created_at?: string | null;
@@ -213,7 +214,7 @@ function PhotographerPage() {
       const normalizedUsername = username.trim().toLowerCase();
       const { data: prof, error: profErr } = await supabase
         .from("profiles")
-        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit,verification_status,verified_at,page_settings,team_gender")
+        .select("id,username,display_name,bio,city,base_location,instagram,avatar_url,cover_url,equipment,deposit_percent,travel_fee_per_km,is_published,created_at,updated_at,portfolio_urls,free_km,is_featured,is_demo,tagline,booking_notes,fixed_deposit,verification_status,verified_at,page_settings,team_gender,gender")
         .eq("username", normalizedUsername)
         .eq("is_published", true)
         .maybeSingle();
@@ -604,7 +605,7 @@ function PhotographerPage() {
                   <h3 className="font-serif text-2xl mb-1">{tx(p.label)}</h3>
                   {p.subtitle && <p className="text-sm text-muted-foreground">{tx(p.subtitle)}</p>}
                   <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString(locale("ar-JO"))} <span className="text-sm">{tr("د.أ")}</span></div>
-                  <PackageFacts d={p} compact className="mb-4 border-y border-border/60 py-3" />
+                  <PackageFacts d={p} compact gender={profile.gender} className="mb-4 border-y border-border/60 py-3" />
                   {features.length > 0 && (
                     <ul className="mb-6 space-y-2.5 border-t border-border pt-4 text-sm text-muted-foreground">
                       {features.map((ft, i) => (
@@ -1426,10 +1427,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
             <div className="flex justify-between text-gold"><span>{tr("العربون المطلوب")} <Term k="deposit" /></span><span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span></div>
           </motion.div>
         )}
-        {selected && missingDisclosures(selected).length < 5 && (
+        {selected && hasFacts(selected) && (
           <div className="sm:col-span-2 rounded-sm border border-border p-3">
             <div className="mb-2 text-sm font-medium">{tr("ما يشمله طلبكِ — {0}", [selected.label])}</div>
-            <PackageFacts d={selected} compact />
+            <PackageFacts d={selected} compact gender={profile.gender} />
             <p className="mt-2 text-[11px] text-muted-foreground">{tr("نحفظ هذه التفاصيل مع حجزكِ كما هي الآن، حتى لو عدّلت المصوّرة باقتها لاحقاً.")}</p>
           </div>
         )}

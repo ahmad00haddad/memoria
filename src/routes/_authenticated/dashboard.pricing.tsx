@@ -427,12 +427,12 @@ function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) =>
     <div className="mb-5 space-y-3">
       <label className={`block rounded-2xl border p-4 ${r.shooter ? "border-border" : "border-amber-400/70 bg-amber-50/40 dark:border-amber-800/60 dark:bg-amber-950/10"}`}>
         <span className="mb-1 block text-sm font-medium">{t("من يصوّر فعلياً؟ *")}</span>
-        <span className="mb-2 block text-xs text-muted-foreground">{g(t("أهم ما تسأل عنه العروس — يظهر لها على الباقة."), t("أهم ما تسأل عنه العروس — يظهر لها على الباقة."))}</span>
+        <span className="mb-2 block text-xs text-muted-foreground">{g(t("أهم ما تسأل عنه العروس. «أنا بنفسي» لا يظهر لها (هو المتوقّع)؛ الخياران الآخران يظهران على الباقة."), t("أهم ما تسأل عنه العروس. «أنا بنفسي» لا يظهر لها (هو المتوقّع)؛ الخياران الآخران يظهران على الباقة."))}</span>
         <select value={r.shooter ?? ""} onChange={(e) => set("shooter", e.target.value || null)} className={box}>
           <option value="">{g(t("اختاري"), t("اختر"))}</option>
           <option value="me">{t("أنا بنفسي")}</option>
           <option value="me_team">{t("أنا مع فريقي")}</option>
-          <option value="team">{t("مصوّرة من فريقي")}</option>
+          <option value="team">{t("فريقي بدوني (أنا لن أحضر)")}</option>
         </select>
       </label>
 

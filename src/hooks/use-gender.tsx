@@ -52,6 +52,9 @@ export function GenderProvider({ children }: { children: ReactNode }) {
     setG(next);
     try { localStorage.setItem(LS_KEY, next); } catch { /* ignore */ }
     await supabase.auth.updateUser({ data: { gender: next } });
+    // نسخة عامة في الملف حتى تُكتب صفحتها للعروس بالصيغة الصحيحة (مصوّر / مصوّرة)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) await (supabase as any).from("profiles").update({ gender: next }).eq("id", session.user.id);
   }, []);
 
   const gfn = useCallback((f: string, m: string) => (gender === "male" ? m : f), [gender]);
