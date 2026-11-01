@@ -412,7 +412,7 @@ function Onboarding() {
               <Field label={tr("رقم واتساب (للتواصل مع العميل)")}>
                 <input value={f.whatsapp} onChange={(e) => upd("whatsapp", e.target.value)} className={inputCx} placeholder="+9627XXXXXXXX" dir="ltr" />
               </Field>
-              <p className="text-xs text-muted-foreground">{tr("لن تظهر هذه البيانات إلا للعملاء الذين أكّدوا حجزهم فعلياً.")}</p>
+              <p className="text-xs text-muted-foreground">{g(tr("لا تظهر هذه البيانات للعموم، بل للعروس فقط بعد موافقتكِ على طلبها."), tr("لا تظهر هذه البيانات للعموم، بل للعروس فقط بعد موافقتك على طلبها."))}</p>
               <Field label={tr("إذا ألغت العروس بعد دفع العربون")}>
                 <div role="radiogroup" className="grid gap-2 sm:grid-cols-3">
                   {([["none", tr("لا يُرجَع")], ["partial", tr("يُرجَع جزء منه")], ["full", tr("يُرجَع كاملاً")]] as const).map(([v, label]) => (

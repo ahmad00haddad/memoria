@@ -3652,5 +3652,14 @@
  "عروض الأسعار والعقود الرقمية": "Price offers and digital contracts",
  "شهران مجاناً — {0} {1} د.أ": "2 months free — {0} {1} JOD",
  "Pro السنوي: شهران مجاناً، وبـ20 د.أ فقط أكثر من Basic بالسنة.": "Pro yearly: 2 months free, and only 20 JOD a year more than Basic.",
- "بدون شارة التوثيق": "No verified badge"
+ "بدون شارة التوثيق": "No verified badge",
+ "إذا ألغت العروس بعد دفع العربون:": "If the bride cancels after paying the deposit:",
+ "يُرجَع {0}% منه": "{0}% is refunded",
+ "تظهر هذه السياسة للعروس قبل التحويل وتوافق عليها. وإذا ألغيتِ أنتِ الحجز، تُرجعين العربون كاملاً.": "The bride sees and accepts this policy before transferring. If you cancel the booking, you return the full deposit.",
+ "تظهر هذه السياسة للعروس قبل التحويل وتوافق عليها. وإذا ألغيت أنت الحجز، تُرجع العربون كاملاً.": "The bride sees and accepts this policy before transferring. If you cancel the booking, you return the full deposit.",
+ "تغيير السياسة من الإعدادات": "Change the policy in settings",
+ "سجّلت المصوّرة إرجاع {0} د.أ لكِ.": "The photographer recorded returning {0} JOD to you.",
+ "على المصوّرة إرجاع {0} د.أ لكِ مباشرة، فالعربون وصل لحسابها ولا يمرّ عبر المنصّة. إذا تأخّر الإرجاع، راسليها من هذه الصفحة أو تواصلي معنا.": "The photographer must return {0} JOD to you directly — the deposit went to her account and never passes through the platform. If it's late, message her from this page or contact us.",
+ "لا تظهر هذه البيانات للعموم، بل للعروس فقط بعد موافقتكِ على طلبها.": "These details are never public — only the bride sees them, after you approve her request.",
+ "لا تظهر هذه البيانات للعموم، بل للعروس فقط بعد موافقتك على طلبها.": "These details are never public — only the bride sees them, after you approve her request."
 }

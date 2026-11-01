@@ -15,7 +15,6 @@ import { toast } from "sonner";
 import { Upload, X, Eye, Check, ChevronDown, Link2 } from "lucide-react";
 import { splitPortfolioItem, joinPortfolioItem, safeLink, linkLabel } from "@/lib/portfolio-link";
 import { useServerFn } from "@tanstack/react-start";
-import { updateRefundPolicy } from "@/lib/cancellation.functions";
 import { uploadProfilePhoto, uploadPortfolioPhoto, deletePortfolioPhoto } from "@/lib/upload";
 import { usePlan } from "@/hooks/use-plan";
 import { BASIC_LIMITS, PRO_PHOTOS } from "@/lib/plans";
@@ -34,7 +33,6 @@ export const Route = createFileRoute("/_authenticated/dashboard/profile")({ comp
 function ProfilePage() {
   useGender(); // يعيد الرسم فور تغيير صيغة المخاطبة
   const nav = useNavigate();
-  const updRefundFn = useServerFn(updateRefundPolicy);
   const verifyFn = useServerFn(requestVerification);
   const myVerificationFn = useServerFn(getMyVerification);
   const [vInfo, setVInfo] = useState<{ status: string; verified_at: string | null; checks: { key: string; label: string; ok: boolean }[] } | null>(null);
@@ -211,16 +209,6 @@ function ProfilePage() {
       cliq_alias: p.cliq_alias ?? null,
       bank_info: p.bank_info ?? null,
     }, { onConflict: "user_id" });
-    // سياسة استرداد العربون عبر server fn مُصادَق (تتحقّق من ownership)
-    try {
-      await updRefundFn({ data: {
-        policy: "none",
-        percent: null,
-      }});
-    } catch (e: any) {
-      setSaving(false);
-      return toast.error(e?.message || tr("تعذّر حفظ سياسة الاسترداد"));
-    }
     setSaving(false);
     if (error || pErr) return toast.error((error ?? pErr)!.message);
     setOriginalP(p);
@@ -422,8 +410,15 @@ function ProfilePage() {
 
           <Card id="sec-refund" title={tr("سياسة العربون")} open={openSections["sec-refund"] ?? false} onToggle={toggle}>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {g(tr("العربون غير قابل للاسترداد على كل حجوزات ميموريا. يصلكِ مباشرة ويثبّت الموعد، وتظهر هذه السياسة للعميلة قبل التحويل."), tr("العربون غير قابل للاسترداد على كل حجوزات ميموريا. يصلك مباشرة ويثبّت الموعد، وتظهر هذه السياسة للعميلة قبل التحويل."))}
+              {tr("إذا ألغت العروس بعد دفع العربون:")}{" "}
+              <strong className="text-foreground">
+                {p.deposit_refund_policy === "full" ? tr("يُرجَع كاملاً")
+                  : p.deposit_refund_policy === "partial" ? tr("يُرجَع {0}% منه", [Number(p.deposit_refund_percent || 0)])
+                  : tr("لا يُرجَع")}
+              </strong>
+              {". "}{g(tr("تظهر هذه السياسة للعروس قبل التحويل وتوافق عليها. وإذا ألغيتِ أنتِ الحجز، تُرجعين العربون كاملاً."), tr("تظهر هذه السياسة للعروس قبل التحويل وتوافق عليها. وإذا ألغيت أنت الحجز، تُرجع العربون كاملاً."))}
             </p>
+            <Link to="/dashboard/settings" className="mt-3 inline-block text-sm text-gold underline underline-offset-4">{tr("تغيير السياسة من الإعدادات")}</Link>
           </Card>
 
           <Card id="sec-trust" title={tr("التوثيق")} done={(vInfo?.status ?? p.verification_status) === "verified"} open={openSections["sec-trust"] ?? false} onToggle={toggle}>

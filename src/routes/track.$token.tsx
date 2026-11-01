@@ -714,7 +714,11 @@ function TrackingPage() {
               <a href={`/search?date=${b.event_date}`} className="mt-3 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal">{t("مصوّرات متاحات بنفس التاريخ")}</a>
             )}
             {Number(b.refund_amount || 0) > 0 && (
-              <div>{t("تمت الموافقة على استرداد {0} د.أ. الحالة:", [b.refund_amount])}{" "}{b.refund_status === "pending" ? t("قيد المعالجة") : b.refund_status}.</div>
+              <div>
+                {b.refund_status === "refunded"
+                  ? t("سجّلت المصوّرة إرجاع {0} د.أ لكِ.", [b.refund_amount])
+                  : t("على المصوّرة إرجاع {0} د.أ لكِ مباشرة، فالعربون وصل لحسابها ولا يمرّ عبر المنصّة. إذا تأخّر الإرجاع، راسليها من هذه الصفحة أو تواصلي معنا.", [b.refund_amount])}
+              </div>
             )}
           </div>
         )}
