@@ -15,6 +15,8 @@ import { clientCancelBooking } from "@/lib/cancellation.functions";
 import { Term } from "@/components/Term";
 import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { PaymentMethodsView } from "@/components/PaymentMethods";
+import { parseMethods, type PaymentMethod } from "@/lib/payment-methods";
 import { CheckCircle2, CalendarPlus, LockKeyhole, Unlock, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, XCircle } from "lucide-react";
 import { Lightbox } from "@/components/Lightbox";
 import { WeddingCountdown } from "@/components/WeddingCountdown";
@@ -333,6 +335,15 @@ function TrackingPage() {
   };
 
   const ph = b.photographer;
+  // طرق العربون؛ للحجوزات القديمة قبل القائمة نعرض CliQ والنص البنكي كما كانا
+  const payMethods: PaymentMethod[] = (() => {
+    const list = parseMethods((ph as any).payment_methods);
+    if (list.length) return list;
+    const legacy: PaymentMethod[] = [];
+    if (ph.cliq_alias) legacy.push({ kind: "cliq", alias: ph.cliq_alias });
+    if ((ph as any).bank_info) legacy.push({ kind: "bank", note: (ph as any).bank_info });
+    return legacy;
+  })();
   const stages = [
     { key: "request", label: t("طلب الحجز"), done: true, icon: <CheckCircle2 className="h-5 w-5" /> },
     { key: "approval", label: t("موافقة المصوّرة"), done: !awaitingApproval, icon: <CheckCircle2 className="h-5 w-5" /> },
@@ -556,18 +567,7 @@ function TrackingPage() {
             </div>
 
 
-            {ph.cliq_alias && (
-              <div className="bg-card border border-border rounded-sm p-3 mb-3 flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">CliQ Alias</div>
-                  <div className="font-mono text-lg">{tx(ph.cliq_alias)}</div>
-                </div>
-                <CopyButton value={ph.cliq_alias} label={t("نسخ")} />
-              </div>
-            )}
-            {ph.bank_info && (
-              <div className="bg-card border border-border rounded-sm p-3 mb-3 whitespace-pre-line text-sm">{tx(ph.bank_info)}</div>
-            )}
+            <div className="mb-3"><PaymentMethodsView methods={payMethods} /></div>
 
             <div className="grid gap-3">
               <input type="text" placeholder={t("رقم العملية المرجعي (مطلوب)")} required value={reference}
@@ -616,15 +616,7 @@ function TrackingPage() {
           <div className="rounded-2xl border border-gold/40 bg-gold/5 p-5 mb-6 text-sm">
             <div className="font-serif text-lg mb-1">{t("باقي المبلغ: {0} د.أ", [remainingDue.toLocaleString(locale("ar-JO"))])} <Term k="balance" /></div>
             <p className="text-muted-foreground mb-3">{t("حوّلي باقي المبلغ للمصوّرة بنفس طريقة العربون، حتى تحفظي حقّها وحقّكِ وتستلمي صورك. بعض المصوّرات يسلّمن الصور بعد وصول المبلغ فقط.")}</p>
-            {ph.cliq_alias && (
-              <div className="bg-card border border-border rounded-sm p-3 flex items-center justify-between">
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">CliQ Alias</div>
-                  <div className="font-mono text-lg">{tx(ph.cliq_alias)}</div>
-                </div>
-                <CopyButton value={ph.cliq_alias} label={t("نسخ")} />
-              </div>
-            )}
+            <PaymentMethodsView methods={payMethods} />
           </div>
         )}
 

@@ -25,7 +25,7 @@ export const Route = createFileRoute("/pricing")({
 
 const BASIC_FEATURES = [
   "صفحة عامة برابط @username",
-  "استقبال الحجوزات والعربون عبر CliQ",
+  "استقبال الحجوزات والعربون (CliQ أو محفظة أو بنك)",
   "تقويم ذكي وحجوزات يدوية",
   "إشعارات الإيميل وتيليغرام",
   `حتى ${BASIC_LIMITS.packages} باقات و${BASIC_LIMITS.photos} صورة`,

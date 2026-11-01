@@ -22,6 +22,8 @@ import { BasicLimitNote } from "@/components/dashboard/BasicLimitNote";
 import { getMyVerification, requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 import { startTour, useTourState, resetTour } from "@/components/ClientTour";
 import { startPhotographerTour } from "@/components/PhotographerTour";
+import { PaymentMethodsEditor } from "@/components/PaymentMethods";
+import { parseMethods, normalizeMethods, legacyColumns, isUsable } from "@/lib/payment-methods";
 import { locale } from "@/i18n";
 import { t as tr, tx } from "@/i18n";
 
@@ -85,7 +87,7 @@ function ProfilePage() {
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
         supabase.from("photographer_private").select("*").eq("user_id", session.user.id).maybeSingle(),
       ]);
-      const merged = { ...(data ?? {}), ...(priv ?? {}) };
+      const merged = { ...(data ?? {}), ...(priv ?? {}), payment_methods: parseMethods((priv as any)?.payment_methods) };
       setP(merged);
       setOriginalP(merged);
       setLoading(false);
@@ -209,21 +211,24 @@ function ProfilePage() {
       booking_notes: p.booking_notes ?? null,
       fixed_deposit: finalFixedDeposit,
     }).eq("id", uid);
-    const { error: pErr } = await supabase.from("photographer_private").upsert({
+    const methods = normalizeMethods(p.payment_methods ?? []);
+    const { error: pErr } = await (supabase as any).from("photographer_private").upsert({
       user_id: uid,
       phone: p.phone ?? null,
       whatsapp: p.whatsapp ?? null,
-      cliq_alias: p.cliq_alias ?? null,
-      bank_info: p.bank_info ?? null,
+      payment_methods: methods,
+      ...legacyColumns(methods),
     }, { onConflict: "user_id" });
     setSaving(false);
     if (error || pErr) return toast.error((error ?? pErr)!.message);
-    setOriginalP(p);
+    const saved = { ...p, payment_methods: methods, ...legacyColumns(methods) };
+    setP(saved);
+    setOriginalP(saved);
     loadVerification();
     toast.success(p.is_published && !originalP?.is_published ? tr("حُفظ ملفك وأصبح منشوراً للعرائس") : tr("حُفظت التغييرات"));
     // منشورة بلا طريقة لاستلام العربون: العروس توافَق ثم لا تعرف أين تحوّل
-    if (p.is_published && !p.cliq_alias && !p.bank_info) {
-      toast.warning(g(tr("أضيفي CliQ alias في «التواصل والدفع» — بدونه لا تعرف العروس أين تحوّل العربون بعد موافقتكِ."), tr("أضف CliQ alias في «التواصل والدفع» — بدونه لا تعرف العروس أين تحوّل العربون بعد موافقتك.")), { duration: 8000 });
+    if (p.is_published && !methods.length) {
+      toast.warning(g(tr("أضيفي طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتكِ."), tr("أضف طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتك.")), { duration: 8000 });
     }
   };
 
@@ -238,7 +243,7 @@ function ProfilePage() {
     { key: "portfolio", label: tr("٥ صور أعمال على الأقل"), done: portfolioCount >= 5, section: "sec-photos" },
     { key: "basics", label: tr("الاسم واسم المستخدم والمدينة"), done: !!p.display_name && !!p.username && !!p.city, section: "sec-basics" },
     { key: "bio", label: tr("نبذة تعريفية"), done: bioWords >= 15, section: "sec-basics" },
-    { key: "payment", label: tr("طريقة استلام العربون"), done: !!(p.cliq_alias || p.bank_info), section: "sec-contact" },
+    { key: "payment", label: tr("طريقة استلام العربون"), done: (p.payment_methods ?? []).some(isUsable), section: "sec-contact" },
   ];
   const doneCount = checklist.filter((c) => c.done).length;
   const pct = Math.round((doneCount / checklist.length) * 100);
@@ -395,14 +400,17 @@ function ProfilePage() {
             <Area label={tr("المعدّات")} v={p.equipment} on={(v) => setP({ ...p, equipment: v })} />
           </Card>
 
-          <Card id="sec-contact" title={tr("التواصل والدفع")} done={!!(p.cliq_alias || p.bank_info) && !!(p.whatsapp || p.phone)} open={openSections["sec-contact"] ?? true} onToggle={toggle}>
+          <Card id="sec-contact" title={tr("التواصل والدفع")} done={(p.payment_methods ?? []).some(isUsable) && !!(p.whatsapp || p.phone)} open={openSections["sec-contact"] ?? true} onToggle={toggle}>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={tr("رقم الهاتف")} v={p.phone} on={(v) => setP({ ...p, phone: v })} hint={tr("لا يظهر للعموم")} ltr />
               <Field label={tr("واتساب")} v={p.whatsapp} on={(v) => setP({ ...p, whatsapp: v })} hint={g(tr("للتواصل مع العروس بعد موافقتكِ على طلبها — لا يظهر للعموم"), tr("للتواصل مع العروس بعد موافقتك على طلبها — لا يظهر للعموم"))} ltr />
             </div>
             <Field label={tr("إنستغرام (اسم المستخدم)")} v={p.instagram} on={(v) => setP({ ...p, instagram: v })} ltr />
-            <div data-tour="cliq"><Field label={tr("CliQ Alias لاستلام العربون")} v={p.cliq_alias} on={(v) => setP({ ...p, cliq_alias: v })} hint={!p.cliq_alias ? tr("بدون CliQ أو حساب بنكي لن تعرف العروس أين تحوّل العربون.") : tr("يظهر للعروس فقط بعد موافقتك على طلبها.")} ltr /></div>
-            <Area label={tr("معلومات الحساب البنكي (بنك / رقم حساب / IBAN)")} v={p.bank_info} on={(v) => setP({ ...p, bank_info: v })} />
+            <div data-tour="cliq">
+              <div className="mb-1 text-sm font-medium">{tr("طرق استلام العربون")}</div>
+              <p className="mb-3 text-xs text-muted-foreground">{g(tr("أضيفي طريقة أو أكثر: CliQ أو محفظة أو تحويل بنكي. تظهر للعروس فقط بعد موافقتكِ على طلبها."), tr("أضف طريقة أو أكثر: CliQ أو محفظة أو تحويل بنكي. تظهر للعروس فقط بعد موافقتك على طلبها."))}</p>
+              <PaymentMethodsEditor value={p.payment_methods ?? []} onChange={(v) => setP({ ...p, payment_methods: v })} />
+            </div>
           </Card>
 
           <Card id="sec-booking" title={tr("إعدادات الحجز")} open={openSections["sec-booking"] ?? false} onToggle={toggle}>

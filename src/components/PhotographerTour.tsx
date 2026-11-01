@@ -77,7 +77,7 @@ function steps(): Step[] {
       page: "/dashboard/profile", target: "cliq", section: "sec-contact",
       title: G("٣. أين يصلكِ العربون؟", "٣. أين يصلك العربون؟"),
       lines: [
-        G("اكتبي CliQ alias الخاص بكِ (الاسم الذي تستقبلين عليه التحويلات).", "اكتب CliQ alias الخاص بك (الاسم الذي تستقبل عليه التحويلات)."),
+        G("اضغطي «CliQ» أو «محفظة إلكترونية» أو «تحويل بنكي» واملئي خاناتها.", "اضغط «CliQ» أو «محفظة إلكترونية» أو «تحويل بنكي» واملأ خاناتها."),
         G("لا يراه أحد إلا العروس التي توافقين على طلبها.", "لا يراه أحد إلا العروس التي توافق على طلبها."),
         G("ثم اضغطي زر «حفظ» الذهبي.", "ثم اضغط زر «حفظ» الذهبي."),
       ],
@@ -136,7 +136,7 @@ function steps(): Step[] {
       lines: [
         G("افتحي الطلب من الإشعار.", "افتح الطلب من الإشعار."),
         G("وافقي أو اعتذري خلال 24 ساعة.", "وافق أو اعتذر خلال 24 ساعة."),
-        G("العروس تحوّل العربون على CliQ خلال 48 ساعة.", "العروس تحوّل العربون على CliQ خلال 48 ساعة."),
+        G("العروس تحوّل العربون بالطريقة التي أضفتِها خلال 48 ساعة.", "العروس تحوّل العربون بالطريقة التي أضفتها خلال 48 ساعة."),
         G("افتحي تطبيق البنك وتأكّدي أن المبلغ وصل، ثم اضغطي «تأكيد العربون».", "افتح تطبيق البنك وتأكّد أن المبلغ وصل، ثم اضغط «تأكيد العربون»."),
         G("بعد العرس: استلمي باقي المبلغ وسلّمي الصور.", "بعد العرس: استلم باقي المبلغ وسلّم الصور."),
       ],
@@ -159,14 +159,14 @@ async function loadProgress(): Promise<Progress | null> {
   const uid = session.user.id;
   const [{ data: prof }, { data: priv }, { count }] = await Promise.all([
     supabase.from("profiles").select("display_name, city, avatar_url, cover_url, is_published").eq("id", uid).maybeSingle(),
-    (supabase as any).from("photographer_private").select("cliq_alias, telegram_chat_id").eq("user_id", uid).maybeSingle(),
+    (supabase as any).from("photographer_private").select("cliq_alias, bank_info, telegram_chat_id").eq("user_id", uid).maybeSingle(),
     supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", uid).neq("package", "addon"),
   ]);
   const p: any = prof ?? {};
   return {
     photo: !!p.avatar_url && !!p.cover_url,
     name: !!p.display_name && !!p.city,
-    cliq: !!(priv as any)?.cliq_alias,
+    cliq: !!((priv as any)?.cliq_alias || (priv as any)?.bank_info),
     pkg: (count ?? 0) > 0,
     published: !!p.is_published,
     telegram: !!(priv as any)?.telegram_chat_id,

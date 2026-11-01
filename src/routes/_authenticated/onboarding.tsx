@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { GenderPicker } from "@/components/dashboard/GenderPicker";
 import { g, useGender } from "@/hooks/use-gender";
+import { PaymentMethodsEditor } from "@/components/PaymentMethods";
+import { emptyMethod, isUsable, legacyColumns, normalizeMethods, parseMethods, type PaymentMethod } from "@/lib/payment-methods";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { uploadProfilePhoto } from "@/lib/upload";
@@ -31,7 +33,7 @@ type Form = {
   city: string;
   bio: string;
   avatar_url: string;
-  cliq_alias: string;
+  methods: PaymentMethod[];
   whatsapp: string;
   refund_policy: "none" | "partial" | "full";
   refund_percent: string;
@@ -70,7 +72,7 @@ function Onboarding() {
   const avatarRef = useRef<HTMLInputElement>(null);
   const [f, setF] = useState<Form>({
     display_name: "", username: "", city: "", bio: "", avatar_url: "",
-    cliq_alias: "", whatsapp: "", refund_policy: "none", refund_percent: "50",
+    methods: [emptyMethod("cliq")], whatsapp: "", refund_policy: "none", refund_percent: "50",
     pkg_label: "", pkg_price: "", pkg_service: "photography", pkg_type: "hourly",
   });
 
@@ -81,7 +83,7 @@ function Onboarding() {
       setUid(session.user.id);
       const [{ data: p }, { data: priv }, { data: rules }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
-        supabase.from("photographer_private").select("cliq_alias, whatsapp").eq("user_id", session.user.id).maybeSingle(),
+        (supabase as any).from("photographer_private").select("cliq_alias, whatsapp, payment_methods").eq("user_id", session.user.id).maybeSingle(),
         supabase.from("pricing_rules").select("id, label, price, service, package").eq("photographer_id", session.user.id).limit(1),
       ]);
       if ((p as any)?.onboarding_completed_at) { nav({ to: "/dashboard" }); return; }
@@ -92,7 +94,7 @@ function Onboarding() {
         city: p?.city ?? "",
         bio: p?.bio ?? "",
         avatar_url: p?.avatar_url ?? "",
-        cliq_alias: priv?.cliq_alias ?? "",
+        methods: (() => { const m = parseMethods((priv as any)?.payment_methods); return m.length ? m : [{ ...emptyMethod("cliq"), alias: (priv as any)?.cliq_alias ?? "" }]; })(),
         whatsapp: priv?.whatsapp ?? "",
         refund_policy: (["none", "partial", "full"].includes((p as any)?.deposit_refund_policy) ? (p as any).deposit_refund_policy : "none"),
         refund_percent: String((p as any)?.deposit_refund_percent ?? 50),
@@ -136,7 +138,7 @@ function Onboarding() {
       if (!f.pkg_price || Number(f.pkg_price) <= 0) return g(tr("أدخلي سعراً صحيحاً للباقة."), tr("أدخل سعراً صحيحاً للباقة."));
     }
     if (step === 3) {
-      if (!f.cliq_alias.trim()) return g(tr("أضيفي CliQ alias — العروس تحوّل لكِ العربون عليه بعد موافقتكِ."), tr("أضف CliQ alias — العروس تحوّل لك العربون عليه بعد موافقتك."));
+      if (!f.methods.some(isUsable)) return g(tr("أضيفي طريقة واحدة على الأقل لاستلام العربون: CliQ أو محفظة أو تحويل بنكي."), tr("أضف طريقة واحدة على الأقل لاستلام العربون: CliQ أو محفظة أو تحويل بنكي."));
       if (f.whatsapp.trim() && !/^\+?\d{9,15}$/.test(f.whatsapp.trim().replace(/[\s-]/g, ""))) {
         return g(tr("رقم واتساب غير صحيح — أدخلي رقماً دولياً مثل +9627XXXXXXXX."), tr("رقم واتساب غير صحيح — أدخل رقماً دولياً مثل +9627XXXXXXXX."));
       }
@@ -176,9 +178,11 @@ function Onboarding() {
       if (error) { toast.error(error.message || tr("تعذّر حفظ الباقة")); return false; }
     }
     if (step === 3) {
-      const { error } = await supabase.from("photographer_private").upsert({
+      const methods = normalizeMethods(f.methods);
+      const { error } = await (supabase as any).from("photographer_private").upsert({
         user_id: uid,
-        cliq_alias: f.cliq_alias.trim() || null,
+        payment_methods: methods,
+        ...legacyColumns(methods),
         whatsapp: f.whatsapp.trim() || null,
       }, { onConflict: "user_id" });
       if (error) { toast.error(error.message || tr("تعذّر حفظ بيانات التواصل")); return false; }
@@ -406,9 +410,11 @@ function Onboarding() {
 
           {step === 3 && (
             <div className="space-y-4">
-              <Field label={tr("CliQ alias (لاستقبال العربون) *")}>
-                <input value={f.cliq_alias} onChange={(e) => upd("cliq_alias", e.target.value)} className={inputCx} placeholder="SARA.PHOTO" dir="ltr" />
-              </Field>
+              <div>
+                <div className="mb-1 text-sm font-medium">{g(tr("أين تحوّل لكِ العروس العربون؟ *"), tr("أين تحوّل لك العروس العربون؟ *"))}</div>
+                <p className="mb-3 text-xs text-muted-foreground">{g(tr("أضيفي طريقة أو أكثر. اكتبي اسمكِ الكامل كما يظهر عند التحويل حتى تطمئن العروس."), tr("أضف طريقة أو أكثر. اكتب اسمك الكامل كما يظهر عند التحويل حتى تطمئن العروس."))}</p>
+                <PaymentMethodsEditor value={f.methods} onChange={(v) => upd("methods", v)} />
+              </div>
               <Field label={tr("رقم واتساب (للتواصل مع العميل)")}>
                 <input value={f.whatsapp} onChange={(e) => upd("whatsapp", e.target.value)} className={inputCx} placeholder="+9627XXXXXXXX" dir="ltr" />
               </Field>
@@ -439,7 +445,7 @@ function Onboarding() {
                 <Row k={tr("اسم المستخدم")} v={"@" + f.username} onEdit={() => goTo(1)} />
                 <Row k={tr("المدينة")} v={f.city} onEdit={() => goTo(1)} />
                 <Row k={tr("أول باقة")} v={tr("{0} — {1} د.أ", [f.pkg_label, f.pkg_price])} onEdit={() => goTo(2)} />
-                <Row k={tr("CliQ / واتساب")} v={[f.cliq_alias, f.whatsapp].filter(Boolean).join(" · ") || "—"} onEdit={() => goTo(3)} />
+                <Row k={tr("استلام العربون / واتساب")} v={[...f.methods.filter(isUsable).map((m) => m.kind === "cliq" ? `CliQ ${m.alias}` : m.kind === "wallet" ? `${m.provider} ${m.number}` : `${m.bank || tr("بنك")} ${m.iban || ""}`.trim()), f.whatsapp].filter(Boolean).join(" · ") || "—"} onEdit={() => goTo(3)} />
                 <Row k={tr("العربون إذا ألغت العروس")} v={f.refund_policy === "full" ? tr("يُرجَع كاملاً") : f.refund_policy === "partial" ? tr("يُرجَع {0}%", [f.refund_percent]) : tr("لا يُرجَع")} onEdit={() => goTo(3)} />
               </div>
               <div className="rounded-sm border border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40 p-4 text-emerald-800 dark:text-emerald-300 text-sm">

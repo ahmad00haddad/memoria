@@ -143,7 +143,7 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
     {
       num: 2,
       title: g(tr("أضيفي طريقة استقبال العربون"), tr("أضف طريقة استقبال العربون")),
-      why: tr("CliQ alias أو واتساب — تظهر للعميل فقط بعد تأكيد الحجز، بياناتك محمية"),
+      why: tr("CliQ أو محفظة أو حساب بنكي — تظهر للعروس فقط بعد موافقتك على طلبها، بياناتك محمية"),
       done: hasCliq,
       to: "/dashboard/profile",
       cta: g(tr("أضيفي بيانات الدفع"), tr("أضف بيانات الدفع")),
@@ -226,7 +226,7 @@ function QuickStart({ profile, pricingCount, hasCliq, onDismiss }: { profile: an
     { title: tr("إنشاء الحساب"), why: "", done: true, to: "/dashboard", cta: "" },
     { title: tr("صورتك واسمك"), why: tr("أول ما تراه العروس عند فتح صفحتك."), done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url, to: "/dashboard/profile", cta: g(tr("أضيفي صورتك"), tr("أضف صورتك")) },
     { title: tr("أول باقة"), why: tr("بدون باقة لا تستطيع العروس أن ترى سعراً أو ترسل طلباً."), done: pricingCount > 0, to: "/dashboard/pricing", cta: g(tr("أضيفي باقة"), tr("أضف باقة")) },
-    { title: tr("طريقة استلام العربون"), why: tr("CliQ alias تحوّل عليه العروس العربون، ويظهر لها بعد موافقتك على طلبها فقط."), done: hasCliq, to: "/dashboard/profile", cta: g(tr("أضيفيها"), tr("أضفها")) },
+    { title: tr("طريقة استلام العربون"), why: tr("CliQ أو محفظة أو حساب بنكي تحوّل عليه العروس العربون، ويظهر لها بعد موافقتك على طلبها فقط."), done: hasCliq, to: "/dashboard/profile", cta: g(tr("أضيفيها"), tr("أضفها")) },
     { title: tr("نشر صفحتك"), why: tr("بعد النشر تظهر صفحتك في البحث وتبدأ الطلبات."), done: !!profile?.is_published, to: "/dashboard/profile", cta: g(tr("انشري صفحتك"), tr("انشر صفحتك")) },
   ];
   const doneCount = steps.filter((s) => s.done).length;
@@ -681,7 +681,7 @@ function Dashboard() {
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
                 <span>
                   <strong className="block text-destructive">{tr("لا توجد طريقة لاستلام العربون")}</strong>
-                  {g(tr("صفحتكِ منشورة، لكن العروس بعد موافقتكِ لن تعرف أين تحوّل العربون. أضيفي CliQ alias الآن."), tr("صفحتك منشورة، لكن العروس بعد موافقتك لن تعرف أين تحوّل العربون. أضف CliQ alias الآن."))}
+                  {g(tr("صفحتكِ منشورة، لكن العروس بعد موافقتكِ لن تعرف أين تحوّل العربون. أضيفي طريقة الآن (CliQ أو محفظة أو بنك)."), tr("صفحتك منشورة، لكن العروس بعد موافقتك لن تعرف أين تحوّل العربون. أضف طريقة الآن (CliQ أو محفظة أو بنك)."))}
                 </span>
               </Link>
             )}
