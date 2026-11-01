@@ -296,7 +296,7 @@ function PricingMgr() {
           })}
           </AnimatePresence>
 
-          <button onClick={add} className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-gold/60 hover:text-gold">
+          <button data-tour="add-package" onClick={add} className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-gold/60 hover:text-gold">
             <span className="grid h-12 w-12 place-items-center rounded-full bg-secondary"><Plus className="h-5 w-5" /></span>
             <span className="text-sm">{t("إضافة باقة جديدة")}</span>
           </button>

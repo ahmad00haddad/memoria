@@ -606,7 +606,7 @@ function Dashboard() {
             {profile?.username ? (
               <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <Link to="/photographers/$username" params={{ username: profile.username }} className="text-gold hover:underline" dir="ltr">@{tx(profile.username)}</Link>
-                {publicUrl && <CopyButton value={publicUrl} label={tr("نسخ رابط ملفي")} />}
+                {publicUrl && <span data-tour="share"><CopyButton value={publicUrl} label={tr("نسخ رابط ملفي")} /></span>}
               </div>
             ) : (
               <div className="text-sm text-muted-foreground mt-1">{g(tr("أكملي اسم المستخدم من الملف الشخصي"), tr("أكمل اسم المستخدم من الملف الشخصي"))}</div>
@@ -678,7 +678,7 @@ function Dashboard() {
           <>
             <TodayFocus items={stats.focus ?? []} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
 
-            <NotifyChannelsCard promptOnly />
+            <div data-tour="notify"><NotifyChannelsCard promptOnly /></div>
 
             {!hasAnyStats && profile?.is_published && profile?.username && (
               <div className="mb-10 rounded-2xl border border-gold/30 bg-gold/5 p-5 text-sm leading-relaxed flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

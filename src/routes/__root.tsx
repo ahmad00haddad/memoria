@@ -27,6 +27,7 @@ import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
 import { GameHint } from "@/components/site/GameHint";
 import { BrideGame } from "@/components/site/BrideGame";
 import { ClientTour } from "@/components/ClientTour";
+import { PhotographerTour } from "@/components/PhotographerTour";
 import { IntroContext, markIntroSeen, readIntro } from "@/lib/intro";
 import { FirstVisitIntro } from "@/components/site/FirstVisitIntro";
 import { getLang, dirOf, LANG_COOKIE } from "@/i18n";
@@ -399,6 +400,7 @@ function RootComponent() {
             <PwaInstallPrompt />
             <GameHint />
             <ClientTour />
+            <PhotographerTour />
             </>}
             <Toaster position="top-center" richColors closeButton />
            </MotionConfig>

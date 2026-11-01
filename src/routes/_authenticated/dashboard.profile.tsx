@@ -21,6 +21,7 @@ import { BASIC_LIMITS, PRO_PHOTOS } from "@/lib/plans";
 import { BasicLimitNote } from "@/components/dashboard/BasicLimitNote";
 import { getMyVerification, requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 import { startTour, useTourState, resetTour } from "@/components/ClientTour";
+import { startPhotographerTour } from "@/components/PhotographerTour";
 import { locale } from "@/i18n";
 import { t as tr, tx } from "@/i18n";
 
@@ -53,6 +54,12 @@ function ProfilePage() {
   const [originalP, setOriginalP] = useState<any>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const toggle = (id: string) => setOpenSections((s) => ({ ...s, [id]: !(s[id] ?? ["sec-photos", "sec-basics", "sec-contact"].includes(id)) }));
+  // جولة المصوّرة تفتح القسم المطوي الذي تشير إليه
+  useEffect(() => {
+    const on = (e: Event) => { const id = (e as CustomEvent).detail; if (id) setOpenSections((s) => ({ ...s, [id]: true })); };
+    window.addEventListener("memoria-open-section", on);
+    return () => window.removeEventListener("memoria-open-section", on);
+  }, []);
   const [dragOver, setDragOver] = useState(false);
   const [portfolioUploading, setPortfolioUploading] = useState(false);
   const [usernameState, setUsernameState] = useState<"idle" | "checking" | "free" | "taken">("idle");
@@ -268,6 +275,7 @@ function ProfilePage() {
               </div>
             </div>
             <button
+              data-tour="publish"
               role="switch"
               aria-checked={!!p.is_published}
               onClick={() => setP({ ...p, is_published: !p.is_published })}
@@ -294,7 +302,7 @@ function ProfilePage() {
         </div>
 
         <Card id="sec-photos" title={tr("الصور")} done={!!p.avatar_url && !!p.cover_url && portfolioCount >= 5} open={openSections["sec-photos"] ?? true} onToggle={toggle}>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div data-tour="photos" className="grid sm:grid-cols-2 gap-4">
               <ImgPicker label={tr("الصورة الشخصية")} url={p.avatar_url} onPick={onAvatar} />
               <ImgPicker label={tr("صورة الغلاف")} url={p.cover_url} onPick={onCover} aspect="aspect-[16/9]" hint={!p.cover_url ? tr("الغلاف أول ما تراه العروس في ملفك") : undefined} />
             </div>
@@ -353,7 +361,7 @@ function ProfilePage() {
               <span className="mb-1 block text-sm text-muted-foreground">{tr("صيغة المخاطبة في لوحة التحكم")}</span>
               <GenderPicker />
             </div>
-            <Field label={tr("الاسم المعروض")} v={p.display_name} on={(v) => setP({ ...p, display_name: v })} />
+            <div data-tour="basics"><Field label={tr("الاسم المعروض")} v={p.display_name} on={(v) => setP({ ...p, display_name: v })} /></div>
             <label className="block">
               <span className="text-sm text-muted-foreground">{tr("اسم المستخدم (يظهر في رابط ملفك)")}</span>
               <div className="relative mt-1">
@@ -389,7 +397,7 @@ function ProfilePage() {
               <Field label={tr("واتساب")} v={p.whatsapp} on={(v) => setP({ ...p, whatsapp: v })} hint={tr("تصلك عليه طلبات الحجز — لا يظهر للعموم")} ltr />
             </div>
             <Field label={tr("إنستغرام (اسم المستخدم)")} v={p.instagram} on={(v) => setP({ ...p, instagram: v })} ltr />
-            <Field label={tr("CliQ Alias لاستلام العربون")} v={p.cliq_alias} on={(v) => setP({ ...p, cliq_alias: v })} hint={!p.cliq_alias ? tr("بدون CliQ أو حساب بنكي لن تعرف العروس أين تحوّل العربون.") : tr("يظهر للعروس فقط بعد طلب الحجز.")} ltr />
+            <div data-tour="cliq"><Field label={tr("CliQ Alias لاستلام العربون")} v={p.cliq_alias} on={(v) => setP({ ...p, cliq_alias: v })} hint={!p.cliq_alias ? tr("بدون CliQ أو حساب بنكي لن تعرف العروس أين تحوّل العربون.") : tr("يظهر للعروس فقط بعد موافقتك على طلبها.")} ltr /></div>
             <Area label={tr("معلومات الحساب البنكي (بنك / رقم حساب / IBAN)")} v={p.bank_info} on={(v) => setP({ ...p, bank_info: v })} />
           </Card>
 
@@ -530,7 +538,7 @@ function ProfilePage() {
               <span className="font-medium">
                 {tourState.status === "active" ? tr("فعّالة") : tourState.status === "completed" ? tr("مكتملة") : tourState.status === "skipped" ? tr("متخطّاة") : tr("لم تبدأ")}
               </span>
-              <button onClick={() => { startTour(); nav({ to: "/search" }); }} className="ms-auto rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{tr("تشغيل")}</button>
+              <button onClick={() => { startPhotographerTour(); nav({ to: "/dashboard" }); }} className="ms-auto rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{tr("تشغيل")}</button>
               <button onClick={() => { resetTour(); toast.success(tr("صفّرنا الجولة")); }} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{tr("تصفير")}</button>
             </div>
           </Card>

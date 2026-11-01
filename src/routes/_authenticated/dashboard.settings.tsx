@@ -253,7 +253,7 @@ function SettingsPage() {
               )}
             </Block>
 
-            <Block icon={<Wallet />} title={tr("العربون إذا ألغت العروس")} hint={tr("تظهر للعروس قبل أن تحوّل العربون، وتوافق عليها. العربون يُحوَّل لك مباشرة، والمنصّة لا تستلمه ولا تُرجعه.")}>
+            <div data-tour="policy"><Block icon={<Wallet />} title={tr("العربون إذا ألغت العروس")} hint={tr("تظهر للعروس قبل أن تحوّل العربون، وتوافق عليها. العربون يُحوَّل لك مباشرة، والمنصّة لا تستلمه ولا تُرجعه.")}>
               <Choices value={biz.policy} onChange={(v) => setBiz((x) => ({ ...x, policy: v }))}
                 options={[{ value: "none", label: tr("لا يُرجَع") }, { value: "partial", label: tr("يُرجَع جزء منه") }, { value: "full", label: tr("يُرجَع كاملاً") }]} />
               {biz.policy === "partial" && (
@@ -266,7 +266,7 @@ function SettingsPage() {
                 </label>
               )}
               <Note>{g(tr("إذا ألغيتِ أنتِ الحجز بعد العربون، عليكِ إرجاعه كاملاً للعروس."), tr("إذا ألغيت أنت الحجز بعد العربون، عليك إرجاعه كاملاً للعروس."))}</Note>
-            </Block>
+            </Block></div>
 
             <Block icon={<Users />} title={tr("فريق التصوير")} hint={tr("يظهر في صفحتك، وتستطيع العرائس البحث به.")}>
               <Choices value={biz.team} onChange={(v) => setBiz((x) => ({ ...x, team: v }))}

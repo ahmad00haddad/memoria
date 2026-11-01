@@ -278,7 +278,7 @@ function CalendarPage() {
             {g(t("اختاري الطريقة الأنسب لكِ. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook."), t("اختر الطريقة الأنسب لك. كل الخيارات تعمل مع Google Calendar و Apple Calendar و Outlook."))}
           </p>
 
-          <GoogleConnectCard onChanged={() => uid && load(uid)} />
+          <div data-tour="google"><GoogleConnectCard onChanged={() => uid && load(uid)} /></div>
           <p className="mb-3 text-xs text-muted-foreground">{t("أو بدون تسجيل دخول (Apple / Outlook / رابط iCal):")}</p>
 
           {/* الخطوة ١: إظهار الحجوزات في تقويمها — اشتراك بنقرة واحدة */}
