@@ -226,7 +226,7 @@ function QuickStart({ profile, pricingCount, hasCliq, onDismiss }: { profile: an
     { title: tr("إنشاء الحساب"), why: "", done: true, to: "/dashboard", cta: "" },
     { title: tr("صورتك واسمك"), why: tr("أول ما تراه العروس عند فتح صفحتك."), done: !!profile?.display_name && !!profile?.username && !!profile?.avatar_url, to: "/dashboard/profile", cta: g(tr("أضيفي صورتك"), tr("أضف صورتك")) },
     { title: tr("أول باقة"), why: tr("بدون باقة لا تستطيع العروس أن ترى سعراً أو ترسل طلباً."), done: pricingCount > 0, to: "/dashboard/pricing", cta: g(tr("أضيفي باقة"), tr("أضف باقة")) },
-    { title: tr("طريقة استلام العربون"), why: tr("CliQ أو رقم واتساب، تظهر للعروس بعد موافقتك على طلبها فقط."), done: hasCliq, to: "/dashboard/profile", cta: g(tr("أضيفيها"), tr("أضفها")) },
+    { title: tr("طريقة استلام العربون"), why: tr("CliQ alias تحوّل عليه العروس العربون، ويظهر لها بعد موافقتك على طلبها فقط."), done: hasCliq, to: "/dashboard/profile", cta: g(tr("أضيفيها"), tr("أضفها")) },
     { title: tr("نشر صفحتك"), why: tr("بعد النشر تظهر صفحتك في البحث وتبدأ الطلبات."), done: !!profile?.is_published, to: "/dashboard/profile", cta: g(tr("انشري صفحتك"), tr("انشر صفحتك")) },
   ];
   const doneCount = steps.filter((s) => s.done).length;
@@ -515,7 +515,7 @@ function Dashboard() {
     setProfile(loadedProfile);
     setSub(s);
     setPricingCount(pricingRulesCount ?? 0);
-    setHasCliq(!!(priv?.cliq_alias || priv?.whatsapp || priv?.phone));
+    setHasCliq(!!priv?.cliq_alias);
     setTemplatesCount(tplCount ?? 0);
     setStats(computedStats);
     setLoading(false);

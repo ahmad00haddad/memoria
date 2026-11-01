@@ -1,6 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { startTour } from "@/components/ClientTour";
+import { supabase } from "@/integrations/supabase/client";
 import { DrawRule } from "@/components/site/Reveal";
 import { t } from "@/i18n";
 
@@ -29,7 +30,16 @@ export function Footer() {
             <li><Link to="/app" className="inline-block py-1.5 hover:text-gold">{t("ثبّتي التطبيق")}</Link></li>
             <li><Link to="/guide" className="inline-block py-1.5 hover:text-gold">{t("كيف يعمل النظام")}</Link></li>
             <li><a href="/game/" className="inline-block py-1.5 hover:text-gold">{t("العبي: اهربي يا عروس")}</a></li>
-            <li><button onClick={() => { startTour(); if (!pathname.startsWith("/search")) nav({ to: "/search" }); }} className="inline-block py-1.5 hover:text-gold text-start">{t("أعيدي الجولة التعريفية")}</button></li>
+            <li>{isPhotographer ? (
+              // للمصوّرة: جولتها هي قائمة الإعداد في لوحة التحكم — نعيد إظهارها إن كانت أخفتها
+              <button onClick={async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) await supabase.from("profiles").update({ quickstart_dismissed_at: null } as any).eq("id", session.user.id);
+                nav({ to: "/dashboard" });
+              }} className="inline-block py-1.5 hover:text-gold text-start">{t("أعيدي قائمة البداية")}</button>
+            ) : (
+              <button onClick={() => { startTour(); if (!pathname.startsWith("/search")) nav({ to: "/search" }); }} className="inline-block py-1.5 hover:text-gold text-start">{t("أعيدي الجولة التعريفية")}</button>
+            )}</li>
           </ul>
         </div>
         <div>
