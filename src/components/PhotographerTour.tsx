@@ -211,14 +211,18 @@ export function PhotographerTour() {
   useEffect(() => {
     if (st.status !== "active" || st.min || !s?.target || !here) return;
     if (s.section) window.dispatchEvent(new CustomEvent("memoria-open-section", { detail: s.section }));
+    // الصفحة تُحمَّل بعد الانتقال، فنبحث عن العنصر حتى يظهر (حتى ٨ ثوانٍ)
     let el: HTMLElement | null = null;
-    const timer = window.setTimeout(() => {
+    let tries = 0;
+    const timer = window.setInterval(() => {
       el = document.querySelector<HTMLElement>(`[data-tour="${s.target}"]`);
+      if (!el && ++tries < 27) return;
+      window.clearInterval(timer);
       if (!el) return;
       el.classList.add("tour-spot");
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 350);
-    return () => { window.clearTimeout(timer); el?.classList.remove("tour-spot"); };
+    }, 300);
+    return () => { window.clearInterval(timer); el?.classList.remove("tour-spot"); };
   }, [st.status, st.min, st.step, here, s?.target, s?.section]);
 
   if (!inDashboard || st.status !== "active" || !s) return null;
@@ -241,7 +245,7 @@ export function PhotographerTour() {
             className="fixed bottom-20 start-3 z-50 inline-flex min-h-11 items-center gap-2 rounded-full bg-charcoal px-4 text-sm text-ivory shadow-elegant sm:bottom-6 dark:bg-gold dark:text-charcoal"
           >
             <ChevronUp className="h-4 w-4" />
-            {tr("الخطوة {0} من {1}", [st.step + 1, list.length])}
+            {st.step === 0 ? tr("جولة البداية") : tr("الخطوة {0} من {1}", [st.step, list.length - 1])}
           </motion.button>
         ) : (
           <motion.div
@@ -254,7 +258,7 @@ export function PhotographerTour() {
           >
             <div className="rounded-xl border border-gold/40 bg-card p-4 shadow-elegant">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-muted-foreground tabular-nums">{tr("الخطوة {0} من {1}", [st.step + 1, list.length])}</span>
+                <span className="text-xs text-muted-foreground tabular-nums">{st.step === 0 ? tr("جولة البداية") : tr("الخطوة {0} من {1}", [st.step, list.length - 1])}</span>
                 <div className="flex items-center">
                   <button onClick={() => write({ ...st, min: true })} aria-label={tr("تصغير")} className="grid h-10 w-10 place-items-center text-muted-foreground hover:text-foreground"><ChevronDown className="h-4 w-4" /></button>
                   <button onClick={close} aria-label={tr("إخفاء الجولة")} className="grid h-10 w-10 place-items-center text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
@@ -262,7 +266,7 @@ export function PhotographerTour() {
               </div>
 
               <div className="mb-3 flex gap-1">
-                {list.map((_, i) => <span key={i} className={`h-1.5 flex-1 rounded-full ${i <= st.step ? "bg-gold" : "bg-secondary"}`} />)}
+                {list.slice(1).map((_, i) => <span key={i} className={`h-1.5 flex-1 rounded-full ${i < st.step ? "bg-gold" : "bg-secondary"}`} />)}
               </div>
 
               <h2 className="font-serif text-lg leading-snug">{tx(s.title)}</h2>
