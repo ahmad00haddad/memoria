@@ -38,7 +38,26 @@ export function emptyMethod(kind: PaymentKind): PaymentMethod {
     : { kind, bank: "", holder: "", iban: "" };
 }
 
-/** طريقة صالحة للاستخدام: فيها ما تحتاجه العروس لتحوّل فعلاً. */
+/** هل بدأت المصوّرة تعبئة هذه الطريقة؟ (طريقة فارغة تماماً تُتجاهل) */
+export function isStarted(m: PaymentMethod): boolean {
+  return [m.alias, m.provider, m.number, m.bank, m.iban, m.holder, m.note].some((v) => !!clean(v));
+}
+
+/**
+ * مكتملة للحفظ (قرار 2026-11-02: الموضوع حساس، فكل التفاصيل إلزامية):
+ * cliq = alias + البنك/المحفظة المربوط عليها + الاسم · wallet = المحفظة + الرقم + الاسم · bank = البنك + IBAN + الاسم
+ */
+export function missingFields(m: PaymentMethod): string[] {
+  const out: string[] = [];
+  if (m.kind === "cliq") { if (!clean(m.alias)) out.push("CliQ alias"); if (!clean(m.provider)) out.push("البنك أو المحفظة المربوط عليها"); }
+  if (m.kind === "wallet") { if (!clean(m.provider)) out.push("اسم المحفظة"); if (!clean(m.number)) out.push("رقم المحفظة"); }
+  if (m.kind === "bank") { if (!clean(m.bank)) out.push("اسم البنك"); if (!clean(m.iban)) out.push("IBAN"); }
+  if (!clean(m.holder)) out.push("الاسم كما يظهر عند التحويل");
+  return out;
+}
+export const isComplete = (m: PaymentMethod) => missingFields(m).length === 0;
+
+/** طريقة صالحة للعرض للعروس (تشمل البيانات القديمة قبل إلزام الاسم). */
 export function isUsable(m: PaymentMethod): boolean {
   if (m.kind === "cliq") return !!clean(m.alias);
   if (m.kind === "wallet") return !!clean(m.number) && !!clean(m.provider);
@@ -57,7 +76,7 @@ export function normalizeMethods(list: PaymentMethod[]): PaymentMethod[] {
   return list
     .map((m) => Object.fromEntries(Object.entries(m).map(([k, v]) => [k, typeof v === "string" ? v.trim().slice(0, 300) : v])) as PaymentMethod)
     .map((m) => (m.iban ? { ...m, iban: m.iban.replace(/\s+/g, "").toUpperCase() } : m))
-    .filter(isUsable);
+    .filter(isComplete);
 }
 
 /** الأعمدة القديمة: أول CliQ alias، وباقي الطرق كنص للقرّاء الأقدم. */

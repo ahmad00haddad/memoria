@@ -30,6 +30,7 @@ type Rule = {
   hours?: number | string | null; deliverable_count?: number | string | null; delivery_days?: number | string | null;
   shooter?: "me" | "me_team" | "team" | null; overtime_fee?: number | string | null; excludes?: string | null;
   unedited_included?: boolean | null; revision_rounds?: number | string | null;
+  is_visible?: boolean | null;
 };
 
 const numOrNull = (v: unknown) => (v === null || v === undefined || String(v).trim() === "" || Number.isNaN(Number(v)) ? null : Number(v));
@@ -130,6 +131,10 @@ function PricingMgr() {
     const bad = filled.find((r) => !r.label?.trim() || !(Number(r.price) > 0));
     if (bad) { hapticVibrate("error"); return toast.error(t("كل باقة تحتاج اسماً وسعراً أكبر من صفر.")); }
     // الإفصاح الإلزامي: لا تُحفظ باقة أساسية تنقصها معلومة تراها العروس قبل الطلب
+    if (isBasic && filled.filter((r) => r.package !== "addon" && r.is_visible !== false).length > BASIC_LIMITS.packages) {
+      hapticVibrate("error");
+      return toast.error(g(t("باقة Basic تُظهر {0} باقات فقط — أخفي الباقي بزر «ظاهرة للعرائس» أو رقّي لـPro.", [BASIC_LIMITS.packages]), t("باقة Basic تُظهر {0} باقات فقط — أخفِ الباقي بزر «ظاهرة للعرائس» أو رقِّ لـPro.", [BASIC_LIMITS.packages])), { duration: 7000 });
+    }
     const incomplete = filled.map((r) => ({ r, miss: missingDisclosures(r as any) })).find((x) => x.miss.length);
     if (incomplete) {
       hapticVibrate("error");
@@ -154,6 +159,7 @@ function PricingMgr() {
         excludes: r.excludes?.trim() || null,
         unedited_included: !!r.unedited_included,
         revision_rounds: numOrNull(r.revision_rounds),
+        is_visible: r.is_visible !== false,
       };
       const write = (p: any) => r.id
         ? supabase.from("pricing_rules").update(p).eq("id", r.id)
@@ -203,6 +209,12 @@ function PricingMgr() {
         <p className="text-sm text-muted-foreground mb-3">{t("باقات التصوير والفيديو والإضافات كما تظهر للعرائس في ملفك العام.")}</p>
         {isBasic && (
           <BasicLimitNote used={rules.filter((r) => r.id && r.package !== "addon").length} max={BASIC_LIMITS.packages} what={t("باقات")} />
+        )}
+        {isBasic && rules.filter((r) => r.package !== "addon" && r.is_visible !== false).length > BASIC_LIMITS.packages && (
+          <div className="mb-6 rounded-2xl border border-amber-400/60 bg-amber-50/50 p-4 text-sm dark:border-amber-800/60 dark:bg-amber-950/20">
+            <strong className="block">{t("باقة Basic تُظهر {0} باقات فقط للعرائس", [BASIC_LIMITS.packages])}</strong>
+            {g(t("عندكِ باقات أكثر من الحد. اختاري أي {0} تظهر بزر «ظاهرة للعرائس» على كل باقة، والباقي يبقى محفوظاً عندكِ. لو ما اخترتِ، تظهر الأرخص.", [BASIC_LIMITS.packages]), t("عندك باقات أكثر من الحد. اختر أي {0} تظهر بزر «ظاهرة للعرائس» على كل باقة، والباقي يبقى محفوظاً عندك. لو ما اخترت، تظهر الأرخص.", [BASIC_LIMITS.packages]))}
+          </div>
         )}
         {rules.length > 0 && rules.length < 3 && (
           <p className="mb-6 flex items-center gap-2 text-xs text-muted-foreground"><Lightbulb className="h-3.5 w-3.5 text-gold" />{" "}{t("ثلاث باقات (أساسية، متوسطة، فاخرة) تسهّل على العروس الاختيار.")}</p>
@@ -307,6 +319,13 @@ function PricingMgr() {
                 </div>
               </div>
 
+              {r.package !== "addon" && (
+                <label className="mb-4 flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={r.is_visible !== false} onChange={(e) => upd(i, "is_visible", e.target.checked)} className="h-4 w-4" />
+                  {t("ظاهرة للعرائس")}
+                  {r.is_visible === false && <span className="text-xs text-muted-foreground">{t("— مخفية، محفوظة عندكِ فقط")}</span>}
+                </label>
+              )}
               {r.package !== "addon" && <DisclosureFields r={r} set={(k, v) => upd(i, k, v)} />}
 
               <label className="block text-xs text-muted-foreground mb-1">{t("ماذا تشمل الباقة؟")}{" "}<span className="text-muted-foreground/70">{t("— ميزة في كل سطر، والأرقام تظهر بالخط العريض تلقائياً")}</span></label>

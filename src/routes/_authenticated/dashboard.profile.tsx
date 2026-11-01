@@ -23,7 +23,7 @@ import { getMyVerification, requestVerification, updateNotificationPreferences }
 import { startTour, useTourState, resetTour } from "@/components/ClientTour";
 import { startPhotographerTour } from "@/components/PhotographerTour";
 import { PaymentMethodsEditor } from "@/components/PaymentMethods";
-import { parseMethods, normalizeMethods, legacyColumns, isUsable } from "@/lib/payment-methods";
+import { parseMethods, normalizeMethods, legacyColumns, isUsable, isStarted, isComplete, missingFields } from "@/lib/payment-methods";
 import { locale } from "@/i18n";
 import { t as tr, tx } from "@/i18n";
 
@@ -211,6 +211,12 @@ function ProfilePage() {
       booking_notes: p.booking_notes ?? null,
       fixed_deposit: finalFixedDeposit,
     }).eq("id", uid);
+    const half = (p.payment_methods ?? []).find((m: any) => isStarted(m) && !isComplete(m));
+    if (half) {
+      setSaving(false);
+      window.dispatchEvent(new CustomEvent("memoria-open-section", { detail: "sec-contact" }));
+      return toast.error(g(tr("أكملي طريقة استلام العربون: {0}", [missingFields(half).map((x) => tr(x)).join("، ")]), tr("أكمل طريقة استلام العربون: {0}", [missingFields(half).map((x) => tr(x)).join("، ")])), { duration: 7000 });
+    }
     const methods = normalizeMethods(p.payment_methods ?? []);
     const { error: pErr } = await (supabase as any).from("photographer_private").upsert({
       user_id: uid,
@@ -240,7 +246,7 @@ function ProfilePage() {
   const depositPct = Math.max(0, Math.min(100, numOr(p.deposit_percent, 25)));
   const checklist = [
     { key: "photos", label: tr("صورة شخصية وغلاف"), done: !!p.avatar_url && !!p.cover_url, section: "sec-photos" },
-    { key: "portfolio", label: tr("٥ صور أعمال على الأقل"), done: portfolioCount >= 5, section: "sec-photos" },
+    { key: "portfolio", label: tr("3 صور أعمال على الأقل (شرط النشر)"), done: portfolioCount >= 3, section: "sec-photos" },
     { key: "basics", label: tr("الاسم واسم المستخدم والمدينة"), done: !!p.display_name && !!p.username && !!p.city, section: "sec-basics" },
     { key: "bio", label: tr("نبذة تعريفية"), done: bioWords >= 15, section: "sec-basics" },
     { key: "payment", label: tr("طريقة استلام العربون"), done: (p.payment_methods ?? []).some(isUsable), section: "sec-contact" },
@@ -287,7 +293,12 @@ function ProfilePage() {
               data-tour="publish"
               role="switch"
               aria-checked={!!p.is_published}
-              onClick={() => setP({ ...p, is_published: !p.is_published })}
+              onClick={() => {
+                if (!p.is_published && portfolioCount < 3 && !p.is_demo) {
+                  return toast.error(g(tr("ارفعي 3 صور من أعمالكِ على الأقل قبل نشر صفحتكِ."), tr("ارفع 3 صور من أعمالك على الأقل قبل نشر صفحتك.")));
+                }
+                setP({ ...p, is_published: !p.is_published });
+              }}
               className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm transition-colors ${p.is_published ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" : "border-border"}`}
             >
               <span className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${p.is_published ? "bg-emerald-500" : "bg-secondary ring-1 ring-border"}`}>
@@ -310,7 +321,7 @@ function ProfilePage() {
           )}
         </div>
 
-        <Card id="sec-photos" title={tr("الصور")} done={!!p.avatar_url && !!p.cover_url && portfolioCount >= 5} open={openSections["sec-photos"] ?? true} onToggle={toggle}>
+        <Card id="sec-photos" title={tr("الصور")} done={!!p.avatar_url && !!p.cover_url && portfolioCount >= 3} open={openSections["sec-photos"] ?? true} onToggle={toggle}>
             <div data-tour="photos" className="grid sm:grid-cols-2 gap-4">
               <ImgPicker label={tr("الصورة الشخصية")} url={p.avatar_url} onPick={onAvatar} />
               <ImgPicker label={tr("صورة الغلاف")} url={p.cover_url} onPick={onCover} aspect="aspect-[16/9]" hint={!p.cover_url ? tr("الغلاف أول ما تراه العروس في ملفك") : undefined} />
@@ -319,7 +330,7 @@ function ProfilePage() {
             <div className="mt-6">
               <div className="mb-1 flex items-baseline justify-between">
                 <span className="text-sm">{tr("معرض الأعمال")}</span>
-                <span className={`text-xs tabular-nums ${portfolioCount >= 5 ? "text-muted-foreground" : "text-gold"}`}>{tx(portfolioCount)}/{tx(MAX_PORTFOLIO_PHOTOS)} {portfolioCount < 5 ? g(tr("· ننصح بإضافة {0} على الأقل", [5 - portfolioCount]), tr("· ننصح بإضافة {0} على الأقل", [5 - portfolioCount])) : tr("صورة")}</span>
+                <span className={`text-xs tabular-nums ${portfolioCount >= 3 ? "text-muted-foreground" : "text-destructive"}`}>{tx(portfolioCount)}/{tx(MAX_PORTFOLIO_PHOTOS)} {portfolioCount < 3 ? g(tr("· أضيفي {0} لتُنشر صفحتكِ", [3 - portfolioCount]), tr("· أضف {0} لتُنشر صفحتك", [3 - portfolioCount])) : tr("صورة")}</span>
               </div>
               <p className="mb-3 text-xs text-muted-foreground">{tr("الصورة الأولى هي ما تراه العروس في نتائج البحث.")}</p>
               {isBasic && <BasicLimitNote used={portfolioCount} max={BASIC_LIMITS.photos} what={tr("صور المعرض")} />}

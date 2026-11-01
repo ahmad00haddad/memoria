@@ -76,6 +76,11 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       }
     }
 
+    // باقة مخفية (أو زائدة عن حد Basic) لا تُحجز حتى لو وصل رابطها
+    const { data: visIds } = await (supabaseAdmin as any).rpc("visible_pricing_ids", { _pid: data.photographer_id });
+    const visible = new Set<string>((visIds ?? []) as string[]);
+    if (data.items.some((it) => !visible.has(it.rule_id))) throw new Error(tr("هذه الباقة غير متاحة حالياً، اختاري باقة أخرى"));
+
     const mainItem = data.items.find((i) => (ruleMap.get(i.rule_id) as any)!.package !== "addon");
     if (!mainItem) throw new Error(tr("يجب اختيار باقة أساسية"));
     const mainRule: any = ruleMap.get(mainItem.rule_id);

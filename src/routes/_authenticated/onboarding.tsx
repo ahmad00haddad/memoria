@@ -4,7 +4,7 @@ import { GenderPicker } from "@/components/dashboard/GenderPicker";
 import { g, useGender } from "@/hooks/use-gender";
 import { missingDisclosures } from "@/components/PackageFacts";
 import { PaymentMethodsEditor } from "@/components/PaymentMethods";
-import { emptyMethod, isUsable, legacyColumns, normalizeMethods, parseMethods, type PaymentMethod } from "@/lib/payment-methods";
+import { emptyMethod, isUsable, isStarted, isComplete, missingFields, legacyColumns, normalizeMethods, parseMethods, type PaymentMethod } from "@/lib/payment-methods";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { uploadProfilePhoto } from "@/lib/upload";
@@ -149,7 +149,9 @@ function Onboarding() {
       if (miss.length) return g(tr("أكملي تفاصيل الباقة: {0}", [miss.join("، ")]), tr("أكمل تفاصيل الباقة: {0}", [miss.join("، ")]));
     }
     if (step === 3) {
-      if (!f.methods.some(isUsable)) return g(tr("أضيفي طريقة واحدة على الأقل لاستلام العربون: CliQ أو محفظة أو تحويل بنكي."), tr("أضف طريقة واحدة على الأقل لاستلام العربون: CliQ أو محفظة أو تحويل بنكي."));
+      const half = f.methods.find((m) => isStarted(m) && !isComplete(m));
+      if (half) return g(tr("أكملي طريقة استلام العربون: {0}", [missingFields(half).map((x) => tr(x)).join("، ")]), tr("أكمل طريقة استلام العربون: {0}", [missingFields(half).map((x) => tr(x)).join("، ")]));
+      if (!f.methods.some(isComplete)) return g(tr("أضيفي طريقة واحدة على الأقل لاستلام العربون: CliQ أو محفظة أو تحويل بنكي."), tr("أضف طريقة واحدة على الأقل لاستلام العربون: CliQ أو محفظة أو تحويل بنكي."));
       if (f.whatsapp.trim() && !/^\+?\d{9,15}$/.test(f.whatsapp.trim().replace(/[\s-]/g, ""))) {
         return g(tr("رقم واتساب غير صحيح — أدخلي رقماً دولياً مثل +9627XXXXXXXX."), tr("رقم واتساب غير صحيح — أدخل رقماً دولياً مثل +9627XXXXXXXX."));
       }
@@ -241,13 +243,22 @@ function Onboarding() {
       setStep(2);
       return;
     }
+    // لا نشر قبل 3 صور أعمال على الأقل: نكمل الإعداد ونأخذها لرفع الصور
+    const { data: pf } = await supabase.from("profiles").select("portfolio_urls").eq("id", uid).maybeSingle();
+    const photos = ((pf as any)?.portfolio_urls ?? []).length;
+    const canPublish = photos >= 3;
     const { error } = await supabase.from("profiles").update({
       onboarding_completed_at: new Date().toISOString(),
       onboarding_step: STEPS_().length,
-      is_published: true,
+      is_published: canPublish,
     } as any).eq("id", uid);
     setSaving(false);
     if (error) { toast.error(error.message || tr("تعذّر إكمال الإعداد")); return; }
+    if (!canPublish) {
+      toast.success(g(tr("أكملتِ الإعداد! آخر خطوة: ارفعي 3 صور من أعمالكِ لتُنشر صفحتكِ."), tr("أكملت الإعداد! آخر خطوة: ارفع 3 صور من أعمالك لتُنشر صفحتك.")), { duration: 8000 });
+      setTimeout(() => nav({ to: "/dashboard/profile" }), 900);
+      return;
+    }
     hapticVibrate("success");
     try { confetti({ particleCount: 90, spread: 70, origin: { y: 0.7 }, colors: ["#c9a96e", "#f4ead5", "#2b2520"] }); } catch { /* ignore */ }
     toast.success(tr("ملفك منشور الآن — العرائس يستطعن رؤيته وحجز موعد"));

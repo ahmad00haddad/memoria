@@ -1,8 +1,8 @@
-import { Plus, Trash2, Smartphone, Landmark, Zap } from "lucide-react";
+import { Plus, Trash2, Smartphone, Landmark, Zap, ShieldAlert } from "lucide-react";
 import { CopyButton } from "@/components/ui/copy-button";
 import { g } from "@/hooks/use-gender";
-import { t as tr, tx } from "@/i18n";
-import { JO_BANKS, WALLETS, emptyMethod, isUsable, type PaymentKind, type PaymentMethod } from "@/lib/payment-methods";
+import { t as tr, tx, locale } from "@/i18n";
+import { JO_BANKS, WALLETS, emptyMethod, isUsable, missingFields, type PaymentKind, type PaymentMethod } from "@/lib/payment-methods";
 
 const input = "w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/50";
 
@@ -32,7 +32,8 @@ export function PaymentMethodsEditor({ value, onChange }: { value: PaymentMethod
 
       {value.map((m, i) => {
         const Icon = KIND_ICON[m.kind];
-        const incomplete = !isUsable(m);
+        const missing = missingFields(m);
+        const incomplete = missing.length > 0;
         return (
           <div key={i} className={`rounded-xl border p-4 ${incomplete ? "border-amber-300/70 dark:border-amber-800/60" : "border-border"}`}>
             <div className="mb-3 flex items-center justify-between">
@@ -43,7 +44,7 @@ export function PaymentMethodsEditor({ value, onChange }: { value: PaymentMethod
               {m.kind === "cliq" && (
                 <>
                   <Field label="CliQ alias *"><input dir="ltr" className={input} value={m.alias ?? ""} onChange={(e) => set(i, { alias: e.target.value })} placeholder="SARA.PHOTO" /></Field>
-                  <Field label="البنك أو المحفظة المربوط عليها" hint="بعض البنوك تطلبه من العروس عند التحويل."><input list="jo-banks" className={input} value={m.provider ?? ""} onChange={(e) => set(i, { provider: e.target.value })} placeholder={tr("مثلاً: البنك العربي")} /></Field>
+                  <Field label="البنك أو المحفظة المربوط عليها *" hint="بعض البنوك تطلبه من العروس عند التحويل."><input list="jo-banks" className={input} value={m.provider ?? ""} onChange={(e) => set(i, { provider: e.target.value })} placeholder={tr("مثلاً: البنك العربي")} /></Field>
                 </>
               )}
               {m.kind === "wallet" && (
@@ -54,16 +55,16 @@ export function PaymentMethodsEditor({ value, onChange }: { value: PaymentMethod
               )}
               {m.kind === "bank" && (
                 <>
-                  <Field label="اسم البنك"><input list="jo-banks" className={input} value={m.bank ?? ""} onChange={(e) => set(i, { bank: e.target.value })} /></Field>
+                  <Field label="اسم البنك *"><input list="jo-banks" className={input} value={m.bank ?? ""} onChange={(e) => set(i, { bank: e.target.value })} /></Field>
                   <Field label="IBAN *"><input dir="ltr" className={input} value={m.iban ?? ""} onChange={(e) => set(i, { iban: e.target.value })} placeholder="JO00XXXX0000000000000000000000" /></Field>
                 </>
               )}
-              <Field label="الاسم كما يظهر عند التحويل" hint={g(tr("اسمكِ الكامل (الرباعي) حتى تتأكّد العروس أنها تحوّل للشخص الصحيح."), tr("اسمك الكامل (الرباعي) حتى تتأكّد العروس أنها تحوّل للشخص الصحيح."))}>
+              <Field label="الاسم الكامل كما يظهر عند التحويل *" hint={g(tr("اسمكِ الكامل (الرباعي) حتى تتأكّد العروس أنها تحوّل للشخص الصحيح."), tr("اسمك الكامل (الرباعي) حتى تتأكّد العروس أنها تحوّل للشخص الصحيح."))}>
                 <input className={input} value={m.holder ?? ""} onChange={(e) => set(i, { holder: e.target.value })} />
               </Field>
               <Field label="ملاحظة (اختياري)"><input className={input} value={m.note ?? ""} onChange={(e) => set(i, { note: e.target.value })} placeholder={tr("مثلاً: اكتبي اسمكِ في ملاحظة التحويل")} /></Field>
             </div>
-            {incomplete && <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{tr("أكملي الخانات التي عليها * — الطريقة الناقصة لا تُحفظ.")}</p>}
+            {incomplete && <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{tr("ناقص: {0}", [missing.map((x) => tr(x)).join("، ")])}</p>}
           </div>
         );
       })}
@@ -95,12 +96,30 @@ function Row({ label, value, ltr }: { label: string; value?: string; ltr?: boole
   );
 }
 
-/** ما تراه العروس بعد الموافقة: كل طريقة بخاناتها وزر نسخ لكل خانة. */
-export function PaymentMethodsView({ methods }: { methods: PaymentMethod[] }) {
+/**
+ * ما تراه العروس بعد الموافقة: كل طريقة بخاناتها وزر نسخ لكل خانة، ومعها قائمة
+ * أمان قصيرة لأن التحويل لا يُسترجع: المبلغ بالضبط، مقارنة الاسم، رقم الحجز في
+ * الملاحظة، ولا تحويل لأي رقم وصل خارج الصفحة.
+ */
+export function PaymentMethodsView({ methods, amount, reference }: { methods: PaymentMethod[]; amount?: number; reference?: string }) {
   const list = methods.filter(isUsable);
   if (!list.length) return null;
+  const checks = [
+    amount ? tr("حوّلي {0} د.أ بالضبط، بتحويل واحد.", [amount.toLocaleString(locale("ar-JO"))]) : null,
+    tr("قبل أن تضغطي «تأكيد» في تطبيق البنك، قارني الاسم الذي يظهر لكِ مع «اسم المستلِم» هنا. إذا كان مختلفاً لا تحوّلي، وراسلي المصوّرة من هذه الصفحة."),
+    reference ? tr("اكتبي رقم الحجز {0} في ملاحظة التحويل.", [reference]) : null,
+    tr("لا تحوّلي لأي رقم أو حساب وصلكِ برسالة أو مكالمة — فقط الطرق المكتوبة في هذه الصفحة."),
+    tr("بعض البنوك تخصم عمولة: تأكّدي أن المبلغ الذي يصل كامل."),
+    tr("بعد التحويل مباشرة ارفعي صورة الإيصال هنا، واحتفظي بها."),
+  ].filter(Boolean) as string[];
   return (
     <div className="space-y-3">
+      <div className="rounded-sm border border-amber-400/60 bg-amber-50/60 p-3 text-sm dark:border-amber-800/60 dark:bg-amber-950/20">
+        <div className="mb-1.5 flex items-center gap-1.5 font-medium text-amber-800 dark:text-amber-300"><ShieldAlert className="h-4 w-4" />{tr("قبل أن تحوّلي — التحويل لا يُسترجع")}</div>
+        <ol className="list-decimal space-y-1 ps-5 text-[13px] leading-relaxed">
+          {checks.map((c, i) => <li key={i}>{tx(c)}</li>)}
+        </ol>
+      </div>
       {list.length > 1 && <p className="text-xs text-muted-foreground">{tr("اختاري الطريقة الأسهل لكِ — كلها تصل للمصوّرة مباشرة.")}</p>}
       {list.map((m, i) => {
         const Icon = KIND_ICON[m.kind];

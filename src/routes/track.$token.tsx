@@ -575,7 +575,7 @@ function TrackingPage() {
             </div>
 
 
-            <div className="mb-3"><PaymentMethodsView methods={payMethods} /></div>
+            <div className="mb-3"><PaymentMethodsView methods={payMethods} amount={Number(b.deposit_amount) || undefined} reference={String(token).slice(0, 8).toUpperCase()} /></div>
 
             <div className="grid gap-3">
               <input type="text" placeholder={t("رقم العملية المرجعي (مطلوب)")} required value={reference}
@@ -624,7 +624,7 @@ function TrackingPage() {
           <div className="rounded-2xl border border-gold/40 bg-gold/5 p-5 mb-6 text-sm">
             <div className="font-serif text-lg mb-1">{t("باقي المبلغ: {0} د.أ", [remainingDue.toLocaleString(locale("ar-JO"))])} <Term k="balance" /></div>
             <p className="text-muted-foreground mb-3">{t("حوّلي باقي المبلغ للمصوّرة بنفس طريقة العربون، حتى تحفظي حقّها وحقّكِ وتستلمي صورك. بعض المصوّرات يسلّمن الصور بعد وصول المبلغ فقط.")}</p>
-            <PaymentMethodsView methods={payMethods} />
+            <PaymentMethodsView methods={payMethods} amount={remainingDue || undefined} reference={String(token).slice(0, 8).toUpperCase()} />
           </div>
         )}
 

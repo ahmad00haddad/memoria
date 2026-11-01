@@ -59,7 +59,7 @@ function steps(): Step[] {
       lines: [
         G("اضغطي على «الصورة الشخصية» واختاري صورة واضحة لكِ أو لشعاركِ.", "اضغط على «الصورة الشخصية» واختر صورة واضحة لك أو لشعارك."),
         G("ثم اضغطي «صورة الغلاف» واختاري أجمل صورة من شغلكِ.", "ثم اضغط «صورة الغلاف» واختر أجمل صورة من شغلك."),
-        G("هذا أول ما تراه العروس.", "هذا أول ما تراه العروس."),
+        G("ارفعي 3 صور على الأقل في «معرض الأعمال» — بدونها لا تُنشر صفحتكِ.", "ارفع 3 صور على الأقل في «معرض الأعمال» — بدونها لا تُنشر صفحتك."),
       ],
       done: (p) => p.photo,
     },
@@ -158,13 +158,13 @@ async function loadProgress(): Promise<Progress | null> {
   if (!session) return null;
   const uid = session.user.id;
   const [{ data: prof }, { data: priv }, { count }] = await Promise.all([
-    supabase.from("profiles").select("display_name, city, avatar_url, cover_url, is_published").eq("id", uid).maybeSingle(),
+    supabase.from("profiles").select("display_name, city, avatar_url, cover_url, is_published, portfolio_urls").eq("id", uid).maybeSingle(),
     (supabase as any).from("photographer_private").select("cliq_alias, bank_info, telegram_chat_id").eq("user_id", uid).maybeSingle(),
     supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", uid).neq("package", "addon"),
   ]);
   const p: any = prof ?? {};
   return {
-    photo: !!p.avatar_url && !!p.cover_url,
+    photo: !!p.avatar_url && !!p.cover_url && (p.portfolio_urls ?? []).length >= 3,
     name: !!p.display_name && !!p.city,
     cliq: !!((priv as any)?.cliq_alias || (priv as any)?.bank_info),
     pkg: (count ?? 0) > 0,
