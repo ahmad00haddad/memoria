@@ -17,7 +17,7 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
     
     if (error || !result) {
       console.error("RPC Error:", error);
-      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0, responseHours: null as number | null, isPro: tier === "pro", acceptsBookings };
+      return { pricing: [], reviews: [], unavail: [], bookedSlots: [], completedCount: 0, responseHours: null as number | null, deliveryDays: null as number | null, isPro: tier === "pro", acceptsBookings };
     }
 
     // The RPC returns a JSON object with the keys we need
@@ -29,6 +29,8 @@ export const getPhotographerProfileData = createServerFn({ method: "GET" })
       bookedSlots: r.bookedSlots ?? [],
       completedCount: r.completedCount ?? 0,
       responseHours: (r.responseHours ?? null) as number | null,
+      // معدّل التسليم الفعلي (وسيط آخر سنة، من 3 تسليمات فأكثر)
+      deliveryDays: (r.deliveryDays ?? null) as number | null,
       // شارة التوثيق تظهر لباقة Pro فقط
       isPro: tier === "pro",
       acceptsBookings,

@@ -24,17 +24,13 @@ export const SHOOTER_LABEL: Record<string, string> = {
   team: "مصوّرة من فريقها",
 };
 
-/** الحقول الإلزامية الناقصة في باقة أساسية (الإضافات معفاة). */
+/**
+ * الإلزامي الوحيد: من يصوّر فعلياً (أهم ما تسأل عنه العروس). الباقي اختياري حتى
+ * لا تثقل التعبئة على المصوّرة؛ مدة التسليم تُحسب من تسليماتها الفعلية بدل أن تكتبها.
+ */
 export function missingDisclosures(r: PackageDisclosure): string[] {
   if (r.package === "addon") return [];
-  const out: string[] = [];
-  const num = (v: unknown) => v !== null && v !== undefined && String(v).trim() !== "" && !Number.isNaN(Number(v));
-  if (!num(r.hours) || Number(r.hours) <= 0) out.push(tr("مدة التصوير"));
-  if (!num(r.deliverable_count) || Number(r.deliverable_count) <= 0) out.push(r.service === "cinematic_video" ? tr("مدة الفيلم") : tr("عدد الصور المعدّلة"));
-  if (!num(r.delivery_days) || Number(r.delivery_days) <= 0) out.push(tr("مدة التسليم"));
-  if (!r.shooter) out.push(tr("من يصوّر"));
-  if (!num(r.overtime_fee) || Number(r.overtime_fee) < 0) out.push(tr("سعر الساعة الإضافية"));
-  return out;
+  return r.shooter ? [] : [tr("من يصوّر")];
 }
 
 const n = (v: number) => v.toLocaleString(locale("ar-JO"));

@@ -435,6 +435,7 @@ function Dashboard() {
   const [pricingCount, setPricingCount] = useState(cachedDashboard?.pricingCount ?? 0);
   const [hasCliq, setHasCliq] = useState(cachedDashboard?.hasCliq ?? false);
   const [incompletePkgs, setIncompletePkgs] = useState(0);
+  const [delivery, setDelivery] = useState<{ days: number; n: number } | null>(null);
   const [templatesCount, setTemplatesCount] = useState(cachedDashboard?.templatesCount ?? 0);
   const [stats, setStats] = useState(cachedDashboard?.stats ?? { confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, lastMonthRevenue: 0, revenueSeries: [], upcoming30: 0, pendingDepositsAmount: 0, pendingDepositNames: [], deliveriesDueSoon: 0, focus: [], newBookings: 0, newReviews: 0 });
   const [qsDismissed, setQsDismissed] = useState(false);
@@ -462,6 +463,16 @@ function Dashboard() {
         toast.success(tr("تم تطبيق رمز الإحالة بنجاح!"));
       }
     } catch (e) { sessionStorage.removeItem("pending_referral_code"); }
+    // معدّل التسليم الفعلي (نفس حساب الصفحة العامة: وسيط آخر سنة)
+    supabase.from("bookings").select("event_date, delivered_at").eq("photographer_id", session.user.id)
+      .is("deleted_at", null).not("delivered_at", "is", null)
+      .gte("delivered_at", new Date(Date.now() - 365 * 86400_000).toISOString())
+      .then(({ data: dl }) => {
+        const days = (dl ?? []).map((b: any) => Math.max(0, Math.round((new Date(b.delivered_at).getTime() - new Date(`${b.event_date}T00:00:00`).getTime()) / 86400_000))).sort((a, b) => a - b);
+        if (!days.length) return setDelivery(null);
+        const mid = Math.floor(days.length / 2);
+        setDelivery({ days: days.length % 2 ? days[mid] : Math.round((days[mid - 1] + days[mid]) / 2), n: days.length });
+      }, () => {});
     // باقات أساسية ناقصة الإفصاح (تراها العروس ناقصة قبل الطلب)
     (supabase as any).from("pricing_rules").select("package, service, hours, deliverable_count, delivery_days, shooter, overtime_fee")
       .eq("photographer_id", session.user.id).neq("package", "addon")
@@ -696,10 +707,20 @@ function Dashboard() {
               <Link to="/dashboard/pricing" className="mb-4 flex items-start gap-3 rounded-2xl border border-amber-400/60 bg-amber-50/50 p-4 text-sm dark:border-amber-800/60 dark:bg-amber-950/20">
                 <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                 <span>
-                  <strong className="block">{tr("باقات تنقصها تفاصيل ({0})", [incompletePkgs])}</strong>
-                  {g(tr("أضيفي ساعات التصوير وعدد الصور ومدة التسليم ومن يصوّر وسعر الساعة الإضافية — العروس تراها قبل الطلب، وهي أكثر ما يمنع الخلاف لاحقاً."), tr("أضف ساعات التصوير وعدد الصور ومدة التسليم ومن يصوّر وسعر الساعة الإضافية — العروس تراها قبل الطلب، وهي أكثر ما يمنع الخلاف لاحقاً."))}
+                  <strong className="block">{tr("باقات بدون «من يصوّر فعلياً» ({0})", [incompletePkgs])}</strong>
+                  {g(tr("حدّدي من يصوّر في كل باقة (أنتِ، أنتِ مع فريقكِ، أو مصوّرة من فريقكِ) — أهم ما تسأل عنه العروس."), tr("حدّد من يصوّر في كل باقة (أنت، أنت مع فريقك، أو مصوّرة من فريقك) — أهم ما تسأل عنه العروس."))}
                 </span>
               </Link>
+            )}
+            {delivery && (
+              <div className="mb-4 rounded-2xl border border-border bg-card p-4 text-sm">
+                <strong className="block">{tr("معدّل تسليمك: ~{0} يوماً", [delivery.days])}</strong>
+                <span className="text-muted-foreground">
+                  {delivery.n >= 3
+                    ? g(tr("يظهر للعرائس على صفحتكِ (من آخر {0} تسليمات). كل ما سلّمتِ أسرع، تحسّن الرقم.", [delivery.n]), tr("يظهر للعرائس على صفحتك (من آخر {0} تسليمات). كل ما سلّمت أسرع، تحسّن الرقم.", [delivery.n]))
+                    : g(tr("محسوب من {0} تسليم. يظهر للعرائس على صفحتكِ بعد 3 تسليمات.", [delivery.n]), tr("محسوب من {0} تسليم. يظهر للعرائس على صفحتك بعد 3 تسليمات.", [delivery.n]))}
+                </span>
+              </div>
             )}
             <TodayFocus items={stats.focus ?? []} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
 

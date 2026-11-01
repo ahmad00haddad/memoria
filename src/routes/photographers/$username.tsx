@@ -160,6 +160,7 @@ function PhotographerPage() {
   const [completedCount, setCompletedCount] = useState<number>(0);
   const [acceptsBookings, setAcceptsBookings] = useState(true);
   const [responseHours, setResponseHours] = useState<number | null>(null);
+  const [deliveryDays, setDeliveryDays] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -222,7 +223,8 @@ function PhotographerPage() {
       setProfile(mergedProfile);
       if (mergedProfile) {
         const pid = mergedProfile.id;
-        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc, responseHours: rh, isPro, acceptsBookings: ab } = await fetchProfileData({ data: { pid } });
+        const { pricing: p, reviews: r, unavail: u, bookedSlots: bk, completedCount: cc, responseHours: rh, deliveryDays: dd, isPro, acceptsBookings: ab } = await fetchProfileData({ data: { pid } });
+        setDeliveryDays(dd ?? null);
         setAcceptsBookings(ab !== false);
         // شارة التوثيق وعروض الأسعار لباقة Pro فقط
         setProfile(isPro ? { ...mergedProfile, is_pro: true } : { ...mergedProfile, is_pro: false, verification_status: null });
@@ -495,6 +497,12 @@ function PhotographerPage() {
                     <span className="text-emerald-400">⚡</span>{" "}{responseHours < 1 ? tr("تردّ خلال أقل من ساعة") : tr("تردّ خلال ~{0} ساعة", [Math.round(responseHours)])}
                   </span>
                 )}
+                {/* 📦 معدّل التسليم الحقيقي من تسليماتها (وسيط آخر سنة، من 3 تسليمات فأكثر) */}
+                {deliveryDays != null && (
+                  <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-sky-500/15 text-sky-300 px-3 py-1.5 rounded-full border border-sky-500/30" title={tr("محسوب من مواعيد تسليمها الفعلية للعرائس")}>
+                    📦{" "}{tr("تسلّم عادةً خلال ~{0} يوماً", [deliveryDays])}
+                  </span>
+                )}
               </div>
               {profile.bio && (
                 <p className="max-w-md text-base sm:text-lg leading-[1.8] opacity-85 whitespace-pre-line mb-8">
@@ -575,6 +583,7 @@ function PhotographerPage() {
           completedCount={completedCount}
           unavailCount={blockedDates.length}
           responseHours={responseHours}
+          deliveryDays={deliveryDays}
         />}
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("الباقات")}</div>
@@ -735,7 +744,7 @@ function ProgressiveImage({ src, alt, className }: { src: string, alt?: string, 
   );
 }
 
-function TrustBadges({ profile, completedCount, unavailCount, responseHours }: { profile: Profile; completedCount: number; unavailCount: number; responseHours: number | null }) {
+function TrustBadges({ profile, completedCount, unavailCount, responseHours, deliveryDays }: { profile: Profile; completedCount: number; unavailCount: number; responseHours: number | null; deliveryDays?: number | null }) {
   const joined = profile.created_at ? new Date(profile.created_at) : null;
   const joinedLabel = joined
     ? joined.toLocaleDateString(locale("ar-JO"), { month: "long", year: "numeric" })
@@ -744,7 +753,9 @@ function TrustBadges({ profile, completedCount, unavailCount, responseHours }: {
     ? tr("{0} د.أ", [Number(profile.fixed_deposit).toLocaleString(locale("ar-JO"))])
     : `${profile.deposit_percent || 25}%`;
   const items = [
-    { icon: CalendarCheck, label: tr("عضوة منذ"), value: joinedLabel },
+    deliveryDays != null
+      ? { icon: CalendarCheck, label: tr("التسليم الفعلي عادةً"), value: tr("~{0} يوماً", [deliveryDays]) }
+      : { icon: CalendarCheck, label: tr("عضوة منذ"), value: joinedLabel },
     { icon: Award, label: tr("حجوزات مكتملة"), value: completedCount > 0 ? String(completedCount) : tr("جديدة") },
     { icon: Shield, label: tr("العربون"), value: depositLabel },
     responseHours != null

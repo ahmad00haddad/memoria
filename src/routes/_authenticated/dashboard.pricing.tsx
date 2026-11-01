@@ -410,9 +410,9 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
   );
 }
 
-// الحقول الإلزامية: نفس ما تراه العروس في بطاقة الباقة قبل الطلب
+// «من يصوّر فعلياً» إلزامي (أهم ما تسأل عنه العروس)؛ الباقي اختياري ومطوي حتى لا
+// تثقل التعبئة. مدة التسليم لا تُكتب هنا: تُحسب من تسليماتها الفعلية وتظهر كمعدّل.
 function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) => void }) {
-  const miss = missingDisclosures(r as any);
   const video = r.service === "cinematic_video";
   const box = "w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm tabular-nums outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50";
   // دالة لا مكوّن: مكوّن داخلي يُعاد إنشاؤه مع كل رسم فيفقد الحقل التركيز بعد كل حرف
@@ -422,36 +422,41 @@ function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) =>
       <input type="number" min="0" inputMode="decimal" value={(r[k] as any) ?? ""} placeholder={ph} onChange={(e) => set(k, e.target.value)} className={box} />
     </label>
   );
+  const optionalFilled = [r.hours, r.deliverable_count, r.overtime_fee, r.revision_rounds, r.excludes].some((v) => v !== null && v !== undefined && String(v).trim() !== "") || !!r.unedited_included;
   return (
-    <div className={`mb-5 rounded-2xl border p-4 ${miss.length ? "border-amber-400/70 bg-amber-50/40 dark:border-amber-800/60 dark:bg-amber-950/10" : "border-border"}`}>
-      <div className="mb-3 text-sm font-medium">{t("تفاصيل تراها العروس قبل الطلب")}</div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {num("hours", t("ساعات التصوير *"), "4")}
-        {num("deliverable_count", video ? t("مدة الفيلم بالدقائق *") : t("عدد الصور المعدّلة تقريباً *"), video ? "5" : "100")}
-        {num("delivery_days", t("التسليم خلال (يوم) *"), "30")}
-        {num("overtime_fee", t("الساعة الإضافية (د.أ) *"), t("0 = لا تمديد"))}
-        {num("revision_rounds", t("جولات تعديل مجانية"), t("اختياري"))}
-        <label className="block">
-          <span className="mb-1 block text-xs text-muted-foreground">{t("من يصوّر فعلياً؟ *")}</span>
-          <select value={r.shooter ?? ""} onChange={(e) => set("shooter", e.target.value || null)} className={box}>
-            <option value="">{t("اختاري")}</option>
-            <option value="me">{t("أنا بنفسي")}</option>
-            <option value="me_team">{t("أنا مع فريقي")}</option>
-            <option value="team">{t("مصوّرة من فريقي")}</option>
-          </select>
-        </label>
-      </div>
-      {!video && (
-        <label className="mt-3 flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={!!r.unedited_included} onChange={(e) => set("unedited_included", e.target.checked)} className="h-4 w-4" />
-          {t("أسلّم كل الصور الصالحة غير المعدّلة أيضاً")}
-        </label>
-      )}
-      <label className="mt-3 block">
-        <span className="mb-1 block text-xs text-muted-foreground">{t("ما لا تشمله الباقة")}{" "}<span className="text-muted-foreground/70">{t("(مثلاً: الألبوم، الدرون، المواصلات خارج المدينة)")}</span></span>
-        <input value={r.excludes ?? ""} maxLength={300} onChange={(e) => set("excludes", e.target.value)} placeholder={t("افصلي بفاصلة")} className={box} />
+    <div className="mb-5 space-y-3">
+      <label className={`block rounded-2xl border p-4 ${r.shooter ? "border-border" : "border-amber-400/70 bg-amber-50/40 dark:border-amber-800/60 dark:bg-amber-950/10"}`}>
+        <span className="mb-1 block text-sm font-medium">{t("من يصوّر فعلياً؟ *")}</span>
+        <span className="mb-2 block text-xs text-muted-foreground">{g(t("أهم ما تسأل عنه العروس — يظهر لها على الباقة."), t("أهم ما تسأل عنه العروس — يظهر لها على الباقة."))}</span>
+        <select value={r.shooter ?? ""} onChange={(e) => set("shooter", e.target.value || null)} className={box}>
+          <option value="">{g(t("اختاري"), t("اختر"))}</option>
+          <option value="me">{t("أنا بنفسي")}</option>
+          <option value="me_team">{t("أنا مع فريقي")}</option>
+          <option value="team">{t("مصوّرة من فريقي")}</option>
+        </select>
       </label>
-      {miss.length > 0 && <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{t("ناقص: {0}", [miss.join("، ")])}</p>}
+
+      <details className="group rounded-2xl border border-border p-4" open={optionalFilled}>
+        <summary className="cursor-pointer list-none text-sm">
+          {t("تفاصيل إضافية")}{" "}<span className="text-xs text-muted-foreground">{t("(اختياري — اكتبي ما يناسبكِ فقط)")}</span>
+        </summary>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {num("hours", t("ساعات التصوير"), t("مفتوحة"))}
+          {num("deliverable_count", video ? t("مدة الفيلم (دقائق)") : t("عدد الصور المعدّلة"), t("اختياري"))}
+          {num("overtime_fee", t("الساعة الإضافية (د.أ)"), t("اختياري"))}
+          {num("revision_rounds", t("جولات تعديل مجانية"), t("اختياري"))}
+        </div>
+        {!video && (
+          <label className="mt-3 flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={!!r.unedited_included} onChange={(e) => set("unedited_included", e.target.checked)} className="h-4 w-4" />
+            {t("أسلّم كل الصور الصالحة غير المعدّلة أيضاً")}
+          </label>
+        )}
+        <label className="mt-3 block">
+          <span className="mb-1 block text-xs text-muted-foreground">{t("ما لا تشمله الباقة")}</span>
+          <input value={r.excludes ?? ""} maxLength={300} onChange={(e) => set("excludes", e.target.value)} placeholder={t("مثلاً: الألبوم، الدرون")} className={box} />
+        </label>
+      </details>
     </div>
   );
 }

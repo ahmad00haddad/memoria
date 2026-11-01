@@ -45,13 +45,14 @@ export function isStarted(m: PaymentMethod): boolean {
 
 /**
  * مكتملة للحفظ (قرار 2026-11-02: الموضوع حساس، فكل التفاصيل إلزامية):
- * cliq = alias + البنك/المحفظة المربوط عليها + الاسم · wallet = المحفظة + الرقم + الاسم · bank = البنك + IBAN + الاسم
+ * cliq = alias + البنك/المحفظة المربوط عليها + الاسم · wallet = المحفظة + الرقم + الاسم
+ * bank = الاسم + أي تفصيل للحساب (البنك أو IBAN أو رقم الحساب بالملاحظة) — IBAN ليس إلزامياً، كثيرات لا يعرفن كيف يجلبنه
  */
 export function missingFields(m: PaymentMethod): string[] {
   const out: string[] = [];
   if (m.kind === "cliq") { if (!clean(m.alias)) out.push("CliQ alias"); if (!clean(m.provider)) out.push("البنك أو المحفظة المربوط عليها"); }
   if (m.kind === "wallet") { if (!clean(m.provider)) out.push("اسم المحفظة"); if (!clean(m.number)) out.push("رقم المحفظة"); }
-  if (m.kind === "bank") { if (!clean(m.bank)) out.push("اسم البنك"); if (!clean(m.iban)) out.push("IBAN"); }
+  if (m.kind === "bank" && !clean(m.bank) && !clean(m.iban) && !clean(m.note)) out.push("اسم البنك أو رقم الحساب");
   if (!clean(m.holder)) out.push("الاسم كما يظهر عند التحويل");
   return out;
 }

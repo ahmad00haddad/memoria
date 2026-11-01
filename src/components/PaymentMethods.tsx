@@ -55,8 +55,8 @@ export function PaymentMethodsEditor({ value, onChange }: { value: PaymentMethod
               )}
               {m.kind === "bank" && (
                 <>
-                  <Field label="اسم البنك *"><input list="jo-banks" className={input} value={m.bank ?? ""} onChange={(e) => set(i, { bank: e.target.value })} /></Field>
-                  <Field label="IBAN *"><input dir="ltr" className={input} value={m.iban ?? ""} onChange={(e) => set(i, { iban: e.target.value })} placeholder="JO00XXXX0000000000000000000000" /></Field>
+                  <Field label="اسم البنك"><input list="jo-banks" className={input} value={m.bank ?? ""} onChange={(e) => set(i, { bank: e.target.value })} /></Field>
+                  <Field label="IBAN (اختياري)" hint="إذا ما بتعرفيه، اكتبي رقم الحساب بالملاحظة تحت."><input dir="ltr" className={input} value={m.iban ?? ""} onChange={(e) => set(i, { iban: e.target.value })} placeholder="JO00XXXX0000000000000000000000" /></Field>
                 </>
               )}
               <Field label="الاسم الكامل كما يظهر عند التحويل *" hint={g(tr("اسمكِ الكامل (الرباعي) حتى تتأكّد العروس أنها تحوّل للشخص الصحيح."), tr("اسمك الكامل (الرباعي) حتى تتأكّد العروس أنها تحوّل للشخص الصحيح."))}>

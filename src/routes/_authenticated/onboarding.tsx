@@ -429,23 +429,14 @@ function Onboarding() {
               {Number(f.pkg_price) > 0 && (
                 <p className="text-xs text-muted-foreground tabular-nums">{tr("العربون الافتراضي ٢٥٪ = {0} د.أ — تغيّرينه لاحقاً من ملفك.", [Math.round(Number(f.pkg_price) * 0.25)])}</p>
               )}
-              <div className="rounded-sm border border-border p-3">
-                <div className="mb-1 text-sm font-medium">{tr("تفاصيل تراها العروس قبل الطلب *")}</div>
-                <p className="mb-3 text-xs text-muted-foreground">{g(tr("كل شي مكتوب من البداية = ما في خلاف بعدين."), tr("كل شي مكتوب من البداية = ما في خلاف بعدين."))}</p>
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label={tr("ساعات التصوير")}><input type="number" min={0} inputMode="decimal" value={f.pkg_hours} onChange={(e) => upd("pkg_hours", e.target.value)} className={inputCx} placeholder="4" dir="ltr" /></Field>
-                  <Field label={f.pkg_service === "cinematic_video" ? tr("مدة الفيلم (دقائق)") : tr("عدد الصور المعدّلة تقريباً")}><input type="number" min={0} inputMode="numeric" value={f.pkg_count} onChange={(e) => upd("pkg_count", e.target.value)} className={inputCx} placeholder={f.pkg_service === "cinematic_video" ? "5" : "100"} dir="ltr" /></Field>
-                  <Field label={tr("التسليم خلال (يوم)")}><input type="number" min={0} inputMode="numeric" value={f.pkg_days} onChange={(e) => upd("pkg_days", e.target.value)} className={inputCx} placeholder="30" dir="ltr" /></Field>
-                  <Field label={tr("الساعة الإضافية (د.أ)")}><input type="number" min={0} inputMode="decimal" value={f.pkg_overtime} onChange={(e) => upd("pkg_overtime", e.target.value)} className={inputCx} placeholder={tr("0 = لا تمديد")} dir="ltr" /></Field>
-                </div>
-                <Field label={tr("من يصوّر فعلياً؟")}>
-                  <select value={f.pkg_shooter} onChange={(e) => upd("pkg_shooter", e.target.value as any)} className={inputCx}>
-                    <option value="me">{g(tr("أنا بنفسي"), tr("أنا بنفسي"))}</option>
-                    <option value="me_team">{tr("أنا مع فريقي")}</option>
-                    <option value="team">{tr("مصوّرة من فريقي")}</option>
-                  </select>
-                </Field>
-              </div>
+              <Field label={tr("من يصوّر فعلياً؟ *")}>
+                <select value={f.pkg_shooter} onChange={(e) => upd("pkg_shooter", e.target.value as any)} className={inputCx}>
+                  <option value="me">{tr("أنا بنفسي")}</option>
+                  <option value="me_team">{tr("أنا مع فريقي")}</option>
+                  <option value="team">{tr("مصوّرة من فريقي")}</option>
+                </select>
+              </Field>
+              <p className="text-xs text-muted-foreground">{g(tr("يظهر للعروس على الباقة. باقي التفاصيل (الساعات، عدد الصور…) اختيارية من صفحة الأسعار."), tr("يظهر للعروس على الباقة. باقي التفاصيل (الساعات، عدد الصور…) اختيارية من صفحة الأسعار."))}</p>
               <p className="text-xs text-muted-foreground">{tr("يمكنك إضافة المزيد من الباقات لاحقاً من صفحة الأسعار.")}</p>
             </div>
           )}
