@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Check, ChevronDown, ChevronUp, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { g } from "@/hooks/use-gender";
-import { t as tr, tx } from "@/i18n";
+import { t as tr, tx, locale } from "@/i18n";
 
 // ============================================================================
 // جولة المصوّرة — خطوات قصيرة جداً، كل خطوة تأخذها للصفحة الصحيحة، تُبرز الزر
@@ -284,7 +284,7 @@ export function PhotographerTour() {
               <ol className="mt-2 space-y-1.5">
                 {s.lines.map((l, i) => (
                   <li key={i} className="flex gap-2 text-[15px] leading-relaxed">
-                    {s.lines.length > 1 && <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-gold/15 text-[11px] text-gold">{(i + 1).toLocaleString("ar-JO")}</span>}
+                    {s.lines.length > 1 && <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-gold/15 text-[11px] text-gold">{(i + 1).toLocaleString(locale("ar-JO"))}</span>}
                     <span>{tx(l)}</span>
                   </li>
                 ))}
