@@ -259,7 +259,7 @@ function SearchPage() {
                             value={date}
                             min={new Date().toISOString().slice(0, 10)}
                             onChange={(e) => setDate(e.target.value)}
-                            className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm"
+                            className={`w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm ${date ? "" : "text-muted-foreground"}`}
                           />
                         </div>
                         <div className="space-y-2">

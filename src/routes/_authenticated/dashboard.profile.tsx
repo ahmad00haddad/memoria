@@ -530,7 +530,7 @@ function ProfilePage() {
               <span className="font-medium">
                 {tourState.status === "active" ? tr("فعّالة") : tourState.status === "completed" ? tr("مكتملة") : tourState.status === "skipped" ? tr("متخطّاة") : tr("لم تبدأ")}
               </span>
-              <button onClick={() => { startTour(); toast.success(tr("شغّلنا الجولة التعريفية")); }} className="ms-auto rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{tr("تشغيل")}</button>
+              <button onClick={() => { startTour(); nav({ to: "/search" }); }} className="ms-auto rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{tr("تشغيل")}</button>
               <button onClick={() => { resetTour(); toast.success(tr("صفّرنا الجولة")); }} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{tr("تصفير")}</button>
             </div>
           </Card>

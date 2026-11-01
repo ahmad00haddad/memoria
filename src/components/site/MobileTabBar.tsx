@@ -169,7 +169,7 @@ export function MobileTabBar() {
             }`}
           >
             <User className="h-5 w-5" />
-            <span className="text-[11px] font-medium">{tr("دخول")}</span>
+            <span className="text-[11px] font-medium">{tr("للمصوّرات")}</span>
           </Link>
         )}
       </div>

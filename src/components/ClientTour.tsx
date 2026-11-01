@@ -46,6 +46,7 @@ export function startTour() {
     step: 0,
     startedAt: new Date().toISOString(),
     completedAt: null,
+    waiting: false,
   });
 }
 

@@ -450,7 +450,7 @@ function PhotographerPage() {
                 </div>
               )}
               <div className="text-[11px] uppercase tracking-[0.5em] text-gold mb-4">
-                {profile.tagline || "WEDDING PHOTOGRAPHY"}
+                {profile.tagline || tr("تصوير أعراس")}
               </div>
               {profile.avatar_url && (
                 <span className="relative mb-5 inline-block">
@@ -521,10 +521,9 @@ function PhotographerPage() {
             </div>
 
             {/* Magazine-style stats row */}
-            {ps.show_stats && <div className="mt-12 grid grid-cols-3 gap-4 border-t border-ivory/10 pt-6">
+            {ps.show_stats && <div className="mt-12 grid grid-cols-2 gap-4 border-t border-ivory/10 pt-6">
               <Stat label={tr("التقييم")} value={reviews.length ? <CountTo onMount to={avgRating} decimals={1} locale="en" delay={0.6} /> : "—"} sub={reviews.length ? tr("{0} مراجعة", [reviews.length]) : tr("جديد")} />
               <Stat label={tr("الموقع")} value={profile.city || "—"} sub={profile.base_location || tr("الأردن")} />
-              <Stat label={tr("الباقات")} value={<CountTo onMount to={pricing.filter((p) => p.package !== "addon").length} locale="en" delay={0.7} duration={1} />} sub={tr("باقة احترافية")} />
             </div>}
           </motion.div>
 
@@ -552,7 +551,7 @@ function PhotographerPage() {
                   {tr("مختارة من المعرض")}
                 </div>
                 <div className="font-serif text-base leading-snug">
-                  {ps.hero_quote || tr("«كل صورة قصة، وكل قصة تستحق الفخامة»")}
+                  {ps.hero_quote || tr("من أعمال {0}", [profile.display_name])}
                 </div>
                 {profile.city && (
                   <div className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -909,6 +908,20 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     ? (() => { const [y, m, day] = f.event_date.split("-").map(Number); return new Date(y, m - 1, day); })()
     : undefined;
   const daysUntil = selectedDateObj ? Math.floor((selectedDateObj.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
+  // كم يوماً بقي متاحاً فعلاً في هذا الشهر (من اليوم فصاعداً) — رقم حقيقي لا تهويل
+  const monthFree = (() => {
+    const base = selectedDateObj ?? new Date();
+    const y = base.getFullYear(), m = base.getMonth();
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    let left = 0, free = 0;
+    for (let d = 1; d <= new Date(y, m + 1, 0).getDate(); d++) {
+      if (new Date(y, m, d) < today) continue;
+      left++;
+      if (!blockedDates.includes(`${y}-${pad(m + 1)}-${pad(d)}`)) free++;
+    }
+    return { left, free };
+  })();
 
   // تعبئة تلقائية للأوقات والملاحظات حسب نوع الباقة
   const onSelectPackage = (id: string) => {
@@ -1148,8 +1161,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     if (!stepValid[step]) {
       const msg = step === 1 ? tr("يجب اختيار التاريخ والباقة قبل المتابعة للخطوة التالية.") :
                   step === 3 ? tr("يرجى تعبئة جميع الحقول الإلزامية والموافقة على الشروط.") : tr("يرجى إكمال الحقول المطلوبة.");
-      setFormError(msg);
-      toast.error(msg);
+      setFormError(msg); // رسالة واحدة في أعلى النموذج بدل إشعار منبثق مكرّر
+      setTimeout(() => document.getElementById("booking-form-error")?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
       return;
     }
     setFormError(null);
@@ -1166,7 +1179,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
 
   return (
     <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft">
-      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">Book in simple steps</div>
+      <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("ثلاث خطوات")}</div>
       <h2 className="font-serif text-3xl mb-4">{tr("احجزي بخطوات بسيطة")}</h2>
       <SavedBookingsBanner />
       {restoredDraft && !success && (
@@ -1182,7 +1195,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
       <AnimatePresence initial={false}>
       {formError && (
         <motion.div key="form-error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
-        <div role="alert" aria-live="assertive" className="mb-4 rounded-sm border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+        <div id="booking-form-error" role="alert" aria-live="assertive" className="mb-4 rounded-sm border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
           <span className="mt-0.5 text-base leading-none">⚠️</span>
           <span>{tx(formError)}</span>
         </div>
@@ -1243,9 +1256,9 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
                   <span className="inline-flex items-center gap-1"><span className="inline-block w-3 h-3 rounded-sm bg-destructive/20 line-through">×</span>{" "}{tr("أيام محجوزة/محجوبة")}</span>
                 </div>
                 {/* Idea 5: Busy Month Hint */}
-                {blockedDates.filter(d => new Date(d).getMonth() === (selectedDateObj?.getMonth() ?? new Date().getMonth())).length >= 15 && (
-                  <div className="text-amber-700 bg-amber-50 p-1.5 rounded-sm border border-amber-200">
-                    🔥 <strong>{tr("هذا الشهر شبه ممتلئ!")}</strong>{" "}{tr("سارعي بتأكيد موعدكِ قبل نفاد الأيام المتاحة.")}
+                {monthFree.left >= 7 && monthFree.free > 0 && monthFree.free <= 5 && (
+                  <div className="text-amber-700 bg-amber-50 p-1.5 rounded-sm border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/50">
+                    {tr("بقي {0} أيام متاحة فقط عندها في هذا الشهر.", [monthFree.free])}
                   </div>
                 )}
               </div>
@@ -1494,7 +1507,7 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
       <div className="bg-charcoal text-ivory rounded-sm p-6 sm:p-8 h-fit lg:sticky lg:top-24">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("نسخة تجريبية")}</div>
         <h3 className="font-serif text-2xl mb-3">{tr("التحويل غير متاح")}</h3>
-        <p className="text-sm text-ivory/80">{tr("هذا الحساب للعرض فقط. في حساب مصوّرة حقيقي تظهر هنا معلومات العربون وطريقة التحويل. جرّبي الحجز كما هو، وسيعمل بشكل طبيعي.")}</p>
+        <p className="text-sm text-ivory/80">{tr("هذا الحساب للعرض فقط. في حساب مصوّرة حقيقي تظهر هنا معلومات العربون وطريقة التحويل. يمكنكِ تجربة خطوات الحجز، لكن لا يُحجز أي موعد.")}</p>
       </div>
     );
   }

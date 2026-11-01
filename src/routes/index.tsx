@@ -339,7 +339,11 @@ function Landing() {
                   <span className="hidden h-6 w-px bg-border sm:block" />
                   <label className="flex flex-1 items-center gap-2 rounded-full px-4 py-2 focus-within:bg-secondary/60">
                     <span className="text-xs text-muted-foreground shrink-0">{tr("تاريخ العرس")}</span>
-                    <input type="date" value={heroDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setHeroDate(e.target.value)} className="w-full bg-transparent text-sm outline-none" />
+                    <span className="relative flex-1">
+                      {/* حقل التاريخ يعرض mm/dd/yyyy بلغة المتصفح؛ نخفيه بنص عربي حتى تختار العروس */}
+                      {!heroDate && <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center text-sm text-muted-foreground">{tr("اختاري اليوم")}</span>}
+                      <input type="date" value={heroDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setHeroDate(e.target.value)} aria-label={tr("تاريخ العرس")} className={`w-full bg-transparent text-sm outline-none ${heroDate ? "" : "text-transparent"}`} />
+                    </span>
                   </label>
                   <button type="submit" className="group inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm text-ivory transition-all hover:gap-3 active:scale-[0.98] dark:bg-gold dark:text-charcoal">
                     {heroDate ? tr("المتاحات") : tr("ابحثي")} <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />

@@ -126,7 +126,7 @@ function LoginPage() {
       <Header />
       <div className="container-editorial py-16 max-w-md">
         <div className="text-center mb-8">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("بوابة المصوّرين")}</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("بوابة المصوّرات")}</div>
           <h1 className="font-serif text-4xl">{t("تسجيل الدخول")}</h1>
         </div>
         <motion.form

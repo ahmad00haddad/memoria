@@ -204,7 +204,7 @@ function JoinPage() {
           </div>
         ) : (<>
         <div className="text-center mb-8">
-          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("بوابة المصوّرين")}</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("بوابة المصوّرات")}</div>
           <h1 className="font-serif text-4xl">{tr("انضمي إلى ميموريا")}</h1>
           <p className="text-sm text-muted-foreground mt-2">{tr("حسابكِ خلال دقيقة، وملفكِ جاهز خلال 5 دقائق — ١٤ يوماً مجاناً بدون بطاقة.")}</p>
         </div>
