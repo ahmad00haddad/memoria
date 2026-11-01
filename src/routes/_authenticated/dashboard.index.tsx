@@ -38,6 +38,7 @@ import { useIntro } from "@/lib/intro";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { CopyButton } from "@/components/ui/copy-button";
 import { TodayFocus } from "@/components/dashboard/TodayFocus";
+import { missingDisclosures } from "@/components/PackageFacts";
 import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
 import { ToolIndex, Sparkline, type Tool } from "@/components/dashboard/ToolIndex";
 import { computeFocusItems } from "@/components/dashboard/focus";
@@ -433,6 +434,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(!cachedDashboard);
   const [pricingCount, setPricingCount] = useState(cachedDashboard?.pricingCount ?? 0);
   const [hasCliq, setHasCliq] = useState(cachedDashboard?.hasCliq ?? false);
+  const [incompletePkgs, setIncompletePkgs] = useState(0);
   const [templatesCount, setTemplatesCount] = useState(cachedDashboard?.templatesCount ?? 0);
   const [stats, setStats] = useState(cachedDashboard?.stats ?? { confirmed: 0, pending: 0, completed: 0, revenue: 0, avgRating: 0, reviews: 0, monthRevenue: 0, lastMonthRevenue: 0, revenueSeries: [], upcoming30: 0, pendingDepositsAmount: 0, pendingDepositNames: [], deliveriesDueSoon: 0, focus: [], newBookings: 0, newReviews: 0 });
   const [qsDismissed, setQsDismissed] = useState(false);
@@ -460,6 +462,11 @@ function Dashboard() {
         toast.success(tr("تم تطبيق رمز الإحالة بنجاح!"));
       }
     } catch (e) { sessionStorage.removeItem("pending_referral_code"); }
+    // باقات أساسية ناقصة الإفصاح (تراها العروس ناقصة قبل الطلب)
+    (supabase as any).from("pricing_rules").select("package, service, hours, deliverable_count, delivery_days, shooter, overtime_fee")
+      .eq("photographer_id", session.user.id).neq("package", "addon")
+      .then(({ data: pk }: any) => setIncompletePkgs((pk ?? []).filter((r: any) => missingDisclosures(r).length).length))
+      .catch(() => {});
     const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }, { count: tplCount }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
       supabase.from("photographer_private").select("ical_token,cliq_alias,bank_info,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
@@ -682,6 +689,15 @@ function Dashboard() {
                 <span>
                   <strong className="block text-destructive">{tr("لا توجد طريقة لاستلام العربون")}</strong>
                   {g(tr("صفحتكِ منشورة، لكن العروس بعد موافقتكِ لن تعرف أين تحوّل العربون. أضيفي طريقة الآن (CliQ أو محفظة أو بنك)."), tr("صفحتك منشورة، لكن العروس بعد موافقتك لن تعرف أين تحوّل العربون. أضف طريقة الآن (CliQ أو محفظة أو بنك)."))}
+                </span>
+              </Link>
+            )}
+            {incompletePkgs > 0 && (
+              <Link to="/dashboard/pricing" className="mb-4 flex items-start gap-3 rounded-2xl border border-amber-400/60 bg-amber-50/50 p-4 text-sm dark:border-amber-800/60 dark:bg-amber-950/20">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                <span>
+                  <strong className="block">{tr("باقات تنقصها تفاصيل ({0})", [incompletePkgs])}</strong>
+                  {g(tr("أضيفي ساعات التصوير وعدد الصور ومدة التسليم ومن يصوّر وسعر الساعة الإضافية — العروس تراها قبل الطلب، وهي أكثر ما يمنع الخلاف لاحقاً."), tr("أضف ساعات التصوير وعدد الصور ومدة التسليم ومن يصوّر وسعر الساعة الإضافية — العروس تراها قبل الطلب، وهي أكثر ما يمنع الخلاف لاحقاً."))}
                 </span>
               </Link>
             )}

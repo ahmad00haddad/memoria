@@ -24,6 +24,7 @@ import { hapticVibrate } from "@/lib/utils";
 import { playSound } from "@/lib/sounds";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { useIntro } from "@/lib/intro";
+import { PackageFacts, missingDisclosures, type PackageDisclosure } from "@/components/PackageFacts";
 import { CountTo, DrawFrame, DrawIcon, EASE_DRAW, EASE_OUT, RevealWords, RiseIn } from "@/components/site/Reveal";
 import { MapPin } from "lucide-react";
 import { Zap, CircleCheck } from "lucide-react";
@@ -147,7 +148,7 @@ type Pricing = {
   label: string; price: number;
   per_photo_price: number | null; description: string | null;
   subtitle?: string | null; cta_label?: string | null;
-};
+} & PackageDisclosure;
 
 function PhotographerPage() {
   const { username } = Route.useParams();
@@ -594,6 +595,7 @@ function PhotographerPage() {
                   <h3 className="font-serif text-2xl mb-1">{tx(p.label)}</h3>
                   {p.subtitle && <p className="text-sm text-muted-foreground">{tx(p.subtitle)}</p>}
                   <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString(locale("ar-JO"))} <span className="text-sm">{tr("د.أ")}</span></div>
+                  <PackageFacts d={p} compact className="mb-4 border-y border-border/60 py-3" />
                   {features.length > 0 && (
                     <ul className="mb-6 space-y-2.5 border-t border-border pt-4 text-sm text-muted-foreground">
                       {features.map((ft, i) => (
@@ -930,7 +932,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     let start = f.start_time, end = f.end_time;
     if (pkg.package === "full_day") { start = start || "10:00"; end = end || "23:00"; }
     else if (pkg.package === "hourly") {
-      const hours = labelHours(pkg.label);
+      const hours = pkg.hours ? Number(pkg.hours) : labelHours(pkg.label);
       start = start || "18:00";
       const endHour = (18 + hours) % 24;
       end = end || `${String(endHour).padStart(2, "0")}:00`;
@@ -1412,6 +1414,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
             <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">{tr("المجموع")}</span><span className="font-semibold">{tr("{0} د.أ", [total.toLocaleString(locale("ar-JO"))])}</span></div>
             <div className="flex justify-between text-gold"><span>{tr("العربون المطلوب")} <Term k="deposit" /></span><span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span></div>
           </motion.div>
+        )}
+        {selected && missingDisclosures(selected).length < 5 && (
+          <div className="sm:col-span-2 rounded-sm border border-border p-3">
+            <div className="mb-2 text-sm font-medium">{tr("ما يشمله طلبكِ — {0}", [selected.label])}</div>
+            <PackageFacts d={selected} compact />
+            <p className="mt-2 text-[11px] text-muted-foreground">{tr("نحفظ هذه التفاصيل مع حجزكِ كما هي الآن، حتى لو عدّلت المصوّرة باقتها لاحقاً.")}</p>
+          </div>
         )}
         {selected && <BookingJourney deposit={deposit} remaining={Math.max(0, total - deposit)} />}
         <label className="sm:col-span-2 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed cursor-pointer">

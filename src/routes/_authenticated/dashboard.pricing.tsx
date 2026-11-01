@@ -17,6 +17,7 @@ import { t, tx } from "@/i18n";
 import { usePlan } from "@/hooks/use-plan";
 import { BasicLimitNote } from "@/components/dashboard/BasicLimitNote";
 import { BASIC_LIMITS } from "@/lib/plans";
+import { missingDisclosures } from "@/components/PackageFacts";
 
 export const Route = createFileRoute("/_authenticated/dashboard/pricing")({ component: PricingMgr });
 
@@ -25,7 +26,13 @@ type Rule = {
   id?: string; service: "photography" | "cinematic_video"; package: "hourly" | "full_day" | "addon";
   label: string; price: number; per_photo_price?: number | null; description?: string | null;
   subtitle?: string | null; cta_label?: string | null;
+  // إفصاحات إلزامية للباقة الأساسية (تراها العروس قبل الطلب وتُجمَّد مع الحجز)
+  hours?: number | string | null; deliverable_count?: number | string | null; delivery_days?: number | string | null;
+  shooter?: "me" | "me_team" | "team" | null; overtime_fee?: number | string | null; excludes?: string | null;
+  unedited_included?: boolean | null; revision_rounds?: number | string | null;
 };
+
+const numOrNull = (v: unknown) => (v === null || v === undefined || String(v).trim() === "" || Number.isNaN(Number(v)) ? null : Number(v));
 
 const KIND_ORDER: FeatureKind[] = ["regular", "exclusive", "fast"];
 const KIND_META_ = (): Record<FeatureKind, { icon: typeof Star; title: string }> => ({
@@ -122,6 +129,12 @@ function PricingMgr() {
     const filled = rules.filter((r) => r.label?.trim() || Number(r.price) > 0);
     const bad = filled.find((r) => !r.label?.trim() || !(Number(r.price) > 0));
     if (bad) { hapticVibrate("error"); return toast.error(t("كل باقة تحتاج اسماً وسعراً أكبر من صفر.")); }
+    // الإفصاح الإلزامي: لا تُحفظ باقة أساسية تنقصها معلومة تراها العروس قبل الطلب
+    const incomplete = filled.map((r) => ({ r, miss: missingDisclosures(r as any) })).find((x) => x.miss.length);
+    if (incomplete) {
+      hapticVibrate("error");
+      return toast.error(t("أكملي تفاصيل «{0}»: {1}", [incomplete.r.label, incomplete.miss.join("، ")]), { duration: 7000 });
+    }
     setSaving(true);
     for (const r of filled) {
       const { _key, ...clean } = r;
@@ -133,6 +146,14 @@ function PricingMgr() {
         per_photo_price: r.per_photo_price ? Math.max(0, Number(r.per_photo_price)) : 0,
         subtitle: r.subtitle?.trim() || null,
         cta_label: r.cta_label?.trim() || null,
+        hours: numOrNull(r.hours),
+        deliverable_count: numOrNull(r.deliverable_count),
+        delivery_days: numOrNull(r.delivery_days),
+        shooter: r.package === "addon" ? null : (r.shooter || null),
+        overtime_fee: numOrNull(r.overtime_fee),
+        excludes: r.excludes?.trim() || null,
+        unedited_included: !!r.unedited_included,
+        revision_rounds: numOrNull(r.revision_rounds),
       };
       const write = (p: any) => r.id
         ? supabase.from("pricing_rules").update(p).eq("id", r.id)
@@ -286,6 +307,8 @@ function PricingMgr() {
                 </div>
               </div>
 
+              {r.package !== "addon" && <DisclosureFields r={r} set={(k, v) => upd(i, k, v)} />}
+
               <label className="block text-xs text-muted-foreground mb-1">{t("ماذا تشمل الباقة؟")}{" "}<span className="text-muted-foreground/70">{t("— ميزة في كل سطر، والأرقام تظهر بالخط العريض تلقائياً")}</span></label>
               <FeatureEditor value={r.description ?? ""} onChange={(v) => upd(i, "description", v)} />
 
@@ -364,6 +387,52 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
         <Plus className="h-3.5 w-3.5" />{" "}{t("إضافة ميزة")}
       </button>
       <p className="px-2 text-[11px] text-muted-foreground/80">{g(t("اضغطي الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع"), t("اضغط الأيقونة لتغيير نوع الميزة: ✓ عادية · ★ حصرية · ⚡ تسليم سريع"))}</p>
+    </div>
+  );
+}
+
+// الحقول الإلزامية: نفس ما تراه العروس في بطاقة الباقة قبل الطلب
+function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) => void }) {
+  const miss = missingDisclosures(r as any);
+  const video = r.service === "cinematic_video";
+  const box = "w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm tabular-nums outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50";
+  // دالة لا مكوّن: مكوّن داخلي يُعاد إنشاؤه مع كل رسم فيفقد الحقل التركيز بعد كل حرف
+  const num = (k: keyof Rule, label: string, ph: string) => (
+    <label key={String(k)} className="block">
+      <span className="mb-1 block text-xs text-muted-foreground">{tx(label)}</span>
+      <input type="number" min="0" inputMode="decimal" value={(r[k] as any) ?? ""} placeholder={ph} onChange={(e) => set(k, e.target.value)} className={box} />
+    </label>
+  );
+  return (
+    <div className={`mb-5 rounded-2xl border p-4 ${miss.length ? "border-amber-400/70 bg-amber-50/40 dark:border-amber-800/60 dark:bg-amber-950/10" : "border-border"}`}>
+      <div className="mb-3 text-sm font-medium">{t("تفاصيل تراها العروس قبل الطلب")}</div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {num("hours", t("ساعات التصوير *"), "4")}
+        {num("deliverable_count", video ? t("مدة الفيلم بالدقائق *") : t("عدد الصور المعدّلة تقريباً *"), video ? "5" : "100")}
+        {num("delivery_days", t("التسليم خلال (يوم) *"), "30")}
+        {num("overtime_fee", t("الساعة الإضافية (د.أ) *"), t("0 = لا تمديد"))}
+        {num("revision_rounds", t("جولات تعديل مجانية"), t("اختياري"))}
+        <label className="block">
+          <span className="mb-1 block text-xs text-muted-foreground">{t("من يصوّر فعلياً؟ *")}</span>
+          <select value={r.shooter ?? ""} onChange={(e) => set("shooter", e.target.value || null)} className={box}>
+            <option value="">{t("اختاري")}</option>
+            <option value="me">{t("أنا بنفسي")}</option>
+            <option value="me_team">{t("أنا مع فريقي")}</option>
+            <option value="team">{t("مصوّرة من فريقي")}</option>
+          </select>
+        </label>
+      </div>
+      {!video && (
+        <label className="mt-3 flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={!!r.unedited_included} onChange={(e) => set("unedited_included", e.target.checked)} className="h-4 w-4" />
+          {t("أسلّم كل الصور الصالحة غير المعدّلة أيضاً")}
+        </label>
+      )}
+      <label className="mt-3 block">
+        <span className="mb-1 block text-xs text-muted-foreground">{t("ما لا تشمله الباقة")}{" "}<span className="text-muted-foreground/70">{t("(مثلاً: الألبوم، الدرون، المواصلات خارج المدينة)")}</span></span>
+        <input value={r.excludes ?? ""} maxLength={300} onChange={(e) => set("excludes", e.target.value)} placeholder={t("افصلي بفاصلة")} className={box} />
+      </label>
+      {miss.length > 0 && <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{t("ناقص: {0}", [miss.join("، ")])}</p>}
     </div>
   );
 }

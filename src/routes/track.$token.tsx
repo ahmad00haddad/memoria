@@ -15,6 +15,7 @@ import { clientCancelBooking } from "@/lib/cancellation.functions";
 import { Term } from "@/components/Term";
 import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib/gallery.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { PackageFacts } from "@/components/PackageFacts";
 import { PaymentMethodsView } from "@/components/PaymentMethods";
 import { parseMethods, type PaymentMethod } from "@/lib/payment-methods";
 import { CheckCircle2, CalendarPlus, LockKeyhole, Unlock, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, XCircle } from "lucide-react";
@@ -537,6 +538,13 @@ function TrackingPage() {
             <Info label={t("المبلغ الإجمالي")} v={t("{0} د.أ", [Number(b.total_price).toLocaleString(locale("ar-JO"))])} />
             <Info label={t("العربون المطلوب")} v={t("{0} د.أ", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))])} />
           </div>
+          {b.package_snapshot && (
+            <div className="border-t border-border pt-3 mt-3">
+              <div className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("باقتكِ كما طلبتِها — {0}", [b.package_snapshot.label])}</div>
+              <PackageFacts d={b.package_snapshot} compact />
+              <p className="mt-2 text-[11px] text-muted-foreground">{t("محفوظة من لحظة طلبكِ ولا تتغيّر بتعديل المصوّرة لباقاتها.")}</p>
+            </div>
+          )}
           </div>
         </details>
 

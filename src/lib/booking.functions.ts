@@ -65,7 +65,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     const ruleIds = data.items.map((i) => i.rule_id);
     const { data: rules, error: rulesErr } = await supabaseAdmin
       .from("pricing_rules")
-      .select("id, photographer_id, label, price, service, package")
+      .select("id, photographer_id, label, price, service, package, description, subtitle, hours, deliverable_count, delivery_days, shooter, overtime_fee, excludes, unedited_included, revision_rounds")
       .in("id", ruleIds);
     if (rulesErr) throw new Error(rulesErr.message);
     const ruleMap = new Map((rules ?? []).map((r: any) => [r.id, r]));
@@ -157,9 +157,28 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     // When the request was de-duplicated we must NOT re-send notifications/emails.
     const deduped = result.deduped === true;
     if (!deduped) {
+      // لقطة ثابتة للباقة لحظة الطلب: أي تعديل لاحق من المصوّرة لا يغيّر ما اتفقتا عليه
+      const m: any = mainRule;
+      const days = m.delivery_days != null ? Number(m.delivery_days) : null;
+      const snapshot = {
+        label: m.label, price: Number(m.price), service: m.service, subtitle: m.subtitle ?? null, description: m.description ?? null,
+        hours: m.hours != null ? Number(m.hours) : null, deliverable_count: m.deliverable_count ?? null, delivery_days: days,
+        shooter: m.shooter ?? null, overtime_fee: m.overtime_fee != null ? Number(m.overtime_fee) : null,
+        excludes: m.excludes ?? null, unedited_included: !!m.unedited_included, revision_rounds: m.revision_rounds ?? null,
+        addons: items.filter((x) => x.kind === "addon"), taken_at: new Date().toISOString(),
+      };
+      const promised: Record<string, unknown> = { package_snapshot: snapshot };
+      if (m.service === "photography" && m.deliverable_count != null) promised.photos_promised = m.deliverable_count;
+      if (days != null) {
+        promised.delivery_days_promised = days;
+        const due = new Date(`${data.event_date}T12:00:00Z`);
+        due.setUTCDate(due.getUTCDate() + days);
+        promised.delivery_due_at = due.toISOString();
+      }
+      if (m.overtime_fee != null) promised.overtime_fee_per_hour = Number(m.overtime_fee);
       // طلب العروس يمر بموافقة المصوّرة قبل العربون. إن فشل الوسم نلغي الطلب بدل أن يتجاوز الموافقة.
       const { error: naErr } = await supabaseAdmin.from("bookings")
-        .update({ needs_approval: true } as any).eq("id", row.id);
+        .update({ needs_approval: true, ...promised } as any).eq("id", row.id);
       if (naErr) {
         await supabaseAdmin.from("bookings").update({ deleted_at: new Date().toISOString() } as any).eq("id", row.id);
         throw new Error(tr("تعذّر إرسال الطلب، حاولي مرة أخرى"));

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { GenderPicker } from "@/components/dashboard/GenderPicker";
 import { g, useGender } from "@/hooks/use-gender";
+import { missingDisclosures } from "@/components/PackageFacts";
 import { PaymentMethodsEditor } from "@/components/PaymentMethods";
 import { emptyMethod, isUsable, legacyColumns, normalizeMethods, parseMethods, type PaymentMethod } from "@/lib/payment-methods";
 import { motion, AnimatePresence } from "framer-motion";
@@ -41,6 +42,8 @@ type Form = {
   pkg_price: string;
   pkg_service: "photography" | "cinematic_video";
   pkg_type: "hourly" | "full_day" | "addon";
+  pkg_hours: string; pkg_count: string; pkg_days: string; pkg_overtime: string;
+  pkg_shooter: "me" | "me_team" | "team";
 };
 
 const CITIES = ["عمّان", "إربد", "الزرقاء", "العقبة", "السلط", "مادبا"];
@@ -74,6 +77,7 @@ function Onboarding() {
     display_name: "", username: "", city: "", bio: "", avatar_url: "",
     methods: [emptyMethod("cliq")], whatsapp: "", refund_policy: "none", refund_percent: "50",
     pkg_label: "", pkg_price: "", pkg_service: "photography", pkg_type: "hourly",
+    pkg_hours: "", pkg_count: "", pkg_days: "", pkg_overtime: "", pkg_shooter: "me",
   });
 
   useEffect(() => {
@@ -84,7 +88,7 @@ function Onboarding() {
       const [{ data: p }, { data: priv }, { data: rules }] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
         (supabase as any).from("photographer_private").select("cliq_alias, whatsapp, payment_methods").eq("user_id", session.user.id).maybeSingle(),
-        supabase.from("pricing_rules").select("id, label, price, service, package").eq("photographer_id", session.user.id).limit(1),
+        (supabase as any).from("pricing_rules").select("id, label, price, service, package, hours, deliverable_count, delivery_days, overtime_fee, shooter").eq("photographer_id", session.user.id).limit(1),
       ]);
       if ((p as any)?.onboarding_completed_at) { nav({ to: "/dashboard" }); return; }
       const first = rules?.[0] as any;
@@ -102,6 +106,11 @@ function Onboarding() {
         pkg_price: first?.price ? String(first.price) : "",
         pkg_service: first?.service ?? "photography",
         pkg_type: first?.package ?? "hourly",
+        pkg_hours: first?.hours != null ? String(first.hours) : "",
+        pkg_count: first?.deliverable_count != null ? String(first.deliverable_count) : "",
+        pkg_days: first?.delivery_days != null ? String(first.delivery_days) : "",
+        pkg_overtime: first?.overtime_fee != null ? String(first.overtime_fee) : "",
+        pkg_shooter: first?.shooter ?? "me",
       });
       const savedStep = Number((p as any)?.onboarding_step ?? 0);
       setStep(Math.min(Math.max(savedStep, 0), STEPS_().length - 1));
@@ -136,6 +145,8 @@ function Onboarding() {
     if (step === 2) {
       if (!f.pkg_label.trim()) return g(tr("أدخلي اسم الباقة (مثال: باقة الساعة الواحدة)."), tr("أدخل اسم الباقة (مثال: باقة الساعة الواحدة)."));
       if (!f.pkg_price || Number(f.pkg_price) <= 0) return g(tr("أدخلي سعراً صحيحاً للباقة."), tr("أدخل سعراً صحيحاً للباقة."));
+      const miss = missingDisclosures({ service: f.pkg_service, package: f.pkg_type, hours: Number(f.pkg_hours) || null, deliverable_count: Number(f.pkg_count) || null, delivery_days: Number(f.pkg_days) || null, shooter: f.pkg_shooter, overtime_fee: f.pkg_overtime === "" ? null : Number(f.pkg_overtime) });
+      if (miss.length) return g(tr("أكملي تفاصيل الباقة: {0}", [miss.join("، ")]), tr("أكمل تفاصيل الباقة: {0}", [miss.join("، ")]));
     }
     if (step === 3) {
       if (!f.methods.some(isUsable)) return g(tr("أضيفي طريقة واحدة على الأقل لاستلام العربون: CliQ أو محفظة أو تحويل بنكي."), tr("أضف طريقة واحدة على الأقل لاستلام العربون: CliQ أو محفظة أو تحويل بنكي."));
@@ -171,7 +182,10 @@ function Onboarding() {
         photographer_id: uid,
         service: f.pkg_service, package: f.pkg_type,
         label: f.pkg_label.trim(), price: Number(f.pkg_price),
-      };
+        hours: Number(f.pkg_hours) || null, deliverable_count: Number(f.pkg_count) || null,
+        delivery_days: Number(f.pkg_days) || null, shooter: f.pkg_shooter,
+        overtime_fee: f.pkg_overtime === "" ? null : Math.max(0, Number(f.pkg_overtime)),
+      } as any;
       const { error } = existing?.id
         ? await supabase.from("pricing_rules").update(payload).eq("id", existing.id)
         : await supabase.from("pricing_rules").insert(payload);
@@ -404,6 +418,23 @@ function Onboarding() {
               {Number(f.pkg_price) > 0 && (
                 <p className="text-xs text-muted-foreground tabular-nums">{tr("العربون الافتراضي ٢٥٪ = {0} د.أ — تغيّرينه لاحقاً من ملفك.", [Math.round(Number(f.pkg_price) * 0.25)])}</p>
               )}
+              <div className="rounded-sm border border-border p-3">
+                <div className="mb-1 text-sm font-medium">{tr("تفاصيل تراها العروس قبل الطلب *")}</div>
+                <p className="mb-3 text-xs text-muted-foreground">{g(tr("كل شي مكتوب من البداية = ما في خلاف بعدين."), tr("كل شي مكتوب من البداية = ما في خلاف بعدين."))}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label={tr("ساعات التصوير")}><input type="number" min={0} inputMode="decimal" value={f.pkg_hours} onChange={(e) => upd("pkg_hours", e.target.value)} className={inputCx} placeholder="4" dir="ltr" /></Field>
+                  <Field label={f.pkg_service === "cinematic_video" ? tr("مدة الفيلم (دقائق)") : tr("عدد الصور المعدّلة تقريباً")}><input type="number" min={0} inputMode="numeric" value={f.pkg_count} onChange={(e) => upd("pkg_count", e.target.value)} className={inputCx} placeholder={f.pkg_service === "cinematic_video" ? "5" : "100"} dir="ltr" /></Field>
+                  <Field label={tr("التسليم خلال (يوم)")}><input type="number" min={0} inputMode="numeric" value={f.pkg_days} onChange={(e) => upd("pkg_days", e.target.value)} className={inputCx} placeholder="30" dir="ltr" /></Field>
+                  <Field label={tr("الساعة الإضافية (د.أ)")}><input type="number" min={0} inputMode="decimal" value={f.pkg_overtime} onChange={(e) => upd("pkg_overtime", e.target.value)} className={inputCx} placeholder={tr("0 = لا تمديد")} dir="ltr" /></Field>
+                </div>
+                <Field label={tr("من يصوّر فعلياً؟")}>
+                  <select value={f.pkg_shooter} onChange={(e) => upd("pkg_shooter", e.target.value as any)} className={inputCx}>
+                    <option value="me">{g(tr("أنا بنفسي"), tr("أنا بنفسي"))}</option>
+                    <option value="me_team">{tr("أنا مع فريقي")}</option>
+                    <option value="team">{tr("مصوّرة من فريقي")}</option>
+                  </select>
+                </Field>
+              </div>
               <p className="text-xs text-muted-foreground">{tr("يمكنك إضافة المزيد من الباقات لاحقاً من صفحة الأسعار.")}</p>
             </div>
           )}
