@@ -678,10 +678,11 @@ function PhotographerPage() {
 
       {/* CONTACT FOOTER */}
       <section className="container-editorial pb-8 sm:pb-16 text-center">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-3">{tr("للاستفسار والتواصل")}</div>
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{profile.instagram ? tr("تابعيها وشاركي صفحتها") : tr("شاركي صفحتها")}</div>
+        <p className="mb-4 text-xs text-muted-foreground">{tr("للتفاصيل قبل الحجز أرسلي الطلب، ثم راسليها من صفحة متابعة حجزكِ.")}</p>
         <div className="flex justify-center gap-3">
           {profile.instagram && (
-            <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label={tr("إنستغرام")} className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"><Instagram className="h-5 w-5" /></a>
+            <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label={tr("إنستغرام")} className="h-12 px-5 inline-flex items-center gap-2 rounded-full border border-border text-sm hover:bg-secondary"><Instagram className="h-5 w-5" />{tr("إنستغرام")}</a>
           )}
           <button
             type="button"
@@ -691,8 +692,8 @@ function PhotographerPage() {
               if (navigator.share) navigator.share({ title: profile.display_name, url }).catch(() => {});
               else { navigator.clipboard.writeText(url); toast.success(tr("نُسخ الرابط")); }
             }}
-            className="h-12 w-12 grid place-items-center rounded-full border border-border hover:bg-secondary"
-          ><Share2 className="h-5 w-5" /></button>
+            className="h-12 px-5 inline-flex items-center gap-2 rounded-full border border-border text-sm hover:bg-secondary"
+          ><Share2 className="h-5 w-5" />{tr("مشاركة")}</button>
         </div>
       </section>
 

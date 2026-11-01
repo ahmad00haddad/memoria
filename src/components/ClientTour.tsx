@@ -13,6 +13,8 @@ export interface TourState {
   startedAt: string | null;
   completedAt: string | null;
   userId: string | null;
+  /** الخطوة التالية تنتظر صفحتها: لا يظهر الكرت حتى تفتحها العروس بنفسها */
+  waiting?: boolean;
 }
 
 export function getTourState(): TourState {
@@ -84,9 +86,8 @@ const STEPS: Step[] = [
     icon: Search,
     title: "١. ابحثي عن مصوّرتكِ",
     desc: "اختاري المدينة وتاريخ عرسكِ، فتظهر لكِ المصوّرات المتاحة فيه فقط.",
-    cta: "افتحي صفحة البحث",
-    to: "/search",
-    match: (p) => p === "/search" || p === "/",
+    cta: "فهمت",
+    match: (p) => p.startsWith("/search"),
   },
   {
     icon: Images,
@@ -136,8 +137,8 @@ export function ClientTour() {
   useEffect(() => {
     if (state.status !== "active") return;
     const i = STEPS.findIndex((s) => s.match(pathname));
-    if (i > -1 && i > state.step) {
-      saveTourState({ ...state, step: i });
+    if (i > -1 && (i > state.step || (state.waiting && i === state.step))) {
+      saveTourState({ ...state, step: i, waiting: false });
     }
   }, [pathname, state]);
 
@@ -154,7 +155,9 @@ export function ClientTour() {
   if (state.status !== "active" || hidden || gateOpen) return null;
 
   const s = STEPS[state.step];
-  if (!s) return null;
+  // بعد «فهمت» في البحث: نختفي حتى تفتح صفحة مصوّرة
+  if (!s || (state.waiting && !s.match(pathname))) return null;
+  const onProfile = pathname.startsWith("/photographers/");
   const Icon = s.icon;
   const isLast = state.step === STEPS.length - 1;
 
@@ -165,7 +168,10 @@ export function ClientTour() {
       nav({ to: s.to });
       return;
     }
-    saveTourState({ ...state, step: state.step + 1 });
+    // الخطوة التالية في صفحة أخرى؟ ننتظرها هناك بدل أن نغطّي هذه الصفحة
+    const nextIdx = state.step + 1;
+    const waiting = nextIdx < STEPS.length - 1 && !STEPS[nextIdx].match(pathname);
+    saveTourState({ ...state, step: nextIdx, waiting });
   };
 
   return (
@@ -176,7 +182,7 @@ export function ClientTour() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 24 }}
         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed inset-x-3 bottom-20 z-50 mx-auto max-w-md sm:bottom-6"
+        className={`fixed inset-x-3 z-50 mx-auto max-w-md sm:bottom-6 ${onProfile ? "bottom-24" : "bottom-20"}`}
         role="dialog"
         aria-label={t("جولة تعريفية سريعة")}
       >
