@@ -219,6 +219,9 @@ export function PhotographerTour() {
       if (!el && ++tries < 27) return;
       window.clearInterval(timer);
       if (!el) return;
+      // عنصر داخل <details> مطوي (مثل مزامنة التقويم): نفتحه أولاً
+      const det = el.closest("details");
+      if (det && !det.open) det.open = true;
       el.classList.add("tour-spot");
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 300);
