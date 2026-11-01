@@ -221,6 +221,10 @@ function ProfilePage() {
     setOriginalP(p);
     loadVerification();
     toast.success(p.is_published && !originalP?.is_published ? tr("حُفظ ملفك وأصبح منشوراً للعرائس") : tr("حُفظت التغييرات"));
+    // منشورة بلا طريقة لاستلام العربون: العروس توافَق ثم لا تعرف أين تحوّل
+    if (p.is_published && !p.cliq_alias && !p.bank_info) {
+      toast.warning(g(tr("أضيفي CliQ alias في «التواصل والدفع» — بدونه لا تعرف العروس أين تحوّل العربون بعد موافقتكِ."), tr("أضف CliQ alias في «التواصل والدفع» — بدونه لا تعرف العروس أين تحوّل العربون بعد موافقتك.")), { duration: 8000 });
+    }
   };
 
   if (loading) return <PageLoader />;
@@ -394,7 +398,7 @@ function ProfilePage() {
           <Card id="sec-contact" title={tr("التواصل والدفع")} done={!!(p.cliq_alias || p.bank_info) && !!(p.whatsapp || p.phone)} open={openSections["sec-contact"] ?? true} onToggle={toggle}>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={tr("رقم الهاتف")} v={p.phone} on={(v) => setP({ ...p, phone: v })} hint={tr("لا يظهر للعموم")} ltr />
-              <Field label={tr("واتساب")} v={p.whatsapp} on={(v) => setP({ ...p, whatsapp: v })} hint={tr("تصلك عليه طلبات الحجز — لا يظهر للعموم")} ltr />
+              <Field label={tr("واتساب")} v={p.whatsapp} on={(v) => setP({ ...p, whatsapp: v })} hint={g(tr("للتواصل مع العروس بعد موافقتكِ على طلبها — لا يظهر للعموم"), tr("للتواصل مع العروس بعد موافقتك على طلبها — لا يظهر للعموم"))} ltr />
             </div>
             <Field label={tr("إنستغرام (اسم المستخدم)")} v={p.instagram} on={(v) => setP({ ...p, instagram: v })} ltr />
             <div data-tour="cliq"><Field label={tr("CliQ Alias لاستلام العربون")} v={p.cliq_alias} on={(v) => setP({ ...p, cliq_alias: v })} hint={!p.cliq_alias ? tr("بدون CliQ أو حساب بنكي لن تعرف العروس أين تحوّل العربون.") : tr("يظهر للعروس فقط بعد موافقتك على طلبها.")} ltr /></div>

@@ -532,7 +532,7 @@ export const adminCancelBooking = createServerFn({ method: "POST" })
         .select("deposit_refund_policy, deposit_refund_percent")
         .eq("id", booking.photographer_id)
         .single();
-      const policy = photographer?.deposit_refund_policy ?? "full";
+      const policy = photographer?.deposit_refund_policy ?? "none";
       const percent = photographer?.deposit_refund_percent ?? 0;
       if (policy === "full") {
         refund = booking.deposit_amount;

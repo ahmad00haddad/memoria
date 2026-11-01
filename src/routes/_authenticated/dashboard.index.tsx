@@ -462,7 +462,7 @@ function Dashboard() {
     } catch (e) { sessionStorage.removeItem("pending_referral_code"); }
     const [{ data }, { data: priv }, { data: s }, { data: bks }, { data: rvs }, { count: pricingRulesCount }, { count: tplCount }] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
-      supabase.from("photographer_private").select("ical_token,cliq_alias,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
+      supabase.from("photographer_private").select("ical_token,cliq_alias,bank_info,whatsapp,phone").eq("user_id", session.user.id).maybeSingle(),
       supabase.from("subscriptions").select("*").eq("photographer_id", session.user.id).maybeSingle(),
       supabase.from("bookings").select("id,client_name,status,created_at,total_price,deposit_amount,event_date,delivery_due_at,production_stage,deposit_proof_url,deposit_sent_at,final_paid_at,needs_approval,approved_at,phone_verified_at").eq("photographer_id", session.user.id).is("deleted_at", null).not("phone_verified_at" as any, "is", null),
       supabase.from("reviews").select("rating,created_at").eq("photographer_id", session.user.id),
@@ -507,7 +507,7 @@ function Dashboard() {
       profile: loadedProfile,
       sub: s,
       pricingCount: pricingRulesCount ?? 0,
-      hasCliq: !!(priv?.cliq_alias || priv?.whatsapp || priv?.phone),
+      hasCliq: !!(priv?.cliq_alias || priv?.bank_info),
       templatesCount: tplCount ?? 0,
       stats: computedStats
     };
@@ -515,7 +515,7 @@ function Dashboard() {
     setProfile(loadedProfile);
     setSub(s);
     setPricingCount(pricingRulesCount ?? 0);
-    setHasCliq(!!priv?.cliq_alias);
+    setHasCliq(!!(priv?.cliq_alias || priv?.bank_info));
     setTemplatesCount(tplCount ?? 0);
     setStats(computedStats);
     setLoading(false);
@@ -676,6 +676,15 @@ function Dashboard() {
           </>
         ) : (
           <>
+            {profile?.is_published && !hasCliq && (
+              <Link to="/dashboard/profile" className="mb-4 flex items-start gap-3 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
+                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+                <span>
+                  <strong className="block text-destructive">{tr("لا توجد طريقة لاستلام العربون")}</strong>
+                  {g(tr("صفحتكِ منشورة، لكن العروس بعد موافقتكِ لن تعرف أين تحوّل العربون. أضيفي CliQ alias الآن."), tr("صفحتك منشورة، لكن العروس بعد موافقتك لن تعرف أين تحوّل العربون. أضف CliQ alias الآن."))}
+                </span>
+              </Link>
+            )}
             <TodayFocus items={stats.focus ?? []} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
 
             <div data-tour="notify"><NotifyChannelsCard promptOnly /></div>
