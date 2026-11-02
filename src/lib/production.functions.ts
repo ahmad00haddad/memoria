@@ -59,6 +59,19 @@ export const updateProductionStage = createServerFn({ method: "POST" })
       patch.editing_started_at = now;
     }
     if (data.stage === "delivered") {
+      // لا «تسليم» بلا صور: رابط تسليم أو صور في معرض التسليم، وإلا تصل العروس رسالة «صورك جاهزة» بلا شيء
+      const { data: dl } = await supabase.from("bookings").select("delivery_link").eq("id", data.booking_id).maybeSingle();
+      let hasPhotos = false;
+      if (!(dl as any)?.delivery_link) {
+        const { data: gal } = await (supabase as any).from("delivery_galleries").select("id").eq("booking_id", data.booking_id).maybeSingle();
+        if (gal?.id) {
+          const { count } = await (supabase as any).from("delivery_photos").select("id", { count: "exact", head: true }).eq("gallery_id", gal.id);
+          hasPhotos = (count ?? 0) > 0;
+        }
+      }
+      if (!(dl as any)?.delivery_link && !hasPhotos) {
+        throw new Error(t("أضيفي رابط التسليم النهائي أو ارفعي الصور في معرض التسليم أولاً — حتى تجد العروس صورها فعلاً."));
+      }
       patch.editing_completed_at = now;
       patch.delivered_at = now;
       patch.status = "completed";
