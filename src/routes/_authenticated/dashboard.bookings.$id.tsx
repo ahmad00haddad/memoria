@@ -368,31 +368,64 @@ function BookingDetail() {
     setActionLoading("contract");
     const tpl = templates.find((t) => t.id === templateId);
     // بند العربون من سياسة المصوّرة الفعلية — نفس النص الذي وافقت عليه العروس قبل التحويل
-    const { data: pol } = await supabase.from("profiles")
-      .select("deposit_refund_policy, deposit_refund_percent, team_gender").eq("id", b.photographer_id).maybeSingle();
+    const { data: pol } = await (supabase as any).from("profiles")
+      .select("display_name, gender, deposit_refund_policy, deposit_refund_percent, team_gender").eq("id", b.photographer_id).maybeSingle();
+    // صيغة الطرف الأول حسب المصوّر/ة، والعقد بالعربية دائماً (نص قانوني)
+    const male = (pol as any)?.gender === "male";
+    const P = male ? "المصوّر" : "المصوّرة";
     const privacyLabels: Record<string, string> = {
-      public: tr("عام — يحق للمصوّرة استخدام لقطات للترويج"),
-      no_publish: tr("بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي"),
+      public: `عام — يحق لـ${P} استخدام لقطات للترويج`,
+      no_publish: "بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي",
       private_only: (pol as any)?.team_gender === "female"
-        ? tr("خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث")
-        : tr("خصوصية تامة — لا نشر ولا مشاركة مع طرف ثالث"),
+        ? "خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث"
+        : "خصوصية تامة — لا نشر ولا مشاركة مع طرف ثالث",
     };
     const depositClause = (pol as any)?.deposit_refund_policy === "full"
-      ? tr("إذا ألغت العميلة بعد دفع العربون يُرجَع لها كاملاً")
+      ? "إذا ألغت العميلة بعد دفع العربون يُرجَع لها كاملاً"
       : (pol as any)?.deposit_refund_policy === "partial"
-        ? tr("إذا ألغت العميلة بعد دفع العربون يُرجَع لها {0}% منه", [Number((pol as any)?.deposit_refund_percent || 0)])
-        : tr("إذا ألغت العميلة بعد دفع العربون لا يُرجَع");
-    const depositTerms = tr("{0}. إذا ألغت المصوّرة الحجز تُرجع العربون كاملاً. العربون يُحوَّل مباشرة للمصوّرة والمنصّة ليست طرفاً فيه. تغيير الموعد يعني إلغاء الحجز، إلا إذا وافقت المصوّرة على نقل العربون.", [depositClause]);
-    const baseBody = tpl?.body ?? tr("{0} بين المصوّرة والعميل/ة {1}. تاريخ التصوير: {2} المدّة: {3} - {4} الموقع: {5} المجموع: {6} د.أ العربون: {7} د.أ رسوم الساعة الإضافية: {8} د.أ مستوى الخصوصية: {9} البنود الافتراضية: - تسليم {10} خلال {11} يومًا (تاريخ التسليم المتوقع: {12}). - العربون والإلغاء: {13} - لا يحق للعميل/ة نشر المواد الخام (RAW) أو إزالة شعار المصوّرة.", [b.service === "cinematic_video" ? "عقد تصوير فيديو" : "عقد تصوير فوتوغرافي", b.client_name, b.event_date, b.start_time?.slice(0,5), b.end_time?.slice(0,5), b.venue_name ?? "—", b.total_price, b.deposit_amount, b.overtime_fee_per_hour || 0, privacyLabels[b.privacy_level || 'public'], b.service === "cinematic_video" ? "الفيديو" : "الصور", b.delivery_days_promised || 30, b.delivery_due_at ?? '—', depositTerms]);
+        ? `إذا ألغت العميلة بعد دفع العربون يُرجَع لها ${Number((pol as any)?.deposit_refund_percent || 0)}% منه`
+        : "إذا ألغت العميلة بعد دفع العربون لا يُرجَع";
+    const depositTerms = `${depositClause}. إذا ألغى ${P} الحجز يُرجَع العربون كاملاً. العربون يُحوَّل مباشرة لـ${P} والمنصّة ليست طرفاً فيه. تغيير الموعد يعني إلغاء الحجز، إلا إذا وافق ${P} على نقل العربون.`.replace("إذا ألغى المصوّرة", "إذا ألغت المصوّرة").replace("إلا إذا وافق المصوّرة", "إلا إذا وافقت المصوّرة");
+    const place = b.venue_name || b.venue_address || "—";
+    const snap: any = (b as any).package_snapshot ?? null;
+    const mainItem = Array.isArray(b.addons) ? b.addons.find((x: any) => x.kind === "main") : null;
+    const pkgLabel = snap?.label || mainItem?.label || (b.service === "cinematic_video" ? "فيديو" : "تصوير");
+    const extras = Array.isArray(b.addons) ? b.addons.filter((x: any) => x.kind === "addon").map((x: any) => x.label) : [];
+    const remaining = Math.max(0, Number(b.total_price || 0) - Number(b.deposit_amount || 0));
+    const overtime = Number(b.overtime_fee_per_hour || 0) > 0
+      ? `${b.overtime_fee_per_hour} د.أ لكل ساعة بعد الوقت المتفق عليه`
+      : "أي تمديد بعد الوقت المتفق عليه يُتفق عليه بين الطرفين قبل حدوثه";
+    const deliveryDays = snap?.delivery_days ?? null;
+    const delivery = deliveryDays
+      ? `خلال ${deliveryDays} يوماً من تاريخ المناسبة`
+      : "حسب ما يتفق عليه الطرفان، دون تأخير غير مبرَّر";
+    const fallback = [
+      `${b.service === "cinematic_video" ? "عقد تصوير فيديو" : "عقد تصوير فوتوغرافي"}`,
+      ``,
+      `الطرف الأول: ${P} ${(pol as any)?.display_name ?? ""}`.trim(),
+      `الطرف الثاني: ${b.client_name}`,
+      ``,
+      `الباقة: ${pkgLabel}${extras.length ? ` + ${extras.join("، ")}` : ""}`,
+      `التاريخ: ${b.event_date} · من ${b.start_time?.slice(0, 5) ?? ""} إلى ${b.end_time?.slice(0, 5) ?? ""}`,
+      `المكان: ${place}`,
+      `المجموع: ${b.total_price} د.أ — العربون ${b.deposit_amount} د.أ، والمتبقي ${remaining} د.أ يُسدَّد بعد الحفل وقبل تسليم ${b.service === "cinematic_video" ? "الفيديو" : "الصور"}.`,
+      `الوقت الإضافي: ${overtime}.`,
+      `التسليم: ${delivery}.`,
+      `الخصوصية: ${privacyLabels[b.privacy_level || "public"]}.`,
+      `العربون والإلغاء: ${depositTerms}`,
+      `لا يحق للعميلة نشر المواد الخام (RAW) أو إزالة شعار ${P}.`,
+      `أي اتفاق إضافي لا يُعتدّ به إلا إذا كُتب في رسائل الحجز على ميموريا.`,
+    ].join("\n");
+    const baseBody = tpl?.body ?? fallback;
     const body = baseBody
       .replace(/\[اسم العميل\]/g, b.client_name)
       .replace(/\[التاريخ\]/g, b.event_date)
-      .replace(/\[الموقع\]/g, b.venue_name ?? "—")
+      .replace(/\[الموقع\]/g, place)
       .replace(/\[البداية\]/g, b.start_time?.slice(0,5) ?? "")
       .replace(/\[النهاية\]/g, b.end_time?.slice(0,5) ?? "")
       .replace(/\[المجموع\]/g, String(b.total_price))
       .replace(/\[العربون\]/g, String(b.deposit_amount))
-      .replace(/\[رسوم الساعة الإضافية\]/g, String(b.overtime_fee_per_hour || 0))
+      .replace(/\[رسوم الساعة الإضافية\]/g, Number(b.overtime_fee_per_hour || 0) > 0 ? String(b.overtime_fee_per_hour) : "حسب الاتفاق")
       .replace(/\[مستوى الخصوصية\]/g, privacyLabels[b.privacy_level || 'public'])
       .replace(/\[سياسة العربون\]/g, depositTerms);
     try {
