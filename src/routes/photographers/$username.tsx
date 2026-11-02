@@ -829,6 +829,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const [success, setSuccess] = useState<{ token: string; verify: VerifyInfo | null } | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [pkgListOpen, setPkgListOpen] = useState(false);
+  // الأوقات تتبع الباقة المختارة ما لم تعدّلها العروس بنفسها
+  const [timesTouched, setTimesTouched] = useState(false);
   const [consent, setConsent] = useState(false);
   const [restoredDraft, setRestoredDraft] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -941,7 +943,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const onSelectPackage = (id: string) => {
     const pkg = pricing.find((p) => p.id === id);
     if (!pkg) return setF({ ...f, package_id: id });
-    let start = f.start_time, end = f.end_time;
+    let start = timesTouched ? f.start_time : "", end = timesTouched ? f.end_time : "";
     if (pkg.package === "full_day") { start = start || "10:00"; end = end || "23:00"; }
     else if (pkg.package === "hourly") {
       const hours = pkg.hours ? Number(pkg.hours) : labelHours(pkg.label);
@@ -949,8 +951,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
       const endHour = (18 + hours) % 24;
       end = end || `${String(endHour).padStart(2, "0")}:00`;
     }
-    const note = tr("الباقة: {0} — {1} د.أ{2}", [pkg.label, Number(pkg.price).toLocaleString(locale("ar-JO")), pkg.description ? `\n${pkg.description}` : ""]);
-    setF({ ...f, package_id: id, start_time: start, end_time: end, client_notes: f.client_notes ? f.client_notes : note });
+    // لا نكتب نص الباقة في ملاحظات العروس: الباقة تُحفظ مع الحجز وتراها المصوّرة منفصلة،
+    // ونص قديم يبقى هنا لو غيّرت الباقة فيضلّل المصوّرة. ونصوص «الباقة: …» القديمة من مسودة تُمسح.
+    const notes = /^الباقة: /.test(f.client_notes ?? "") ? "" : f.client_notes;
+    setF({ ...f, package_id: id, start_time: start, end_time: end, client_notes: notes });
   };
 
   // عند اختيار الباقة من زر "احجزي هذه الباقة" خارج النموذج
@@ -1150,7 +1154,9 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           <div className="text-xs uppercase tracking-[0.2em] text-gold mb-1">{tr("الخطوة التالية")}</div>
           {profile.is_demo
             ? <p className="text-sm">{tr("هذا حساب تجريبي، لذلك لا يوجد تحويل للعربون. يمكنك فتح صفحة تتبع الحجز لترى كيف تبدو.")}</p>
-            : <p className="text-sm">{tr("حوّلي العربون بقيمة")}{" "}<span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span>{tr("، ثم ارفعي إثبات التحويل من صفحة تتبع الحجز.")}</p>}
+            : <p className="text-sm">{profile.gender === "male"
+                ? tr("انتظري موافقة المصوّر خلال 24 ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقته؛ بعدها تظهر لكِ طرق دفع العربون ({0} د.أ) في صفحة المتابعة.", [deposit.toLocaleString(locale("ar-JO"))])
+                : tr("انتظري موافقة المصوّرة خلال 24 ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقتها؛ بعدها تظهر لكِ طرق دفع العربون ({0} د.أ) في صفحة المتابعة.", [deposit.toLocaleString(locale("ar-JO"))])}</p>}
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <button onClick={() => navigate({ to: trackUrl })}
@@ -1326,8 +1332,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           <button type="button" onClick={() => document.getElementById("packages")?.scrollIntoView({ behavior: "smooth" })} className="mt-1.5 text-[11px] text-muted-foreground underline underline-offset-4 hover:text-foreground">{tr("تفاصيل كل باقة")}</button>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label={tr("من")} type="time" v={f.start_time} on={(v) => setF({ ...f, start_time: v })} />
-          <Field label={tr("إلى")} type="time" v={f.end_time} on={(v) => setF({ ...f, end_time: v })} />
+          <Field label={tr("من")} type="time" v={f.start_time} on={(v) => { setTimesTouched(true); setF({ ...f, start_time: v }); }} />
+          <Field label={tr("إلى")} type="time" v={f.end_time} on={(v) => { setTimesTouched(true); setF({ ...f, end_time: v }); }} />
         </div>
         {isBlocked && <p className="text-sm text-destructive sm:col-span-2">{tr("⚠️ هذا اليوم غير متاح")}</p>}
         {hasConflict && <p className="text-sm text-destructive sm:col-span-2">{tr("⚠️ يتعارض مع فترة محجوزة")}</p>}
@@ -1581,13 +1587,13 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
         )}
         {!cliqAlias && !bankInfo && (
           <div className="bg-ivory/10 rounded-sm p-3 text-xs leading-relaxed">
-            {tr("ستظهر معلومات الدفع كاملة في صفحة تتبّع الحجز فور إرسال طلبك.")}
+            {profile.gender === "male" ? tr("تظهر طرق الدفع في صفحة متابعة حجزكِ بعد موافقة المصوّر على طلبكِ.") : tr("تظهر طرق الدفع في صفحة متابعة حجزكِ بعد موافقة المصوّرة على طلبكِ.")}
           </div>
         )}
       </div>
       <p className="text-[11px] text-ivory/60 mt-5 leading-relaxed">
         <Shield className="h-3 w-3 inline-block me-1 -mt-0.5 opacity-70" />
-        {tr("يُدفع هذا العربون مباشرة لحساب المصوّرة الشخصي لتثبيت حجزكِ فوراً.")}
+        {profile.gender === "male" ? tr("يُدفع العربون مباشرة للمصوّر، ويتثبّت حجزكِ بعد أن يؤكّد وصوله.") : tr("يُدفع العربون مباشرة للمصوّرة، ويتثبّت حجزكِ بعد أن تؤكّد وصوله.")}
       </p>
     </div>
   );

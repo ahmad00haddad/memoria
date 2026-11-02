@@ -4046,5 +4046,15 @@
  "يصوّر فريقها — هي لن تحضر بنفسها": "Her team shoots — she won't attend herself",
  "حدّدي من يصوّر في كل باقة (أنتِ، أنتِ مع فريقكِ، أو فريقكِ بدونكِ) — أهم ما تسأل عنه العروس.": "Set who shoots each package (you, you with your team, or your team without you) — what brides ask about most.",
  "حدّد من يصوّر في كل باقة (أنت، أنت مع فريقك، أو فريقك بدونك) — أهم ما تسأل عنه العروس.": "Set who shoots each package (you, you with your team, or your team without you) — what brides ask about most.",
- "أهم ما تسأل عنه العروس. «أنا بنفسي» لا يظهر لها (هو المتوقّع)؛ الخياران الآخران يظهران على الباقة.": "What brides ask about most. “Me” isn't shown (it's expected); the other two are shown on the package."
+ "أهم ما تسأل عنه العروس. «أنا بنفسي» لا يظهر لها (هو المتوقّع)؛ الخياران الآخران يظهران على الباقة.": "What brides ask about most. “Me” isn't shown (it's expected); the other two are shown on the package.",
+ "انتظري موافقة المصوّر خلال 24 ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقته؛ بعدها تظهر لكِ طرق دفع العربون ({0} د.أ) في صفحة المتابعة.": "Wait for the photographer's approval within 24 hours — you'll be notified. Don't transfer anything before he approves; then the deposit methods ({0} JOD) appear on your tracking page.",
+ "انتظري موافقة المصوّرة خلال 24 ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقتها؛ بعدها تظهر لكِ طرق دفع العربون ({0} د.أ) في صفحة المتابعة.": "Wait for the photographer's approval within 24 hours — you'll be notified. Don't transfer anything before she approves; then the deposit methods ({0} JOD) appear on your tracking page.",
+ "تظهر طرق الدفع في صفحة متابعة حجزكِ بعد موافقة المصوّر على طلبكِ.": "Payment methods appear on your tracking page once the photographer approves your request.",
+ "تظهر طرق الدفع في صفحة متابعة حجزكِ بعد موافقة المصوّرة على طلبكِ.": "Payment methods appear on your tracking page once the photographer approves your request.",
+ "يُدفع العربون مباشرة للمصوّر، ويتثبّت حجزكِ بعد أن يؤكّد وصوله.": "The deposit goes directly to the photographer; your booking is confirmed once he confirms it arrived.",
+ "يُدفع العربون مباشرة للمصوّرة، ويتثبّت حجزكِ بعد أن تؤكّد وصوله.": "The deposit goes directly to the photographer; your booking is confirmed once she confirms it arrived.",
+ "ما طلبته العروس": "What the bride requested",
+ "وصل إيصالكِ. تتأكّد المصوّرة من وصول المبلغ لحسابها ثم تثبّت حجزكِ، ويصلكِ إشعار.": "Receipt received. The photographer checks the money reached her account, then confirms your booking — you'll be notified.",
+ "أشّري «قرأت وفهمت» على الشروط أعلاه حتى يتفعّل الزر.": "Tick “I've read and understood” on the terms above to enable the button.",
+ "وافقت على الطلب — أبلغنا العروس لتحوّل العربون خلال 48 ساعة": "Request approved — we've told the bride to transfer the deposit within 48 hours"
 }

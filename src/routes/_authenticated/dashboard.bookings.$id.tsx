@@ -38,6 +38,7 @@ import { AlertTriangle } from "lucide-react";
 import { locale } from "@/i18n";
 import { t as tr, tx } from "@/i18n";
 import { usePlan } from "@/hooks/use-plan";
+import { PackageFacts, hasFacts } from "@/components/PackageFacts";
 
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({
   component: BookingDetail,
@@ -145,7 +146,7 @@ function BookingDetail() {
     if (!session) return nav({ to: "/login" });
     setUid(session.user.id);
     const [{ data: bk }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
-      supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at, needs_approval, approved_at, phone_verified_at").eq("id", id).maybeSingle(),
+      supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at, needs_approval, approved_at, phone_verified_at, package_snapshot").eq("id", id).maybeSingle(),
       supabase.from("messages").select("id, created_at, booking_id, sender_id, sender_name, body, read_at").eq("booking_id", id).order("created_at"),
       supabase.from("contracts").select("id, status, sign_token, signed_at, client_name").eq("booking_id", id).maybeSingle(),
       supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
@@ -259,7 +260,6 @@ function BookingDetail() {
       const { data: existing } = await supabase.from("contracts").select("id").eq("booking_id", id).maybeSingle();
       if (!existing && !isBasic) {
         await generateContract();
-        toast.success(tr("أنشأنا العقد تلقائياً"));
       }
       setActionLoading(null);
       return;
@@ -303,7 +303,7 @@ function BookingDetail() {
     try {
       await approveFn({ data: { booking_id: id } });
       hapticVibrate("success");
-      toast.success(tr("وافقتِ على الطلب — أبلغنا العروس لتحوّل العربون خلال 48 ساعة"));
+      toast.success(g(tr("وافقتِ على الطلب — أبلغنا العروس لتحوّل العربون خلال 48 ساعة"), tr("وافقت على الطلب — أبلغنا العروس لتحوّل العربون خلال 48 ساعة")));
       await load();
     } catch (e: any) {
       toast.error(e?.message || tr("تعذّرت الموافقة"));
@@ -677,6 +677,20 @@ function BookingDetail() {
                     )} />
                     <Row k={tr("المكان")} v={b.venue_name} />
                     <Row k={tr("العنوان")} v={b.venue_address} />
+                    {Array.isArray(b.addons) && b.addons.length > 0 && (
+                      <div className="rounded-xl border border-gold/30 p-3">
+                        <div className="text-xs text-muted-foreground mb-1">{tr("ما طلبته العروس")}</div>
+                        <ul className="space-y-1">
+                          {b.addons.map((it: any, i: number) => (
+                            <li key={i} className="flex justify-between gap-3">
+                              <span className={it.kind === "main" ? "font-medium" : ""}>{tx(it.label)}{it.qty > 1 ? ` × ${it.qty}` : ""}</span>
+                              <span className="tabular-nums text-muted-foreground">{tr("{0} د.أ", [Number(it.price * (it.qty || 1)).toLocaleString(locale("ar-JO"))])}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        {b.package_snapshot && hasFacts(b.package_snapshot) && <PackageFacts d={b.package_snapshot} compact gender={b.package_snapshot.gender} className="mt-2 border-t border-border pt-2" />}
+                      </div>
+                    )}
                     {b.client_notes && (
                       <div className="rounded-xl bg-secondary/50 p-3">
                         <div className="text-xs text-muted-foreground mb-1">{tr("ملاحظات العميلة")}</div>

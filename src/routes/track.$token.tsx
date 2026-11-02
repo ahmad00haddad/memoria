@@ -283,7 +283,7 @@ function TrackingPage() {
       // The RPC drops _reference, so it also goes in the note the photographer sees
       await sendDeposit({ data: { token, terms_accepted: true, proof_path: path, reference: reference.trim(),
           note: t("رقم العملية: {0} اسم المحوِّل: {1}", [reference.trim(), note.trim()]) } });
-      toast.success(t("تم إرسال الإيصال بنجاح. سنقوم بتأكيد الحجز قريباً."), { id: "upload-receipt" });
+      toast.success(t("وصل إيصالكِ. تتأكّد المصوّرة من وصول المبلغ لحسابها ثم تثبّت حجزكِ، ويصلكِ إشعار."), { id: "upload-receipt" });
       setReference(""); setNote(""); setPickedFile(null);
       if (fileRef.current) fileRef.current.value = "";
       load();
@@ -599,6 +599,7 @@ function TrackingPage() {
                       className="bg-gold text-charcoal py-3 rounded-sm font-medium hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
                 <Upload className="h-4 w-4" /> {uploading ? t("جاري الإرسال…") : t("تم إرسال العربون")}
               </button>
+              {!termsOk && !uploading && <p className="text-center text-xs text-muted-foreground">{t("أشّري «قرأت وفهمت» على الشروط أعلاه حتى يتفعّل الزر.")}</p>}
 
             </div>
           </div>
