@@ -279,6 +279,13 @@ function BookingDetail() {
   // ✅ آمن: server fn تتحقق من الملكية + تسجّل في audit_logs
   const markFinalPaid = async () => {
     if (actionLoading === "final") return;
+    // تسجيل الدفعة يفتح الصور الكاملة للعروس — لا يُسجَّل قبل التأكد من البنك
+    const rest = Math.max(0, Number(b?.total_price || 0) - Number(b?.deposit_amount || 0));
+    if (!(await confirm({
+      title: tr("تسجيل استلام المتبقي"),
+      description: g(tr("تأكّدتِ من تطبيق البنك أن {0} د.أ وصلت فعلاً؟ بعد التسجيل تُفتح الصور الكاملة للعروس.", [rest]), tr("تأكّدت من تطبيق البنك أن {0} د.أ وصلت فعلاً؟ بعد التسجيل تُفتح الصور الكاملة للعروس.", [rest])),
+      confirmText: tr("نعم، وصل"),
+    }))) return;
     setActionLoading("final");
     try {
       await markFinalPaidFn({ data: { booking_id: id } });

@@ -356,9 +356,10 @@ export const saveBookingSelectionLink = createServerFn({ method: "POST" })
     }
     if (!d.link || typeof d.link !== "string") throw new Error(t("الرابط مطلوب"));
     if (d.link.length > 2000) throw new Error(t("الرابط طويل جداً"));
-    // التحقق من صيغة URL
-    try { new URL(d.link); } catch { throw new Error(t("صيغة الرابط غير صحيحة")); }
-    return d;
+    // رابط ملصوق بلا https:// (شائع من الجوال) نكمله بدل رفضه
+    const link = /^https?:\/\//i.test(d.link.trim()) ? d.link.trim() : `https://${d.link.trim()}`;
+    try { new URL(link); } catch { throw new Error(t("الرابط غير صحيح — انسخيه كاملاً من Drive أو WeTransfer")); }
+    return { ...d, link };
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
@@ -403,8 +404,10 @@ export const saveDeliveryLink = createServerFn({ method: "POST" })
     }
     if (!d.link || typeof d.link !== "string") throw new Error(t("الرابط مطلوب"));
     if (d.link.length > 2000) throw new Error(t("الرابط طويل جداً"));
-    try { new URL(d.link); } catch { throw new Error(t("صيغة الرابط غير صحيحة")); }
-    return d;
+    // رابط ملصوق بلا https:// (شائع من الجوال) نكمله بدل رفضه
+    const link = /^https?:\/\//i.test(d.link.trim()) ? d.link.trim() : `https://${d.link.trim()}`;
+    try { new URL(link); } catch { throw new Error(t("الرابط غير صحيح — انسخيه كاملاً من Drive أو WeTransfer")); }
+    return { ...d, link };
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;

@@ -634,6 +634,7 @@ function TrackingPage() {
             <div className="font-medium text-destructive mb-1">{t("تم إلغاء هذا الحجز")}</div>
             {b.cancellation_reason && <div className="mb-1">{t("السبب:")}{" "}{tx(b.cancellation_reason)}</div>}
             {!b.deposit_sent_at && <div className="text-muted-foreground">{t("لم يُدفع أي مبلغ على هذا الطلب.")}</div>}
+            {b.deposit_sent_at && !Number(b.refund_amount || 0) && <div className="text-muted-foreground">{t("حسب سياسة العربون التي وافقتِ عليها، لا يُرجَع العربون في هذه الحالة.")}</div>}
             {!b.deposit_sent_at && b.event_date >= new Date().toISOString().slice(0, 10) && (
               <a href={`/search?date=${b.event_date}`} className="mt-3 inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal">{t("مصوّرات متاحات بنفس التاريخ")}</a>
             )}
@@ -711,7 +712,7 @@ function TrackingPage() {
               if (ok) window.open(`https://wa.me/${ph.whatsapp.replace(/[^0-9]/g,'')}`, "_blank");
             }}>{tx(ph.whatsapp)}</button></div>}
             {ph.phone && <div>{t("هاتف: {0}", [ph.phone])}</div>}
-            {!ph.whatsapp && !ph.phone && <div className="text-muted-foreground">{t("يظهر رقم المصوّرة هنا بعد موافقتها على طلبكِ. حتى ذلك الحين راسليها من هذه الصفحة.")}</div>}
+            {!ph.whatsapp && !ph.phone && b.status !== "cancelled" && <div className="text-muted-foreground">{t("يظهر رقم المصوّرة هنا بعد موافقتها على طلبكِ. حتى ذلك الحين راسليها من هذه الصفحة.")}</div>}
           </div>
         </div>
 

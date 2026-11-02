@@ -4057,5 +4057,10 @@
  "وصل إيصالكِ. تتأكّد المصوّرة من وصول المبلغ لحسابها ثم تثبّت حجزكِ، ويصلكِ إشعار.": "Receipt received. The photographer checks the money reached her account, then confirms your booking — you'll be notified.",
  "أشّري «قرأت وفهمت» على الشروط أعلاه حتى يتفعّل الزر.": "Tick “I've read and understood” on the terms above to enable the button.",
  "وافقت على الطلب — أبلغنا العروس لتحوّل العربون خلال 48 ساعة": "Request approved — we've told the bride to transfer the deposit within 48 hours",
- "أضيفي رابط التسليم النهائي أو ارفعي الصور في معرض التسليم أولاً — حتى تجد العروس صورها فعلاً.": "Add the final delivery link or upload photos to the delivery gallery first — so the bride actually finds her photos."
+ "أضيفي رابط التسليم النهائي أو ارفعي الصور في معرض التسليم أولاً — حتى تجد العروس صورها فعلاً.": "Add the final delivery link or upload photos to the delivery gallery first — so the bride actually finds her photos.",
+ "الرابط غير صحيح — انسخيه كاملاً من Drive أو WeTransfer": "That link isn't valid — copy the full link from Drive or WeTransfer",
+ "تأكّدتِ من تطبيق البنك أن {0} د.أ وصلت فعلاً؟ بعد التسجيل تُفتح الصور الكاملة للعروس.": "Did you check in your bank app that {0} JOD really arrived? Recording it unlocks the full photos for the bride.",
+ "تأكّدت من تطبيق البنك أن {0} د.أ وصلت فعلاً؟ بعد التسجيل تُفتح الصور الكاملة للعروس.": "Did you check in your bank app that {0} JOD really arrived? Recording it unlocks the full photos for the bride.",
+ "نعم، وصل": "Yes, it arrived",
+ "حسب سياسة العربون التي وافقتِ عليها، لا يُرجَع العربون في هذه الحالة.": "Under the deposit policy you accepted, the deposit isn't refunded in this case."
 }
