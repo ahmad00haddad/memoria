@@ -374,7 +374,7 @@ function BookingDetail() {
     const male = (pol as any)?.gender === "male";
     const P = male ? "المصوّر" : "المصوّرة";
     const privacyLabels: Record<string, string> = {
-      public: `عام — يحق لـ${P} استخدام لقطات للترويج`,
+      public: `عام — يحق ${male ? "للمصوّر" : "للمصوّرة"} استخدام لقطات للترويج`,
       no_publish: "بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي",
       private_only: (pol as any)?.team_gender === "female"
         ? "خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث"
@@ -385,7 +385,7 @@ function BookingDetail() {
       : (pol as any)?.deposit_refund_policy === "partial"
         ? `إذا ألغت العميلة بعد دفع العربون يُرجَع لها ${Number((pol as any)?.deposit_refund_percent || 0)}% منه`
         : "إذا ألغت العميلة بعد دفع العربون لا يُرجَع";
-    const depositTerms = `${depositClause}. إذا ألغى ${P} الحجز يُرجَع العربون كاملاً. العربون يُحوَّل مباشرة لـ${P} والمنصّة ليست طرفاً فيه. تغيير الموعد يعني إلغاء الحجز، إلا إذا وافق ${P} على نقل العربون.`.replace("إذا ألغى المصوّرة", "إذا ألغت المصوّرة").replace("إلا إذا وافق المصوّرة", "إلا إذا وافقت المصوّرة");
+    const depositTerms = `${depositClause}. إذا ألغى ${P} الحجز يُرجَع العربون كاملاً. العربون يُحوَّل مباشرة ${male ? "للمصوّر" : "للمصوّرة"} والمنصّة ليست طرفاً فيه. تغيير الموعد يعني إلغاء الحجز، إلا إذا وافق ${P} على نقل العربون.`.replace("إذا ألغى المصوّرة", "إذا ألغت المصوّرة").replace("إلا إذا وافق المصوّرة", "إلا إذا وافقت المصوّرة");
     const place = b.venue_name || b.venue_address || "—";
     const snap: any = (b as any).package_snapshot ?? null;
     const mainItem = Array.isArray(b.addons) ? b.addons.find((x: any) => x.kind === "main") : null;
