@@ -4161,5 +4161,11 @@
  "الموافقة على طلب {0}؟": "Approve {0}'s request?",
  "{0} · من {1} إلى {2}. بعد الموافقة يصل للعروس رقمكِ وطرق الدفع، ويُحجز التاريخ لها 48 ساعة.": "{0} · {1} to {2}. Once approved, the bride gets your number and payment methods, and the date is held for her for 48 hours.",
  "تعديل العنوان أو الوقت": "Edit address or time",
- "تعديل العنوان": "Edit address"
+ "تعديل العنوان": "Edit address",
+ "{0} أيام": "{0} days",
+ "يوم واحد": "1 day",
+ "يومين": "2 days",
+ "{0} يوماً": "{0} days",
+ "التسليم متأخر {0} عن الموعد المتّفق": "Delivery is {0} past the agreed date",
+ "موعد التسليم المتّفق: بعد {0}": "Agreed delivery: in {0}"
 }

@@ -22,6 +22,9 @@ export type EventDayInfo = {
   live_story?: "yes" | "no"; skip_guests?: string; plan_b?: string; extra?: string; saved_at?: string;
 };
 
+// "يوم" أو "أيام" حسب العدد (3–10 أيام، وغيرها يوماً/يوم)
+const days = (n: number) => (n >= 3 && n <= 10 ? tr("{0} أيام", [n]) : n === 1 ? tr("يوم واحد") : n === 2 ? tr("يومين") : tr("{0} يوماً", [n]));
+
 export function daysToEvent(eventDate?: string | null) {
   if (!eventDate) return null;
   const today = new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
@@ -249,9 +252,9 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
             <div className="font-medium">
               {delivered ? tr("سُلِّمت صوركِ")
                 : left === null ? tr("صوركِ قيد التجهيز")
-                : late ? tr("التسليم متأخر {0} يوم عن الموعد المتّفق", [Math.abs(left)])
+                : late ? tr("التسليم متأخر {0} عن الموعد المتّفق", [days(Math.abs(left))])
                 : left === 0 ? tr("موعد التسليم المتّفق: اليوم")
-                : tr("موعد التسليم المتّفق: بعد {0} يوم", [left])}
+                : tr("موعد التسليم المتّفق: بعد {0}", [days(left)])}
             </div>
             {b.photos_promised ? (
               <div className="mt-1 text-xs text-muted-foreground">
