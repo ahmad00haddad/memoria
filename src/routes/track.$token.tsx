@@ -982,7 +982,7 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
   };
   useEffect(() => {
     load();
-    const id = setInterval(load, 45000);
+    const id = setInterval(load, 15000);
     return () => clearInterval(id);
     /* eslint-disable-next-line */
   }, [token]);
