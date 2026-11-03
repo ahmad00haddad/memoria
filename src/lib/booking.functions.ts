@@ -61,6 +61,15 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       }
 
 
+    // حد الطلبات المعلّقة: نفس الرقم بنفس التاريخ عند أكثر من 3 مصوّرات يحجز تواريخهن بلا داعٍ
+    const { count: pendingSameDay } = await (supabaseAdmin as any).from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("client_phone", data.client_phone).eq("event_date", data.event_date)
+      .in("status", ["pending_deposit", "quote"]).is("deleted_at", null);
+    if ((pendingSameDay ?? 0) >= 3) {
+      throw new Error(tr("عندكِ 3 طلبات معلّقة لنفس التاريخ. انتظري ردّهن أو ألغي واحداً من صفحة متابعته قبل طلب جديد."));
+    }
+
     // Server-side authoritative price recompute.
     const ruleIds = data.items.map((i) => i.rule_id);
     const { data: rules, error: rulesErr } = await supabaseAdmin

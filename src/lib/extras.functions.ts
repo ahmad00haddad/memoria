@@ -170,6 +170,10 @@ export const respondAddendum = createServerFn({ method: "POST" })
 
 // بيانات الإضافات لصفحة العروس (تُدمج في getBookingByToken)
 export async function extrasForToken(supabaseAdmin: any, bookingId: string) {
+  const { data: gal } = await supabaseAdmin.from("delivery_galleries").select("id").eq("booking_id", bookingId).maybeSingle();
+  const { count: photosDelivered } = gal
+    ? await supabaseAdmin.from("delivery_photos").select("id", { count: "exact", head: true }).eq("gallery_id", gal.id)
+    : { count: 0 };
   const [{ data: b }, { data: ad }] = await Promise.all([
     supabaseAdmin.from("bookings").select("ready_confirmed_at, event_day_info, privacy_level").eq("id", bookingId).maybeSingle(),
     supabaseAdmin.from("booking_addenda").select("id, description, amount, status, created_at, responded_at")
@@ -180,5 +184,53 @@ export async function extrasForToken(supabaseAdmin: any, bookingId: string) {
     event_day_info: b?.event_day_info ?? null,
     privacy_level: b?.privacy_level ?? "public",
     addenda: ad ?? [],
+    photos_delivered: photosDelivered ?? 0,
   };
 }
+
+// ----- العروس: تعديل العنوان (حتى يوم المناسبة) والوقت (قبل موافقة المصوّرة فقط) -----
+// كل تعديل يُكتب كرسالة في محادثة الحجز حتى تراه المصوّرة.
+export const clientEditDetails = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; venue_address?: string; start_time?: string; end_time?: string }) => {
+    if (!d || !TOKEN_RE.test(d.token ?? "")) throw new Error("invalid token");
+    const isTime = (s: any) => typeof s === "string" && /^\d{2}:\d{2}$/.test(s);
+    const out: { token: string; venue_address?: string; start_time?: string; end_time?: string } = { token: d.token };
+    if (typeof d.venue_address === "string") {
+      const v = d.venue_address.trim();
+      if (v.length > 500) throw new Error(tr("عنوان المكان طويل جداً"));
+      out.venue_address = v;
+    }
+    if (d.start_time || d.end_time) {
+      if (!isTime(d.start_time) || !isTime(d.end_time)) throw new Error(tr("اختاري وقت البداية والنهاية"));
+      if (d.end_time! <= d.start_time!) throw new Error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
+      out.start_time = d.start_time; out.end_time = d.end_time;
+    }
+    return out;
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+    const { data: bk } = await admin.from("bookings")
+      .select("id, status, event_date, needs_approval, approved_at, venue_address, start_time, end_time, client_name, deleted_at")
+      .eq("client_tracking_token", data.token).maybeSingle();
+    if (!bk || bk.deleted_at) throw new Error(tr("الحجز غير موجود"));
+    if (!["pending_deposit", "quote", "confirmed"].includes(bk.status)) throw new Error(tr("لا يمكن تعديل هذا الحجز"));
+    if (daysTo(String(bk.event_date)) < 0) throw new Error(tr("مضى موعد المناسبة"));
+    const patch: any = {};
+    const lines: string[] = [];
+    if (data.venue_address !== undefined && data.venue_address !== (bk.venue_address ?? "")) {
+      patch.venue_address = data.venue_address || null;
+      lines.push(tr("📍 غيّرتُ عنوان المكان إلى: {0}", [data.venue_address || "—"]));
+    }
+    if (data.start_time && (data.start_time !== String(bk.start_time).slice(0, 5) || data.end_time !== String(bk.end_time).slice(0, 5))) {
+      const awaiting = bk.needs_approval && !bk.approved_at;
+      if (!awaiting) throw new Error(tr("بعد موافقة المصوّرة يتغيّر الوقت بالاتفاق معها في الرسائل"));
+      patch.start_time = data.start_time; patch.end_time = data.end_time;
+      lines.push(tr("🕒 غيّرتُ الوقت إلى: {0} - {1}", [data.start_time, data.end_time]));
+    }
+    if (!lines.length) return { ok: true, unchanged: true };
+    const { error } = await admin.from("bookings").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", bk.id);
+    if (error) throw new Error(error.message);
+    await admin.from("messages").insert({ booking_id: bk.id, sender_id: null, sender_name: bk.client_name || tr("العميل"), body: lines.join("\n") });
+    return { ok: true };
+  });

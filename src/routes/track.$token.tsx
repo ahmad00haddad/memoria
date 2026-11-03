@@ -17,7 +17,7 @@ import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib
 import { supabase } from "@/integrations/supabase/client";
 import { PackageFacts, hasFacts } from "@/components/PackageFacts";
 import { PaymentMethodsView } from "@/components/PaymentMethods";
-import { BrideExtras } from "@/components/BookingExtras";
+import { BrideExtras, BrideEditDetails } from "@/components/BookingExtras";
 import { parseMethods, type PaymentMethod } from "@/lib/payment-methods";
 import { CheckCircle2, CalendarPlus, LockKeyhole, Unlock, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, XCircle } from "lucide-react";
 import { Lightbox } from "@/components/Lightbox";
@@ -516,6 +516,7 @@ function TrackingPage() {
             <Info label={t("الموقع")} v={b.venue_address || "—"} />
             <Info label={t("الخدمة")} v={b.service === "cinematic_video" ? t("فيديو سينمائي") : t("تصوير")} />
           </div>
+          <BrideEditDetails b={b} token={token} onChange={load} />
           {Array.isArray(b.addons) && b.addons.length > 0 && (
             <div className="border-t border-border pt-3 mb-3">
               <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">{t("تفاصيل الباقة")}</div>

@@ -147,7 +147,7 @@ function BookingDetail() {
     if (!session) return nav({ to: "/login" });
     setUid(session.user.id);
     const [{ data: bk }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
-      supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at, needs_approval, approved_at, phone_verified_at, package_snapshot, ready_confirmed_at, event_day_info").eq("id", id).maybeSingle(),
+      supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at, needs_approval, approved_at, phone_verified_at, package_snapshot, ready_confirmed_at, event_day_info, photos_promised").eq("id", id).maybeSingle(),
       supabase.from("messages").select("id, created_at, booking_id, sender_id, sender_name, body, read_at").eq("booking_id", id).order("created_at"),
       supabase.from("contracts").select("id, status, sign_token, signed_at, client_name").eq("booking_id", id).maybeSingle(),
       supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
@@ -306,7 +306,13 @@ function BookingDetail() {
   };
 
   const doApprove = async () => {
-    if (actionLoading) return;
+    if (actionLoading || !b) return;
+    const ok = await confirm({
+      title: tr("الموافقة على طلب {0}؟", [b.client_name]),
+      description: tr("{0} · من {1} إلى {2}. بعد الموافقة يصل للعروس رقمكِ وطرق الدفع، ويُحجز التاريخ لها 48 ساعة.", [b.event_date, b.start_time?.slice(0, 5) ?? "", b.end_time?.slice(0, 5) ?? ""]),
+      confirmText: tr("موافقة"),
+    });
+    if (!ok) return;
     setActionLoading("approve");
     try {
       await approveFn({ data: { booking_id: id } });
@@ -1092,7 +1098,7 @@ function DeliveryCountdown({ b }: { b: any }) {
       <Clock className="h-4 w-4 shrink-0" />
       <div>
         <div className="font-medium">{overdue ? tr("التسليم متأخر {0} {1}", [Math.abs(days), Math.abs(days) === 1 ? "يوماً" : "أيام"]) : tr("التسليم {0}", [relativeDay(days)])}</div>
-        <div className="text-xs opacity-80">{tr("الموعد المتّفق عليه {0}", [due.toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })])}</div>
+        <div className="text-xs opacity-80">{tr("الموعد المتّفق عليه {0}", [due.toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })])}{b.photos_promised ? ` · ${tr("المتّفق: {0} صورة معدّلة", [b.photos_promised])}` : ""}</div>
       </div>
     </div>
   );

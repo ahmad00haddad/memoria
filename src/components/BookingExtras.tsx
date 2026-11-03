@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { CheckCircle2, AlertTriangle, FileSignature, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondAddendum } from "@/lib/extras.functions";
+import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondAddendum, clientEditDetails } from "@/lib/extras.functions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { g } from "@/hooks/use-gender";
 import { t as tr, tx } from "@/i18n";
@@ -150,6 +150,17 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
         )}
         {open && (
           <div className="mt-3 space-y-2">
+            {Number(b.overtime_fee_per_hour) > 0 && (
+              <div className="flex flex-wrap items-center gap-2 rounded-lg bg-secondary/50 p-2 text-xs">
+                <span>{tr("ساعات إضافية؟")}</span>
+                {[1, 2, 3].map((h) => (
+                  <button key={h} type="button" onClick={() => {
+                    setDesc(tr("{0} ساعة تصوير إضافية × {1} د.أ", [h, b.overtime_fee_per_hour]));
+                    setAmount(String(h * Number(b.overtime_fee_per_hour)));
+                  }} className="rounded-full border border-border bg-background px-3 py-1">{tr("{0} ساعة", [h])}</button>
+                ))}
+              </div>
+            )}
             <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={2} maxLength={1000}
               placeholder={tr("مثال: ساعة تصوير إضافية بعد الزفّة")}
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
@@ -229,6 +240,31 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
         )
       )}
 
+      {b.event_date && d !== null && d < 0 && (b.delivery_due_at || b.photos_promised) && (() => {
+        const delivered = !!b.delivered_at || b.status === "completed";
+        const left = b.delivery_due_at ? daysToEvent(String(b.delivery_due_at).slice(0, 10))! : null;
+        const late = !delivered && left !== null && left < 0;
+        return (
+          <div className={`mb-6 rounded-2xl border p-4 text-sm ${late ? "border-rose-300 bg-rose-50 text-rose-800 dark:bg-rose-500/10 dark:text-rose-300" : "border-border bg-card"}`}>
+            <div className="font-medium">
+              {delivered ? tr("سُلِّمت صوركِ")
+                : left === null ? tr("صوركِ قيد التجهيز")
+                : late ? tr("التسليم متأخر {0} يوم عن الموعد المتّفق", [Math.abs(left)])
+                : left === 0 ? tr("موعد التسليم المتّفق: اليوم")
+                : tr("موعد التسليم المتّفق: بعد {0} يوم", [left])}
+            </div>
+            {b.photos_promised ? (
+              <div className="mt-1 text-xs text-muted-foreground">
+                {delivered && b.photos_delivered > 0
+                  ? tr("وصلكِ {0} صورة من {1} متّفق عليها", [b.photos_delivered, b.photos_promised])
+                  : tr("المتّفق: {0} صورة معدّلة", [b.photos_promised])}
+              </div>
+            ) : null}
+            {late && <div className="mt-1 text-xs">{tr("راسلي المصوّرة من أسفل الصفحة، وإن لم تردّ راسلي فريق ميموريا.")}</div>}
+          </div>
+        );
+      })()}
+
       {pending.length > 0 && (
         <div id="addenda-step" className="scroll-mt-24 mb-6 rounded-2xl border border-gold bg-gold/10 p-5">
           <h2 className="font-serif text-lg mb-1">{tr("ملحق اتفاق بانتظار موافقتكِ")}</h2>
@@ -294,5 +330,51 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
         </div>
       )}
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// العروس: تعديل العنوان والوقت (الوقت قبل الموافقة فقط)
+// ---------------------------------------------------------------------------
+export function BrideEditDetails({ b, token, onChange }: { b: any; token: string; onChange: () => void }) {
+  const edit = useServerFn(clientEditDetails);
+  const [open, setOpen] = useState(false);
+  const [venue, setVenue] = useState(b.venue_address ?? "");
+  const [start, setStart] = useState(String(b.start_time ?? "").slice(0, 5));
+  const [end, setEnd] = useState(String(b.end_time ?? "").slice(0, 5));
+  const [busy, setBusy] = useState(false);
+  const d = daysToEvent(b.event_date);
+  if (!["pending_deposit", "quote", "confirmed"].includes(b.status) || d === null || d < 0) return null;
+  const timeEditable = !!b.needs_approval && !b.approved_at;
+
+  if (!open) return (
+    <button onClick={() => setOpen(true)} className="mb-4 text-xs text-gold underline">{tr(timeEditable ? "تعديل العنوان أو الوقت" : "تعديل العنوان")}</button>
+  );
+  const onSave = async () => {
+    setBusy(true);
+    try {
+      await edit({ data: { token, venue_address: venue, ...(timeEditable ? { start_time: start, end_time: end } : {}) } });
+      toast.success(tr("حُفظ التعديل ووصل للمصوّرة في الرسائل")); setOpen(false); onChange();
+    } catch (e: any) { toast.error(e?.message || tr("تعذّر الحفظ")); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className="mb-4 space-y-2 rounded-xl border border-border p-3">
+      <input value={venue} onChange={(e) => setVenue(e.target.value)} maxLength={500} placeholder={tr("عنوان المكان")}
+        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+      {timeEditable ? (
+        <div className="flex items-center gap-2 text-sm">
+          <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="rounded-md border border-border bg-background px-2 py-1.5" />
+          <span>—</span>
+          <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="rounded-md border border-border bg-background px-2 py-1.5" />
+        </div>
+      ) : (
+        <p className="text-xs text-muted-foreground">{tr("الوقت والتاريخ يتغيّران بالاتفاق مع المصوّرة في الرسائل.")}</p>
+      )}
+      <div className="flex gap-2">
+        <button onClick={onSave} disabled={busy} className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{tr("حفظ")}</button>
+        <button onClick={() => setOpen(false)} className="rounded-full border border-border px-4 py-2 text-xs">{tr("إلغاء")}</button>
+      </div>
+    </div>
   );
 }
