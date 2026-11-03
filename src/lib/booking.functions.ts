@@ -14,7 +14,7 @@ type SubmitInput = {
   venue_address?: string | null;
   items: BookingItemInput[];
   client_notes?: string | null;
-  privacy_level: "public" | "private_only";
+  privacy_level: "public" | "no_publish" | "private_only";
 };
 
 function validateInput(d: SubmitInput): SubmitInput {
@@ -43,7 +43,7 @@ function validateInput(d: SubmitInput): SubmitInput {
     if (!isUuid(it.rule_id)) throw new Error("invalid item rule_id");
     if (!Number.isInteger(it.qty) || it.qty < 1 || it.qty > 50) throw new Error("invalid item qty");
   }
-  if (d.privacy_level !== "public" && d.privacy_level !== "private_only") throw new Error("invalid privacy_level");
+  if (!["public", "no_publish", "private_only"].includes(d.privacy_level)) throw new Error("invalid privacy_level");
   if (d.venue_address && d.venue_address.length > 500) throw new Error(tr("عنوان المكان طويل جداً"));
   if (d.client_notes && d.client_notes.length > 4000) throw new Error(tr("الملاحظات طويلة جداً"));
   return d;
@@ -278,7 +278,8 @@ export const getBookingByToken = createServerFn({ method: "GET" })
         isDemo = !!(pr as any)?.is_demo;
       }
     }
-    return { ...(row as any), phone_verified: !!v.phone_verified_at, verify, contract, is_demo: isDemo };
+    const extras = v.id ? await (await import("@/lib/extras.functions")).extrasForToken(supabaseAdmin, v.id) : {};
+    return { ...(row as any), ...extras, phone_verified: !!v.phone_verified_at, verify, contract, is_demo: isDemo };
   });
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;

@@ -38,6 +38,7 @@ import { AlertTriangle } from "lucide-react";
 import { locale } from "@/i18n";
 import { t as tr, tx } from "@/i18n";
 import { usePlan } from "@/hooks/use-plan";
+import { BookingExtrasPanel } from "@/components/BookingExtras";
 import { PackageFacts, hasFacts } from "@/components/PackageFacts";
 
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({
@@ -146,7 +147,7 @@ function BookingDetail() {
     if (!session) return nav({ to: "/login" });
     setUid(session.user.id);
     const [{ data: bk }, { data: m }, { data: ct }, { data: tpl }] = await Promise.all([
-      supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at, needs_approval, approved_at, phone_verified_at, package_snapshot").eq("id", id).maybeSingle(),
+      supabase.from("bookings").select("id, created_at, photographer_id, client_name, client_email, client_phone, event_date, start_time, end_time, venue_name, venue_address, client_notes, privacy_level, status, service, addons, base_price, travel_fee, total_price, deposit_amount, overtime_fee_per_hour, delivery_days_promised, delivery_due_at, delivered_at, production_stage, selection_link, delivery_link, client_tracking_token, deposit_proof_url, deposit_sent_at, final_paid_at, final_paid_amount, refund_amount, refund_status, cancellation_reason, cancelled_at, deleted_at, needs_approval, approved_at, phone_verified_at, package_snapshot, ready_confirmed_at, event_day_info").eq("id", id).maybeSingle(),
       supabase.from("messages").select("id, created_at, booking_id, sender_id, sender_name, body, read_at").eq("booking_id", id).order("created_at"),
       supabase.from("contracts").select("id, status, sign_token, signed_at, client_name").eq("booking_id", id).maybeSingle(),
       supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
@@ -382,7 +383,7 @@ function BookingDetail() {
     const P = male ? "المصوّر" : "المصوّرة";
     const privacyLabels: Record<string, string> = {
       public: `عام — يحق ${male ? "للمصوّر" : "للمصوّرة"} استخدام لقطات للترويج`,
-      no_publish: "بدون نشر علني — لا تُنشر الصور على أي وسيلة دون إذن خطي",
+      no_publish: "بإذن العميلة فقط — لا تُنشر أي صورة قبل موافقتها عليها",
       private_only: (pol as any)?.team_gender === "female"
         ? "خصوصية تامة — فريق نسائي فقط، لا مشاركة مع طرف ثالث"
         : "خصوصية تامة — لا نشر ولا مشاركة مع طرف ثالث",
@@ -418,10 +419,10 @@ function BookingDetail() {
       `المجموع: ${b.total_price} د.أ — العربون ${b.deposit_amount} د.أ، والمتبقي ${remaining} د.أ يُسدَّد بعد الحفل وقبل تسليم ${b.service === "cinematic_video" ? "الفيديو" : "الصور"}.`,
       `الوقت الإضافي: ${overtime}.`,
       `التسليم: ${delivery}.`,
-      `الخصوصية: ${privacyLabels[b.privacy_level || "public"]}.`,
+      `الخصوصية: ${privacyLabels[b.privacy_level || "public"]}. صور القاعة النسائية وصور الأطفال لا تُنشر أبداً.`,
       `العربون والإلغاء: ${depositTerms}`,
       `لا يحق للعميلة نشر المواد الخام (RAW) أو إزالة شعار ${P}.`,
-      `أي اتفاق إضافي لا يُعتدّ به إلا إذا كُتب في رسائل الحجز على ميموريا.`,
+      `أي اتفاق إضافي (خدمة أو مبلغ أو تغيير) لا يُعتدّ به إلا إذا أُضيف كملحق على ميموريا ووافقت عليه العميلة.`,
     ].join("\n");
     const baseBody = tpl?.body ?? fallback;
     const body = baseBody
@@ -738,7 +739,10 @@ function BookingDetail() {
                       </div>
                     )}
                     <div className="pt-1"><PrivacyBadge level={b.privacy_level} /></div>
+                    <p className="text-xs text-muted-foreground">{tr("صور القاعة النسائية وصور الأطفال لا تُنشر أبداً.")}</p>
                   </div>
+
+                  <BookingExtrasPanel booking={b} onChange={load} />
 
                   <ContractCard contract={contract} templates={templates} busy={actionLoading === "contract"} onGenerate={generateContract} isBasic={isBasic} />
                 </div>
@@ -978,7 +982,7 @@ function Row({ k, v, bold }: any) {
 function PrivacyBadge({ level }: { level?: string }) {
   const map: Record<string, { icon: any; t: string; c: string }> = {
     public: { icon: <Eye className="h-3.5 w-3.5" />, t: tr("نشر ترويجي كامل"), c: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" },
-    no_publish: { icon: <EyeOff className="h-3.5 w-3.5" />, t: tr("حفظ بدون نشر"), c: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" },
+    no_publish: { icon: <EyeOff className="h-3.5 w-3.5" />, t: tr("النشر بإذنها فقط"), c: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" },
     private_only: { icon: <Lock className="h-3.5 w-3.5" />, t: tr("خصوصية تامة"), c: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20" },
   };
   const x = map[level ?? "public"] ?? map.public;

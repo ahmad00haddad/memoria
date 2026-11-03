@@ -821,7 +821,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const initial = {
     client_name: "", client_phone: "", client_email: "", event_date: "", start_time: "", end_time: "",
     package_id: "", venue_address: "", remaining_note: "", client_notes: "",
-    privacy_level: "public" as "public" | "private_only",
+    privacy_level: "no_publish" as "public" | "no_publish" | "private_only",
   };
   const [f, setF] = useState(initial);
   const [addonQty, setAddonQty] = useState<Record<string, number>>({});
@@ -1385,10 +1385,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           <textarea id="client-notes" value={f.client_notes} onChange={(e) => setF({ ...f, client_notes: e.target.value })} rows={3} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" />
         </div>
         <div className="sm:col-span-2">
-          <label className="text-sm text-muted-foreground">{tr("مستوى الخصوصية")}</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+          <label className="text-sm text-muted-foreground">{tr("نشر صوركِ")}</label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
             {[
-              { v: "public", t: tr("صور قابلة للنشر"), d: tr("يحق للمصوّرة استخدام لقطات للترويج") },
+              { v: "no_publish", t: tr("بإذني فقط"), d: tr("لا تُنشر أي صورة قبل موافقتكِ عليها") },
+              { v: "public", t: tr("مسموح النشر"), d: tr("يحق للمصوّرة نشر لقطات مختارة للترويج") },
               { v: "private_only", t: tr("خصوصية تامة"), d: profile.team_gender === "female" ? tr("فريق نسائي فقط — لا مشاركة مع أي طرف ثالث") : tr("لا نشر ولا مشاركة مع أي طرف ثالث") },
             ].map((o) => (
               <button key={o.v} type="button" onClick={() => setF({ ...f, privacy_level: o.v as any })}
@@ -1398,6 +1399,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
               </button>
             ))}
           </div>
+          <p className="mt-2 text-xs text-muted-foreground">{tr("بكل الحالات: صور القاعة النسائية وصور الأطفال لا تُنشر أبداً.")}</p>
         </div>
       </motion.div>
       )}

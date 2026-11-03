@@ -103,6 +103,46 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         }
 
         // ===================================================================
+        // 1a) "جاهزة للموعد؟" — للمصوّرة قبل المناسبة بـ 3 أيام وبيومين إن لم تؤكّد
+        // ===================================================================
+        try {
+          const { tplMessage } = await import("@/lib/email.server");
+          const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
+          const day = (n: number) => new Date(Date.now() + 3 * 3600000 + n * 86400000).toISOString().slice(0, 10);
+          const { data: soon } = await (supabaseAdmin as any)
+            .from("bookings")
+            .select("id, photographer_id, client_name, event_date, start_time")
+            .in("event_date", [day(2), day(3)])
+            .eq("status", "confirmed")
+            .is("ready_confirmed_at", null)
+            .is("deleted_at", null);
+          for (const bk of (soon ?? []) as any[]) {
+            const { data: prior } = await supabaseAdmin
+              .from("email_log").select("id")
+              .eq("template", "ready_check").eq("related_booking_id", bk.id)
+              .gte("created_at", since).limit(1);
+            if (prior && prior.length > 0) continue;
+            const { data: u } = await supabaseAdmin.auth.admin.getUserById(bk.photographer_id);
+            const to = u?.user?.email;
+            if (!to) continue;
+            const m = tplMessage({
+              subject: `أكّدي جاهزيتكِ لحجز ${bk.client_name || ""}`.trim(),
+              title: "هل أنتِ جاهزة للموعد؟",
+              lines: [
+                `موعد ${bk.client_name || "العروس"} يوم ${bk.event_date} الساعة ${String(bk.start_time || "").slice(0, 5)}.`,
+                "اضغطي \"جاهزة للموعد\" من صفحة الحجز. العروس ترى التأكيد، وإن لم يصل قبل يومين تظهر لها رسالة قلق.",
+              ],
+              cta: { label: "تأكيد الجاهزية", url: `${base}/dashboard/bookings/${bk.id}` },
+            });
+            const r = await sendEmail({ to, subject: m.subject, html: m.html, template: "ready_check", related_booking_id: bk.id, related_user_id: bk.photographer_id });
+            if (r.ok) results.reminders++; else results.errors++;
+          }
+        } catch (e) {
+          console.error("[email-reminders] ready check failed:", e);
+          results.errors++;
+        }
+
+        // ===================================================================
         // 1b) باقي المبلغ — اليوم التالي للمناسبة، مرة واحدة لكل حجز
         // ===================================================================
         try {

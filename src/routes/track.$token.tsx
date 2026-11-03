@@ -17,6 +17,7 @@ import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib
 import { supabase } from "@/integrations/supabase/client";
 import { PackageFacts, hasFacts } from "@/components/PackageFacts";
 import { PaymentMethodsView } from "@/components/PaymentMethods";
+import { BrideExtras } from "@/components/BookingExtras";
 import { parseMethods, type PaymentMethod } from "@/lib/payment-methods";
 import { CheckCircle2, CalendarPlus, LockKeyhole, Unlock, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, XCircle } from "lucide-react";
 import { Lightbox } from "@/components/Lightbox";
@@ -448,7 +449,7 @@ function TrackingPage() {
               { label: t("إرسال العربون"), done: !!b.deposit_sent_at, target: "deposit-step" },
               { label: t("تأكيد المصوّرة للحجز"), done: !!b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status) },
               ...(b.contract?.sign_token ? [{ label: t("توقيع العقد"), done: b.contract.status === "signed", target: "contract-step" }] : []),
-              { label: t("إخبار المصوّرة بتفاصيل يومكِ"), done: !!b.client_notes, target: "chat-step" },
+              { label: t("إخبار المصوّرة بتفاصيل يومكِ"), done: !!b.event_day_info || !!b.client_notes, target: ["confirmed", "completed"].includes(b.status) ? "eventday-step" : "chat-step" },
             ]}
           />
         )}
@@ -702,6 +703,8 @@ function TrackingPage() {
             <span className="shrink-0 text-gold">←</span>
           </a>
         )}
+
+        <BrideExtras b={b} token={token} onChange={load} />
 
         {/* Photographer contact */}
         <div className="rounded-sm border border-border bg-card p-5 text-sm">
