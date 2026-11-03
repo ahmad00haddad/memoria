@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 function isUuid(s: any) { return typeof s === "string" && /^[0-9a-f-]{36}$/i.test(s); }
-function isToken(s: any) { return typeof s === "string" && /^[0-9a-f]{16,64}$/i.test(s); }
+function isToken(s: any) { return typeof s === "string" && /^[A-Za-z0-9_-]{16,64}$/.test(s); }
 
 // ============================================================================
 // Image URL Optimization Helpers
