@@ -410,6 +410,8 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
     if (!d || typeof d.token !== "string" || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token)) throw new Error("invalid token");
     if (d.terms_accepted !== true) throw new Error(tr("اقرئي شروط العربون ووافقي عليها أولاً."));
     if (typeof d.proof_path !== "string" || !d.proof_path || d.proof_path.length > 500) throw new Error(tr("ارفعي صورة إيصال التحويل"));
+    // الإيصال لازم يكون ضمن مجلد هذا الحجز نفسه (لا نقبل مسار حجز آخر أو ملف غريب)
+    if (!d.proof_path.startsWith(`public-tokens/${d.token}/`) || d.proof_path.includes("..")) throw new Error(tr("ارفعي صورة إيصال التحويل"));
     if (typeof d.reference !== "string" || d.reference.trim().length < 3) throw new Error(tr("اكتبي رقم العملية المرجعي"));
     if (typeof d.note !== "string" || d.note.trim().length < 3) throw new Error(tr("اكتبي اسم صاحب الحساب المحوِّل"));
     if (d.reference && (typeof d.reference !== "string" || d.reference.length > 200)) throw new Error(tr("رقم الحوالة طويل جداً"));
