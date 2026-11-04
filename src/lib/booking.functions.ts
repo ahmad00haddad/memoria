@@ -61,6 +61,23 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       }
 
 
+    // حدّ المعدّل: يمنع إغراق المصوّرات بطلبات وهمية أو إرسال رموز تأكيد بالجملة لإيميل شخص آخر
+    {
+      const ab = await import("@/lib/abuse.server");
+      const okIp = await ab.allow(`ip:${ab.clientIp()}`, "book_ip", 10, 3600);
+      const okMail = await ab.allow(`mail:${data.client_email.toLowerCase()}`, "book_email", 6, 3600);
+      if (!okIp || !okMail) throw new Error(tr("طلبات كثيرة خلال وقت قصير. انتظري قليلاً ثم أعيدي المحاولة."));
+      // أكثر من 6 طلبات معلّقة لنفس الرقم بكل التواريخ = حجز تواريخ بلا نية (أو مزاحمة مصوّرات)
+      const today = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+      const { count: pendingAll } = await (supabaseAdmin as any).from("bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("client_phone", data.client_phone).gte("event_date", today)
+        .in("status", ["pending_deposit", "quote"]).is("deleted_at", null);
+      if ((pendingAll ?? 0) >= 6) {
+        throw new Error(tr("عندكِ طلبات معلّقة كثيرة. انتظري ردّ المصوّرات أو ألغي بعضها من صفحات المتابعة قبل طلب جديد."));
+      }
+    }
+
     // حد الطلبات المعلّقة: نفس الرقم بنفس التاريخ عند أكثر من 3 مصوّرات يحجز تواريخهن بلا داعٍ
     const { count: pendingSameDay } = await (supabaseAdmin as any).from("bookings")
       .select("id", { count: "exact", head: true })
@@ -261,10 +278,20 @@ export const getBookingByToken = createServerFn({ method: "GET" })
     const { data: row, error } = await supabaseAdmin.rpc("get_booking_by_token", { _token: data.token });
     if (error) throw new Error(error.message);
     if (!row) return null;
-    const { data: vr } = await supabaseAdmin.from("bookings")
-      .select("id, phone_verified_at, verify_code_wa, verify_code_email")
+    const { data: vr } = await (supabaseAdmin as any).from("bookings")
+      .select("id, phone_verified_at, verify_code_wa, verify_code_email, verified_via, client_email, refund_policy_agreed, refund_percent_agreed, deposit_terms_accepted_at")
       .eq("client_tracking_token", data.token).maybeSingle();
     const v: any = vr ?? {};
+    // السياسة التي وافقت عليها العروس (لقطة) هي المعروضة والمطبَّقة، لا السياسة الحالية للمصوّرة
+    const rowOut: any = { ...(row as any) };
+    if (v.deposit_terms_accepted_at && v.refund_policy_agreed && rowOut.photographer) {
+      rowOut.photographer = {
+        ...rowOut.photographer,
+        deposit_refund_policy: v.refund_policy_agreed,
+        deposit_refund_percent: v.refund_percent_agreed,
+      };
+    }
+    const stepUp = v.verified_via !== "manual" && !!(v.client_email && String(v.client_email).includes("@"));
     // The bride signs through this link, so the tracking page must offer it
     let contract: { sign_token: string; status: string } | null = null;
     if (v.id) {
@@ -288,7 +315,7 @@ export const getBookingByToken = createServerFn({ method: "GET" })
       }
     }
     const extras = v.id ? await (await import("@/lib/extras.functions")).extrasForToken(supabaseAdmin, v.id) : {};
-    return { ...(row as any), ...extras, phone_verified: !!v.phone_verified_at, verify, contract, is_demo: isDemo };
+    return { ...rowOut, ...extras, phone_verified: !!v.phone_verified_at, verify, contract, is_demo: isDemo, step_up: stepUp };
   });
 
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/;
@@ -359,9 +386,18 @@ export async function isDemoBookingToken(admin: any, token: string): Promise<boo
 }
 
 // وقت موافقة العروس على شروط العربون (إثبات أنها قرأتها قبل الدفع) — يُسجَّل أول مرة فقط
+// مع لقطة سياسة الاسترداد لحظة الموافقة: تغيير المصوّرة للسياسة بعدها لا يمسّ هذا الحجز
 export async function stampDepositTerms(admin: any, token: string) {
-  await admin.from("bookings").update({ deposit_terms_accepted_at: new Date().toISOString() })
-    .eq("client_tracking_token", token).is("deposit_terms_accepted_at", null);
+  const { data: bk } = await admin.from("bookings")
+    .select("id, photographer_id, deposit_terms_accepted_at").eq("client_tracking_token", token).maybeSingle();
+  if (!bk || bk.deposit_terms_accepted_at) return;
+  const { data: p } = await admin.from("profiles")
+    .select("deposit_refund_policy, deposit_refund_percent").eq("id", bk.photographer_id).maybeSingle();
+  await admin.from("bookings").update({
+    deposit_terms_accepted_at: new Date().toISOString(),
+    refund_policy_agreed: p?.deposit_refund_policy ?? "none",
+    refund_percent_agreed: p?.deposit_refund_percent ?? null,
+  }).eq("id", bk.id).is("deposit_terms_accepted_at", null);
 }
 
 export const clientMarkDepositSent = createServerFn({ method: "POST" })
@@ -378,6 +414,10 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (await isDemoBookingToken(supabaseAdmin, data.token)) throw new Error(DEMO_PAYMENT_MESSAGE);
+    {
+      const ab = await import("@/lib/abuse.server");
+      if (!(await ab.allow(`tok:${data.token}`, "deposit_sent", 6, 3600))) throw new Error(tr("محاولات كثيرة. انتظري قليلاً."));
+    }
     await stampDepositTerms(supabaseAdmin, data.token);
     const { error } = await supabaseAdmin.rpc("client_mark_deposit_sent", {
       _token: data.token,
@@ -422,7 +462,10 @@ export const clientMarkReceived = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("client_mark_received", { _token: data.token });
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.message.includes("NOT_DELIVERED_YET")) throw new Error(tr("لا يمكن تأكيد الاستلام قبل أن تسلّم المصوّرة الصور."));
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 
@@ -437,6 +480,8 @@ export const clientAddNote = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const ab = await import("@/lib/abuse.server");
+    if (!(await ab.allow(`tok:${data.token}`, "add_note", 10, 3600))) throw new Error(tr("ملاحظات كثيرة خلال وقت قصير. انتظري قليلاً."));
     const { error } = await supabaseAdmin.rpc("client_add_note", { _token: data.token, _note: data.note });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -461,6 +506,24 @@ export const submitReviewByToken = createServerFn({ method: "POST" })
     if (!booking) throw new Error(tr("الحجز غير موجود"));
     if (booking.status !== ("completed" as any)) {
       throw new Error(tr("لا يمكن التقييم قبل اكتمال الحجز"));
+    }
+
+    // منع التقييم الذاتي: المصوّرة تعرف رابط التقييم، فلا نقبل حجزاً أضافته بنفسها (يدوي)
+    // ولا حجزاً باسم بريدها/رقمها هي.
+    {
+      const { data: full } = await (supabaseAdmin as any).from("bookings")
+        .select("verified_via, client_email, client_phone").eq("id", booking.id).maybeSingle();
+      if (full?.verified_via === "manual") {
+        throw new Error(tr("التقييم متاح للحجوزات التي تمّت عبر ميموريا فقط."));
+      }
+      const { phoneKey } = await import("@/lib/verification.server");
+      const { data: au } = await supabaseAdmin.auth.admin.getUserById(booking.photographer_id);
+      const { data: pp } = await (supabaseAdmin as any).from("photographer_private")
+        .select("phone, whatsapp").eq("user_id", booking.photographer_id).maybeSingle();
+      const sameEmail = !!au?.user?.email && !!full?.client_email && au.user.email.toLowerCase() === String(full.client_email).trim().toLowerCase();
+      const ck = phoneKey(full?.client_phone);
+      const samePhone = ck.length >= 8 && [pp?.phone, pp?.whatsapp].some((p: string | null) => phoneKey(p) === ck);
+      if (sameEmail || samePhone) throw new Error(tr("لا يمكن تقييم حجز مسجّل ببيانات المصوّرة نفسها."));
     }
 
     const { error } = await supabaseAdmin
@@ -572,10 +635,9 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
       // المصالحة نفسها قد تكون أكّدت الحجز (دفع إلكتروني ناجح)
       if (fresh?.status === "confirmed") return { ok: true };
     }
-    if (!bk.deposit_confirmed_at && !bk.deposit_sent_at && !bk.deposit_proof_url) {
-      throw new Error(bk.deposit_checkout_session_id
-        ? tr("الدفع الإلكتروني لم يكتمل بعد — لا يمكن تأكيد الحجز حتى يصل المبلغ")
-        : tr("لا يمكن تأكيد الحجز قبل وصول إثبات العربون من العميل"));
+    // تحويل مباشر بدون إيصال: المصوّرة رأت المبلغ في حسابها فتؤكّده بنفسها (العروس قد تنسى الرفع)
+    if (!bk.deposit_confirmed_at && bk.deposit_checkout_session_id && !bk.deposit_sent_at && !bk.deposit_proof_url) {
+      throw new Error(tr("الدفع الإلكتروني لم يكتمل بعد — لا يمكن تأكيد الحجز حتى يصل المبلغ"));
     }
     if (bk.status !== "pending_deposit" && bk.status !== "quote") {
       throw new Error(tr("هذا الحجز ليس بانتظار العربون"));
@@ -686,7 +748,12 @@ export const softDeleteBooking = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { error } = await supabase.rpc("soft_delete_booking", { _booking_id: data.booking_id });
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.message.includes("BOOKING_HAS_ACTIVE_DEPOSIT")) {
+        throw new Error(tr("هذا الحجز فيه عربون. ألغيه أولاً (فيصل العروس إشعار بالاسترداد)، ثم احذفيه إن أردتِ."));
+      }
+      throw new Error(error.message);
+    }
     return { ok: true };
   });
 

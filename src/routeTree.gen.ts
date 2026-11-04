@@ -55,6 +55,7 @@ import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminPhotographersRouteImport } from './routes/_authenticated/admin.photographers'
 import { Route as AuthenticatedAdminReferralsRouteImport } from './routes/_authenticated/admin.referrals'
 import { Route as AuthenticatedAdminRefundsRouteImport } from './routes/_authenticated/admin.refunds'
+import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as AuthenticatedAdminReviewsRouteImport } from './routes/_authenticated/admin.reviews'
 import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin.roles'
 import { Route as AuthenticatedAdminSubscriptionsRouteImport } from './routes/_authenticated/admin.subscriptions'
@@ -325,6 +326,12 @@ const AuthenticatedAdminRefundsRoute =
     path: '/refunds',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminReportsRoute =
+  AuthenticatedAdminReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminReviewsRoute =
   AuthenticatedAdminReviewsRouteImport.update({
     id: '/reviews',
@@ -537,6 +544,7 @@ export interface FileRoutesByFullPath {
   '/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
   '/admin/referrals': typeof AuthenticatedAdminReferralsRoute
   '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
@@ -611,6 +619,7 @@ export interface FileRoutesByTo {
   '/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
   '/admin/referrals': typeof AuthenticatedAdminReferralsRoute
   '/admin/refunds': typeof AuthenticatedAdminRefundsRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
@@ -688,6 +697,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
   '/_authenticated/admin/referrals': typeof AuthenticatedAdminReferralsRoute
   '/_authenticated/admin/refunds': typeof AuthenticatedAdminRefundsRoute
+  '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/reviews': typeof AuthenticatedAdminReviewsRoute
   '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/_authenticated/admin/subscriptions': typeof AuthenticatedAdminSubscriptionsRoute
@@ -766,6 +776,7 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/referrals'
     | '/admin/refunds'
+    | '/admin/reports'
     | '/admin/reviews'
     | '/admin/roles'
     | '/admin/subscriptions'
@@ -840,6 +851,7 @@ export interface FileRouteTypes {
     | '/admin/photographers'
     | '/admin/referrals'
     | '/admin/refunds'
+    | '/admin/reports'
     | '/admin/reviews'
     | '/admin/roles'
     | '/admin/subscriptions'
@@ -916,6 +928,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/photographers'
     | '/_authenticated/admin/referrals'
     | '/_authenticated/admin/refunds'
+    | '/_authenticated/admin/reports'
     | '/_authenticated/admin/reviews'
     | '/_authenticated/admin/roles'
     | '/_authenticated/admin/subscriptions'
@@ -1316,6 +1329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRefundsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/reports': {
+      id: '/_authenticated/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/reviews': {
       id: '/_authenticated/admin/reviews'
       path: '/reviews'
@@ -1533,6 +1553,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminPhotographersRoute: typeof AuthenticatedAdminPhotographersRoute
   AuthenticatedAdminReferralsRoute: typeof AuthenticatedAdminReferralsRoute
   AuthenticatedAdminRefundsRoute: typeof AuthenticatedAdminRefundsRoute
+  AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminReviewsRoute: typeof AuthenticatedAdminReviewsRoute
   AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
   AuthenticatedAdminSubscriptionsRoute: typeof AuthenticatedAdminSubscriptionsRoute
@@ -1551,6 +1572,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminPhotographersRoute: AuthenticatedAdminPhotographersRoute,
   AuthenticatedAdminReferralsRoute: AuthenticatedAdminReferralsRoute,
   AuthenticatedAdminRefundsRoute: AuthenticatedAdminRefundsRoute,
+  AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
   AuthenticatedAdminReviewsRoute: AuthenticatedAdminReviewsRoute,
   AuthenticatedAdminRolesRoute: AuthenticatedAdminRolesRoute,
   AuthenticatedAdminSubscriptionsRoute: AuthenticatedAdminSubscriptionsRoute,

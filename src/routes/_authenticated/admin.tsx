@@ -60,6 +60,7 @@ function AdminLayout() {
           <TabLink to="/admin/subscriptions" icon={<CreditCard className="h-4 w-4" />} label={t("الدفعات")} />
           <TabLink to="/admin/reviews" icon={<Star className="h-4 w-4" />} label={t("التقييمات")} />
           <TabLink to="/admin/disputes" icon={<AlertTriangle className="h-4 w-4" />} label={t("النزاعات")} />
+          <TabLink to="/admin/reports" icon={<ShieldAlert className="h-4 w-4" />} label={t("البلاغات")} />
           <TabLink to="/admin/refunds" icon={<DollarSign className="h-4 w-4" />} label={t("الاستردادات")} />
           <TabLink to="/admin/contracts" icon={<FileText className="h-4 w-4" />} label={t("العقود")} />
           <TabLink to="/admin/referrals" icon={<Award className="h-4 w-4" />} label={t("الإحالات")} />

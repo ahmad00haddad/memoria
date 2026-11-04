@@ -32,6 +32,7 @@ import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { locale } from "@/i18n";
 import { t, tx } from "@/i18n";
+import { StepUpBox } from "@/components/StepUpBox";
 
 export const Route = createFileRoute("/track/$token")({
   head: () => ({
@@ -89,6 +90,14 @@ function TrackingPage() {
   const isExpired = b?.status === 'pending_deposit' && !!b?.deposit_due_at && new Date(b.deposit_due_at).getTime() < Date.now();
   // طلب ينتظر موافقة المصوّرة: لا تفاصيل دفع ولا عربون قبل الموافقة
   const awaitingApproval = !!b?.needs_approval && !b?.approved_at && (b?.status === "pending_deposit" || b?.status === "quote");
+  // نسخت بيانات الدفع ولم ترفع الإيصال بعد → تذكير ظاهر + تأكيد قبل مغادرة الصفحة
+  const [payTouched, setPayTouched] = useState(false);
+  useEffect(() => {
+    if (!payTouched || b?.deposit_sent_at) return;
+    const h = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
+    window.addEventListener("beforeunload", h);
+    return () => window.removeEventListener("beforeunload", h);
+  }, [payTouched, b?.deposit_sent_at]);
   const hoursLeft = (iso?: string | null) => iso ? Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 3600_000)) : null;
   // قواعد واضحة من البداية: العربون بين العروس والمصوّرة، والمنصّة لا تستلمه ولا تُرجعه
   const todayYmd = new Date().toLocaleDateString("en-CA");
@@ -130,6 +139,7 @@ function TrackingPage() {
   
   // ✅ إصلاح: Dialog حقيقي بدلاً من window.prompt
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [cancelCode, setCancelCode] = useState("");
   const [cancelReason, setCancelReason] = useState("");
   const [cancelAck, setCancelAck] = useState(false);
   const [termsOk, setTermsOk] = useState(false);
@@ -324,10 +334,11 @@ function TrackingPage() {
     setCancelLoading(true);
     toast.loading(t("جاري إلغاء الحجز..."), { id: "cancel-booking" });
     try {
-      await cancelFn({ data: { token, reason: cancelReason } });
+      await cancelFn({ data: { token, reason: cancelReason, code: cancelCode } });
       toast.success(t("تم إلغاء الحجز بنجاح"), { id: "cancel-booking" });
       setShowCancelDialog(false);
       setCancelReason("");
+      setCancelCode("");
       load();
     } catch (e: any) {
       toast.error(e.message, { id: "cancel-booking" });
@@ -390,7 +401,7 @@ function TrackingPage() {
           const daysToEvent = b.event_date ? Math.ceil((new Date(b.event_date).getTime() - Date.now()) / 86400000) : null;
           const here = (() => {
             if (awaitingApproval) return { title: t("بانتظار موافقة {0}", [ph.display_name]), body: t("التاريخ محجوز لكِ. المصوّرة تردّ خلال {0} ساعة كحد أقصى، ويصلك إشعار فور ردّها. لا تحوّلي أي مبلغ قبل موافقتها.", [hoursLeft(b.approval_due_at) ?? 24]), cta: null, target: null };
-            if (!b.deposit_sent_at) return { title: t("الخطوة التالية: إرسال العربون"), body: hoursLeft(b.deposit_due_at) !== null ? t("المصوّرة وافقت ✓ حوّلي {0} د.أ وارفعي الإيصال خلال {1} ساعة، وإلا يُلغى الطلب ويُفتح التاريخ لغيرك.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO")), hoursLeft(b.deposit_due_at)]) : t("حوّلي {0} د.أ لتثبيت موعدك، ثم ارفعي الإيصال.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))]), cta: t("إرسال العربون"), target: "deposit-step" };
+            if (!b.deposit_sent_at) return { title: t("الخطوة التالية: إرسال العربون"), body: hoursLeft(b.deposit_due_at) ? t("المصوّرة وافقت ✓ حوّلي {0} د.أ خلال {1} ساعة، ثم ارفعي صورة الإيصال هنا.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO")), hoursLeft(b.deposit_due_at)]) : t("حوّلي {0} د.أ لتثبيت موعدك، ثم ارفعي الإيصال.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))]), cta: t("إرسال العربون"), target: "deposit-step" };
             if (!(b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status))) return { title: t("وصل إيصالك — بانتظار تأكيد المصوّرة"), body: t("تصلك رسالة فور التأكيد. عادةً خلال ساعات."), cta: null, target: null };
             if (!b.delivered_at && b.status !== "completed" && daysToEvent !== null && daysToEvent >= 0) return { title: daysToEvent === 0 ? t("اليوم يومك 🤍") : t("باقي {0} {1} على يومك", [daysToEvent, daysToEvent === 1 ? "يوم" : "يوماً"]), body: t("حجزك مؤكَّد. أضيفي الموعد لتقويمك، واكتبي للمصوّرة أي تفاصيل تهمّك."), cta: null, target: null };
             if (!b.delivered_at && b.status !== "completed") return { title: t("صورك قيد التحرير"), body: t("تعمل المصوّرة على اختيار صورك وتحريرها. ستصلك رسالة عند جاهزيتها."), cta: null, target: null };
@@ -577,7 +588,20 @@ function TrackingPage() {
             </div>
 
 
-            <div className="mb-3"><PaymentMethodsView methods={payMethods} amount={Number(b.deposit_amount) || undefined} reference={String(token).slice(0, 8).toUpperCase()} /></div>
+            <div className="mb-3 rounded-sm border border-border bg-background/60 p-3 text-xs leading-relaxed text-muted-foreground">
+              <div className="mb-1 font-medium text-foreground">{t("قبل التحويل، اطمئني بدقيقة:")}</div>
+              <ul className="list-disc space-y-0.5 ps-4">
+                <li>{t("الاسم على الحساب يطابق اسم المصوّرة.")}</li>
+                <li>{t("شاهدي أعمالها على إنستغرام وتأكّدي أن أسلوبها يعجبكِ.")}</li>
+                <li>{t("اسألي عنها أو اقرئي تقييماتها إن وُجدت.")}</li>
+              </ul>
+              <p className="mt-1">{t("تشكّين بشيء؟ أبلغينا من أسفل صفحتها ونراجع فوراً.")}</p>
+            </div>
+
+            <div className="mb-3" onClickCapture={() => setPayTouched(true)}><PaymentMethodsView methods={payMethods} amount={Number(b.deposit_amount) || undefined} reference={String(token).slice(0, 8).toUpperCase()} /></div>
+            {payTouched && (
+              <div className="mb-3 rounded-sm border border-gold bg-gold/10 p-3 text-sm font-medium">{t("حوّلتِ؟ لا تنسي رفع صورة الإيصال هنا 👇 حتى تثبّت المصوّرة حجزكِ بسرعة.")}</div>
+            )}
 
             <div className="grid gap-3">
               <input type="text" placeholder={t("رقم العملية المرجعي (مطلوب)")} required value={reference}
@@ -752,6 +776,12 @@ function TrackingPage() {
               )}
             </div>
 
+            {depositPaid && b.step_up && (
+              <div className="mb-4">
+                <StepUpBox token={token} purpose="cancel" code={cancelCode} onCode={setCancelCode} />
+              </div>
+            )}
+
             <label className="block text-sm font-medium mb-2">
               {t("سبب الإلغاء")}{" "}<span className="text-muted-foreground">{t("(اختياري)")}</span>
             </label>
@@ -778,7 +808,7 @@ function TrackingPage() {
               </button>
               <button
                 onClick={handleConfirmCancel}
-                disabled={cancelLoading || (depositPaid && !cancelAck)}
+                disabled={cancelLoading || (depositPaid && !cancelAck) || (depositPaid && b.step_up && cancelCode.length !== 6)}
                 className="px-4 py-2 text-sm bg-destructive text-destructive-foreground rounded-md hover:bg-destructive/90 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {cancelLoading && <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}

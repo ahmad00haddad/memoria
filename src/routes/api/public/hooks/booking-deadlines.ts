@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 // ============================================================================
 // /api/public/hooks/booking-deadlines — كل 30 دقيقة من Cloudflare Cron
 // ----------------------------------------------------------------------------
-// 1) يطبّق المهل (expire_unpaid_bookings): 24 ساعة لرد المصوّرة، 48 ساعة للعربون.
+// 1) يطبّق المهل (expire_unpaid_bookings): 24 ساعة لرد المصوّرة. العربون بلا إلغاء تلقائي:
+//    بعد 48 ساعة بلا إيصال نسأل المصوّرة أن تفحص حسابها (تؤكّد أو تلغي بنفسها).
 // 2) يبلّغ الطرفين بكل إلغاء تلقائي (مرة واحدة: auto_cancel_notified_at).
 // 3) تذكيرات: المصوّرة قبل نهاية مهلة الرد بـ 12 وساعتين، والعروس قبل نهاية
 //    مهلة العربون بـ 24 و6 ساعات (مرة واحدة لكل تذكير: reminders_sent).
@@ -136,8 +137,33 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
           .limit(200);
         for (const b of (unpaid ?? []) as any[]) {
           const left = new Date(b.approved_at).getTime() + 48 * H - Date.now();
-          if (left <= 0) continue;
           const sent: string[] = b.reminders_sent ?? [];
+          // بعد 48 ساعة: سؤال واحد للمصوّرة + تذكير أخير للعروس، بدون إلغاء
+          if (left <= 0) {
+            if (sent.includes("dep48")) continue;
+            try {
+              await mark(b.id, sent, ["dep24", "dep6", "dep48"]);
+              await notifyPhotographer(b.photographer_id, {
+                title: "⏳ مرّت 48 ساعة بدون إيصال عربون",
+                body: `افحصي حسابك: إذا وصل ${b.deposit_amount} د.أ اضغطي "وصلني العربون" بصفحة الحجز. إذا ما وصل، راسليها أو ألغي الحجز ليفتح التاريخ (${b.event_date}).`,
+                link: `/dashboard/bookings/${b.id}`,
+                template: "deposit_overdue_photographer",
+                bookingId: b.id,
+              });
+              await notifyBride(b.id, {
+                subject: "هل حوّلتِ العربون؟",
+                title: "تذكير: ارفعي إيصال العربون",
+                lines: [
+                  `إذا حوّلتِ العربون (${b.deposit_amount} د.أ) ارفعي صورة الإيصال الآن من صفحة الحجز.`,
+                  "إذا لم تحوّلي بعد، حوّلي اليوم أو راسلي المصوّرة، فالتاريخ ما زال محجوزاً لكِ بانتظار ردّكِ.",
+                ],
+                template: "deposit_overdue_client",
+                ctaLabel: "رفع الإيصال",
+              });
+              out.deposit_reminders++;
+            } catch (e) { console.error("[deadlines] deposit overdue notice failed", e); out.errors++; }
+            continue;
+          }
           let due: string[] = [];
           if (left <= 6 * H && !sent.includes("dep6")) due = ["dep24", "dep6"];
           else if (left <= 24 * H && !sent.includes("dep24")) due = ["dep24"];
@@ -151,7 +177,7 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
               title: "تذكير بالعربون",
               lines: [
                 `${name} وافقت على حجزك بتاريخ ${b.event_date}، والتاريخ محجوز لكِ لمدة ${hours} ساعة أخرى فقط.`,
-                `حوّلي العربون (${b.deposit_amount} د.أ) وارفعي إثبات التحويل قبل انتهاء المهلة حتى لا يُلغى الطلب.`,
+                `إذا حوّلتِ العربون (${b.deposit_amount} د.أ) لا تنسي رفع صورة الإيصال من صفحة الحجز، حتى تثبّت ${name} حجزكِ بسرعة.`,
               ],
               template: "deposit_reminder_client",
               ctaLabel: "تفاصيل دفع العربون",

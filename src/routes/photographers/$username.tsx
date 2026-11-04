@@ -36,6 +36,7 @@ import { PriceBreakdownTip } from "@/components/PriceBreakdownTip";
 import { BookingJourney } from "@/components/BookingJourney";
 import { Term } from "@/components/Term";
 import { locale } from "@/i18n";
+import { ReportProfile } from "@/components/ReportProfile";
 import { t as tr, tx, getLang, setLang, LANG_COOKIE } from "@/i18n";
 import { sanitizePageSettings, applyPageTheme, type PageSettings } from "@/lib/page-settings";
 
@@ -708,6 +709,7 @@ function PhotographerPage() {
         </div>
       </section>
 
+      <ReportProfile photographerId={profile.id} />
       <Footer />
 
       {/* شريط حجز ثابت على الموبايل — يختفي عندما يكون نموذج الحجز ظاهراً */}

@@ -478,7 +478,7 @@ function BookingDetail() {
     }
     if (b.status === "quote" || b.status === "pending_deposit") {
       const depositLeft = Math.max(0, Math.ceil((new Date(b.approved_at || b.created_at).getTime() + 48 * 3600_000 - Date.now()) / 3600_000));
-      return { title: tr("بانتظار العربون من العميلة"), detail: tr("باقي {0} ساعة لترفع إثبات التحويل", [depositLeft]), cta: tr("ذكّريها بواتساب"), icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 لتثبيت موعدك بتاريخ {1} يرجى إرسال العربون ({2} د.أ) ورفع الإثبات من هنا: {3}", [b.client_name, new Date(b.event_date).toLocaleDateString(locale("ar-JO")), b.deposit_amount, trackUrl])) };
+      return { title: tr("بانتظار العربون من العميلة"), detail: depositLeft > 0 ? tr("باقي {0} ساعة من المهلة المتّفق عليها للتحويل", [depositLeft]) : g(tr("مرّت المهلة: افحصي حسابكِ، أو راسليها، أو ألغي لتفتحي التاريخ"), tr("مرّت المهلة: افحص حسابك، أو راسلها، أو ألغِ لتفتح التاريخ")), cta: tr("ذكّريها بواتساب"), icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 لتثبيت موعدك بتاريخ {1} يرجى إرسال العربون ({2} د.أ) ورفع الإثبات من هنا: {3}", [b.client_name, new Date(b.event_date).toLocaleDateString(locale("ar-JO")), b.deposit_amount, trackUrl])) };
     }
     if (stage !== "delivered" && eventIn !== null && eventIn >= 0) {
       return { title: tr("التصوير {0}", [relativeDay(eventIn)]), detail: b.client_notes ? g(tr("راجعي ملاحظات العميلة وقائمة اللقطات"), tr("راجع ملاحظات العميلة وقائمة اللقطات")) : g(tr("جهّزي قائمة اللقطات"), tr("جهّز قائمة اللقطات")), cta: tr("قائمة اللقطات"), icon: <ListChecks className="h-4 w-4" />, run: () => setTab("production") };
@@ -777,6 +777,17 @@ function BookingDetail() {
                       </button>
                     )}
                   </div>
+
+                  {b.status === "pending_deposit" && !proofUrl && !b.deposit_sent_at && Number(b.deposit_amount || 0) > 0 && (!b.needs_approval || b.approved_at) && (
+                    <div className="rounded-2xl border border-border bg-card p-5 text-sm">
+                      <div className="font-medium">{g(tr("وصلكِ التحويل بدون إيصال؟"), tr("وصلك التحويل بدون إيصال؟"))}</div>
+                      <p className="mt-1 text-xs text-muted-foreground">{g(tr("العروس أحياناً تنسى رفع الإيصال. إذا رأيتِ {0} د.أ في حسابكِ منها، ثبّتي الحجز مباشرة.", [b.deposit_amount]), tr("العروس أحياناً تنسى رفع الإيصال. إذا رأيت {0} د.أ في حسابك منها، ثبّت الحجز مباشرة.", [b.deposit_amount]))}</p>
+                      <button onClick={async () => {
+                        const ok = await confirm({ title: tr("وصل العربون لحسابك؟"), description: g(tr("تأكّدي من تطبيق البنك أن {0} د.أ وصلت فعلاً من {1}.", [b.deposit_amount, b.client_name]), tr("تأكّد من تطبيق البنك أن {0} د.أ وصلت فعلاً من {1}.", [b.deposit_amount, b.client_name])), confirmText: tr("نعم، وصلني") });
+                        if (ok) setStatus("confirmed");
+                      }} disabled={actionLoading === "status"} className="mt-3 rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{tr("وصلني العربون")}</button>
+                    </div>
+                  )}
 
                   {(proofUrl || (b.status === "pending_deposit" && b.deposit_sent_at)) && (
                     <div className="rounded-2xl border border-border bg-card p-6 text-sm">
