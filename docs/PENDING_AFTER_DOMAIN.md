@@ -140,7 +140,42 @@ group by 1,2 order by 3 desc;
 - ملفات الحماية: `src/lib/abuse.server.ts` (حدود معدّل + IP)، `stepup.server.ts` و`stepup.functions.ts`، `src/components/StepUpBox.tsx`، trigger `aa_guard_booking_direct_updates` (36 عمود محمي)، لقطة سياسة الاسترداد، منع تقييم الحجز اليدوي.
 - قرارات أحمد: تقييم الحجز اليدوي ممنوع (بس عرايس حقيقيات عبر المنصّة). إخفاء `client_tracking_token` عن المصوّرة لسا مفتوح، والحل هو القسم 6.
 
-## 8. قائمة تحقق سريعة
+## 8. SEO: الوضع، وشو لازم ينعمل مع الدومين
+
+تدقيق 2026-11-05 على الموقع الحقيقي بعين Googlebot. **القرار:** ما نستثمر بالـ SEO الثقيل (أدوات مدفوعة، Search Console، روابط خارجية) قبل الدومين، لأن أي ترتيب على `workers.dev` بيضيع لما ننقل، والاسم ممكن يتغيّر.
+
+### الموجود ومنيح
+- كل صفحة عامة إلها عنوان ووصف خاص، وبيوصلوا من السيرفر (SSR) جاهزين.
+- canonical لكل صفحة، و`lang="ar" dir="rtl"`.
+- `robots.txt` بيمنع الصفحات الخاصة (`/dashboard/`، `/track/`، `/contracts/`، `/review/`، `/api/`) — الملف: `src/routes/robots[.]txt.ts`.
+- `sitemap.xml` فيه كل الصفحات مع `lastmod` (34 رابط وقت التدقيق) — الملف: `src/routes/sitemap[.]xml.ts`.
+- بيانات منظّمة (JSON-LD): `ProfessionalService` + `Offer` لصفحة المصوّرة، و`FAQPage` + `BreadcrumbList` + `Service` لصفحات المدن والمناسبات.
+- محتوى: 7 صفحات مدن، 5 مناسبات، 6 مقالات (`src/content/seo.ts`، `src/content/blog.ts`).
+
+### انصلح بنفس اليوم (commit `ec81050`)
+| المشكلة | الحل | المكان |
+|---|---|---|
+| صفحة المصوّرة كانت توصل لجوجل "جاري التحميل…" بس (بدون H1 ولا نص) | الـ loader بيجيب الباقات كمان، وحالة التحميل من السيرفر صارت تعرض الاسم والمدينة والنبذة والباقات بأسعارها | `src/routes/photographers/$username.tsx` (`loader`، `SeoPreview`) |
+| وصف صفحة المصوّرة = النبذة كما هي (أحياناً 3 كلمات) | إذا النبذة أقل من 80 حرف بنكمّلها: الاسم، المدينة، "باقات تبدأ من X د.أ" | نفس الملف، `head()` |
+| النسخة الإنجليزية مش مفهرسة (نفس الرابط + كوكي) | `hreflang` ar/en/x-default لكل صفحة فيها canonical، و`?lang=en` صار canonical لنفسه | `src/server.ts` (`withHreflang`) |
+| عناوين المدن بتقول "احجزي مصوّرة موثّقة" (مش كل المصوّرات موثّقات) | صارت ": الأسعار والمواعيد المتاحة" | `src/content/seo.ts` |
+
+### لازم ينعمل بعد الدومين (بالترتيب)
+1. **نقل الموقع للدومين:** الخطوات بالقسم 3. كل الروابط المكتوبة مباشرة (61 مكان بـ 41 ملف وقت التدقيق) بتطلع بـ `grep -rn "ahmad000haddad.workers.dev" src`. الـ canonical وhreflang والـ sitemap كلهم بيتبعوا هالروابط و`SITE_URL` بـ `src/content/seo.ts`.
+2. **Redirect 301 من `workers.dev` للدومين** لكل الصفحات العامة (مش `/track/` و`/api/` حتى ما تنكسر روابط العرايس القديمة والـ webhooks). مكانه الطبيعي `src/server.ts` قبل `handler.fetch`: إذا `url.hostname` بينتهي بـ `workers.dev` والمسار عام ← `Response.redirect(newUrl, 301)`.
+3. **Google Search Console:** أضف الدومين (Domain property، تحقق DNS TXT من Cloudflare)، وابعت `https://الدومين/sitemap.xml`. بعد أسبوعين شوف Pages ← "Why pages aren't indexed".
+4. **Bing Webmaster Tools:** استورد من Search Console بنقرة.
+5. **`og:image` خاص لكل مدينة ومقال:** هلأ كلهم `og-default.png` (صفحات المصوّرات بتستعمل صورة الغلاف ✅). الحل: route بيولّد صورة 1200×630 فيها عنوان الصفحة (مثلاً `/og/[slug].png` بـ `workers-og` أو `@vercel/og`)، أو صور ثابتة بـ `public/og/`. وبعدين `og:image` بـ `SeoLanding.tsx` و`blog.$slug.tsx`.
+6. **`hreflang` بالـ sitemap (اختياري):** `xhtml:link` لكل رابط بـ `sitemap[.]xml.ts`. الـ HTML كافي هلأ.
+7. **محتوى:** مقالات أكثر عن أسئلة حقيقية من Search Console (أسعار التصوير بكل مدينة، الحنّة، الجاهة). ومع زيادة المصوّرات المنشورات، صفحاتهن هي أقوى صفحات للبحث باسمهن.
+8. **أداة SEO (اختياري، لاحقاً):** `open-seo` (https://github.com/every-app/open-seo، مسجّلة بـ `skills-library/TOOLS.md`) بتحتاج مفتاح DataForSEO مدفوع بالاستخدام. نجرّبها بس بعد كم شهر بيانات بـ Search Console.
+
+### للتأكد بأي وقت
+افتح أي صفحة بـ `view-source:` أو بطلب بـ user-agent Googlebot، وتأكد من: `<title>`، `name="description"`، `rel="canonical"`، 3 روابط `hreflang`، ووجود `<h1>` بالنص (خصوصاً `/photographers/<username>`).
+
+---
+
+## 9. قائمة تحقق سريعة
 
 - [ ] اسم البزنس ثابت
 - [ ] شراء الدومين
@@ -152,3 +187,4 @@ group by 1,2 order by 3 desc;
 - [ ] إيميل الدعم `support@الدومين`
 - [ ] منع `auto` verify (اختياري)
 - [ ] كلمة سر رابط المتابعة (القسم 6)
+- [ ] SEO (القسم 8): redirect 301 من workers.dev، Search Console + sitemap، Bing، og:image للمدن والمقالات
