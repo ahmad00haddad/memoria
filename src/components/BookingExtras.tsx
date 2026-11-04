@@ -141,10 +141,10 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
         ) : null
       )}
 
-      <div className="rounded-xl border border-border p-4">
+      {(info || (d !== null && d >= 0)) && <div className="rounded-xl border border-border p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><ClipboardList className="h-4 w-4 text-gold" /> {tr("تفاصيل يوم العرس من العروس")}</div>
         {info ? <EventDaySummary info={info} /> : <p className="text-xs text-muted-foreground">{tr("لم تعبّئها العروس بعد. تظهر لها في صفحة الحجز.")}</p>}
-      </div>
+      </div>}
 
       <div className="rounded-xl border border-border p-4">
         <div className="flex items-center justify-between gap-2">
