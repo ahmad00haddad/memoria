@@ -106,15 +106,32 @@ export const cancelBooking = createServerFn({ method: "POST" })
 
 // ----- العروس تلغي الحجز: مجاناً قبل العربون، وبعده حسب سياسة المصوّرة المعلنة -----
 export const clientCancelBooking = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string; reason?: string | null }) => {
+  .inputValidator((d: { token: string; reason?: string | null; code?: string | null }) => {
     if (!d || typeof d.token !== "string" || !TOKEN_RE.test(d.token)) throw new Error("invalid token");
     if (d.reason != null && (typeof d.reason !== "string" || d.reason.length > 2000)) {
       throw new Error("invalid reason");
     }
-    return { token: d.token, reason: d.reason ?? null };
+    return { token: d.token, reason: d.reason ?? null, code: d.code ?? null };
   })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // بعد العربون: الإلغاء بالرابط يحتاج رمزاً يصل لبريد العروس (المصوّرة تعرف الرابط ولا تعرف الرمز)
+    const { data: pre } = await (supabaseAdmin as any).from("bookings")
+      .select("id, verified_via, client_email, deposit_sent_at, deposit_confirmed_at, deposit_amount")
+      .eq("client_tracking_token", data.token).is("deleted_at", null).maybeSingle();
+    if (pre) {
+      const paid = (pre.deposit_sent_at || pre.deposit_confirmed_at) && Number(pre.deposit_amount ?? 0) > 0;
+      const { stepUpApplies, consumeStepUpCode } = await import("@/lib/stepup.server");
+      if (paid && stepUpApplies(pre)) await consumeStepUpCode(pre.id, "cancel", data.code);
+    }
+    const { clientIp, clientUserAgent } = await import("@/lib/abuse.server");
+    if (pre) {
+      await (supabaseAdmin as any).from("audit_logs").insert({
+        action: "booking.client_cancel_attempt", entity_type: "booking", entity_id: pre.id,
+        after_data: { ip: clientIp(), ua: clientUserAgent() },
+      }).then(() => {}, () => {});
+    }
 
     const { data: res, error } = await supabaseAdmin.rpc("client_cancel_booking", {
       _token: data.token,

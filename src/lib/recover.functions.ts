@@ -13,6 +13,14 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
     const val = data.emailOrPhone;
     const isEmail = val.includes("@");
 
+    // حدّ المعدّل: يمنع استعمال الصفحة لإغراق شخص برسائل أو لتخمين بيانات الحجوزات
+    {
+      const ab = await import("@/lib/abuse.server");
+      const okIp = await ab.allow(`ip:${ab.clientIp()}`, "recover_ip", 6, 3600);
+      const okTarget = await ab.allow(`val:${val.toLowerCase()}`, "recover_target", 3, 3600);
+      if (!okIp || !okTarget) throw new Error(t("محاولات كثيرة. انتظري قليلاً ثم أعيدي المحاولة."));
+    }
+
     // ابحث عن الحجوزات النشطة — استعلامات معاملات آمنة بدلاً من .or() لتفادي الحقن
     const query = supabaseAdmin
       .from("bookings")

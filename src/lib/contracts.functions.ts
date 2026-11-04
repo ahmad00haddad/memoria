@@ -14,6 +14,10 @@ export const signContract = createServerFn({ method: "POST" })
     const { data: c } = await supabaseAdmin.from("contracts").select("*").eq("sign_token", data.token).maybeSingle();
     if (!c) throw new Error("Contract not found");
     if (c.status === "signed") throw new Error("Already signed");
+    // لا توقيع على حجز ملغى أو محذوف
+    const { data: bk } = await supabaseAdmin.from("bookings")
+      .select("status, deleted_at, client_email, client_name, event_date, client_tracking_token").eq("id", c.booking_id).maybeSingle();
+    if (!bk || (bk as any).deleted_at || bk.status === "cancelled") throw new Error(t("هذا الحجز لم يعد قائماً، فلا يمكن توقيع العقد."));
     const { error } = await supabaseAdmin.from("contracts").update({
       status: "signed",
       signed_at: new Date().toISOString(),
@@ -27,6 +31,28 @@ export const signContract = createServerFn({ method: "POST" })
       body: t("وقّع {0} العقد.", [data.client_name]),
       link: `/dashboard/bookings/${c.booking_id}`,
     });
+    // أثر للتدقيق + نسخة لبريد العروس: لو وُقِّع باسمها من غيرها (رابط التوقيع تراه المصوّرة أيضاً) تعلم فوراً
+    try {
+      const { clientIp, clientUserAgent } = await import("@/lib/abuse.server");
+      await (supabaseAdmin as any).from("audit_logs").insert({
+        action: "contract.signed", entity_type: "contract", entity_id: c.id,
+        after_data: { booking_id: c.booking_id, ip: clientIp(), ua: clientUserAgent(), signed_name: data.client_name },
+      });
+      if (bk.client_email) {
+        const { sendEmail, tplMessage } = await import("@/lib/email.server");
+        const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
+        const m = tplMessage({
+          subject: "تم توقيع عقد حجزكِ — ميموريا",
+          title: "تم توقيع العقد",
+          lines: [
+            `وُقِّع عقد حجزكِ بتاريخ ${bk.event_date} باسم: ${data.client_name}.`,
+            "إن لم تكوني أنتِ من وقّع، راسلي فريق ميموريا فوراً من صفحة الحجز.",
+          ],
+          cta: bk.client_tracking_token ? { label: "فتح صفحة الحجز", url: `${base}/track/${bk.client_tracking_token}` } : undefined,
+        });
+        await sendEmail({ to: bk.client_email, subject: m.subject, html: m.html, template: "contract_signed_client", related_booking_id: c.booking_id });
+      }
+    } catch (e) { console.error("[contract] sign audit/email failed", e); }
     return { ok: true };
   });
 

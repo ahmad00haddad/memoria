@@ -7,6 +7,7 @@ import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondA
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { g } from "@/hooks/use-gender";
 import { t as tr, tx } from "@/i18n";
+import { StepUpBox } from "@/components/StepUpBox";
 
 // ============================================================================
 // BookingExtras — ثلاث حمايات بعد تأكيد الحجز:
@@ -194,6 +195,8 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
   const [f, setF] = useState<EventDayInfo>(saved ?? { live_story: "no" });
   const [editing, setEditing] = useState(!saved);
   const [busy, setBusy] = useState(false);
+  const [stepFor, setStepFor] = useState<string | null>(null);
+  const [stepCode, setStepCode] = useState("");
 
   if (b.status !== "confirmed" && b.status !== "completed") return null;
   const d = daysToEvent(b.event_date);
@@ -208,13 +211,15 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
     finally { setBusy(false); }
   };
   const onRespond = async (a: Addendum, accept: boolean) => {
+    // مبلغ إضافي: نطلب رمز البريد أولاً (يظهر الصندوق تحت الملحق)، ثم يُرسل الرد مع الرمز
+    if (accept && Number(a.amount) > 0 && b.step_up && stepFor !== a.id) { setStepFor(a.id); setStepCode(""); return; }
     const ok = await confirm({
       title: accept ? tr("الموافقة على الملحق؟") : tr("رفض الملحق؟"),
       description: accept && Number(a.amount) > 0 ? tr("سيُضاف {0} د.أ إلى المبلغ المتبقي.", [a.amount]) : tx(a.description),
       confirmText: accept ? tr("أوافق") : tr("أرفض"),
     });
     if (!ok) return;
-    try { await respond({ data: { token, id: a.id, accept } }); toast.success(accept ? tr("تمت الموافقة") : tr("رُفض الملحق")); onChange(); }
+    try { await respond({ data: { token, id: a.id, accept, code: stepFor === a.id ? stepCode : null } }); toast.success(accept ? tr("تمت الموافقة") : tr("رُفض الملحق")); setStepFor(null); setStepCode(""); onChange(); }
     catch (e: any) { toast.error(e?.message || tr("تعذّر الإرسال")); }
   };
   const chk = (k: "women_only" | "no_flash" | "no_drone", label: string) => (
@@ -277,8 +282,12 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
               <li key={a.id} className="rounded-xl bg-background p-4 text-sm">
                 <div className="whitespace-pre-wrap">{tx(a.description)}</div>
                 <div className="mt-1 text-xs text-muted-foreground">{Number(a.amount) > 0 ? tr("مبلغ إضافي: {0} د.أ (يُضاف إلى المتبقي)", [a.amount]) : tr("بدون مبلغ إضافي")}</div>
+                {stepFor === a.id && (
+                  <div className="mt-3"><StepUpBox token={token} purpose="addendum" code={stepCode} onCode={setStepCode} /></div>
+                )}
                 <div className="mt-3 flex gap-2">
-                  <button onClick={() => onRespond(a, true)} className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory">{tr("أوافق")}</button>
+                  <button onClick={() => onRespond(a, true)} disabled={stepFor === a.id && stepCode.length !== 6}
+                    className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{stepFor === a.id ? tr("تأكيد الموافقة") : tr("أوافق")}</button>
                   <button onClick={() => onRespond(a, false)} className="rounded-full border border-border px-5 py-2 text-xs">{tr("أرفض")}</button>
                 </div>
               </li>

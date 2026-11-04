@@ -306,12 +306,18 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
 
     const { data: bk, error: fetchErr } = await supabase
       .from("bookings")
-      .select("id, photographer_id, status")
+      .select("id, photographer_id, status, event_date")
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
     if (!bk) throw new Error(t("الحجز غير موجود"));
     if (bk.photographer_id !== userId) throw new Error(t("غير مصرح"));
+
+    // لا «مكتمل» قبل موعد المناسبة (يُستعمل لتضخيم عدد الحجوزات المكتملة)
+    if (data.status === "completed") {
+      const todayJo = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+      if (String((bk as any).event_date) > todayJo) throw new Error(t("لا يمكن إغلاق الحجز قبل موعد المناسبة."));
+    }
 
     // Only forward moves that make sense: a cancelled or unpaid booking
     // cannot jump to "completed", and a confirmed one cannot go back to quote.

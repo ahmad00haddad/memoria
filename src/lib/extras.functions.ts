@@ -20,7 +20,7 @@ function daysTo(eventDate: string) {
 async function ownBooking(context: any, bookingId: string) {
   const { supabase, userId } = context;
   const { data: bk, error } = await supabase.from("bookings")
-    .select("id, photographer_id, status, event_date, client_email, client_name, client_tracking_token, deleted_at")
+    .select("id, photographer_id, status, event_date, client_email, client_name, client_tracking_token, deleted_at, base_price")
     .eq("id", bookingId).maybeSingle();
   if (error) throw new Error(error.message);
   if (!bk || bk.deleted_at) throw new Error(tr("الحجز غير موجود"));
@@ -31,7 +31,7 @@ async function ownBooking(context: any, bookingId: string) {
 async function bookingByToken(token: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: bk } = await (supabaseAdmin as any).from("bookings")
-    .select("id, photographer_id, status, event_date, total_price, client_name, deleted_at")
+    .select("id, photographer_id, status, event_date, total_price, client_name, deleted_at, verified_via, client_email")
     .eq("client_tracking_token", token).maybeSingle();
   if (!bk || bk.deleted_at) throw new Error(tr("الحجز غير موجود"));
   if (bk.status !== "confirmed" && bk.status !== "completed") throw new Error(tr("هذا متاح بعد تأكيد الحجز"));
@@ -101,6 +101,19 @@ export const addAddendum = createServerFn({ method: "POST" })
     const bk = await ownBooking(context, data.booking_id);
     if (bk.status !== "confirmed" && bk.status !== "completed") throw new Error(tr("الملحق متاح بعد تأكيد الحجز"));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // سقف حماية للعروس: مجموع الملاحق (المعلّقة + الموافَق عليها) لا يتجاوز نصف سعر الباقة (حد أدنى 100 د.أ)،
+    // وملحقات معلّقة قليلة؛ أي زيادة أكبر تحتاج حجزاً جديداً أو دعماً.
+    const { data: existing } = await (supabaseAdmin as any).from("booking_addenda")
+      .select("amount, status").eq("booking_id", bk.id).in("status", ["pending", "accepted"]);
+    const open = (existing ?? []) as { amount: number; status: string }[];
+    if (open.filter((x) => x.status === "pending").length >= 3) {
+      throw new Error(tr("عندكِ 3 ملاحق بانتظار موافقة العروس. انتظري ردّها قبل إضافة غيرها."));
+    }
+    const cap = Math.max(100, Number(bk.base_price ?? 0) * 0.5);
+    const sum = open.reduce((s, x) => s + Number(x.amount || 0), 0) + data.amount;
+    if (sum > cap) {
+      throw new Error(tr("مجموع الملاحق على هذا الحجز لا يتجاوز {0} د.أ (نصف سعر الباقة). للمبالغ الأكبر تواصلي مع فريق ميموريا.", [Math.round(cap)]));
+    }
     const { error } = await (supabaseAdmin as any).from("booking_addenda")
       .insert({ booking_id: bk.id, description: data.description, amount: data.amount });
     if (error) throw new Error(error.message);
@@ -147,13 +160,20 @@ export const withdrawAddendum = createServerFn({ method: "POST" })
 
 // ----- العروس: موافقة/رفض الملحق. الموافقة تضيف المبلغ إلى المجموع (فيزيد المتبقي) -----
 export const respondAddendum = createServerFn({ method: "POST" })
-  .inputValidator((d: { token: string; id: string; accept: boolean }) => {
+  .inputValidator((d: { token: string; id: string; accept: boolean; code?: string | null }) => {
     if (!d || !TOKEN_RE.test(d.token ?? "")) throw new Error("invalid token");
     if (!UUID_RE.test(d.id ?? "")) throw new Error("invalid id");
-    return { token: d.token, id: d.id, accept: !!d.accept };
+    return { token: d.token, id: d.id, accept: !!d.accept, code: d.code ?? null };
   })
   .handler(async ({ data }) => {
     const { bk, supabaseAdmin } = await bookingByToken(data.token);
+    // الموافقة على مبلغ إضافي تحتاج رمزاً من بريد العروس (المصوّرة تعرف الرابط ولا تعرف الرمز)
+    if (data.accept) {
+      const { data: pending } = await supabaseAdmin.from("booking_addenda")
+        .select("amount").eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending").maybeSingle();
+      const { stepUpApplies, consumeStepUpCode } = await import("@/lib/stepup.server");
+      if (pending && Number(pending.amount) > 0 && stepUpApplies(bk)) await consumeStepUpCode(bk.id, "addendum", data.code);
+    }
     const { data: upd, error } = await supabaseAdmin.from("booking_addenda")
       .update({ status: data.accept ? "accepted" : "declined", responded_at: new Date().toISOString() })
       .eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending")

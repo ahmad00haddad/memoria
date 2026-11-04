@@ -89,6 +89,12 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const admin: any = supabaseAdmin;
 
+    {
+      const ab = await import("@/lib/abuse.server");
+      const okIp = await ab.allow(`ip:${ab.clientIp()}`, "offer_ip", 8, 3600);
+      const okMail = await ab.allow(`mail:${data.client_email.toLowerCase()}`, "offer_email", 6, 3600);
+      if (!okIp || !okMail) throw new Error(tr("عروض كثيرة خلال وقت قصير. انتظري قليلاً."));
+    }
     const { data: subActive } = await admin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
     if (!subActive) throw new Error(tr("نعتذر، لا يمكن إرسال العرض لأن اشتراك المصورة غير نشط حالياً."));
     const { data: tier } = await admin.rpc("photographer_tier", { _pid: data.photographer_id });
@@ -276,8 +282,9 @@ export const respondToOffer = createServerFn({ method: "POST" })
         base_price: price,
         total_price: price,
         deposit_amount: deposit,
-        privacy_level: "public",
-        photographer_can_publish: true,
+        // العروس لم تختر خصوصية بمسار العرض: الافتراضي "بإذنها فقط" (لا نشر بدون موافقتها)
+        privacy_level: "no_publish",
+        photographer_can_publish: false,
         client_notes: o.client_notes ?? null,
         addons: [{ rule_id: o.rule_id, label: o.package_label, price, qty: 1, kind: "main" }],
       },
