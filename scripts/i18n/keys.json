@@ -10776,7 +10776,8 @@
   "src/routes/_authenticated/dashboard.settings.tsx"
  ],
  "الباقات والأسعار": [
-  "src/routes/_authenticated/dashboard.settings.tsx"
+  "src/routes/_authenticated/dashboard.settings.tsx",
+  "src/routes/photographers/$username.tsx"
  ],
  "نموذج الحجز": [
   "src/routes/_authenticated/dashboard.settings.tsx"
@@ -11580,5 +11581,128 @@
  ],
  "انسخ رابط صفحتك وشاركه": [
   "src/components/dashboard/ShareLinkButton.tsx"
+ ],
+ "تصوير أعراس": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "مصوّرة أعراس": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "{0}، {1}{2}. باقات تبدأ من {3} د.أ. شاهدي الأعمال والأسعار واطلبي موعدكِ عبر Memoria.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "استعرضي أعمال وأسعار {0}{1} واحجزي موعدكِ مباشرة عبر Memoria.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "لا توجد صفحة بهذا الاسم.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "عودي للبحث": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "حساب تجريبي لعرض شكل الصفحة، وليس مصوّرة حقيقية. أي طلب هنا للتجربة فقط ولا يُحجز به موعد.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "محسوب من مواعيد تسليمها الفعلية للعرائس": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تسلّم عادةً خلال ~{0} يوماً": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "من أعمال {0}": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "الحجز غير متاح حالياً": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "هذه المصوّرة لا تستقبل طلبات حجز جديدة عبر ميموريا في الوقت الحالي.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "ابحثي عن مصوّرة متاحة": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "ردّ {0}": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تابعيها وشاركي صفحتها": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "شاركي صفحتها": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "للتفاصيل قبل الحجز أرسلي الطلب، ثم راسليها من صفحة متابعة حجزكِ.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "مشاركة": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "التسليم الفعلي عادةً": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "~{0} يوماً": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "انتظري موافقة المصوّر خلال 24 ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقته؛ بعدها تظهر لكِ طرق دفع العربون ({0} د.أ) في صفحة المتابعة.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "انتظري موافقة المصوّرة خلال 24 ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقتها؛ بعدها تظهر لكِ طرق دفع العربون ({0} د.أ) في صفحة المتابعة.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "ثلاث خطوات": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "بقي {0} أيام متاحة فقط عندها في هذا الشهر.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "ننصحكِ بإرسال الطلب الآن. يصل للمصوّرة إشعار فوراً، ورقمها يظهر لكِ في صفحة المتابعة بعد موافقتها.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد موافقتها على الطلب.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "نشر صوركِ": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "بإذني فقط": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "لا تُنشر أي صورة قبل موافقتكِ عليها": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "مسموح النشر": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "يحق للمصوّرة نشر لقطات مختارة للترويج": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "لا نشر ولا مشاركة مع أي طرف ثالث": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "بكل الحالات: صور القاعة النسائية وصور الأطفال لا تُنشر أبداً.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "ما يشمله طلبكِ — {0}": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "نحفظ هذه التفاصيل مع حجزكِ كما هي الآن، حتى لو عدّلت المصوّرة باقتها لاحقاً.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "هذا الحساب للعرض فقط. في حساب مصوّرة حقيقي تظهر هنا معلومات العربون وطريقة التحويل. يمكنكِ تجربة خطوات الحجز، لكن لا يُحجز أي موعد.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تظهر طرق الدفع في صفحة متابعة حجزكِ بعد موافقة المصوّر على طلبكِ.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "تظهر طرق الدفع في صفحة متابعة حجزكِ بعد موافقة المصوّرة على طلبكِ.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "يُدفع العربون مباشرة للمصوّر، ويتثبّت حجزكِ بعد أن يؤكّد وصوله.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "يُدفع العربون مباشرة للمصوّرة، ويتثبّت حجزكِ بعد أن تؤكّد وصوله.": [
+  "src/routes/photographers/$username.tsx"
+ ],
+ "جاري تحميل الصفحة…": [
+  "src/routes/photographers/$username.tsx"
  ]
 }

@@ -66,6 +66,21 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   return brandedErrorResponse();
 }
 
+// العربية على الرابط نفسه والإنجليزية على ?lang=en. كل صفحة لها canonical تأخذ روابط
+// hreflang، ونسخة ?lang=en تصير canonical لنفسها حتى يفهرسها Google كصفحة مستقلة.
+function withHreflang(html: string, url: URL): string {
+  const m = html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"[^>]*>/i);
+  if (!m) return html;
+  const ar = m[1].split("?")[0];
+  const en = `${ar}?lang=en`;
+  const tag = url.searchParams.get("lang") === "en" ? m[0].replace(m[1], en) : m[0];
+  const alternates =
+    `<link rel="alternate" hreflang="ar" href="${ar}"/>` +
+    `<link rel="alternate" hreflang="en" href="${en}"/>` +
+    `<link rel="alternate" hreflang="x-default" href="${ar}"/>`;
+  return html.replace(m[0], tag + alternates);
+}
+
 const worker = {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
@@ -80,7 +95,7 @@ const worker = {
       if (contentType.includes("text/html")) {
         nonceStr = crypto.randomUUID().replace(/-/g, "");
         const html = await normalized.clone().text();
-        const injectedHtml = html
+        const injectedHtml = withHreflang(html, new URL(request.url))
           .replace(/<script(?![\w-])/gi, `<script nonce="${nonceStr}"`)
           .replace(/<style(?![\w-])/gi, `<style nonce="${nonceStr}"`);
         responseBody = injectedHtml;

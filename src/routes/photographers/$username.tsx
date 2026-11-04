@@ -57,13 +57,21 @@ export const Route = createFileRoute("/photographers/$username")({
   loader: async ({ params }) => {
     // SEO meta only — يجلب اسم العرض والصورة لاستخدامها في علامات الميتا.
     try {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("profiles")
-        .select("display_name,bio,city,cover_url,avatar_url,team_gender")
+        .select("id,display_name,bio,city,cover_url,avatar_url,team_gender")
         .eq("username", params.username.trim().toLowerCase())
         .eq("is_published", true)
         .maybeSingle();
-      return { seo: data ?? null };
+      // الباقات للوصف ولنص الصفحة الذي يصل للسيرفر (Google يرى المحتوى قبل تحميل الصفحة في المتصفح)
+      let packages: { label: string; price: number }[] = [];
+      if (data?.id) {
+        const { data: rules } = await supabase.from("pricing_rules")
+          .select("label,price,package").eq("photographer_id", data.id)
+          .neq("package", "addon").gt("price", 0).order("price", { ascending: true }).limit(8);
+        packages = ((rules ?? []) as any[]).map((r) => ({ label: r.label, price: Number(r.price) }));
+      }
+      return { seo: data ? { ...data, packages } : null };
     } catch {
       return { seo: null };
     }
@@ -72,9 +80,15 @@ export const Route = createFileRoute("/photographers/$username")({
     const p = loaderData?.seo as any;
     const name = p?.display_name || params.username;
     const city = p?.city ? tr(" في {0}", [p.city]) : "";
-    const desc = p?.bio?.slice(0, 155) || tr("استعرضي أعمال وأسعار {0}{1} واحجزي موعدكِ مباشرة عبر Memoria.", [name, city]);
     // فريق رجالي أو مختلط: لا نصفه بـ«مصوّرة»
     const role = p?.team_gender && p.team_gender !== "female" ? tr("تصوير أعراس") : tr("مصوّرة أعراس");
+    const minPrice = p?.packages?.length ? Math.min(...p.packages.map((x: any) => x.price)) : null;
+    // النبذة القصيرة وحدها لا تكفي كوصف؛ نكمّلها بالمدينة وأقل سعر
+    const bio = (p?.bio || "").replace(/\s+/g, " ").trim();
+    const auto = minPrice
+      ? tr("{0}، {1}{2}. باقات تبدأ من {3} د.أ. شاهدي الأعمال والأسعار واطلبي موعدكِ عبر Memoria.", [name, role, city, minPrice])
+      : tr("استعرضي أعمال وأسعار {0}{1} واحجزي موعدكِ مباشرة عبر Memoria.", [name, city]);
+    const desc = bio.length >= 80 ? bio.slice(0, 155) : (bio ? `${bio}. ${auto}` : auto).slice(0, 160);
     const rawImage = p?.cover_url || p?.avatar_url || undefined;
     const image = rawImage && rawImage.startsWith("/") ? `https://memoria-production.ahmad000haddad.workers.dev${rawImage}` : rawImage;
     const url = `https://memoria-production.ahmad000haddad.workers.dev/photographers/${params.username}`;
@@ -154,6 +168,7 @@ type Pricing = {
 
 function PhotographerPage() {
   const { username } = Route.useParams();
+  const { seo } = Route.useLoaderData() as { seo: any };
   const [profile, setProfile] = useState<Profile | null>(null);
   const [pricing, setPricing] = useState<Pricing[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -300,7 +315,7 @@ function PhotographerPage() {
   const { scrollYProgress } = useScroll();
   const progressX = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
 
-  if (loading) return <FallbackPage>{tr("جاري التحميل…")}</FallbackPage>;
+  if (loading) return seo ? <SeoPreview seo={seo} /> : <FallbackPage>{tr("جاري التحميل…")}</FallbackPage>;
   if (loadFailed) return (
     <FallbackPage>
       {tr("تعذّر تحميل صفحة المصوّرة. تحقّقي من الاتصال وحاولي مجدداً.")}{" "}
@@ -682,6 +697,12 @@ function PhotographerPage() {
                   <div className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-gold text-gold" : "text-muted-foreground/40"}`} />)}</div>
                 </div>
                 {r.comment && <p className="text-sm text-muted-foreground mt-2">{tx(r.comment)}</p>}
+                {r.photographer_reply && (
+                  <div className="mt-3 border-s-2 border-gold/40 ps-3 text-xs">
+                    <div className="mb-0.5 font-medium">{tr("ردّ {0}", [profile.display_name])}</div>
+                    <p className="text-muted-foreground whitespace-pre-wrap">{tx(r.photographer_reply)}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1610,6 +1631,36 @@ function Row({ label, value }: { label: string; value: string }) {
 function Field({ label, v, on, type = "text" }: { label: string; v: string; on: (v: string) => void; type?: string }) {
   const auto = type === "email" ? "email" : type === "tel" ? "tel" : label === "الاسم" ? "name" : "off";
   return <label className="block"><span className="text-sm text-muted-foreground">{tx(label)}</span><input type={type} autoComplete={auto} dir={type === "text" ? undefined : "ltr"} value={v} onChange={(e) => on(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
+}
+
+// ما يُعرض أثناء تحميل الصفحة، ومن السيرفر: الاسم والمدينة والنبذة والباقات (هذا ما يقرأه Google)
+function SeoPreview({ seo }: { seo: any }) {
+  const role = seo.team_gender && seo.team_gender !== "female" ? tr("تصوير أعراس") : tr("مصوّرة أعراس");
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="container-editorial py-16 max-w-3xl">
+        <h1 className="font-serif text-4xl sm:text-5xl mb-2">{seo.display_name}</h1>
+        <p className="text-muted-foreground mb-6">{role}{seo.city ? tr(" في {0}", [seo.city]) : ""}</p>
+        {seo.bio && <p className="leading-loose mb-8 whitespace-pre-line">{seo.bio}</p>}
+        {seo.packages?.length > 0 && (
+          <section>
+            <h2 className="font-serif text-2xl mb-3">{tr("الباقات والأسعار")}</h2>
+            <ul className="divide-y divide-border rounded-sm border border-border">
+              {seo.packages.map((x: any, i: number) => (
+                <li key={i} className="flex justify-between gap-4 px-4 py-3 text-sm">
+                  <span>{tx(x.label)}</span>
+                  <span className="tabular-nums">{tr("{0} د.أ", [x.price.toLocaleString(locale("ar-JO"))])}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <p className="mt-8 text-sm text-muted-foreground">{tr("جاري تحميل الصفحة…")}</p>
+      </main>
+      <Footer />
+    </div>
+  );
 }
 
 function FallbackPage({ children }: { children: React.ReactNode }) {
