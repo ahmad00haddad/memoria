@@ -159,6 +159,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: "(function(){if(location.hostname==='memoria-jo.lovable.app'){location.replace('https://memoria-production.ahmad000haddad.workers.dev'+location.pathname+location.search+location.hash);}})();",
       },
       {
+        // إذا فشل تحميل ملف JS (نشر جديد بدّل الملفات، أو المتصفح احتفظ بنسخة 404/503 قديمة)
+        // الصفحة بتعلق على "جارٍ التحميل". هون، قبل أي كود تاني: نجيب الملف من جديد متجاوزين الـ cache
+        // ونعيد التحميل مرة وحدة بس (sessionStorage يمنع الحلقة).
+        children: "(function(){var K='__asset_reload';window.addEventListener('error',function(e){var t=e.target;if(!t||!(t.tagName==='SCRIPT'||t.tagName==='LINK'))return;var u=t.src||t.href||'';if(u.indexOf('/assets/')<0)return;try{if(sessionStorage.getItem(K))return;sessionStorage.setItem(K,'1');}catch(_){return;}var us=[u];document.querySelectorAll('script[src*="/assets/"],link[href*="/assets/"]').forEach(function(n){us.push(n.src||n.href);});Promise.all(us.map(function(x){return fetch(x,{cache:'reload'}).catch(function(){});})).then(function(){location.reload();});},true);window.addEventListener('load',function(){setTimeout(function(){try{sessionStorage.removeItem(K);}catch(_){}},10000);});})();",
+      },
+      {
         // The homepage builds itself on load; don't let the browser restore a mid-page scroll
         children: "if(location.pathname==='/'&&'scrollRestoration' in history)history.scrollRestoration='manual';",
       },
