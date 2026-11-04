@@ -478,6 +478,8 @@ function TrackingPage() {
             >
               {t("تحميل الصور")}
             </a>
+            {(() => { try { return <p className="mt-2 text-xs text-muted-foreground" dir="ltr">{new URL(b.delivery_link).hostname}</p>; } catch { return null; } })()}
+            <p className="mt-1 text-xs text-muted-foreground">{t("الرابط يفتح موقعاً خارجياً. لا تدخلي أي بيانات دفع أو كلمات مرور فيه.")}</p>
           </div>
         )}
 
