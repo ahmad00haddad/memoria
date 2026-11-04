@@ -1,7 +1,7 @@
 // Memoria Service Worker — PWA caching + offline support
 // Version: 5.0 (wedding redesign; never cache cross-origin/API responses)
 
-const CACHE_NAME = "memoria-v7";
+const CACHE_NAME = "memoria-v8";
 const OFFLINE_PAGE = "/offline.html";
 
 // الملفات الأساسية التي تُحفظ دائماً في الـ cache (App Shell)
@@ -80,11 +80,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 4) ملفات static (JS, CSS) — Cache First
-  if (CACHE_STRATEGIES.static.test(url.pathname)) {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
+  // 4) ملفات static (JS, CSS, خطوط) — يتركها الـ SW للمتصفح مباشرة.
+  //    أسماؤها فيها hash وCloudflare يخزّنها سنة (immutable)، فالـ cache تبع المتصفح يكفي.
+  //    اعتراضها كان يرجّع 503 إذا فشل fetch داخل الـ SW (حصل على Brave) فتعلق الصفحة على "جارٍ التحميل".
+  if (CACHE_STRATEGIES.static.test(url.pathname)) return;
 
   // 5) صفحات HTML — Network First مع offline fallback
   event.respondWith(networkFirstWithOffline(request));
