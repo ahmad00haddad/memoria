@@ -207,6 +207,11 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
         promised.delivery_due_at = due.toISOString();
       }
       if (m.overtime_fee != null) promised.overtime_fee_per_hour = Number(m.overtime_fee);
+      // مدة مطلوبة أطول من ساعات الباقة: تنبيه ظاهر للمصوّرة بملاحظات الطلب (الفرق يُتفق عليه كساعات إضافية)
+      if (m.hours != null && bookedMinutes > Number(m.hours) * 60 + 15) {
+        const extra = Math.round(((bookedMinutes - Number(m.hours) * 60) / 60) * 10) / 10;
+        promised.client_notes = `${data.client_notes ? data.client_notes + "\n\n" : ""}[تنبيه آلي] المدة المطلوبة ${Math.round(bookedMinutes / 6) / 10} ساعة وباقة "${m.label}" ${m.hours} ساعة؛ الفرق ${extra} ساعة يُتفق عليه كساعات إضافية${m.overtime_fee ? ` (${m.overtime_fee} د.أ للساعة)` : ""}.`;
+      }
       // طلب العروس يمر بموافقة المصوّرة قبل العربون. إن فشل الوسم نلغي الطلب بدل أن يتجاوز الموافقة.
       const { error: naErr } = await supabaseAdmin.from("bookings")
         .update({ needs_approval: true, ...promised } as any).eq("id", row.id);
