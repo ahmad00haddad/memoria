@@ -84,6 +84,9 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
       setTimeout(() => document.getElementById("addendum-form")?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     };
     window.addEventListener("memoria-prefill-addendum", h);
+    // اللوحة تُركَّب بعد تبديل التبويب، فقد يفوتها الحدث: نقرأ النص المعلّق مباشرة
+    const pending = (window as any).__memoriaPrefillAddendum;
+    if (pending) { (window as any).__memoriaPrefillAddendum = null; h(new CustomEvent("x", { detail: pending })); }
     return () => window.removeEventListener("memoria-prefill-addendum", h);
   }, []);
   if (!active) return null;

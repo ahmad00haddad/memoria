@@ -857,9 +857,9 @@ function BookingDetail() {
                             {mine && <span title={m.read_at ? tr("قرأتها") : pending ? tr("يُرسل…") : tr("أُرسلت")}>{pending ? "…" : m.read_at ? tr("✓✓ قرأتها") : "✓"}</span>}
                             {!pending && (b.status === "confirmed" || b.status === "completed") && (
                               <button type="button" onClick={() => {
+                                (window as any).__memoriaPrefillAddendum = m.body;
                                 setTab("overview");
-                                setTimeout(() => window.dispatchEvent(new CustomEvent("memoria-prefill-addendum", { detail: m.body })), 250);
-                              }} className="ms-auto underline underline-offset-2 hover:opacity-100">{tr("حوّليها لملحق")}</button>
+                              }} className="ms-auto underline underline-offset-2 hover:opacity-100">{g(tr("حوّليها لملحق"), tr("حوّلها لملحق"))}</button>
                             )}
                           </div>
                         </motion.div>

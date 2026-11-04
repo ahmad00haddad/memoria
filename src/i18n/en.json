@@ -4244,5 +4244,6 @@
  "لا يمكن تقييم حجز مسجّل ببيانات المصوّرة نفسها.": "A booking registered with the photographer's own details can't be reviewed.",
  "هذا الحجز فيه عربون. ألغيه أولاً (فيصل العروس إشعار بالاسترداد)، ثم احذفيه إن أردتِ.": "This booking has a deposit. Cancel it first (the bride gets a refund notice), then delete it if you want.",
  "الرابط يفتح موقعاً خارجياً. لا تدخلي أي بيانات دفع أو كلمات مرور فيه.": "This link opens an external site. Don't enter any payment details or passwords there.",
- "حوّليها لملحق": "Turn into addendum"
+ "حوّليها لملحق": "Turn into addendum",
+ "حوّلها لملحق": "Turn into addendum"
 }
