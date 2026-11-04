@@ -254,3 +254,39 @@ export const clientEditDetails = createServerFn({ method: "POST" })
     await admin.from("messages").insert({ booking_id: bk.id, sender_id: null, sender_name: bk.client_name || tr("العميل"), body: lines.join("\n") });
     return { ok: true };
   });
+
+// ----- المصوّرة: التقييم على حجزها + رد علني واحد (لا يُعدَّل بعد النشر) -----
+export const getBookingReview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string }) => {
+    if (!d || !UUID_RE.test(d.booking_id ?? "")) throw new Error("invalid booking_id");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    await ownBooking(context, data.booking_id);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: r } = await (supabaseAdmin as any).from("reviews")
+      .select("id, rating, comment, client_name, is_published, created_at, photographer_reply, replied_at")
+      .eq("booking_id", data.booking_id).maybeSingle();
+    return r ?? null;
+  });
+
+export const replyToReview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string; reply: string }) => {
+    if (!d || !UUID_RE.test(d.booking_id ?? "")) throw new Error("invalid booking_id");
+    const reply = String(d.reply ?? "").trim();
+    if (reply.length < 2) throw new Error(tr("اكتبي ردّكِ"));
+    if (reply.length > 1000) throw new Error(tr("الرد طويل جداً"));
+    return { booking_id: d.booking_id, reply };
+  })
+  .handler(async ({ data, context }) => {
+    await ownBooking(context, data.booking_id);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: upd, error } = await (supabaseAdmin as any).from("reviews")
+      .update({ photographer_reply: data.reply, replied_at: new Date().toISOString() })
+      .eq("booking_id", data.booking_id).is("photographer_reply", null).select("id").maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!upd) throw new Error(tr("رددتِ على هذا التقييم سابقاً"));
+    return { ok: true };
+  });

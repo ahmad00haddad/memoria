@@ -186,6 +186,111 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
           } catch (e) { console.error("[deadlines] deposit reminder failed", e); out.errors++; }
         }
 
+        // اليوم بتوقيت الأردن ± أيام (YYYY-MM-DD)
+        const jDay = (n: number) => new Date(Date.now() + 3 * H + n * 24 * H).toISOString().slice(0, 10);
+
+        // 3ج) العقد غير موقّع والعرس قرّب: تذكير العروس قبل 14 ثم 7 أيام
+        try {
+          const { data: soon } = await admin.from("bookings")
+            .select("id, photographer_id, event_date, reminders_sent")
+            .eq("status", "confirmed").is("deleted_at", null)
+            .gte("event_date", jDay(0)).lte("event_date", jDay(14)).limit(200);
+          for (const b of (soon ?? []) as any[]) {
+            const sent: string[] = b.reminders_sent ?? [];
+            const daysLeft = Math.round((Date.parse(b.event_date) - Date.parse(jDay(0))) / (24 * H));
+            const key = daysLeft <= 7 ? "contract7" : "contract14";
+            if (sent.includes(key)) continue;
+            const { data: c } = await admin.from("contracts").select("sign_token, status")
+              .eq("booking_id", b.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+            if (!c?.sign_token || c.status === "signed") continue;
+            try {
+              await mark(b.id, sent, key === "contract7" ? ["contract14", "contract7"] : ["contract14"]);
+              const name = await nameOf(b.photographer_id);
+              await notifyBride(b.id, {
+                subject: `عقد التصوير بانتظار توقيعكِ — باقي ${daysLeft} يوم`,
+                title: "وقّعي عقد التصوير",
+                lines: [
+                  `عرسكِ بعد ${daysLeft} يوم، وعقد التصوير مع ${name} لم يُوقَّع بعد.`,
+                  "التوقيع يأخذ دقيقة، ويحمي حقّكِ وحقّ المصوّرة إن حدث أي خلاف.",
+                ],
+                template: "contract_sign_reminder",
+                ctaLabel: "توقيع العقد",
+                ctaUrl: `${appBase()}/contracts/${c.sign_token}`,
+              });
+              out.deposit_reminders++;
+            } catch (e) { console.error("[deadlines] contract reminder failed", e); out.errors++; }
+          }
+        } catch (e) { console.error("[deadlines] contract reminders failed", e); out.errors++; }
+
+        // 3د) المتبقي ما زال غير مدفوع بعد 7 أيام من العرس: تذكير ثانٍ للعروس + تنبيه للمصوّرة
+        try {
+          const { data: owed } = await admin.from("bookings")
+            .select("id, photographer_id, client_name, event_date, total_price, deposit_amount, reminders_sent")
+            .in("status", ["confirmed", "completed"]).is("deleted_at", null).is("final_paid_at", null)
+            .lte("event_date", jDay(-7)).gte("event_date", jDay(-30)).limit(200);
+          for (const b of (owed ?? []) as any[]) {
+            const sent: string[] = b.reminders_sent ?? [];
+            const remaining = Number(b.total_price || 0) - Number(b.deposit_amount || 0);
+            if (remaining <= 0 || sent.includes("bal7")) continue;
+            try {
+              await mark(b.id, sent, ["bal7"]);
+              const name = await nameOf(b.photographer_id);
+              await notifyBride(b.id, {
+                subject: `تذكير: باقي ${remaining} د.أ لـ ${name}`,
+                title: "باقي المبلغ",
+                lines: [
+                  `مرّ أسبوع على مناسبتكِ، وما زال المتبقي (${remaining} د.أ) غير مسجَّل.`,
+                  "إذا دفعتِه تجاهلي هذه الرسالة. إذا لا، تفاصيل الدفع في صفحة الحجز، وتُسلَّم صوركِ كاملة بعد الدفع.",
+                ],
+                template: "balance_due_7d",
+                ctaLabel: "تفاصيل الدفع",
+              });
+              await notifyPhotographer(b.photographer_id, {
+                title: `💰 المتبقي من ${b.client_name} لم يُسجَّل بعد`,
+                body: `مرّ أسبوع على حجز ${b.event_date} والمتبقي ${remaining} د.أ. إذا استلمتِه سجّليه من صفحة الحجز، وإلا ذكّرناها الآن.`,
+                link: `/dashboard/bookings/${b.id}`,
+                template: "balance_due_7d_photographer",
+                bookingId: b.id,
+              });
+              out.deposit_reminders++;
+            } catch (e) { console.error("[deadlines] balance 7d failed", e); out.errors++; }
+          }
+        } catch (e) { console.error("[deadlines] balance reminders failed", e); out.errors++; }
+
+        // 3هـ) رسالة من العروس بلا رد منذ 24 ساعة: تنبيه واحد للمصوّرة لكل رسالة
+        try {
+          const { data: recent } = await admin.from("messages")
+            .select("id, booking_id, created_at, sender_id")
+            .is("sender_id", null)
+            .lte("created_at", new Date(Date.now() - 24 * H).toISOString())
+            .gte("created_at", new Date(Date.now() - 72 * H).toISOString())
+            .order("created_at", { ascending: false }).limit(300);
+          const latest = new Map<string, any>();
+          for (const m of (recent ?? []) as any[]) if (!latest.has(m.booking_id)) latest.set(m.booking_id, m);
+          for (const [bookingId, m] of latest) {
+            const { count: replies } = await admin.from("messages").select("id", { count: "exact", head: true })
+              .eq("booking_id", bookingId).not("sender_id", "is", null).gt("created_at", m.created_at);
+            if ((replies ?? 0) > 0) continue;
+            const { data: b } = await admin.from("bookings")
+              .select("id, photographer_id, client_name, status, deleted_at, reminders_sent").eq("id", bookingId).maybeSingle();
+            if (!b || b.deleted_at || b.status === "cancelled") continue;
+            const sent: string[] = b.reminders_sent ?? [];
+            const key = `msg24:${m.id}`;
+            if (sent.includes(key)) continue;
+            try {
+              await mark(b.id, sent.filter((k) => !k.startsWith("msg24:")), [key]);
+              await notifyPhotographer(b.photographer_id, {
+                title: `💬 ${b.client_name} تنتظر ردّك منذ يوم`,
+                body: "رسالتها في محادثة الحجز ما زالت بلا رد. الرد السريع يطمئن العروس ويرفع ثقتها بك.",
+                link: `/dashboard/bookings/${b.id}`,
+                template: "unanswered_message_photographer",
+                bookingId: b.id,
+              });
+              out.approval_reminders++;
+            } catch (e) { console.error("[deadlines] unanswered msg failed", e); out.errors++; }
+          }
+        } catch (e) { console.error("[deadlines] unanswered messages failed", e); out.errors++; }
+
         // 4) تنبيه أمني: تغيّرت طرق استلام العربون (يسجّله trigger بقاعدة البيانات)
         try {
           const { data: evs } = await admin.from("payment_change_events")

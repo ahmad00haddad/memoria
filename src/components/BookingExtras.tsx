@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, AlertTriangle, FileSignature, ClipboardList } from "lucide-react";
+import { CheckCircle2, AlertTriangle, FileSignature, ClipboardList, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondAddendum, clientEditDetails } from "@/lib/extras.functions";
+import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondAddendum, clientEditDetails, getBookingReview, replyToReview } from "@/lib/extras.functions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { g } from "@/hooks/use-gender";
 import { t as tr, tx } from "@/i18n";
@@ -124,6 +124,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
 
   return (
     <div className="space-y-4">
+      {b.status === "completed" && <ReviewReply bookingId={b.id} />}
       {b.status === "confirmed" && d !== null && d >= 0 && (
         b.ready_confirmed_at ? (
           <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300">
@@ -400,6 +401,53 @@ export function BrideEditDetails({ b, token, onChange }: { b: any; token: string
         <button onClick={onSave} disabled={busy} className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{tr("حفظ")}</button>
         <button onClick={() => setOpen(false)} className="rounded-full border border-border px-4 py-2 text-xs">{tr("إلغاء")}</button>
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// المصوّرة: تقييم العروس على هذا الحجز + رد علني واحد يظهر تحته في صفحتها
+// ---------------------------------------------------------------------------
+function ReviewReply({ bookingId }: { bookingId: string }) {
+  const get = useServerFn(getBookingReview);
+  const reply = useServerFn(replyToReview);
+  const confirm = useConfirm();
+  const [r, setR] = useState<any>(undefined);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const load = () => get({ data: { booking_id: bookingId } }).then(setR).catch(() => setR(null));
+  useEffect(() => { load(); }, [bookingId]);
+  if (!r) return null;
+
+  const onSend = async () => {
+    const ok = await confirm({ title: tr("نشر الرد؟"), description: tr("يظهر الرد تحت التقييم في صفحتك العامة، ولا يمكن تعديله بعد النشر."), confirmText: tr("نشر") });
+    if (!ok) return;
+    setBusy(true);
+    try { await reply({ data: { booking_id: bookingId, reply: text } }); toast.success(tr("نُشر ردّك")); load(); }
+    catch (e: any) { toast.error(e?.message || tr("تعذّر النشر")); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className="rounded-xl border border-border p-4 text-sm">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="font-semibold">{tr("تقييم العروس")}</div>
+        <div className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-gold text-gold" : "text-muted-foreground/40"}`} />)}</div>
+      </div>
+      {r.comment && <p className="whitespace-pre-wrap text-muted-foreground">{tx(r.comment)}</p>}
+      {!r.is_published && <p className="mt-1 text-xs text-muted-foreground">{tr("بانتظار مراجعة فريق ميموريا قبل النشر.")}</p>}
+      {r.photographer_reply ? (
+        <div className="mt-3 rounded-lg bg-secondary/50 p-3">
+          <div className="mb-1 text-xs text-muted-foreground">{tr("ردّك المنشور")}</div>
+          <p className="whitespace-pre-wrap">{tx(r.photographer_reply)}</p>
+        </div>
+      ) : (
+        <div className="mt-3 space-y-2">
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={1000}
+            placeholder={tr("ردّ علني واحد (اختياري) — بهدوء واحترام، تقرؤه العرائس الأخريات")}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
+          <button onClick={onSend} disabled={busy || text.trim().length < 2} className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{tr("نشر الرد")}</button>
+        </div>
+      )}
     </div>
   );
 }
