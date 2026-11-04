@@ -62,7 +62,7 @@ export async function issueStepUpCode(token: string, purpose: StepPurpose) {
     ],
   });
   const r = await sendEmail({ to: bk.client_email, subject: m.subject, html: m.html, template: "bride_step_up", related_booking_id: bk.id });
-  if (!r.ok) throw new Error("تعذّر إرسال الرمز. حاولي بعد قليل.");
+  if (!r.ok) throw new Error("تعذّر إرسال الرمز إلى بريدكِ. راسلي فريق ميموريا ونكمل لكِ العملية.");
   return { required: true as const, hint: maskEmail(bk.client_email) };
 }
 
