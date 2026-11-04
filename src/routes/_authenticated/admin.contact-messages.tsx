@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getLang, dirOf } from "@/i18n";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { listContactMessagesAdmin, updateContactMessageAdmin } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Mail, Clock, MessageCircle, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
@@ -19,34 +21,22 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   spam:    { label: "سبام",        color: "bg-red-100 text-red-700" },
 };
 
-async function fetchMessages(filter: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  let q: any = (supabaseAdmin as any).from("contact_messages").select("*").order("created_at", { ascending: false });
-  if (filter !== "all") q = q.eq("status", filter);
-  const { data, error } = await q;
-  if (error) throw error;
-  return data ?? [];
-}
-
 function AdminContactMessages() {
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const qc = useQueryClient();
+  const listFn = useServerFn(listContactMessagesAdmin);
+  const updateFn = useServerFn(updateContactMessageAdmin);
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ["admin-contact-messages", filter],
-    queryFn: () => fetchMessages(filter),
+    queryFn: () => listFn({ data: { filter } }),
   });
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status, admin_notes }: { id: string; status: string; admin_notes?: string }) => {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { error } = await (supabaseAdmin as any)
-        .from("contact_messages")
-        .update({ status, ...(admin_notes !== undefined ? { admin_notes } : {}) })
-        .eq("id", id);
-      if (error) throw error;
+      await updateFn({ data: { id, status, admin_notes } });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin-contact-messages"] });

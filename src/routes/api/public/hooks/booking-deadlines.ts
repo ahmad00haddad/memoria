@@ -186,6 +186,40 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
           } catch (e) { console.error("[deadlines] deposit reminder failed", e); out.errors++; }
         }
 
+        // 4) تنبيه أمني: تغيّرت طرق استلام العربون (يسجّله trigger بقاعدة البيانات)
+        try {
+          const { data: evs } = await admin.from("payment_change_events")
+            .select("id, user_id, new_methods, created_at").is("notified_at", null).order("created_at").limit(50);
+          const done = new Set<string>();
+          const { sendEmail, tplMessage } = await import("@/lib/email.server");
+          const tail = (v?: string) => (v ? `…${String(v).replace(/\s/g, "").slice(-4)}` : "");
+          for (const ev of (evs ?? []) as any[]) {
+            // تغييرات متتالية لنفس الحساب = إيميل واحد
+            if (!done.has(ev.user_id)) {
+              done.add(ev.user_id);
+              const { data: u } = await admin.auth.admin.getUserById(ev.user_id);
+              const to = u?.user?.email;
+              if (to) {
+                const list = (Array.isArray(ev.new_methods) ? ev.new_methods : []).map((m: any) =>
+                  m.kind === "cliq" ? `CliQ ${tail(m.alias)}` : m.kind === "wallet" ? `${m.provider || "محفظة"} ${tail(m.number)}` : `${m.bank || "بنك"} ${tail(m.iban)}`);
+                const msg = tplMessage({
+                  subject: "تنبيه: تغيّرت طرق استلام العربون في حسابك",
+                  title: "تغيّرت طرق استلام العربون",
+                  lines: [
+                    `تغيّرت بيانات استلام العربون في حسابك على ميموريا (${new Date(ev.created_at).toLocaleString("ar-JO", { timeZone: "Asia/Amman" })}).`,
+                    list.length ? `الطرق الحالية: ${list.join("، ")}` : "لم تعد هناك أي طريقة لاستلام العربون.",
+                    "إذا كنتِ أنتِ: تجاهلي هذه الرسالة.",
+                    "إذا لم تكوني أنتِ: غيّري كلمة المرور فوراً، وصحّحي البيانات، وراسلينا، فالعرائس قد يحوّلن لحساب غيرك.",
+                  ],
+                  cta: { label: "مراجعة طرق الدفع", url: `${appBase()}/dashboard/profile` },
+                });
+                await sendEmail({ to, subject: msg.subject, html: msg.html, template: "payment_methods_changed", related_user_id: ev.user_id });
+              }
+            }
+            await admin.from("payment_change_events").update({ notified_at: new Date().toISOString() }).eq("id", ev.id);
+          }
+        } catch (e) { console.error("[deadlines] payment change alert failed", e); out.errors++; }
+
         return Response.json(out);
       },
     },

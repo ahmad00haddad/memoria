@@ -972,3 +972,51 @@ export const adminRevokeRole = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+// ----- رسائل صفحة التواصل (كانت الصفحة تستدعي client.server من المتصفح فلا ترى شيئاً) -----
+export const listContactMessagesAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { filter?: string }) => ({ filter: ["new", "read", "replied", "spam"].includes(d?.filter ?? "") ? d.filter! : "all" }))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    let q: any = (supabaseAdmin as any).from("contact_messages").select("*").order("created_at", { ascending: false }).limit(500);
+    if (data.filter !== "all") q = q.eq("status", data.filter);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const updateContactMessageAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string; status: string; admin_notes?: string }) => {
+    if (!d || !/^[0-9a-f-]{36}$/i.test(d.id ?? "")) throw new Error("invalid id");
+    if (!["new", "read", "replied", "spam"].includes(d.status)) throw new Error("invalid status");
+    return { id: d.id, status: d.status, admin_notes: d.admin_notes === undefined ? undefined : String(d.admin_notes).slice(0, 4000) };
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await (supabaseAdmin as any).from("contact_messages")
+      .update({ status: data.status, ...(data.admin_notes !== undefined ? { admin_notes: data.admin_notes } : {}), updated_at: new Date().toISOString() })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const deleteContactMessageAdmin = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => {
+    if (!d || !/^[0-9a-f-]{36}$/i.test(d.id ?? "")) throw new Error("invalid id");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await (supabaseAdmin as any).from("contact_messages").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

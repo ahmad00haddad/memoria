@@ -855,6 +855,12 @@ function BookingDetail() {
                           <div className="mt-1 flex items-center gap-1.5 text-[10px] opacity-60">
                             <span>{new Date(m.created_at).toLocaleString(locale("ar-JO"), { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</span>
                             {mine && <span title={m.read_at ? tr("قرأتها") : pending ? tr("يُرسل…") : tr("أُرسلت")}>{pending ? "…" : m.read_at ? tr("✓✓ قرأتها") : "✓"}</span>}
+                            {!pending && (b.status === "confirmed" || b.status === "completed") && (
+                              <button type="button" onClick={() => {
+                                setTab("overview");
+                                setTimeout(() => window.dispatchEvent(new CustomEvent("memoria-prefill-addendum", { detail: m.body })), 250);
+                              }} className="ms-auto underline underline-offset-2 hover:opacity-100">{tr("حوّليها لملحق")}</button>
+                            )}
                           </div>
                         </motion.div>
                       );

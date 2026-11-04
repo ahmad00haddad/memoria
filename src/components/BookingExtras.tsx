@@ -76,6 +76,16 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
     setAddenda((data ?? []) as Addendum[]);
   };
   useEffect(() => { if (active) loadAddenda(); }, [b.id, active]);
+  // "حوّليها لملحق" من المحادثة: يفتح نموذج الملحق بنص الرسالة
+  useEffect(() => {
+    const h = (e: Event) => {
+      const text = String((e as CustomEvent).detail ?? "").slice(0, 1000);
+      setDesc(text); setAmount(""); setOpen(true);
+      setTimeout(() => document.getElementById("addendum-form")?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
+    };
+    window.addEventListener("memoria-prefill-addendum", h);
+    return () => window.removeEventListener("memoria-prefill-addendum", h);
+  }, []);
   if (!active) return null;
 
   const d = daysToEvent(b.event_date);
@@ -153,7 +163,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
           </ul>
         )}
         {open && (
-          <div className="mt-3 space-y-2">
+          <div id="addendum-form" className="mt-3 space-y-2">
             {Number(b.overtime_fee_per_hour) > 0 && (
               <div className="flex flex-wrap items-center gap-2 rounded-lg bg-secondary/50 p-2 text-xs">
                 <span>{tr("ساعات إضافية؟")}</span>
