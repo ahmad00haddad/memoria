@@ -155,6 +155,8 @@ function TrackingPage() {
   const load = async () => {
     try {
       const data = await get({ data: { token } });
+      // المصوّرة قد تثبّت العربون بدون إيصال (رأته بحسابها): عند العروس يُعتبر مُرسَلاً
+      if (data && data.deposit_confirmed_at && !data.deposit_sent_at) data.deposit_sent_at = data.deposit_confirmed_at;
       setB(data);
       if ((data as any)?.deposit_terms_accepted_at) setTermsOk(true);
     } catch (e: any) {
