@@ -290,3 +290,30 @@ export const replyToReview = createServerFn({ method: "POST" })
     if (!upd) throw new Error(tr("رددتِ على هذا التقييم سابقاً"));
     return { ok: true };
   });
+
+// ----- المصوّرة: سجل رقم العروس على المنصّة (أعداد فقط، بدون أسماء مصوّرات أخريات) -----
+// "ألغتها هي" = ملغاة بدون إلغاء تلقائي ولا من المصوّرة (رفض أو إلغاء المصوّرة لا يُحسب على العروس)
+export const getClientHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string }) => {
+    if (!d || !UUID_RE.test(d.booking_id ?? "")) throw new Error("invalid booking_id");
+    return d;
+  })
+  .handler(async ({ data, context }) => {
+    await ownBooking(context, data.booking_id);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+    const { data: me } = await admin.from("bookings").select("client_phone").eq("id", data.booking_id).maybeSingle();
+    if (!me?.client_phone) return null;
+    const { data: rows } = await admin.from("bookings")
+      .select("id, photographer_id, status, auto_cancel_kind, cancelled_by, deposit_sent_at, deposit_confirmed_at")
+      .eq("client_phone", me.client_phone).neq("id", data.booking_id).is("deleted_at", null)
+      .gte("created_at", new Date(Date.now() - 365 * 86400000).toISOString()).limit(200);
+    const list = (rows ?? []) as any[];
+    const brideCancelled = list.filter((b) => b.status === "cancelled" && !b.auto_cancel_kind && b.cancelled_by !== b.photographer_id);
+    return {
+      completed: list.filter((b) => b.status === "completed").length,
+      bride_cancelled: brideCancelled.length,
+      bride_cancelled_after_deposit: brideCancelled.filter((b) => b.deposit_sent_at || b.deposit_confirmed_at).length,
+    };
+  });

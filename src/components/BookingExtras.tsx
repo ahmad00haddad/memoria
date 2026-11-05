@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { CheckCircle2, AlertTriangle, FileSignature, ClipboardList, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondAddendum, clientEditDetails, getBookingReview, replyToReview } from "@/lib/extras.functions";
+import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondAddendum, clientEditDetails, getBookingReview, replyToReview, getClientHistory } from "@/lib/extras.functions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { g } from "@/hooks/use-gender";
 import { t as tr, tx } from "@/i18n";
@@ -448,6 +448,29 @@ function ReviewReply({ bookingId }: { bookingId: string }) {
           <button onClick={onSend} disabled={busy || text.trim().length < 2} className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{tr("نشر الرد")}</button>
         </div>
       )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// المصوّرة: سجل رقم العروس آخر سنة (يظهر فقط إذا في شي يُذكر)
+// ---------------------------------------------------------------------------
+export function ClientHistory({ bookingId }: { bookingId: string }) {
+  const get = useServerFn(getClientHistory);
+  const [h, setH] = useState<any>(null);
+  useEffect(() => { get({ data: { booking_id: bookingId } }).then(setH).catch(() => setH(null)); }, [bookingId]);
+  if (!h || (!h.completed && !h.bride_cancelled)) return null;
+  const warn = h.bride_cancelled >= 2;
+  return (
+    <div className={`rounded-xl p-3 text-xs ${warn ? "bg-amber-50 text-amber-900 dark:bg-amber-500/10 dark:text-amber-300" : "bg-secondary/50 text-muted-foreground"}`}>
+      <div className="font-medium">{tr("سجل هذا الرقم على ميموريا (آخر سنة)")}</div>
+      <div className="mt-0.5">
+        {[
+          h.completed ? tr("{0} حجز مكتمل", [h.completed]) : null,
+          h.bride_cancelled ? tr("ألغت {0} طلب بنفسها", [h.bride_cancelled]) : null,
+          h.bride_cancelled_after_deposit ? tr("منها {0} بعد العربون", [h.bride_cancelled_after_deposit]) : null,
+        ].filter(Boolean).join(" · ")}
+      </div>
     </div>
   );
 }

@@ -18,6 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { PackageFacts, hasFacts } from "@/components/PackageFacts";
 import { PaymentMethodsView } from "@/components/PaymentMethods";
 import { BrideExtras, BrideEditDetails } from "@/components/BookingExtras";
+import { externalHosts } from "@/lib/chat-links";
+import { ChatReport } from "@/components/ChatReport";
+import { reportChatByToken } from "@/lib/profile-reports.functions";
 import { parseMethods, type PaymentMethod } from "@/lib/payment-methods";
 import { CheckCircle2, CalendarPlus, LockKeyhole, Unlock, Clock, Upload, Copy, Camera, Image as ImageIcon, Truck, MessageSquare, Download, Send as SendIcon, X, XCircle } from "lucide-react";
 import { Lightbox } from "@/components/Lightbox";
@@ -1005,6 +1008,7 @@ function ClientGallery({ token }: { token: string }) {
 function ClientChat({ token, clientName }: { token: string; clientName: string }) {
   const fetchM = useServerFn(getMessagesByToken);
   const sendM = useServerFn(sendMessageByToken);
+  const reportFn = useServerFn(reportChatByToken);
   const [msgs, setMsgs] = useState<any[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -1043,6 +1047,11 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
                 )}
               </div>
               <div className="text-sm whitespace-pre-wrap">{tx(m.body)}</div>
+              {!mine && externalHosts(m.body).length > 0 && (
+                <div className="mt-1.5 text-[11px] text-amber-700 dark:text-amber-400">
+                  {t("رابط خارجي ({0}). لا تدخلي فيه بيانات بطاقة أو كلمة سر، والدفع فقط بالطرق الظاهرة في هذه الصفحة.", [externalHosts(m.body).join("، ")])}
+                </div>
+              )}
             </div>
           );
         })}
@@ -1053,6 +1062,7 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
           <SendIcon className="h-4 w-4" />{" "}{t("إرسال")}
         </button>
       </div>
+      <ChatReport send={(details) => reportFn({ data: { token, details } })} />
     </div>
   );
 }

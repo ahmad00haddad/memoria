@@ -38,7 +38,10 @@ import { AlertTriangle } from "lucide-react";
 import { locale } from "@/i18n";
 import { t as tr, tx } from "@/i18n";
 import { usePlan } from "@/hooks/use-plan";
-import { BookingExtrasPanel } from "@/components/BookingExtras";
+import { BookingExtrasPanel, ClientHistory } from "@/components/BookingExtras";
+import { externalHosts } from "@/lib/chat-links";
+import { ChatReport } from "@/components/ChatReport";
+import { reportChatAsPhotographer } from "@/lib/profile-reports.functions";
 import { PackageFacts, hasFacts } from "@/components/PackageFacts";
 
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/$id")({
@@ -132,6 +135,7 @@ function BookingDetail() {
   const regenTokenFn = useServerFn(regenerateBookingToken);
   const cancelFn = useServerFn(cancelBooking);
   const approveFn = useServerFn(approveBookingRequest);
+  const reportChatFn = useServerFn(reportChatAsPhotographer);
   const rejectFn = useServerFn(rejectBookingRequest);
   const createContractFn = useServerFn(createContractForBooking);
   const { isBasic } = usePlan();
@@ -744,6 +748,7 @@ function BookingDetail() {
                         <p className="whitespace-pre-wrap leading-relaxed">{tx(b.client_notes)}</p>
                       </div>
                     )}
+                    <ClientHistory bookingId={b.id} />
                     <div className="pt-1"><PrivacyBadge level={b.privacy_level} /></div>
                     <p className="text-xs text-muted-foreground">{tr("صور القاعة النسائية وصور الأطفال لا تُنشر أبداً.")}</p>
                   </div>
@@ -852,6 +857,9 @@ function BookingDetail() {
                           className={`max-w-[85%] rounded-2xl p-3 ${mine ? "ms-auto bg-charcoal text-ivory rounded-ee-sm dark:bg-gold/20 dark:text-foreground" : "me-auto bg-secondary rounded-es-sm"}`}
                         >
                           <div className="text-sm whitespace-pre-wrap leading-relaxed">{tx(m.body)}</div>
+                          {!mine && externalHosts(m.body).length > 0 && (
+                            <div className="mt-1.5 text-[11px] text-amber-700 dark:text-amber-400">{tr("رابط خارجي ({0}). لا تفتحيه إن لم تتوقّعيه، ولا تدخلي فيه أي كلمة سر.", [externalHosts(m.body).join("، ")])}</div>
+                          )}
                           <div className="mt-1 flex items-center gap-1.5 text-[10px] opacity-60">
                             <span>{new Date(m.created_at).toLocaleString(locale("ar-JO"), { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}</span>
                             {mine && <span title={m.read_at ? tr("قرأتها") : pending ? tr("يُرسل…") : tr("أُرسلت")}>{pending ? "…" : m.read_at ? tr("✓✓ قرأتها") : "✓"}</span>}
@@ -884,6 +892,7 @@ function BookingDetail() {
                     <Send className="h-4 w-4 -scale-x-100" />
                   </button>
                 </div>
+                <ChatReport label={g(tr("إبلاغ الإدارة عن إساءة من العميلة"), tr("إبلاغ الإدارة عن إساءة من العميلة"))} send={(details) => reportChatFn({ data: { booking_id: id, details } })} />
               </div>
             )}
 

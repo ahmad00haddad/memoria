@@ -4260,5 +4260,22 @@
  "ردّك المنشور": "Your published reply",
  "ردّ علني واحد (اختياري) — بهدوء واحترام، تقرؤه العرائس الأخريات": "One public reply (optional) — calm and respectful; other brides will read it",
  "نشر الرد": "Publish reply",
- "ردّ {0}": "{0}'s reply"
+ "ردّ {0}": "{0}'s reply",
+ "رابط خارجي ({0}). لا تدخلي فيه بيانات بطاقة أو كلمة سر، والدفع فقط بالطرق الظاهرة في هذه الصفحة.": "External link ({0}). Don't enter card details or passwords there; pay only with the methods shown on this page.",
+ "رابط خارجي ({0}). لا تفتحيه إن لم تتوقّعيه، ولا تدخلي فيه أي كلمة سر.": "External link ({0}). Don't open it unless you expected it, and never enter a password there.",
+ "إبلاغ عن إساءة": "Report abuse",
+ "وصلنا بلاغكِ": "We got your report",
+ "فريق ميموريا يراجعه ويتواصل معكِ. الطرف الآخر لا يعرف بالبلاغ.": "The Memoria team will review it and contact you. The other side won't know.",
+ "كلام مسيء، ضغط أو تهديد، طلب دفع خارج المنصّة، أو رابط مشبوه. الرسائل محفوظة عندنا، فاكتبي باختصار ماذا حدث.": "Abusive language, pressure or threats, a request to pay outside the platform, or a suspicious link. Messages are saved on our side, so briefly describe what happened.",
+ "ماذا حدث؟": "What happened?",
+ "اكتبي ماذا حدث": "Describe what happened",
+ "وصلنا بلاغكِ ونراجعه الآن": "We got your report and are reviewing it now",
+ "إبلاغ الإدارة عن إساءة من العميلة": "Report abuse by the client to Memoria",
+ "إساءة في المحادثة": "Abuse in chat",
+ "العروس": "The bride",
+ "الحجز:": "Booking:",
+ "سجل هذا الرقم على ميموريا (آخر سنة)": "This number on Memoria (last year)",
+ "{0} حجز مكتمل": "{0} completed",
+ "ألغت {0} طلب بنفسها": "cancelled {0} herself",
+ "منها {0} بعد العربون": "{0} after paying a deposit"
 }

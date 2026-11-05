@@ -5,12 +5,13 @@ import { t as tr } from "@/i18n";
 // بلاغ عن صفحة مصوّرة (انتحال/احتيال/صور مسروقة) — أي زائرة ترسله، والإدارة تراجعه.
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
-const REASONS = ["impersonation", "scam", "stolen_photos", "other"] as const;
+const REASONS = ["impersonation", "scam", "stolen_photos", "chat_abuse", "other"] as const;
 type Reason = (typeof REASONS)[number];
 const REASON_AR: Record<Reason, string> = {
   impersonation: "انتحال صفحة مصوّرة",
   scam: "احتيال أو أخذ عربون واختفاء",
   stolen_photos: "صور ليست من أعمالها",
+  chat_abuse: "إساءة في المحادثة",
   other: "سبب آخر",
 };
 
@@ -106,5 +107,82 @@ export const updateProfileReport = createServerFn({ method: "POST" })
       if (e2) throw new Error(e2.message);
       await admin.from("audit_logs").insert({ action: "profile.hide_after_report", actor_id: userId, entity_type: "profile", entity_id: r.photographer_id, after_data: { report_id: data.id } });
     }
+    return { ok: true };
+  });
+
+// ----- بلاغ إساءة من محادثة الحجز -----
+async function alertAdmins(admin: any, title: string, lines: string[], relatedUserId: string) {
+  try {
+    const { data: admins } = await admin.from("user_roles").select("user_id").eq("role", "admin");
+    if (!admins?.length) return;
+    await admin.from("notifications").insert(admins.map((a: any) => ({ user_id: a.user_id, type: "system", title, body: lines.join(" — ").slice(0, 300), link: "/admin/reports" })));
+    const { sendEmail, tplMessage } = await import("@/lib/email.server");
+    const base = process.env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
+    const m = tplMessage({ subject: title, title, lines, cta: { label: "مراجعة البلاغات", url: `${base}/admin/reports` } });
+    for (const a of admins as any[]) {
+      const { data: u } = await admin.auth.admin.getUserById(a.user_id);
+      if (u?.user?.email) await sendEmail({ to: u.user.email, subject: m.subject, html: m.html, template: "admin_chat_report", related_user_id: relatedUserId });
+    }
+  } catch (e) {
+    console.error("[chat-report] admin alert failed", e);
+  }
+}
+
+const cleanDetails = (v: unknown) => {
+  const details = String(v ?? "").trim();
+  if (details.length < 5) throw new Error(tr("اكتبي ماذا حدث"));
+  if (details.length > 2000) throw new Error(tr("التفاصيل طويلة جداً"));
+  return details;
+};
+
+// العروس تبلّغ عن المصوّرة من صفحة المتابعة
+export const reportChatByToken = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; details: string }) => {
+    if (!d || !/^[A-Za-z0-9_-]{16,64}$/.test(d.token ?? "")) throw new Error("invalid token");
+    return { token: d.token, details: cleanDetails(d.details) };
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+    const { data: bk } = await admin.from("bookings")
+      .select("id, photographer_id, client_name, client_email, client_phone, deleted_at").eq("client_tracking_token", data.token).maybeSingle();
+    if (!bk || bk.deleted_at) throw new Error(tr("الحجز غير موجود"));
+    const { count } = await admin.from("profile_reports").select("id", { count: "exact", head: true })
+      .eq("booking_id", bk.id).gte("created_at", new Date(Date.now() - 3600_000).toISOString());
+    if ((count ?? 0) >= 3) throw new Error(tr("وصلنا بلاغكِ ونراجعه الآن"));
+    const { error } = await admin.from("profile_reports").insert({
+      photographer_id: bk.photographer_id, booking_id: bk.id, reporter_role: "bride", reason: "chat_abuse",
+      details: data.details, reporter_name: bk.client_name, reporter_contact: bk.client_email || bk.client_phone || "—",
+    });
+    if (error) throw new Error(error.message);
+    const { data: prof } = await admin.from("profiles").select("username").eq("id", bk.photographer_id).maybeSingle();
+    await alertAdmins(admin, "🚩 بلاغ إساءة من عروس", [`المصوّرة: @${prof?.username ?? ""}`, `العروس: ${bk.client_name} · ${bk.client_phone ?? ""}`, `التفاصيل: ${data.details}`], bk.photographer_id);
+    return { ok: true };
+  });
+
+// المصوّرة تبلّغ عن العروس من صفحة الحجز
+export const reportChatAsPhotographer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { booking_id: string; details: string }) => {
+    if (!d || !UUID_RE.test(d.booking_id ?? "")) throw new Error("invalid booking_id");
+    return { booking_id: d.booking_id, details: cleanDetails(d.details) };
+  })
+  .handler(async ({ data, context }) => {
+    const { userId } = context as any;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+    const { data: bk } = await admin.from("bookings")
+      .select("id, photographer_id, client_name, client_phone").eq("id", data.booking_id).maybeSingle();
+    if (!bk || bk.photographer_id !== userId) throw new Error(tr("غير مصرح"));
+    const { count } = await admin.from("profile_reports").select("id", { count: "exact", head: true })
+      .eq("booking_id", bk.id).gte("created_at", new Date(Date.now() - 3600_000).toISOString());
+    if ((count ?? 0) >= 3) throw new Error(tr("وصلنا بلاغكِ ونراجعه الآن"));
+    const { data: u } = await admin.auth.admin.getUserById(userId);
+    const { error } = await admin.from("profile_reports").insert({
+      photographer_id: userId, booking_id: bk.id, reporter_role: "photographer", reason: "chat_abuse",
+      details: data.details, reporter_contact: u?.user?.email || "—",
+    });
+    if (error) throw new Error(error.message);
+    await alertAdmins(admin, "🚩 بلاغ إساءة من مصوّرة", [`عن العروس: ${bk.client_name} · ${bk.client_phone ?? ""}`, `التفاصيل: ${data.details}`], userId);
     return { ok: true };
   });

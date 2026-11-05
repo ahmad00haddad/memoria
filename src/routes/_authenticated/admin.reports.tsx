@@ -16,6 +16,7 @@ const REASON: Record<string, string> = {
   impersonation: "انتحال صفحة",
   scam: "احتيال / عربون واختفاء",
   stolen_photos: "صور ليست لها",
+  chat_abuse: "إساءة في المحادثة",
   other: "سبب آخر",
 };
 const STATUS: Record<string, { label: string; c: string }> = {
@@ -62,7 +63,8 @@ function AdminReportsPage() {
           </div>
           <p className="mt-2 whitespace-pre-wrap">{tx(r.details)}</p>
           {r.real_account_url && <p className="mt-1 text-xs" dir="ltr">{t("الحساب الحقيقي:")} {tx(r.real_account_url)}</p>}
-          <p className="mt-1 text-xs text-muted-foreground">{t("المبلِّغة:")} {tx(r.reporter_name || "—")} · <span dir="ltr">{tx(r.reporter_contact)}</span></p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("المبلِّغة:")} {tx(r.reporter_role === "photographer" ? t("المصوّرة نفسها") : r.reporter_role === "bride" ? t("العروس") : (r.reporter_name || "—"))}{r.reporter_role === "bride" && r.reporter_name ? ` (${r.reporter_name})` : ""} · <span dir="ltr">{tx(r.reporter_contact)}</span></p>
+          {r.booking_id && <p className="mt-1 text-xs" dir="ltr">{t("الحجز:")} {tx(r.booking_id)}</p>}
           <textarea value={notes[r.id] ?? r.admin_notes ?? ""} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} rows={2}
             placeholder={t("ملاحظات الإدارة")} className="mt-3 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
           <div className="mt-2 flex flex-wrap gap-2">
