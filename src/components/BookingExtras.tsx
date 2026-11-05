@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { CheckCircle2, AlertTriangle, FileSignature, ClipboardList, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondAddendum, clientEditDetails, getBookingReview, replyToReview, getClientHistory } from "@/lib/extras.functions";
+import { confirmReady, saveEventDayInfo, addAddendum, withdrawAddendum, respondAddendum, clientEditDetails, getBookingReview, replyToReview, getClientHistory, requestEmailFix } from "@/lib/extras.functions";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { g } from "@/hooks/use-gender";
 import { t as tr, tx } from "@/i18n";
@@ -16,7 +16,21 @@ import { StepUpBox } from "@/components/StepUpBox";
 //  3) ملحق اتفاق: أي إضافة بعد الحجز تُكتب هنا وتعتمد بموافقة العروس (المبلغ يُضاف للمتبقي)
 // ============================================================================
 
-type Addendum = { id: string; description: string; amount: number; status: string; created_at: string };
+type AddKind = "general" | "substitute" | "reschedule" | "discount";
+type Addendum = {
+  id: string; description: string; amount: number; status: string; created_at: string;
+  kind?: AddKind; substitute_name?: string | null; substitute_link?: string | null;
+  new_event_date?: string | null; new_start_time?: string | null; new_end_time?: string | null;
+};
+
+// سطر مختصر يصف أثر الملحق (يظهر للطرفين)
+function addendumEffect(a: Addendum) {
+  if (a.kind === "substitute") return tr("مصوّرة بديلة: {0}", [a.substitute_name ?? ""]);
+  if (a.kind === "reschedule") return tr("موعد جديد: {0}", [[a.new_event_date, a.new_start_time && `${String(a.new_start_time).slice(0, 5)}–${String(a.new_end_time ?? "").slice(0, 5)}`].filter(Boolean).join(" · ")]);
+  if (Number(a.amount) < 0) return tr("تخفيض {0} د.أ", [-Number(a.amount)]);
+  if (Number(a.amount) > 0) return tr("+{0} د.أ", [a.amount]);
+  return tr("بدون مبلغ");
+}
 
 export type EventDayInfo = {
   no_flash?: boolean; no_drone?: boolean; women_only?: boolean;
@@ -67,12 +81,18 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
   const [open, setOpen] = useState(false);
   const [desc, setDesc] = useState("");
   const [amount, setAmount] = useState("");
+  const [kind, setKind] = useState<AddKind>("general");
+  const [subName, setSubName] = useState("");
+  const [subLink, setSubLink] = useState("");
+  const [newDate, setNewDate] = useState("");
+  const [newStart, setNewStart] = useState("");
+  const [newEnd, setNewEnd] = useState("");
   const [busy, setBusy] = useState(false);
 
   const active = b.status === "confirmed" || b.status === "completed";
   const loadAddenda = async () => {
     const { data } = await (supabase as any).from("booking_addenda")
-      .select("id, description, amount, status, created_at").eq("booking_id", b.id).neq("status", "withdrawn").order("created_at");
+      .select("id, description, amount, status, created_at, kind, substitute_name, substitute_link, new_event_date, new_start_time, new_end_time").eq("booking_id", b.id).neq("status", "withdrawn").order("created_at");
     setAddenda((data ?? []) as Addendum[]);
   };
   useEffect(() => { if (active) loadAddenda(); }, [b.id, active]);
@@ -80,7 +100,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
   useEffect(() => {
     const h = (e: Event) => {
       const text = String((e as CustomEvent).detail ?? "").slice(0, 1000);
-      setDesc(text); setAmount(""); setOpen(true);
+      setDesc(text); setAmount(""); setKind("general"); setOpen(true);
       setTimeout(() => document.getElementById("addendum-form")?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     };
     window.addEventListener("memoria-prefill-addendum", h);
@@ -101,19 +121,32 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
     catch (e: any) { toast.error(e?.message || tr("تعذّر التأكيد")); }
     finally { setBusy(false); }
   };
+  const pickKind = (k: AddKind) => {
+    setKind(k); setAmount("");
+    // نص جاهز يوفّر الكتابة، والمصوّرة تعدّله
+    if (k === "substitute") setDesc(tr("لظرف طارئ لن أستطيع التصوير بنفسي، وأقترح زميلة موثوقة بنفس الباقة والسعر."));
+    else if (k === "reschedule") setDesc(tr("بدل الإلغاء: ننقل الحجز لموعد جديد، والعربون المدفوع ينتقل معه."));
+    else if (k === "discount") setDesc(tr("تخفيض متّفق عليه (باقة أصغر أو خدمة أقل)."));
+    else setDesc("");
+  };
   const onAdd = async () => {
     const amt = Number(amount || 0);
-    const ok = await confirm({
-      title: tr("إرسال الملحق للعروس؟"),
-      description: amt > 0 ? tr("بعد موافقتها يُضاف {0} د.أ إلى المتبقي.", [amt]) : tr("بدون مبلغ إضافي."),
-      confirmText: tr("إرسال"),
-    });
+    const what = kind === "substitute" ? tr("إذا رفضت البديلة يحق لها استرداد العربون كاملاً، وتلغين الحجز.")
+      : kind === "reschedule" ? tr("بعد موافقتها ينتقل الحجز للتاريخ الجديد ويبقى العربون كما هو.")
+      : kind === "discount" ? tr("بعد موافقتها يُخصم {0} د.أ من المتبقي.", [amt])
+      : amt > 0 ? tr("بعد موافقتها يُضاف {0} د.أ إلى المتبقي.", [amt]) : tr("بدون مبلغ إضافي.");
+    const ok = await confirm({ title: tr("إرسال الملحق للعروس؟"), description: what, confirmText: tr("إرسال") });
     if (!ok) return;
     setBusy(true);
     try {
-      await add({ data: { booking_id: b.id, description: desc, amount: amt } });
+      await add({ data: {
+        booking_id: b.id, description: desc, amount: amt, kind,
+        substitute_name: subName, substitute_link: subLink,
+        new_event_date: newDate, new_start_time: newStart, new_end_time: newEnd,
+      } });
       toast.success(tr("أُرسل الملحق للعروس"));
-      setDesc(""); setAmount(""); setOpen(false); loadAddenda();
+      setDesc(""); setAmount(""); setKind("general"); setSubName(""); setSubLink(""); setNewDate(""); setNewStart(""); setNewEnd("");
+      setOpen(false); loadAddenda();
     } catch (e: any) { toast.error(e?.message || tr("تعذّر الإرسال")); }
     finally { setBusy(false); }
   };
@@ -158,7 +191,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
               <li key={a.id} className="rounded-lg bg-secondary/50 p-3 text-sm">
                 <div className="whitespace-pre-wrap">{tx(a.description)}</div>
                 <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
-                  <span>{Number(a.amount) > 0 ? tr("+{0} د.أ", [a.amount]) : tr("بدون مبلغ")}</span>
+                  <span>{tx(addendumEffect(a))}</span>
                   <span className={STATUS[a.status]?.c}>{tx(tr(STATUS[a.status]?.t ?? a.status))}</span>
                   {a.status === "pending" && <button onClick={() => onWithdraw(a.id)} className="text-muted-foreground underline">{tr("سحب")}</button>}
                 </div>
@@ -168,7 +201,18 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
         )}
         {open && (
           <div id="addendum-form" className="mt-3 space-y-2">
-            {Number(b.overtime_fee_per_hour) > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {([
+                ["general", tr("اتفاق جديد")],
+                ["discount", tr("تخفيض")],
+                ["reschedule", tr("نقل الموعد")],
+                ["substitute", tr("مصوّرة بديلة")],
+              ] as [AddKind, string][]).map(([k, label]) => (
+                <button key={k} type="button" onClick={() => pickKind(k)}
+                  className={`rounded-full border px-3 py-1 text-xs ${kind === k ? "border-gold bg-gold/10" : "border-border"}`}>{tx(label)}</button>
+              ))}
+            </div>
+            {kind === "general" && Number(b.overtime_fee_per_hour) > 0 && (
               <div className="flex flex-wrap items-center gap-2 rounded-lg bg-secondary/50 p-2 text-xs">
                 <span>{tr("ساعات إضافية؟")}</span>
                 {[1, 2, 3].map((h) => (
@@ -182,13 +226,32 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
             <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={2} maxLength={1000}
               placeholder={tr("مثال: ساعة تصوير إضافية بعد الزفّة")}
               className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm" />
-            <div className="flex flex-wrap items-center gap-2">
-              <input type="number" inputMode="decimal" min={0} value={amount} onChange={(e) => setAmount(e.target.value)}
-                placeholder={tr("المبلغ (اختياري)")} className="w-40 rounded-md border border-border bg-background px-3 py-2 text-sm" />
-              <span className="text-xs text-muted-foreground">{tr("د.أ — يُضاف إلى المتبقي")}</span>
-            </div>
+            {(kind === "general" || kind === "discount") && (
+              <div className="flex flex-wrap items-center gap-2">
+                <input type="number" inputMode="decimal" min={0} value={amount} onChange={(e) => setAmount(e.target.value)}
+                  placeholder={kind === "discount" ? tr("قيمة التخفيض") : tr("المبلغ (اختياري)")} className="w-40 rounded-md border border-border bg-background px-3 py-2 text-sm" />
+                <span className="text-xs text-muted-foreground">{kind === "discount" ? tr("د.أ — تُخصم من المتبقي") : tr("د.أ — يُضاف إلى المتبقي")}</span>
+              </div>
+            )}
+            {kind === "reschedule" && (
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} className="rounded-md border border-border bg-background px-2 py-1.5" />
+                <input type="time" value={newStart} onChange={(e) => setNewStart(e.target.value)} className="rounded-md border border-border bg-background px-2 py-1.5" />
+                <span>—</span>
+                <input type="time" value={newEnd} onChange={(e) => setNewEnd(e.target.value)} className="rounded-md border border-border bg-background px-2 py-1.5" />
+                <span className="text-xs text-muted-foreground">{tr("الوقت اختياري (يبقى نفسه)")}</span>
+              </div>
+            )}
+            {kind === "substitute" && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input value={subName} onChange={(e) => setSubName(e.target.value)} maxLength={120} placeholder={tr("اسم المصوّرة البديلة")}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm" />
+                <input value={subLink} onChange={(e) => setSubLink(e.target.value)} maxLength={500} dir="ltr" placeholder={tr("رابط أعمالها (ميموريا أو إنستغرام)")}
+                  className="rounded-md border border-border bg-background px-3 py-2 text-sm" />
+              </div>
+            )}
             <div className="flex gap-2">
-              <button onClick={onAdd} disabled={busy || desc.trim().length < 2} className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{tr("إرسال للعروس")}</button>
+              <button onClick={onAdd} disabled={busy || desc.trim().length < 2 || (kind === "discount" && !(Number(amount) > 0)) || (kind === "reschedule" && !newDate) || (kind === "substitute" && subName.trim().length < 2)} className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{tr("إرسال للعروس")}</button>
               <button onClick={() => setOpen(false)} className="rounded-full border border-border px-4 py-2 text-xs">{tr("إلغاء")}</button>
             </div>
           </div>
@@ -226,10 +289,17 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
   };
   const onRespond = async (a: Addendum, accept: boolean) => {
     // مبلغ إضافي: نطلب رمز البريد أولاً (يظهر الصندوق تحت الملحق)، ثم يُرسل الرد مع الرمز
-    if (accept && Number(a.amount) > 0 && b.step_up && stepFor !== a.id) { setStepFor(a.id); setStepCode(""); return; }
+    const needsCode = Number(a.amount) > 0 || a.kind === "reschedule";
+    if (accept && needsCode && b.step_up && stepFor !== a.id) { setStepFor(a.id); setStepCode(""); return; }
     const ok = await confirm({
       title: accept ? tr("الموافقة على الملحق؟") : tr("رفض الملحق؟"),
-      description: accept && Number(a.amount) > 0 ? tr("سيُضاف {0} د.أ إلى المبلغ المتبقي.", [a.amount]) : tx(a.description),
+      description: accept
+        ? (a.kind === "reschedule" ? tr("ينتقل حجزكِ إلى {0}، ويبقى عربونكِ كما هو.", [a.new_event_date ?? ""])
+          : a.kind === "substitute" ? tr("توافقين أن تصوّركِ {0} بدل المصوّرة، بنفس الباقة والسعر.", [a.substitute_name ?? ""])
+          : Number(a.amount) > 0 ? tr("سيُضاف {0} د.أ إلى المبلغ المتبقي.", [a.amount])
+          : Number(a.amount) < 0 ? tr("سيُخصم {0} د.أ من المبلغ المتبقي.", [-Number(a.amount)])
+          : tx(a.description))
+        : (a.kind === "substitute" ? tr("بعد الرفض تُبلَّغ المصوّرة. إن لم تستطع التصوير بنفسها، إلغاؤها يعني استرداد عربونكِ كاملاً.") : tx(a.description)),
       confirmText: accept ? tr("أوافق") : tr("أرفض"),
     });
     if (!ok) return;
@@ -295,7 +365,21 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
             {pending.map((a) => (
               <li key={a.id} className="rounded-xl bg-background p-4 text-sm">
                 <div className="whitespace-pre-wrap">{tx(a.description)}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{Number(a.amount) > 0 ? tr("مبلغ إضافي: {0} د.أ (يُضاف إلى المتبقي)", [a.amount]) : tr("بدون مبلغ إضافي")}</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {a.kind === "substitute" ? tx(addendumEffect(a))
+                    : a.kind === "reschedule" ? tx(addendumEffect(a))
+                    : Number(a.amount) > 0 ? tr("مبلغ إضافي: {0} د.أ (يُضاف إلى المتبقي)", [a.amount])
+                    : Number(a.amount) < 0 ? tr("تخفيض: {0} د.أ من المتبقي", [-Number(a.amount)])
+                    : tr("بدون مبلغ إضافي")}
+                </div>
+                {a.kind === "substitute" && (
+                  <div className="mt-2 rounded-lg bg-secondary/50 p-2 text-xs">
+                    {a.substitute_link && /^https?:\/\//.test(a.substitute_link) && (
+                      <a href={a.substitute_link} target="_blank" rel="noreferrer" className="text-gold underline">{tr("شاهدي أعمالها")}</a>
+                    )}
+                    <p className="mt-1 text-muted-foreground">{tr("من حقّكِ الرفض. إن رفضتِ ولم تستطع المصوّرة التصوير بنفسها، يُسترد عربونكِ كاملاً.")}</p>
+                  </div>
+                )}
                 {stepFor === a.id && (
                   <div className="mt-3"><StepUpBox token={token} purpose="addendum" code={stepCode} onCode={setStepCode} /></div>
                 )}
@@ -348,7 +432,7 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
           <ul className="space-y-2">
             {decided.map((a) => (
               <li key={a.id} className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="whitespace-pre-wrap">{tx(a.description)}{Number(a.amount) > 0 ? ` (+${a.amount} ${tr("د.أ")})` : ""}</span>
+                <span className="whitespace-pre-wrap">{tx(a.description)} <span className="text-xs text-muted-foreground">({tx(addendumEffect(a))})</span></span>
                 <span className={`text-xs ${STATUS[a.status]?.c}`}>{tx(tr(a.status === "accepted" ? "وافقتِ عليه" : "رفضتِه"))}</span>
               </li>
             ))}
@@ -471,6 +555,31 @@ export function ClientHistory({ bookingId }: { bookingId: string }) {
           h.bride_cancelled_after_deposit ? tr("منها {0} بعد العربون", [h.bride_cancelled_after_deposit]) : null,
         ].filter(Boolean).join(" · ")}
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// العروس: "إيميلي غلط؟" — طلب تصحيح للإدارة
+// ---------------------------------------------------------------------------
+export function BrideEmailFix({ token }: { token: string }) {
+  const send = useServerFn(requestEmailFix);
+  const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false);
+  if (done) return <p className="mb-4 text-xs text-muted-foreground">{tr("وصلنا طلبكِ. نتأكد منكِ بالهاتف ثم نصحّح الإيميل.")}</p>;
+  if (!open) return <button onClick={() => setOpen(true)} className="mb-4 ms-3 text-xs text-muted-foreground underline">{tr("إيميلي غلط؟")}</button>;
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-border p-3">
+      <input type="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={tr("الإيميل الصحيح")}
+        className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm" />
+      <button disabled={busy || !email.includes("@")} onClick={async () => {
+        setBusy(true);
+        try { await send({ data: { token, email } }); setDone(true); }
+        catch (e: any) { toast.error(e?.message || tr("تعذّر الإرسال")); }
+        finally { setBusy(false); }
+      }} className="rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-50">{tr("إرسال")}</button>
     </div>
   );
 }

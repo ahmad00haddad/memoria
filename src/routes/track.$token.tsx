@@ -17,7 +17,7 @@ import { getGalleryByToken, getMessagesByToken, sendMessageByToken } from "@/lib
 import { supabase } from "@/integrations/supabase/client";
 import { PackageFacts, hasFacts } from "@/components/PackageFacts";
 import { PaymentMethodsView } from "@/components/PaymentMethods";
-import { BrideExtras, BrideEditDetails } from "@/components/BookingExtras";
+import { BrideExtras, BrideEditDetails, BrideEmailFix } from "@/components/BookingExtras";
 import { externalHosts } from "@/lib/chat-links";
 import { ChatReport } from "@/components/ChatReport";
 import { reportChatByToken } from "@/lib/profile-reports.functions";
@@ -533,6 +533,7 @@ function TrackingPage() {
             <Info label={t("الخدمة")} v={b.service === "cinematic_video" ? t("فيديو سينمائي") : t("تصوير")} />
           </div>
           <BrideEditDetails b={b} token={token} onChange={load} />
+          {b.status !== "cancelled" && <BrideEmailFix token={token} />}
           {Array.isArray(b.addons) && b.addons.length > 0 && (
             <div className="border-t border-border pt-3 mb-3">
               <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">{t("تفاصيل الباقة")}</div>

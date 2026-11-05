@@ -88,14 +88,41 @@ export const saveEventDayInfo = createServerFn({ method: "POST" })
 // ----- المصوّرة: ملحق اتفاق (خدمة/مبلغ/تغيير بعد الحجز) -----
 export const addAddendum = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { booking_id: string; description: string; amount: number }) => {
+  .inputValidator((d: {
+    booking_id: string; description: string; amount: number;
+    kind?: "general" | "substitute" | "reschedule" | "discount";
+    substitute_name?: string; substitute_link?: string;
+    new_event_date?: string; new_start_time?: string; new_end_time?: string;
+  }) => {
     if (!d || !UUID_RE.test(d.booking_id ?? "")) throw new Error("invalid booking_id");
+    const kind = (["general", "substitute", "reschedule", "discount"] as const).includes(d.kind as any) ? d.kind! : "general";
     const description = String(d.description ?? "").trim();
     if (description.length < 2) throw new Error(tr("اكتبي ما الذي اتفقتما عليه"));
     if (description.length > 1000) throw new Error(tr("الوصف طويل جداً"));
-    const amount = Number(d.amount || 0);
+    let amount = Number(d.amount || 0);
     if (!Number.isFinite(amount) || amount < 0 || amount > 100000) throw new Error(tr("المبلغ غير صحيح"));
-    return { booking_id: d.booking_id, description, amount: Math.round(amount * 100) / 100 };
+    // التخفيض: المصوّرة تكتب قيمته موجبة ونخزّنها سالبة؛ البديلة ونقل الموعد بلا مبلغ
+    if (kind === "discount") { if (amount <= 0) throw new Error(tr("اكتبي قيمة التخفيض")); amount = -amount; }
+    if (kind === "substitute" || kind === "reschedule") amount = 0;
+    const extra: Record<string, string | null> = {};
+    if (kind === "substitute") {
+      const name = String(d.substitute_name ?? "").trim().slice(0, 120);
+      if (name.length < 2) throw new Error(tr("اكتبي اسم المصوّرة البديلة"));
+      extra.substitute_name = name;
+      extra.substitute_link = String(d.substitute_link ?? "").trim().slice(0, 500) || null;
+    }
+    if (kind === "reschedule") {
+      const isDate = /^\d{4}-\d{2}-\d{2}$/.test(d.new_event_date ?? "");
+      const isTime = (v?: string) => !v || /^\d{2}:\d{2}$/.test(v);
+      if (!isDate) throw new Error(tr("اختاري التاريخ الجديد"));
+      if (!isTime(d.new_start_time) || !isTime(d.new_end_time)) throw new Error(tr("اختاري وقت البداية والنهاية"));
+      const today = new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
+      if (d.new_event_date! < today) throw new Error(tr("لا يمكن اختيار تاريخ في الماضي"));
+      extra.new_event_date = d.new_event_date!;
+      extra.new_start_time = d.new_start_time || null;
+      extra.new_end_time = d.new_end_time || null;
+    }
+    return { booking_id: d.booking_id, description, amount: Math.round(amount * 100) / 100, kind, extra };
   })
   .handler(async ({ data, context }) => {
     const bk = await ownBooking(context, data.booking_id);
@@ -110,12 +137,13 @@ export const addAddendum = createServerFn({ method: "POST" })
       throw new Error(tr("عندكِ 3 ملاحق بانتظار موافقة العروس. انتظري ردّها قبل إضافة غيرها."));
     }
     const cap = Math.max(100, Number(bk.base_price ?? 0) * 0.5);
-    const sum = open.reduce((s, x) => s + Number(x.amount || 0), 0) + data.amount;
-    if (sum > cap) {
+    // السقف للزيادات فقط؛ التخفيض لا يُحسب عليه
+    const sum = open.reduce((s, x) => s + Math.max(0, Number(x.amount || 0)), 0) + Math.max(0, data.amount);
+    if (data.amount > 0 && sum > cap) {
       throw new Error(tr("مجموع الملاحق على هذا الحجز لا يتجاوز {0} د.أ (نصف سعر الباقة). للمبالغ الأكبر تواصلي مع فريق ميموريا.", [Math.round(cap)]));
     }
     const { error } = await (supabaseAdmin as any).from("booking_addenda")
-      .insert({ booking_id: bk.id, description: data.description, amount: data.amount });
+      .insert({ booking_id: bk.id, description: data.description, amount: data.amount, kind: data.kind, ...data.extra });
     if (error) throw new Error(error.message);
     if (bk.client_email && bk.client_tracking_token) {
       try {
@@ -126,7 +154,10 @@ export const addAddendum = createServerFn({ method: "POST" })
           lines: [
             `مرحباً ${bk.client_name || ""}،`.trim(),
             `أُضيف ملحق على حجزكِ: ${data.description}`,
-            data.amount > 0 ? `المبلغ الإضافي: ${data.amount} د.أ (يُضاف إلى المتبقي).` : "بدون مبلغ إضافي.",
+            data.kind === "substitute" ? `مصوّرة بديلة مقترحة: ${data.extra.substitute_name}. إذا رفضتِ يحق لكِ استرداد العربون كاملاً.`
+              : data.kind === "reschedule" ? `موعد جديد مقترح: ${data.extra.new_event_date} (بدل الإلغاء، والعربون ينتقل معه).`
+              : data.amount > 0 ? `المبلغ الإضافي: ${data.amount} د.أ (يُضاف إلى المتبقي).`
+              : data.amount < 0 ? `تخفيض: ${-data.amount} د.أ من المتبقي.` : "بدون مبلغ إضافي.",
             "لا يُعتمد الملحق إلا بعد موافقتكِ من صفحة الحجز.",
           ],
           cta: { label: "راجعي الملحق", url: `${BASE()}/track/${bk.client_tracking_token}` },
@@ -170,20 +201,39 @@ export const respondAddendum = createServerFn({ method: "POST" })
     // الموافقة على مبلغ إضافي تحتاج رمزاً من بريد العروس (المصوّرة تعرف الرابط ولا تعرف الرمز)
     if (data.accept) {
       const { data: pending } = await supabaseAdmin.from("booking_addenda")
-        .select("amount").eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending").maybeSingle();
+        .select("amount, kind, new_event_date, new_start_time, new_end_time").eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending").maybeSingle();
+      // نقل الموعد: نتأكد أن التاريخ الجديد ما زال فاضياً عند المصوّرة قبل أي شيء
+      if (pending?.kind === "reschedule") {
+        const { data: full } = await supabaseAdmin.from("bookings").select("start_time, end_time").eq("id", bk.id).maybeSingle();
+        const { data: clash } = await supabaseAdmin.rpc("has_booking_conflict", {
+          _pid: bk.photographer_id, _date: pending.new_event_date,
+          _start: pending.new_start_time ?? full?.start_time, _end: pending.new_end_time ?? full?.end_time, _exclude: bk.id,
+        });
+        if (clash) throw new Error(tr("التاريخ الجديد لم يعد متاحاً عند المصوّرة. راسليها لاقتراح موعد آخر."));
+      }
       const { stepUpApplies, consumeStepUpCode } = await import("@/lib/stepup.server");
-      if (pending && Number(pending.amount) > 0 && stepUpApplies(bk)) await consumeStepUpCode(bk.id, "addendum", data.code);
+      const needsCode = pending && (Number(pending.amount) > 0 || pending.kind === "reschedule");
+      if (needsCode && stepUpApplies(bk)) await consumeStepUpCode(bk.id, "addendum", data.code);
     }
     const { data: upd, error } = await supabaseAdmin.from("booking_addenda")
       .update({ status: data.accept ? "accepted" : "declined", responded_at: new Date().toISOString() })
       .eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending")
-      .select("amount").maybeSingle();
+      .select("amount, kind, new_event_date, new_start_time, new_end_time").maybeSingle();
     if (error) throw new Error(error.message);
     if (!upd) throw new Error(tr("هذا الملحق لم يعد بانتظار ردّكِ"));
-    if (data.accept && Number(upd.amount) > 0) {
-      const { error: e2 } = await supabaseAdmin.from("bookings")
-        .update({ total_price: Number(bk.total_price || 0) + Number(upd.amount) }).eq("id", bk.id);
+    if (data.accept && Number(upd.amount) !== 0) {
+      // التخفيض لا ينزّل المجموع تحت العربون المدفوع
+      const { data: cur } = await supabaseAdmin.from("bookings").select("total_price, deposit_amount").eq("id", bk.id).maybeSingle();
+      const next = Math.max(Number(cur?.deposit_amount || 0), Number(cur?.total_price || 0) + Number(upd.amount));
+      const { error: e2 } = await supabaseAdmin.from("bookings").update({ total_price: next }).eq("id", bk.id);
       if (e2) throw new Error(e2.message);
+    }
+    if (data.accept && upd.kind === "reschedule" && upd.new_event_date) {
+      const patch: Record<string, unknown> = { event_date: upd.new_event_date, ready_confirmed_at: null, reminders_sent: [] };
+      if (upd.new_start_time) patch.start_time = upd.new_start_time;
+      if (upd.new_end_time) patch.end_time = upd.new_end_time;
+      const { error: e3 } = await supabaseAdmin.from("bookings").update(patch).eq("id", bk.id);
+      if (e3) throw new Error(e3.message);
     }
     return { ok: true };
   });
@@ -196,7 +246,7 @@ export async function extrasForToken(supabaseAdmin: any, bookingId: string) {
     : { count: 0 };
   const [{ data: b }, { data: ad }] = await Promise.all([
     supabaseAdmin.from("bookings").select("ready_confirmed_at, event_day_info, privacy_level").eq("id", bookingId).maybeSingle(),
-    supabaseAdmin.from("booking_addenda").select("id, description, amount, status, created_at, responded_at")
+    supabaseAdmin.from("booking_addenda").select("id, description, amount, status, created_at, responded_at, kind, substitute_name, substitute_link, new_event_date, new_start_time, new_end_time")
       .eq("booking_id", bookingId).neq("status", "withdrawn").order("created_at"),
   ]);
   return {
@@ -316,4 +366,35 @@ export const getClientHistory = createServerFn({ method: "GET" })
       bride_cancelled: brideCancelled.length,
       bride_cancelled_after_deposit: brideCancelled.filter((b) => b.deposit_sent_at || b.deposit_confirmed_at).length,
     };
+  });
+
+// ----- العروس: "إيميلي غلط" — طلب تصحيح يصل للإدارة (ما نغيّره مباشرة لأن رموز الأمان تصل عليه،
+// ورابط المتابعة تعرفه المصوّرة أيضاً). الإدارة تتأكد بالهاتف ثم تصحّحه.
+export const requestEmailFix = createServerFn({ method: "POST" })
+  .inputValidator((d: { token: string; email: string }) => {
+    if (!d || !TOKEN_RE.test(d.token ?? "")) throw new Error("invalid token");
+    const email = String(d.email ?? "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 200) throw new Error(tr("اكتبي إيميلاً صحيحاً"));
+    return { token: d.token, email };
+  })
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const admin = supabaseAdmin as any;
+    const { data: bk } = await admin.from("bookings")
+      .select("id, client_name, client_email, client_phone, deleted_at").eq("client_tracking_token", data.token).maybeSingle();
+    if (!bk || bk.deleted_at) throw new Error(tr("الحجز غير موجود"));
+    const { allow } = await import("@/lib/abuse.server");
+    if (!(await allow(`tok:${data.token}`, "email_fix", 3, 86400))) throw new Error(tr("وصلنا طلبكِ ونراجعه الآن"));
+    const { error } = await admin.from("contact_messages").insert({
+      name: bk.client_name || "عروس", email: data.email, phone: bk.client_phone,
+      message: `طلب تصحيح إيميل لحجز ${bk.id}\nالإيميل المسجّل: ${bk.client_email ?? "—"}\nالإيميل الصحيح: ${data.email}\n(تأكّدي بالهاتف قبل التعديل)`,
+    });
+    if (error) throw new Error(error.message);
+    try {
+      const { data: admins } = await admin.from("user_roles").select("user_id").eq("role", "admin");
+      if (admins?.length) await admin.from("notifications").insert(admins.map((a: any) => ({
+        user_id: a.user_id, type: "system", title: "✉️ طلب تصحيح إيميل عروس", body: `${bk.client_name} · ${bk.client_phone ?? ""}`, link: "/admin/contact-messages",
+      })));
+    } catch (e) { console.error("[email-fix] notify failed", e); }
+    return { ok: true };
   });
