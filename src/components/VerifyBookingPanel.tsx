@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { MessageCircle, Mail, ShieldCheck } from "lucide-react";
@@ -24,6 +24,13 @@ export function VerifyBookingPanel({ token, verify, onVerified, onRecheck }: {
 }) {
   const verifyFn = useServerFn(verifyBookingEmailCode);
   const resendFn = useServerFn(resendBookingEmailCode);
+  // مهلة بين طلبات إعادة الإرسال (الخادم يحدّها أيضاً) — العدّ ظاهر حتى لا تضغط العروس بلا فائدة
+  const [cooldown, setCooldown] = useState(0);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [cooldown]);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(false);
@@ -127,15 +134,17 @@ export function VerifyBookingPanel({ token, verify, onVerified, onRecheck }: {
               {busy ? "…" : t("تأكيد")}
             </button>
           </div>
+          <p className="text-[11px] text-muted-foreground">{t("ما وصلكِ؟ افحصي مجلد الرسائل غير المرغوبة (Spam) أولاً.")}</p>
           <button
             type="button"
+            disabled={cooldown > 0}
             onClick={async () => {
-              try { await resendFn({ data: { token } }); toast.success(t("أرسلنا رمزاً جديداً")); }
+              try { await resendFn({ data: { token } }); toast.success(t("أرسلنا رمزاً جديداً")); setCooldown(60); }
               catch (e: any) { toast.error(e?.message || t("تعذّر الإرسال")); }
             }}
-            className="text-[11px] text-muted-foreground underline underline-offset-2"
+            className="w-full rounded-sm border border-border py-2 text-xs hover:bg-secondary disabled:opacity-50"
           >
-            {t("لم يصلني الرمز — أعيدي الإرسال")}
+            {cooldown > 0 ? t("أعيدي الإرسال بعد {0} ثانية", [cooldown]) : t("لم يصلني الرمز — أعيدي الإرسال")}
           </button>
         </div>
       )}

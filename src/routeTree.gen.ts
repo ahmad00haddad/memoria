@@ -34,6 +34,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AskTokenRouteImport } from './routes/ask.$token'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ContractsTokenRouteImport } from './routes/contracts.$token'
@@ -67,6 +68,7 @@ import { Route as AuthenticatedDashboardOffersRouteImport } from './routes/_auth
 import { Route as AuthenticatedDashboardPricingRouteImport } from './routes/_authenticated/dashboard.pricing'
 import { Route as AuthenticatedDashboardProductionRouteImport } from './routes/_authenticated/dashboard.production'
 import { Route as AuthenticatedDashboardProfileRouteImport } from './routes/_authenticated/dashboard.profile'
+import { Route as AuthenticatedDashboardQuestionsRouteImport } from './routes/_authenticated/dashboard.questions'
 import { Route as AuthenticatedDashboardRecapRouteImport } from './routes/_authenticated/dashboard.recap'
 import { Route as AuthenticatedDashboardReferralsRouteImport } from './routes/_authenticated/dashboard.referrals'
 import { Route as AuthenticatedDashboardReportsRouteImport } from './routes/_authenticated/dashboard.reports'
@@ -210,6 +212,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AskTokenRoute = AskTokenRouteImport.update({
+  id: '/ask/$token',
+  path: '/ask/$token',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
@@ -397,6 +404,12 @@ const AuthenticatedDashboardProfileRoute =
     path: '/profile',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardQuestionsRoute =
+  AuthenticatedDashboardQuestionsRouteImport.update({
+    id: '/questions',
+    path: '/questions',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedDashboardRecapRoute =
   AuthenticatedDashboardRecapRouteImport.update({
     id: '/recap',
@@ -524,6 +537,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/ask/$token': typeof AskTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/occasion/$type': typeof OccasionTypeRoute
@@ -555,6 +569,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
   '/dashboard/production': typeof AuthenticatedDashboardProductionRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/dashboard/questions': typeof AuthenticatedDashboardQuestionsRoute
   '/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
@@ -599,6 +614,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/ask/$token': typeof AskTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/occasion/$type': typeof OccasionTypeRoute
@@ -629,6 +645,7 @@ export interface FileRoutesByTo {
   '/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
   '/dashboard/production': typeof AuthenticatedDashboardProductionRoute
   '/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/dashboard/questions': typeof AuthenticatedDashboardQuestionsRoute
   '/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
@@ -677,6 +694,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/ask/$token': typeof AskTokenRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/contracts/$token': typeof ContractsTokenRoute
   '/occasion/$type': typeof OccasionTypeRoute
@@ -708,6 +726,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/pricing': typeof AuthenticatedDashboardPricingRoute
   '/_authenticated/dashboard/production': typeof AuthenticatedDashboardProductionRoute
   '/_authenticated/dashboard/profile': typeof AuthenticatedDashboardProfileRoute
+  '/_authenticated/dashboard/questions': typeof AuthenticatedDashboardQuestionsRoute
   '/_authenticated/dashboard/recap': typeof AuthenticatedDashboardRecapRoute
   '/_authenticated/dashboard/referrals': typeof AuthenticatedDashboardReferralsRoute
   '/_authenticated/dashboard/reports': typeof AuthenticatedDashboardReportsRoute
@@ -756,6 +775,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/notifications'
     | '/onboarding'
+    | '/ask/$token'
     | '/blog/$slug'
     | '/contracts/$token'
     | '/occasion/$type'
@@ -787,6 +807,7 @@ export interface FileRouteTypes {
     | '/dashboard/pricing'
     | '/dashboard/production'
     | '/dashboard/profile'
+    | '/dashboard/questions'
     | '/dashboard/recap'
     | '/dashboard/referrals'
     | '/dashboard/reports'
@@ -831,6 +852,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/notifications'
     | '/onboarding'
+    | '/ask/$token'
     | '/blog/$slug'
     | '/contracts/$token'
     | '/occasion/$type'
@@ -861,6 +883,7 @@ export interface FileRouteTypes {
     | '/dashboard/pricing'
     | '/dashboard/production'
     | '/dashboard/profile'
+    | '/dashboard/questions'
     | '/dashboard/recap'
     | '/dashboard/referrals'
     | '/dashboard/reports'
@@ -908,6 +931,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
+    | '/ask/$token'
     | '/blog/$slug'
     | '/contracts/$token'
     | '/occasion/$type'
@@ -939,6 +963,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/pricing'
     | '/_authenticated/dashboard/production'
     | '/_authenticated/dashboard/profile'
+    | '/_authenticated/dashboard/questions'
     | '/_authenticated/dashboard/recap'
     | '/_authenticated/dashboard/referrals'
     | '/_authenticated/dashboard/reports'
@@ -983,6 +1008,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  AskTokenRoute: typeof AskTokenRoute
   BlogSlugRoute: typeof BlogSlugRoute
   ContractsTokenRoute: typeof ContractsTokenRoute
   OccasionTypeRoute: typeof OccasionTypeRoute
@@ -1181,6 +1207,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/onboarding'
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/ask/$token': {
+      id: '/ask/$token'
+      path: '/ask/$token'
+      fullPath: '/ask/$token'
+      preLoaderRoute: typeof AskTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/blog/': {
       id: '/blog/'
@@ -1413,6 +1446,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardProfileRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/questions': {
+      id: '/_authenticated/dashboard/questions'
+      path: '/questions'
+      fullPath: '/dashboard/questions'
+      preLoaderRoute: typeof AuthenticatedDashboardQuestionsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/dashboard/recap': {
       id: '/_authenticated/dashboard/recap'
       path: '/recap'
@@ -1608,6 +1648,7 @@ interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardPricingRoute: typeof AuthenticatedDashboardPricingRoute
   AuthenticatedDashboardProductionRoute: typeof AuthenticatedDashboardProductionRoute
   AuthenticatedDashboardProfileRoute: typeof AuthenticatedDashboardProfileRoute
+  AuthenticatedDashboardQuestionsRoute: typeof AuthenticatedDashboardQuestionsRoute
   AuthenticatedDashboardRecapRoute: typeof AuthenticatedDashboardRecapRoute
   AuthenticatedDashboardReferralsRoute: typeof AuthenticatedDashboardReferralsRoute
   AuthenticatedDashboardReportsRoute: typeof AuthenticatedDashboardReportsRoute
@@ -1628,6 +1669,7 @@ const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
     AuthenticatedDashboardProductionRoute:
       AuthenticatedDashboardProductionRoute,
     AuthenticatedDashboardProfileRoute: AuthenticatedDashboardProfileRoute,
+    AuthenticatedDashboardQuestionsRoute: AuthenticatedDashboardQuestionsRoute,
     AuthenticatedDashboardRecapRoute: AuthenticatedDashboardRecapRoute,
     AuthenticatedDashboardReferralsRoute: AuthenticatedDashboardReferralsRoute,
     AuthenticatedDashboardReportsRoute: AuthenticatedDashboardReportsRoute,
@@ -1684,6 +1726,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  AskTokenRoute: AskTokenRoute,
   BlogSlugRoute: BlogSlugRoute,
   ContractsTokenRoute: ContractsTokenRoute,
   OccasionTypeRoute: OccasionTypeRoute,

@@ -26,6 +26,22 @@ import { playSound } from "@/lib/sounds";
 import { BarChart2 } from "lucide-react";
 import { t as tr, tx, locale } from "@/i18n";
 
+
+// مدن قريبة: إذا ما في نتائج بمدينة، نقترح جاراتها (المصوّرة غالباً بتتنقّل بينهن)
+const NEARBY_CITIES: Record<string, string[]> = {
+  "عمّان": ["الزرقاء", "السلط", "مادبا"],
+  "الزرقاء": ["عمّان", "المفرق"],
+  "إربد": ["جرش", "عجلون", "المفرق"],
+  "جرش": ["إربد", "عجلون", "عمّان"],
+  "عجلون": ["إربد", "جرش"],
+  "المفرق": ["الزرقاء", "إربد"],
+  "السلط": ["عمّان", "مادبا"],
+  "مادبا": ["عمّان", "السلط"],
+  "الكرك": ["الطفيلة", "مادبا"],
+  "الطفيلة": ["الكرك", "معان"],
+  "معان": ["العقبة", "الطفيلة"],
+  "العقبة": ["معان"],
+};
 export const Route = createFileRoute("/search")({
   component: SearchPage,
   head: () => ({
@@ -577,6 +593,20 @@ function SearchPage() {
               action={
                 <div className="flex flex-col items-center gap-4">
                   <div className="flex flex-wrap items-center justify-center gap-2">
+                    {date && [-1, 1].map((n) => {
+                      const d = new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
+                      if (d < new Date().toISOString().slice(0, 10)) return null;
+                      return (
+                        <button key={n} onClick={() => setDate(d)} className="text-xs border border-gold/40 bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                          {tr(n < 0 ? "يوم قبل: {0}" : "يوم بعد: {0}", [new Date(d).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })])}
+                        </button>
+                      );
+                    })}
+                    {city && (NEARBY_CITIES[city] ?? []).filter((c) => (citiesQ.data ?? []).includes(c)).map((c) => (
+                      <button key={c} onClick={() => setCity(c)} className="text-xs border border-gold/40 bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
+                        {tr("جرّبي {0} (قريبة)", [c])}
+                      </button>
+                    ))}
                     {date && (
                       <button onClick={() => setDate("")} className="text-xs border border-border bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
                         {tr("إزالة التاريخ")}

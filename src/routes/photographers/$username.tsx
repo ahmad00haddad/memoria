@@ -37,6 +37,7 @@ import { BookingJourney } from "@/components/BookingJourney";
 import { Term } from "@/components/Term";
 import { locale } from "@/i18n";
 import { ReportProfile } from "@/components/ReportProfile";
+import { AskPhotographer } from "@/components/AskPhotographer";
 import { t as tr, tx, getLang, setLang, LANG_COOKIE } from "@/i18n";
 import { sanitizePageSettings, applyPageTheme, type PageSettings } from "@/lib/page-settings";
 
@@ -712,8 +713,9 @@ function PhotographerPage() {
       {/* CONTACT FOOTER */}
       <section className="container-editorial pb-8 sm:pb-16 text-center">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{profile.instagram ? tr("تابعيها وشاركي صفحتها") : tr("شاركي صفحتها")}</div>
-        <p className="mb-4 text-xs text-muted-foreground">{tr("للتفاصيل قبل الحجز أرسلي الطلب، ثم راسليها من صفحة متابعة حجزكِ.")}</p>
-        <div className="flex justify-center gap-3">
+        <p className="mb-4 text-xs text-muted-foreground">{tr("عندكِ سؤال قبل الحجز؟ اسأليها من هنا، ورقمكِ لا يظهر لها.")}</p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <AskPhotographer photographerId={profile.id} name={profile.display_name} />
           {profile.instagram && (
             <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label={tr("إنستغرام")} className="h-12 px-5 inline-flex items-center gap-2 rounded-full border border-border text-sm hover:bg-secondary"><Instagram className="h-5 w-5" />{tr("إنستغرام")}</a>
           )}

@@ -589,6 +589,7 @@ function Dashboard() {
     { key: "reports", title: tr("التقارير"), to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? tr("{0} د.أ هذا الشهر", [stats.monthRevenue]) : tr("الإيرادات وتصدير CSV") },
     { key: "contracts", title: tr("العقود"), to: "/dashboard/contracts", icon: <Link2 />, hint: tr("توقيع إلكتروني") },
     { key: "offers", title: tr("عروض الأسعار"), to: "/dashboard/offers", icon: <MessageCircle />, hint: tr("أسعار اقترحتها العرائس") },
+    { key: "questions", title: tr("أسئلة قبل الحجز"), to: "/dashboard/questions", icon: <MessageCircle />, hint: tr("أسئلة العرائس من صفحتك") },
     { key: "whatsapp", title: tr("رسائل واتساب"), to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: tr("{0} جاهزة", [arCount(templatesCount, "قالب واحد", "قالبان", "قوالب", "قالباً")]) },
     { key: "subscription", title: tr("الاشتراك"), to: "/dashboard/subscription", icon: <LogOut />, badge: subStatus === "expired" ? tr("منتهي") : subStatus === "trial" ? tr("تجريبي") : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? tr("نشط") : tr("التجديد وإثبات الدفع") },
     { key: "notifications", title: tr("الإشعارات"), to: "/notifications", icon: <Bell />, hint: tr("كل التنبيهات") },
