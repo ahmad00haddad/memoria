@@ -11,7 +11,7 @@ export const signContract = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: c } = await supabaseAdmin.from("contracts").select("*").eq("sign_token", data.token).maybeSingle();
+    const { data: c } = await (supabaseAdmin.from("contracts") as any).select("*").eq("sign_token", data.token).maybeSingle();
     if (!c) throw new Error("Contract not found");
     if (c.status === "signed") throw new Error("Already signed");
     // لا توقيع على حجز ملغى أو محذوف
@@ -60,7 +60,7 @@ export const getContractByToken = createServerFn({ method: "GET" })
   .inputValidator((d) => z.object({ token: z.string() }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: c } = await supabaseAdmin.from("contracts").select(
+    const { data: c } = await (supabaseAdmin.from("contracts") as any).select(
       "id, body, client_name, status, signed_at, client_signature, signed_body_sha256, booking_id, photographer_id"
     ).eq("sign_token", data.token).maybeSingle();
     if (!c) return null;
