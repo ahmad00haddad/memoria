@@ -1,3 +1,4 @@
+import { arCount } from "@/lib/ar-count";
 import { g } from "@/hooks/use-gender";
 import { arCount } from "@/lib/ar-count";
 import { t } from "@/i18n";
@@ -52,8 +53,8 @@ export function relativeDay(days: number) {
   if (days === 1) return t("غداً");
   if (days === -1) return t("أمس");
   if (days === 2) return t("بعد يومين");
-  if (days > 0) return t("بعد {0} أيام", [days]);
-  return t("منذ {0} أيام", [Math.abs(days)]);
+  const n = arCount(Math.abs(days), t("يوم"), t("يومين"), t("أيام"), t("يوماً"));
+  return days > 0 ? t("بعد {0}", [n]) : t("منذ {0}", [n]);
 }
 
 export function ageLabel(iso: string) {

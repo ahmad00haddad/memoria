@@ -20,8 +20,12 @@ import { Inbox, Search, CheckCircle2, MessageCircle, ChevronLeft, Paperclip, Ale
 import { ManualBookingSheet } from "@/components/dashboard/ManualBookingSheet";
 import { locale } from "@/i18n";
 import { t, tx } from "@/i18n";
+import { arCount } from "@/lib/ar-count";
 
 export const Route = createFileRoute("/_authenticated/dashboard/bookings/")({ component: BookingsList });
+
+// الطلب اللي لسا بانتظار موافقة المصوّرة مش "بانتظار العربون" (بيظهر تحت "تحتاج إجراء")
+const awaitingDeposit = (b: any) => (b.status === "pending_deposit" || b.status === "quote") && !(b.needs_approval && !b.approved_at);
 
 const STATUS_LABELS: Record<string, string> = {
   pending_deposit: "بانتظار العربون",
@@ -144,7 +148,7 @@ function BookingsList() {
     all: list.length,
     action: list.filter(needsAction).length,
     upcoming: list.filter((b) => b.status !== "cancelled" && b.event_date && daysFromToday(b.event_date) >= 0).length,
-    pending_deposit: list.filter((b) => b.status === "pending_deposit" || b.status === "quote").length,
+    pending_deposit: list.filter(awaitingDeposit).length,
     confirmed: list.filter((b) => b.status === "confirmed").length,
     completed: list.filter((b) => b.status === "completed").length,
     cancelled: list.filter((b) => b.status === "cancelled").length,
@@ -166,7 +170,7 @@ function BookingsList() {
       if (filter === "all") return true;
       if (filter === "action") return needsAction(b);
       if (filter === "upcoming") return b.status !== "cancelled" && b.event_date && daysFromToday(b.event_date) >= 0;
-      if (filter === "pending_deposit") return b.status === "pending_deposit" || b.status === "quote";
+      if (filter === "pending_deposit") return awaitingDeposit(b);
       return b.status === filter;
     })
     .filter((b) => {
@@ -202,7 +206,7 @@ function BookingsList() {
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-baseline gap-3">
             <h1 className="font-serif text-3xl">{t("الحجوزات")}</h1>
-            <span className="text-xs text-muted-foreground tabular-nums">{t("{0} حجزاً", [list.length])}</span>
+            <span className="text-xs text-muted-foreground tabular-nums">{arCount(list.length, t("حجز واحد"), t("حجزان"), t("حجوزات"), t("حجزاً"))}</span>
           </div>
           <button
             onClick={() => setManualOpen(true)}

@@ -411,6 +411,7 @@ function TrackingPage() {
             if (!b.delivered_at && b.status !== "completed" && daysToEvent !== null && daysToEvent >= 0) return { title: daysToEvent === 0 ? t("اليوم يومك 🤍") : t("باقي {0} {1} على يومك", [daysToEvent, daysToEvent === 1 ? "يوم" : "يوماً"]), body: t("حجزك مؤكَّد. أضيفي الموعد لتقويمك، واكتبي للمصوّرة أي تفاصيل تهمّك."), cta: null, target: null };
             if (!b.delivered_at && b.status !== "completed") return { title: t("صورك قيد التحرير"), body: t("تعمل المصوّرة على اختيار صورك وتحريرها. ستصلك رسالة عند جاهزيتها."), cta: null, target: null };
             if (!b.client_received_at) return { title: t("صورك جاهزة"), body: t("حمّلي صورك ثم أكّدي الاستلام."), cta: b.delivery_link ? t("تحميل الصور") : null, target: b.delivery_link ? "delivery-link" : null };
+            if (b.has_review) return { title: t("اكتمل حجزك"), body: t("شكراً لثقتك ولتقييمك."), cta: null, target: null };
             return { title: t("اكتمل حجزك"), body: t("شكراً لثقتك. رأيك يساعد عرائس أخريات."), cta: t("قيّمي المصوّرة"), target: "review-step" };
           })();
           return (
@@ -698,7 +699,7 @@ function TrackingPage() {
         )}
 
         {/* Completed → review link */}
-        {!!b.client_received_at && (
+        {!!b.client_received_at && !b.has_review && (
           <div id="review-step" className="scroll-mt-24 rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-6 shadow-sm">
             <h2 className="font-serif text-xl mb-2 text-gold">{t("شكراً لثقتك! 🌟")}</h2>
             <p className="text-sm mb-3">{t("يسعدنا أن تكون تجربتك رائعة.")}</p>

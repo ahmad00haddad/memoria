@@ -244,6 +244,7 @@ export async function extrasForToken(supabaseAdmin: any, bookingId: string) {
   const { count: photosDelivered } = gal
     ? await supabaseAdmin.from("delivery_photos").select("id", { count: "exact", head: true }).eq("gallery_id", gal.id)
     : { count: 0 };
+  const { count: reviewCount } = await supabaseAdmin.from("reviews").select("id", { count: "exact", head: true }).eq("booking_id", bookingId);
   const [{ data: b }, { data: ad }] = await Promise.all([
     supabaseAdmin.from("bookings").select("ready_confirmed_at, event_day_info, privacy_level").eq("id", bookingId).maybeSingle(),
     supabaseAdmin.from("booking_addenda").select("id, description, amount, status, created_at, responded_at, kind, substitute_name, substitute_link, new_event_date, new_start_time, new_end_time")
@@ -255,6 +256,7 @@ export async function extrasForToken(supabaseAdmin: any, bookingId: string) {
     privacy_level: b?.privacy_level ?? "public",
     addenda: ad ?? [],
     photos_delivered: photosDelivered ?? 0,
+    has_review: (reviewCount ?? 0) > 0,
   };
 }
 

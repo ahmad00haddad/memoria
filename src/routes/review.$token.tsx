@@ -106,7 +106,7 @@ function ReviewPage() {
       <Header />
       <section className="container-editorial py-16 max-w-xl">
         <h1 className="font-serif text-4xl mb-6 text-center">{tr("قيّمي تجربتك")}</h1>
-        {done ? (
+        {done || (booking as any).has_review ? (
           <div className="rounded-sm border border-border bg-card p-8 text-center">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }} className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-full bg-gold/15 text-3xl text-gold">✓</motion.div>
             <p className="font-serif text-2xl">{tr("شكراً لكِ")}</p>

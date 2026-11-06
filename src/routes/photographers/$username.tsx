@@ -834,7 +834,7 @@ function SavedBookingsBanner() {
       <div className="font-medium text-foreground">{tr("لديكِ حجوزات سابقة من هذا الجهاز:")}</div>
       {items.slice(0, 3).map((x) => (
         <Link key={x.token} to="/track/$token" params={{ token: x.token }} className="block underline underline-offset-2 text-emerald-700 dark:text-emerald-400">
-          {tr("تتبّع حجزك")}{x.photographer ? tr("مع {0}", [x.photographer]) : ""}{x.date ? ` — ${x.date}` : ""}
+          {tr("تتبّع حجزك")}{x.photographer ? tr("مع {0}", [x.photographer]) : ""}
         </Link>
       ))}
     </div>

@@ -4351,5 +4351,11 @@
  "جاري التحميل {0} من {1}": "Downloading {0} of {1}",
  "حمّلي الكل ({0} صورة)": "Download all ({0} photos)",
  "تعذّر تحميل {0} صورة، حاولي مرة أخرى": "Couldn't download {0} photos. Try again.",
- "اكتمل التحميل": "Download complete"
+ "اكتمل التحميل": "Download complete",
+ "أيام": "days",
+ "يوماً": "days",
+ "بعد {0}": "in {0}",
+ "الموقّعة: {0}": "Signing as: {0}",
+ "تسجيل استلام المتبقي (تحويل أو كاش)": "Record balance received (transfer or cash)",
+ "شكراً لثقتك ولتقييمك.": "Thank you for your trust and your review."
 }

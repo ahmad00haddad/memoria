@@ -155,8 +155,12 @@ function SignPage() {
           <div ref={signRef} className="mt-8 space-y-4 border border-border rounded-2xl p-6 scroll-mt-28">
             <h2 className="font-serif text-2xl">{t("التوقيع الإلكتروني")}</h2>
             <p className="text-xs text-muted-foreground">{t("يُحفظ التوقيع مع التاريخ والوقت، وله نفس إلزام التوقيع الورقي.")}</p>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("الاسم الكامل")}
-              className="w-full border border-input rounded-sm px-3 py-2 bg-background" />
+            {contract.client_name ? (
+              <p className="text-sm">{t("الموقّعة: {0}", [name])}</p>
+            ) : (
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("الاسم الكامل")}
+                className="w-full border border-input rounded-sm px-3 py-2 bg-background" />
+            )}
             <div className="relative">
               <input value={signature} onChange={(e) => setSignature(e.target.value)} placeholder={t("اكتبي توقيعك هنا")}
                 className="w-full border border-input rounded-xl px-3 pt-2 pb-6 bg-background font-script text-3xl text-gold" />

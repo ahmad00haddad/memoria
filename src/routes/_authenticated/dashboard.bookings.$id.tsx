@@ -212,7 +212,7 @@ function BookingDetail() {
     try {
       await updateStageFn({ data: { booking_id: id, stage } });
       hapticVibrate("success");
-      toast.success(tr("المرحلة الآن: {0}", [STAGES.find((s) => s.key === stage)?.label ?? stage]));
+      toast.success(tr("المرحلة الآن: {0}", [STAGES.find((s) => s.key === stage)?.label ?? stage]), { id: "stage" });
       load();
     } catch (e: any) {
       setB((x: any) => ({ ...x, production_stage: prev }));
@@ -778,7 +778,7 @@ function BookingDetail() {
                     {b.final_paid_at && <div className="text-xs text-emerald-700 dark:text-emerald-400">{tr("استُلم المتبقي في {0}", [new Date(b.final_paid_at).toLocaleDateString(locale("ar-JO"))])}</div>}
                     {!b.final_paid_at && (b.status === "confirmed" || b.status === "completed") && (
                       <button onClick={markFinalPaid} disabled={actionLoading === "final"} className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm hover:border-gold/50 hover:text-gold transition-colors active:scale-95 disabled:opacity-60">
-                        <BadgeDollarSign className="h-4 w-4" />{" "}{tr("تسجيل استلام المتبقي")}
+                        <BadgeDollarSign className="h-4 w-4" />{" "}{tr("تسجيل استلام المتبقي (تحويل أو كاش)")}
                       </button>
                     )}
                   </div>
