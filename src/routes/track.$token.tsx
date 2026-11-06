@@ -847,6 +847,32 @@ function ClientGallery({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [finalPaid, setFinalPaid] = useState(false);
+  const [dlProgress, setDlProgress] = useState<number | null>(null);
+
+  // تحميل كل الصور واحدة ورا الثانية (المتصفح قد يسأل مرة عن السماح بعدة تنزيلات)
+  const downloadAll = async () => {
+    const photos = (data?.photos ?? []).filter((p: any) => p.url);
+    let failed = 0;
+    for (let i = 0; i < photos.length; i++) {
+      setDlProgress(i + 1);
+      try {
+        const resp = await fetch(photos[i].url);
+        const href = URL.createObjectURL(await resp.blob());
+        const ext = (resp.headers.get("content-type") || "image/jpeg").split("/")[1]?.replace(/[^a-z0-9]/gi, "") || "jpg";
+        const a = document.createElement("a");
+        a.href = href;
+        a.download = `memoria-${String(i + 1).padStart(3, "0")}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(href), 2000);
+        await new Promise((r) => setTimeout(r, 400));
+      } catch { failed++; }
+    }
+    setDlProgress(null);
+    if (failed) toast.error(t("تعذّر تحميل {0} صورة، حاولي مرة أخرى", [failed]));
+    else toast.success(t("اكتمل التحميل"));
+  };
 
   const load = async () => {
     try {
@@ -919,6 +945,16 @@ function ClientGallery({ token }: { token: string }) {
           <span className="text-sm font-medium">
             {t("🌟 صورك الكاملة بجودة عالية — يمكنك التحميل الآن")}
           </span>
+          {data.gallery?.expires_at && (
+            <div className="mt-1 text-xs text-muted-foreground">{t("المعرض متاح حتى {0}. احفظي نسخة عندكِ.", [new Date(data.gallery.expires_at).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long", year: "numeric" })])}</div>
+          )}
+          {data.gallery?.allow_downloads && data.photos.length > 1 && (
+            <button onClick={downloadAll} disabled={dlProgress !== null}
+              className="mt-3 inline-flex items-center gap-2 rounded-full bg-charcoal px-5 py-2 text-xs text-ivory disabled:opacity-60">
+              <Download className="h-3.5 w-3.5" />
+              {dlProgress !== null ? t("جاري التحميل {0} من {1}", [dlProgress, data.photos.length]) : t("حمّلي الكل ({0} صورة)", [data.photos.length])}
+            </button>
+          )}
         </motion.div>
       )}
 

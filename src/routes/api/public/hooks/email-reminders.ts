@@ -65,12 +65,52 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
 
         const { data: bookings } = await supabaseAdmin
           .from("bookings")
-          .select("id, photographer_id, client_email, client_name, event_date, start_time, venue_address, client_tracking_token, status, deleted_at")
+          .select("id, photographer_id, client_email, client_name, client_phone, event_date, start_time, end_time, venue_address, client_tracking_token, status, deleted_at, total_price, deposit_amount, event_day_info, package_snapshot")
           .eq("event_date", ymd)
           .eq("status", "confirmed" as any)
           .is("deleted_at", null);
 
-        for (const bk of bookings ?? []) {
+        for (const bk of (bookings ?? []) as any[]) {
+          // للمصوّرة: كل تفاصيل الغد بإيميل واحد، تصلها حتى لو تعذّر فتح الموقع يوم العرس
+          try {
+            const { data: priorPh } = await supabaseAdmin.from("email_log").select("id")
+              .eq("template", "event_brief_photographer").eq("related_booking_id", bk.id).gte("created_at", since).limit(1);
+            if (!priorPh?.length) {
+              const { tplMessage } = await import("@/lib/email.server");
+              const { data: u } = await supabaseAdmin.auth.admin.getUserById(bk.photographer_id);
+              const to = u?.user?.email;
+              const info: any = bk.event_day_info ?? {};
+              const rules = [
+                info.women_only && "القاعة نسائية: لا رجال من الفريق",
+                info.no_flash && "ممنوع الفلاش",
+                info.no_drone && "ممنوع الدرون",
+                bk.event_day_info && (info.live_story === "yes" ? "مسموح ستوري مباشر" : "ممنوع ستوري مباشر"),
+                info.skip_guests && `لا تصوّروا: ${info.skip_guests}`,
+                info.plan_b && `الخطة البديلة: ${info.plan_b}`,
+                info.extra && `ملاحظات: ${info.extra}`,
+              ].filter(Boolean) as string[];
+              if (to) {
+                const m = tplMessage({
+                  subject: `غداً: عرس ${bk.client_name || ""}`.trim(),
+                  title: "تفاصيل حجز الغد",
+                  lines: [
+                    `العروس: ${bk.client_name || "—"} · ${bk.client_phone || "—"}`,
+                    `الوقت: ${String(bk.start_time || "").slice(0, 5)} – ${String(bk.end_time || "").slice(0, 5)}`,
+                    `المكان: ${bk.venue_address || "—"}`,
+                    ...(bk.package_snapshot?.label ? [`الباقة: ${bk.package_snapshot.label}`] : []),
+                    `المتبقي بعد الحفل: ${Math.max(0, Number(bk.total_price || 0) - Number(bk.deposit_amount || 0))} د.أ`,
+                    ...rules,
+                  ],
+                  cta: { label: "فتح الحجز", url: `${process.env.PUBLIC_APP_URL || ""}/dashboard/bookings/${bk.id}` },
+                });
+                await sendEmail({ to, subject: m.subject, html: m.html, template: "event_brief_photographer", related_booking_id: bk.id, related_user_id: bk.photographer_id });
+              }
+            }
+          } catch (e) {
+            console.error("[email-reminders] photographer brief failed:", e);
+            results.errors++;
+          }
+
           if (!bk.client_email) continue;
 
           const { data: prior } = await supabaseAdmin
@@ -83,12 +123,17 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
           try {
             const { data: prof } = await supabaseAdmin
               .from("profiles").select("display_name").eq("id", bk.photographer_id).maybeSingle();
+            const { data: priv } = await (supabaseAdmin as any)
+              .from("photographer_private").select("phone, whatsapp").eq("user_id", bk.photographer_id).maybeSingle();
             const t = tplEventReminder24h({
               client_name: bk.client_name || "عميلتنا",
               photographer_name: prof?.display_name || "المصوّرة",
               event_date: String(bk.event_date),
-              start_time: String(bk.start_time),
+              start_time: String(bk.start_time).slice(0, 5),
+              end_time: bk.end_time ? String(bk.end_time).slice(0, 5) : null,
               venue: bk.venue_address,
+              photographer_phone: priv?.whatsapp || priv?.phone || null,
+              remaining: Math.max(0, Number(bk.total_price || 0) - Number(bk.deposit_amount || 0)) || null,
               track_token: bk.client_tracking_token!,
             });
             const r = await sendEmail({

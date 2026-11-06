@@ -291,6 +291,34 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
           }
         } catch (e) { console.error("[deadlines] unanswered messages failed", e); out.errors++; }
 
+        // 3و) المعرض ينتهي خلال أسبوع: تذكير العروس بتحميل صورها مرة واحدة
+        try {
+          const { data: gals } = await admin.from("delivery_galleries")
+            .select("booking_id, expires_at")
+            .gte("expires_at", new Date().toISOString())
+            .lte("expires_at", new Date(Date.now() + 7 * 24 * H).toISOString()).limit(100);
+          for (const gl of (gals ?? []) as any[]) {
+            const { data: b } = await admin.from("bookings").select("id, reminders_sent, deleted_at").eq("id", gl.booking_id).maybeSingle();
+            if (!b || b.deleted_at) continue;
+            const sent: string[] = b.reminders_sent ?? [];
+            if (sent.includes("gal7")) continue;
+            try {
+              await mark(b.id, sent, ["gal7"]);
+              await notifyBride(b.id, {
+                subject: "معرض صوركِ ينتهي قريباً",
+                title: "حمّلي صوركِ قبل انتهاء المعرض",
+                lines: [
+                  `ينتهي معرض صوركِ بتاريخ ${String(gl.expires_at).slice(0, 10)}.`,
+                  "حمّليها الآن واحفظي نسخة عندكِ. في صفحة الحجز زر لتحميل كل الصور.",
+                ],
+                template: "gallery_expiring",
+                ctaLabel: "تحميل الصور",
+              });
+              out.deposit_reminders++;
+            } catch (e) { console.error("[deadlines] gallery reminder failed", e); out.errors++; }
+          }
+        } catch (e) { console.error("[deadlines] gallery reminders failed", e); out.errors++; }
+
         // 4) تنبيه أمني: تغيّرت طرق استلام العربون (يسجّله trigger بقاعدة البيانات)
         try {
           const { data: evs } = await admin.from("payment_change_events")

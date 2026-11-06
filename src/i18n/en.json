@@ -4346,5 +4346,10 @@
  "عندكِ سؤال قبل الحجز؟ اسأليها من هنا، ورقمكِ لا يظهر لها.": "Have a question before booking? Ask her here; your number isn't shown to her.",
  "أسئلة العرائس من صفحتك": "Brides' questions from your page",
  "يوم قبل: {0}": "Day before: {0}",
- "يوم بعد: {0}": "Day after: {0}"
+ "يوم بعد: {0}": "Day after: {0}",
+ "المعرض متاح حتى {0}. احفظي نسخة عندكِ.": "The gallery is available until {0}. Keep a copy.",
+ "جاري التحميل {0} من {1}": "Downloading {0} of {1}",
+ "حمّلي الكل ({0} صورة)": "Download all ({0} photos)",
+ "تعذّر تحميل {0} صورة، حاولي مرة أخرى": "Couldn't download {0} photos. Try again.",
+ "اكتمل التحميل": "Download complete"
 }

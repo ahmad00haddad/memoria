@@ -178,14 +178,19 @@ export function tplDepositConfirmed(args: {
 
 export function tplEventReminder24h(args: {
   client_name: string; photographer_name: string; event_date: string;
-  start_time: string; venue?: string | null; track_token: string;
+  start_time: string; end_time?: string | null; venue?: string | null; track_token: string;
+  photographer_phone?: string | null; remaining?: number | null;
 }) {
   return {
     subject: "تذكير: موعد تصويرك غداً 📸",
     html: layout("تذكير بموعد التصوير", `
       <p>مرحباً ${escapeHtml(args.client_name)},</p>
       <p>هذا تذكير بأن موعد تصويرك مع <strong>${escapeHtml(args.photographer_name)}</strong> غداً بتاريخ <strong>${escapeHtml(args.event_date)}</strong> الساعة <strong>${escapeHtml(args.start_time)}</strong>.</p>
+      ${args.end_time ? `<p>حتى الساعة: ${escapeHtml(args.end_time)}</p>` : ""}
       ${args.venue ? `<p>الموقع: ${escapeHtml(args.venue)}</p>` : ""}
+      ${args.photographer_phone ? `<p>رقم المصوّرة ليوم العرس: <strong dir="ltr">${escapeHtml(args.photographer_phone)}</strong></p>` : ""}
+      ${args.remaining ? `<p>المتبقي بعد الحفل: ${escapeHtml(String(args.remaining))} د.أ</p>` : ""}
+      <p>احتفظي بهذه الرسالة: فيها كل ما تحتاجينه حتى لو تعذّر فتح الموقع يوم العرس.</p>
       <p>نتمنى لك يوماً لا يُنسى ✨</p>`,
       { label: "تفاصيل الحجز", url: `${appBase()}/track/${args.track_token}` }),
   };
