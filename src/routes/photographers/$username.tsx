@@ -1641,9 +1641,15 @@ function SeoPreview({ seo }: { seo: any }) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container-editorial py-16 max-w-3xl">
-        <h1 className="font-serif text-4xl sm:text-5xl mb-2">{seo.display_name}</h1>
-        <p className="text-muted-foreground mb-6">{role}{seo.city ? tr(" في {0}", [seo.city]) : ""}</p>
+      <div aria-hidden className="container-editorial py-16 max-w-3xl animate-pulse">
+        <div className="h-10 w-2/3 rounded bg-secondary mb-3" />
+        <div className="h-4 w-1/3 rounded bg-secondary mb-8" />
+        <div className="h-48 rounded-2xl bg-secondary mb-4" />
+        <div className="h-24 rounded-2xl bg-secondary" />
+      </div>
+      <main className="sr-only">
+        <h1>{seo.display_name}</h1>
+        <p>{role}{seo.city ? tr(" في {0}", [seo.city]) : ""}</p>
         {seo.bio && <p className="leading-loose mb-8 whitespace-pre-line">{seo.bio}</p>}
         {seo.packages?.length > 0 && (
           <section>
