@@ -90,7 +90,10 @@ function PricingMgr() {
     toast.success(g(t("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي."), t("أضفنا ٣ باقات مقترحة — عدّل الأسعار ثم احفظ.")));
   };
 
-  const add = () => setRules([...rules, ...withKeys([{ service: "photography", package: "hourly", label: "", price: 0 }])]);
+  const add = () => {
+    setRules([...withKeys([{ service: "photography", package: "hourly", label: "", price: 0 }]), ...rules]);
+    if (typeof window !== "undefined") requestAnimationFrame(() => document.getElementById("pricing-list")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
   const duplicate = (i: number) => {
     const { id, _key, ...rest } = rules[i];
     const copy = withKeys([{ ...rest, label: t("{0} (نسخة)", [rest.label]) }]);
@@ -261,7 +264,12 @@ function PricingMgr() {
           </div>
         )}
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <button data-tour="add-package" onClick={add} className="mb-6 flex w-full items-center justify-center gap-2 rounded-full bg-gold px-6 py-3.5 text-base font-medium text-white shadow-elegant transition hover:opacity-90 active:scale-[0.98]">
+          <Plus className="h-5 w-5" />
+          {t("إضافة باقة جديدة")}
+        </button>
+
+        <div id="pricing-list" className="grid scroll-mt-20 gap-5 md:grid-cols-2">
           <AnimatePresence initial={false}>
           {rules.map((r, i) => {
             const price = Number(r.price) || 0;
@@ -338,7 +346,7 @@ function PricingMgr() {
           })}
           </AnimatePresence>
 
-          <button data-tour="add-package" onClick={add} className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-gold/60 hover:text-gold">
+          <button onClick={add} className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-gold/60 hover:text-gold">
             <span className="grid h-12 w-12 place-items-center rounded-full bg-secondary"><Plus className="h-5 w-5" /></span>
             <span className="text-sm">{t("إضافة باقة جديدة")}</span>
           </button>
