@@ -40,7 +40,7 @@ type Form = {
   refund_percent: string;
   pkg_label: string;
   pkg_price: string;
-  pkg_service: "photography" | "cinematic_video";
+  pkg_service: "photography" | "cinematic_video" | "photo_video";
   pkg_type: "hourly" | "full_day" | "addon";
   pkg_hours: string; pkg_count: string; pkg_days: string; pkg_overtime: string;
   pkg_shooter: "me" | "me_team" | "team";
@@ -413,6 +413,7 @@ function Onboarding() {
                   <select value={f.pkg_service} onChange={(e) => upd("pkg_service", e.target.value as any)} className={inputCx}>
                     <option value="photography">{tr("تصوير فوتوغرافي")}</option>
                     <option value="cinematic_video">{tr("تصوير فيديو")}</option>
+                    <option value="photo_video">{tr("صور + فيديو")}</option>
                   </select>
                 </Field>
                 <Field label={tr("نوع الباقة")}>

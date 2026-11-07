@@ -533,7 +533,7 @@ function TrackingPage() {
             <Info label={t("التاريخ")} v={b.event_date} />
             <Info label={t("الوقت")} v={`${(b.start_time||"").slice(0,5)} - ${(b.end_time||"").slice(0,5)}`} />
             <Info label={t("الموقع")} v={b.venue_address || "—"} />
-            <Info label={t("الخدمة")} v={b.service === "cinematic_video" ? t("فيديو سينمائي") : t("تصوير")} />
+            <Info label={t("الخدمة")} v={b.service === "photo_video" ? t("صور + فيديو") : b.service === "cinematic_video" ? t("فيديو سينمائي") : t("تصوير")} />
           </div>
           <BrideEditDetails b={b} token={token} onChange={load} />
           {b.status !== "cancelled" && <BrideEmailFix token={token} />}

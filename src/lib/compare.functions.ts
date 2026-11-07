@@ -71,7 +71,7 @@ export const getCompareDetails = createServerFn({ method: "GET" })
         packages: pk,
         min_price: min,
         max_price: pk.length ? pk[pk.length - 1].price : null,
-        services: [...new Set(pk.map((x) => (x.service === "cinematic_video" ? "video" : "photo")))],
+        services: [...new Set(pk.flatMap((x) => (x.service === "photo_video" ? ["photo", "video"] : [x.service === "cinematic_video" ? "video" : "photo"])))],
         deposit_label: fixed ? t("{0} د.أ ثابت", [fixed]) : t("{0}٪ من السعر", [pct]),
         deposit_on_min: min == null ? fixed : fixed ?? Math.round((min * pct) / 100),
         free_km: p.free_km != null ? Number(p.free_km) : null,

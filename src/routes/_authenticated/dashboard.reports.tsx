@@ -46,7 +46,7 @@ function ReportsPage() {
       if (error) throw error;
       const head = [t("التاريخ"), t("العميلة"), t("الهاتف"), t("الخدمة"), t("الحالة"), t("الإجمالي"), t("العربون"), t("الدفعة النهائية"), t("المكان")];
       const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-      const rows = (data ?? []).map((b: any) => [b.event_date, b.client_name, b.client_phone, b.service === "cinematic_video" ? t("فيديو") : t("تصوير"), statusLabel(b.status), b.total_price, b.deposit_amount, b.final_paid_at ? t("مستلمة") : "", b.venue_name].map(esc).join(","));
+      const rows = (data ?? []).map((b: any) => [b.event_date, b.client_name, b.client_phone, b.service === "photo_video" ? t("صور + فيديو") : b.service === "cinematic_video" ? t("فيديو") : t("تصوير"), statusLabel(b.status), b.total_price, b.deposit_amount, b.final_paid_at ? t("مستلمة") : "", b.venue_name].map(esc).join(","));
       // BOM حتى يقرأ Excel الأحرف العربية بشكل صحيح
       const blob = new Blob(["\ufeff" + [head.map(esc).join(","), ...rows].join("\n")], { type: "text/csv;charset=utf-8" });
       const a = document.createElement("a");
@@ -238,7 +238,7 @@ function ReportsPage() {
             {stats.services.length === 0 ? <p className="text-sm text-muted-foreground">{t("لا بيانات.")}</p> : stats.services.map(([name, v]) => (
               <div key={name} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <div>
-                  <div className="text-sm font-medium">{name === "photography" ? t("تصوير") : name === "cinematic_video" ? t("فيديو سينمائي") : name}</div>
+                  <div className="text-sm font-medium">{name === "photography" ? t("تصوير") : name === "cinematic_video" ? t("فيديو سينمائي") : name === "photo_video" ? t("صور + فيديو") : name}</div>
                   <div className="text-xs text-muted-foreground">{t("{0} حجز", [v.count])}</div>
                 </div>
                 <div className="text-sm font-medium tabular-nums">{t("{0} د.أ", [v.revenue.toFixed(0)])}</div>

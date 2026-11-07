@@ -6,7 +6,7 @@ import { t as tr, tx, locale } from "@/i18n";
 // ============================================================================
 
 export type PackageDisclosure = {
-  service?: "photography" | "cinematic_video" | string;
+  service?: "photography" | "cinematic_video" | "photo_video" | string;
   package?: string;
   hours?: number | null;
   deliverable_count?: number | null;

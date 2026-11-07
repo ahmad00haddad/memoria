@@ -18,7 +18,7 @@ import { t, tx } from "@/i18n";
 
 const inputCx = "w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50";
 
-type Rule = { id: string; label: string; price: number; service: "photography" | "cinematic_video"; package: string };
+type Rule = { id: string; label: string; price: number; service: "photography" | "cinematic_video" | "photo_video"; package: string };
 type Created = Awaited<ReturnType<typeof createManualBooking>>;
 
 export function normalizeWa(phone?: string | null) {
@@ -58,7 +58,7 @@ export function ManualBookingSheet({ open, onClose, onCreated }: { open: boolean
   const [done, setDone] = useState<(Created & { form: typeof f }) | null>(null);
   const [f, setF] = useState({
     client_name: "", client_phone: "", client_email: "",
-    service: "photography" as "photography" | "cinematic_video",
+    service: "photography" as "photography" | "cinematic_video" | "photo_video",
     event_date: "", start_time: "18:00", end_time: "23:00",
     venue_name: "", rule_id: "", total_price: "", deposit_amount: "", deposit_received: false, notes: "",
   });
@@ -200,6 +200,7 @@ export function ManualBookingSheet({ open, onClose, onCreated }: { open: boolean
                   <select value={f.service} onChange={(e) => upd("service", e.target.value)} className={inputCx}>
                     <option value="photography">{t("تصوير فوتوغرافي")}</option>
                     <option value="cinematic_video">{t("فيديو سينمائي")}</option>
+                    <option value="photo_video">{t("صور + فيديو")}</option>
                   </select>
                 </label>
               )}

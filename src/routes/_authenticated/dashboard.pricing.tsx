@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/dashboard/pricing")({ comp
 
 type Rule = {
   _key?: string;
-  id?: string; service: "photography" | "cinematic_video"; package: "hourly" | "full_day" | "addon";
+  id?: string; service: "photography" | "cinematic_video" | "photo_video"; package: "hourly" | "full_day" | "addon";
   label: string; price: number; per_photo_price?: number | null; description?: string | null;
   subtitle?: string | null; cta_label?: string | null;
   // إفصاحات إلزامية للباقة الأساسية (تراها العروس قبل الطلب وتُجمَّد مع الحجز)
@@ -84,7 +84,7 @@ function PricingMgr() {
     const templates: Rule[] = [
       { service: "photography", package: "hourly", label: t("الباقة الأساسية (4 ساعات)"), price: 150, per_photo_price: 0, subtitle: t("مثالية للخطبة والحفلات العائلية الصغيرة"), description: t("تغطية 4 ساعات 100 صورة معدلة تسليم فلاش ميموري") },
       { service: "photography", package: "full_day", label: t("الباقة الذهبية (يوم كامل)"), price: 250, per_photo_price: 0, subtitle: t("يوم الزفاف كاملاً من التحضيرات حتى نهاية الحفل"), description: t("تغطية كاملة من الصالون للقاعة ألبوم مطبوع 10 صفحات") },
-      { service: "cinematic_video", package: "full_day", label: t("باقة VIP (تصوير + فيديو)"), price: 400, per_photo_price: 0, subtitle: t("التجربة المتكاملة صوراً وفيديو"), description: t("تغطية فريقين تصوير فيديو سينمائي ألبوم حراري فاخر") }
+      { service: "photo_video", package: "full_day", label: t("باقة VIP (تصوير + فيديو)"), price: 400, per_photo_price: 0, subtitle: t("التجربة المتكاملة صوراً وفيديو"), description: t("تغطية فريقين تصوير فيديو سينمائي ألبوم حراري فاخر") }
     ];
     setRules([...rules, ...withKeys(templates)]);
     toast.success(g(t("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي."), t("أضفنا ٣ باقات مقترحة — عدّل الأسعار ثم احفظ.")));
@@ -290,6 +290,7 @@ function PricingMgr() {
                   <select aria-label={t("نوع الخدمة")} value={r.service} onChange={(e) => upd(i, "service", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
                     <option value="photography">{t("تصوير فوتوغرافي")}</option>
                     <option value="cinematic_video">{t("فيديو سينمائي")}</option>
+                    <option value="photo_video">{t("صور + فيديو")}</option>
                   </select>
                   <select aria-label={t("نوع الباقة")} value={r.package} onChange={(e) => upd(i, "package", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">
                     <option value="hourly">{t("بالساعة")}</option>

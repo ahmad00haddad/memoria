@@ -49,7 +49,7 @@ export const getYearRecap = createServerFn({ method: "GET" })
       weekdays[d.getUTCDay()]++;
       if (b.venue_name?.trim()) venues.add(b.venue_name.trim().toLowerCase());
       photos += Number(b.edited_photos_count) || 0;
-      if (b.service === "cinematic_video") video++;
+      if (b.service === "cinematic_video" || b.service === "photo_video") video++;
       const [sh, sm] = (b.start_time || "0:0").split(":").map(Number);
       const [eh, em] = (b.end_time || "0:0").split(":").map(Number);
       const span = eh * 60 + em - (sh * 60 + sm);

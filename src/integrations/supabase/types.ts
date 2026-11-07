@@ -1246,7 +1246,7 @@ export type Database = {
       package_type: "hourly" | "full_day" | "addon"
       payment_method: "cliq" | "stripe"
       payment_status: "pending" | "approved" | "rejected"
-      service_type: "photography" | "cinematic_video"
+      service_type: "photography" | "cinematic_video" | "photo_video"
       subscription_plan: "starter"
       subscription_status:
         | "trial"
@@ -1392,7 +1392,7 @@ export const Constants = {
       package_type: ["hourly", "full_day", "addon"],
       payment_method: ["cliq", "stripe"],
       payment_status: ["pending", "approved", "rejected"],
-      service_type: ["photography", "cinematic_video"],
+      service_type: ["photography", "cinematic_video", "photo_video"],
       subscription_plan: ["starter"],
       subscription_status: [
         "trial",

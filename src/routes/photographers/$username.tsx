@@ -160,7 +160,7 @@ type Profile = {
 };
 
 type Pricing = {
-  id: string; service: "photography" | "cinematic_video";
+  id: string; service: "photography" | "cinematic_video" | "photo_video";
   package: "hourly" | "full_day" | "addon";
   label: string; price: number;
   per_photo_price: number | null; description: string | null;
@@ -618,7 +618,7 @@ function PhotographerPage() {
               return (
                 <RiseIn key={p.id} index={idx} className={`h-full ${collapsed ? "hidden sm:block" : ""}`}>
                 <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant border-border`}>
-                  <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")}</div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "photo_video" ? tr("صور + فيديو") : p.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")}</div>
                   <h3 className="font-serif text-2xl mb-1">{tx(p.label)}</h3>
                   {p.subtitle && <p className="text-sm text-muted-foreground">{tx(p.subtitle)}</p>}
                   <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString(locale("ar-JO"))} <span className="text-sm">{tr("د.أ")}</span></div>

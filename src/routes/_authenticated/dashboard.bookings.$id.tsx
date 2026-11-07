@@ -569,7 +569,7 @@ function BookingDetail() {
               </AnimatePresence>
             </div>
             <div className="mt-1.5 text-sm text-muted-foreground">
-              {b.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")} · {new Date(b.event_date).toLocaleDateString(locale("ar-JO"), { weekday: "long", day: "numeric", month: "long" })}
+              {b.service === "photo_video" ? tr("صور + فيديو") : b.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")} · {new Date(b.event_date).toLocaleDateString(locale("ar-JO"), { weekday: "long", day: "numeric", month: "long" })}
               {eventIn !== null && eventIn >= 0 && eventIn <= 30 && <span className="text-gold"> ({relativeDay(eventIn)})</span>}
               {" "}· {b.start_time?.slice(0,5)}–{b.end_time?.slice(0,5)}
             </div>
