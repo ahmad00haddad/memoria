@@ -31,6 +31,10 @@ export const getRouter = () => {
         if (!pathChanged || !fromLocation) return false;
         const app = (p: string) => p.startsWith("/dashboard") || p === "/notifications";
         if (!app(fromLocation.pathname) || !app(toLocation.pathname)) return false;
+        // التنقّل بين تبويبات الشريط السفلي = تلاشٍ هادئ لا انزلاق
+        const tabs = ["/dashboard", "/dashboard/bookings", "/dashboard/calendar", "/dashboard/profile", "/notifications"];
+        const norm = (p: string) => p.replace(/\/+$/, "") || "/";
+        if (tabs.includes(norm(fromLocation.pathname)) && tabs.includes(norm(toLocation.pathname))) return ["tab"];
         const depth = (p: string) => p.replace(/\/+$/, "").split("/").filter(Boolean).length;
         const a = depth(fromLocation.pathname), b = depth(toLocation.pathname);
         return [b > a ? "forward" : b < a ? "back" : "tab"];
