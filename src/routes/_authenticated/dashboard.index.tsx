@@ -41,7 +41,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { TodayFocus } from "@/components/dashboard/TodayFocus";
 import { missingDisclosures } from "@/components/PackageFacts";
 import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
-import { ToolIndex, Sparkline, type Tool } from "@/components/dashboard/ToolIndex";
+import { ToolIndex, Sparkline, sortTools, type Tool } from "@/components/dashboard/ToolIndex";
 import { computeFocusItems } from "@/components/dashboard/focus";
 import { openCommandPalette } from "@/components/CommandPalette";
 import { Search } from "lucide-react";
@@ -820,13 +820,14 @@ function Dashboard() {
             <div className="mb-4 flex items-baseline justify-between">
               <h2 className="font-serif text-2xl">{tr("أدواتك")}</h2>
             </div>
-            {/* 4 أدوات أساسية (+ ما يحتاج انتباهاً)، والباقي خلف «كل الأدوات» حتى لا تزدحم الشاشة */}
+            {/* أحدث ما فُتح أولاً ثم الأهم؛ 4 ظاهرة والباقي خلف «كل الأدوات» */}
             {(() => {
               // الهاتف: الحجوزات/التقويم/ملفي موجودة في الشريط السفلي فلا نكررها
               const wide = typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
-              const primary = new Set(["production", "pricing", "contracts", "whatsapp", ...(wide ? ["bookings", "calendar", "profile"] : [])]);
-              const main = tools.filter((t) => primary.has(t.key) || t.attention);
-              const rest = tools.filter((t) => !main.includes(t));
+              const sorted = sortTools(tools.filter((t) => wide || !["bookings", "calendar", "profile"].includes(t.key)));
+              const n = wide ? 6 : 4;
+              const main = sorted.slice(0, n);
+              const rest = sorted.slice(n);
               return (
                 <>
                   <ToolIndex tools={main} />

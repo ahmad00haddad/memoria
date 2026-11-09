@@ -27,7 +27,32 @@ function readVisited(): Set<string> {
   }
 }
 
+const RECENT_KEY = "memoria:recent-tools";
+
+/** آخر الأدوات المفتوحة، الأحدث أولاً */
+export function readRecentTools(): string[] {
+  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+}
+
+// ترتيب الأدوات: أحدث ما فتحته المصوّرة أولاً، ثم حسب الأهمية
+export const TOOL_IMPORTANCE = ["bookings", "production", "calendar", "pricing", "profile", "contracts", "whatsapp", "offers", "questions", "subscription", "settings", "reports", "notifications", "public", "referrals", "recap"];
+export function sortTools<T extends { key: string }>(tools: T[]): T[] {
+  const recent = readRecentTools();
+  const rank = (k: string) => {
+    const r = recent.indexOf(k);
+    if (r >= 0) return r;
+    const i = TOOL_IMPORTANCE.indexOf(k);
+    return 100 + (i >= 0 ? i : 99);
+  };
+  return [...tools].sort((a, b) => rank(a.key) - rank(b.key));
+}
+
 function markVisited(key: string) {
+  try {
+    const r = readRecentTools().filter((k) => k !== key);
+    r.unshift(key);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(r.slice(0, 20)));
+  } catch { /* ignore */ }
   try {
     const s = readVisited();
     s.add(key);
