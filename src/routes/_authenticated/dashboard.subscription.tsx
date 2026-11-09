@@ -82,6 +82,7 @@ const METHOD_LABEL: Record<Payment["method"], string> = {
 function SubscriptionPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [showAllPays, setShowAllPays] = useState(false);
   const [sub, setSub] = useState<Sub | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [payEarly, setPayEarly] = useState(false);
@@ -339,12 +340,11 @@ function SubscriptionPage() {
           <div className="mt-12">
             <h2 className="font-serif text-2xl mb-4">{t("سجل المدفوعات")}</h2>
             <div className="rounded-sm border border-border bg-card overflow-hidden">
-              {payments.map((p) => (
+              {payments.filter((p) => showAllPays || p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p))).map((p) => (
                 <div key={p.id} className="flex items-center justify-between p-4 border-b border-border last:border-0">
                   <div>
                     <div className="text-sm">
                       {t("{0} د.أ ·", [p.amount])}{" "}{METHOD_LABEL[p.method] ?? p.method}
-                      {p.payment_reference && <span className="text-xs text-muted-foreground font-mono" dir="ltr"> · {tx(p.payment_reference)}</span>}
                     </div>
                     <div className="text-xs text-muted-foreground">{new Date(p.created_at).toLocaleDateString(locale("ar-JO"))}</div>
                     {p.notes && <div className="text-xs text-muted-foreground mt-1">{tx(p.notes)}</div>}
@@ -355,6 +355,12 @@ function SubscriptionPage() {
                 </div>
               ))}
             </div>
+            {/* المحاولات غير المكتملة/المرفوضة مخفية افتراضياً: لا وسوم حمراء تقلق المصوّرة */}
+            {payments.some((p) => !(p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p)))) && (
+              <button type="button" onClick={() => setShowAllPays((v) => !v)} className="mt-2 min-h-10 text-xs text-muted-foreground hover:text-foreground">
+                {showAllPays ? t("إخفاء المحاولات غير المكتملة") : t("عرض كل المحاولات")}
+              </button>
+            )}
           </div>
         )}
       </section>

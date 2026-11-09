@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Bell, Menu, Settings } from "lucide-react";
+import { Bell, Menu, Settings, ChevronRight } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ export function Header() {
   const prevNotifs = useRef(0);
   const { loading: authLoading, authed, userId, isPhotographer } = useAuthState();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     if (unreadNotifs > prevNotifs.current) {
@@ -132,9 +133,24 @@ export function Header() {
     };
   }, [userId]);
 
+  // الهاتف داخل اللوحة: شريط علوي صغير (رجوع + إشعارات) بدل هيدر الموقع العام؛ الشريط السفلي يكفي للتنقل
+  const appMode = isPhotographer && (/^\/dashboard\/.+/.test(pathname) || pathname === "/notifications");
+
   return (
+    <>
+    {appMode && (
+      <div className="sm:hidden sticky top-0 z-40 flex h-12 items-center justify-between border-b border-border/50 bg-background/95 px-3 backdrop-blur">
+        <Link to="/dashboard" className="inline-flex min-h-10 items-center gap-1 text-sm text-foreground">
+          <ChevronRight className="h-5 w-5" />{t("لوحتي")}
+        </Link>
+        <Link to="/notifications" aria-label={t("الإشعارات")} className="relative grid h-10 w-10 place-items-center text-muted-foreground">
+          <Bell className="h-5 w-5" />
+          {unreadNotifs > 0 && <span className="absolute end-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] text-white">{unreadNotifs > 9 ? "9+" : unreadNotifs}</span>}
+        </Link>
+      </div>
+    )}
     <header
-      className={`sticky top-0 z-40 border-b transition-all duration-300 ${
+      className={`${appMode ? "hidden sm:block " : ""}sticky top-0 z-40 border-b transition-all duration-300 ${
         scrolled
           ? "bg-background/95 backdrop-blur-sm border-border/50 py-1"
           : "bg-background/60 backdrop-blur-md border-transparent py-2"
@@ -308,6 +324,7 @@ export function Header() {
         </nav>
       </div>
     </header>
+    </>
   );
 }
 

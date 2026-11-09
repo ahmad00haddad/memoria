@@ -441,6 +441,7 @@ function Dashboard() {
   const [qsDismissed, setQsDismissed] = useState(false);
   const [showAllCards, setShowAllCards] = useState(false);
   const [showMoreStats, setShowMoreStats] = useState(false);
+  const [showAllTools, setShowAllTools] = useState(false);
   const navigate = useNavigate();
   // وقت الزيارة السابقة — يُقرأ مرة واحدة عند الفتح ثم يُحدَّث للزيارة القادمة
   const lastVisitRef = useRef<number | null>(null);
@@ -758,6 +759,7 @@ function Dashboard() {
                     subTone={monthDelta !== null && monthDelta < 0 ? "down" : "up"}
                     extra={<Sparkline values={stats.revenueSeries ?? []} />}
                   />
+                  <div className={showMoreStats ? "contents" : "hidden sm:contents"}>
                   <NumStat
                     icon={<DollarSign className="h-5 w-5 text-amber-600" />}
                     label={tr("عرابين معلّقة")}
@@ -771,6 +773,7 @@ function Dashboard() {
                     value={stats.deliveriesDueSoon}
                     sub={stats.deliveriesDueSoon > 0 ? g(tr("تابعيها في لوحة الإنتاج"), tr("تابعها في لوحة الإنتاج")) : tr("لا تسليمات قريبة")}
                   />
+                  </div>
                 </motion.div>
 
                 <AnimatePresence initial={false}>
@@ -814,7 +817,26 @@ function Dashboard() {
             <div className="mb-4 flex items-baseline justify-between">
               <h2 className="font-serif text-2xl">{tr("أدواتك")}</h2>
             </div>
-            <ToolIndex tools={tools} />
+            {/* 4 أدوات أساسية (+ ما يحتاج انتباهاً)، والباقي خلف «كل الأدوات» حتى لا تزدحم الشاشة */}
+            {(() => {
+              // الهاتف: الحجوزات/التقويم/ملفي موجودة في الشريط السفلي فلا نكررها
+              const wide = typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+              const primary = new Set(["production", "pricing", "contracts", "whatsapp", ...(wide ? ["bookings", "calendar", "profile"] : [])]);
+              const main = tools.filter((t) => primary.has(t.key) || t.attention);
+              const rest = tools.filter((t) => !main.includes(t));
+              return (
+                <>
+                  <ToolIndex tools={main} />
+                  {showAllTools && rest.length > 0 && <div className="mt-2"><ToolIndex tools={rest} /></div>}
+                  {rest.length > 0 && (
+                    <button type="button" onClick={() => setShowAllTools((v) => !v)} className="mt-3 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-border px-4 text-sm text-muted-foreground hover:text-foreground">
+                      {showAllTools ? tr("أدوات أقل") : tr("كل الأدوات ({0})", [rest.length])}
+                      <ArrowLeft className={`h-3 w-3 transition-transform duration-300 ${showAllTools ? "rotate-90" : "-rotate-90"}`} />
+                    </button>
+                  )}
+                </>
+              );
+            })()}
           </>
         )}
       </section>

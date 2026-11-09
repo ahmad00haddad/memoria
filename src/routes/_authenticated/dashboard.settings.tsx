@@ -32,6 +32,7 @@ function SettingsPage() {
   const refundFn = useServerFn(updateRefundPolicy);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [allThemes, setAllThemes] = useState(false);
   const [owner, setOwner] = useState<Owner | null>(null);
   const [saved, setSaved] = useState<PageSettings>(DEFAULT_PAGE_SETTINGS);
   const [s, setS] = useState<PageSettings>(DEFAULT_PAGE_SETTINGS);
@@ -170,12 +171,20 @@ function SettingsPage() {
                 </button>
               )}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2">
-                {(Object.keys(THEMES) as PageSettings["theme"][]).map((k) => (
+                {(Object.keys(THEMES) as PageSettings["theme"][]).filter((k, i) => allThemes || i < 4 || k === s.theme).map((k) => (
                   <ThemeSwatch key={k} k={k} s={s} on={s.theme === k} onPick={() => setS((x) => ({ ...x, theme: k, accent: "theme", mode: x.mode === "auto" ? "auto" : "theme" }))} />
                 ))}
               </div>
+              {!allThemes && Object.keys(THEMES).length > 4 && (
+                <button type="button" onClick={() => setAllThemes(true)} className="mt-2 min-h-10 text-sm text-gold">
+                  {tr("ألوان أخرى ({0})", [Object.keys(THEMES).length - 4])}
+                </button>
+              )}
 
-              <Label className="mt-5">{tr("لون اللمسة")}</Label>
+              {/* تخصيص دقيق: مطوي حتى لا تزدحم الصفحة بالخيارات */}
+              <details className="mt-4 rounded-xl border border-border p-3">
+                <summary className="cursor-pointer text-sm">{tr("تخصيص متقدم")}{" "}<span className="text-xs text-muted-foreground">{tr("(اختياري)")}</span></summary>
+              <Label className="mt-4">{tr("لون اللمسة")}</Label>
               <div className="flex flex-wrap gap-2" role="radiogroup">
                 <AccentDot label={tr("حسب اللوحة")} on={s.accent === "theme"} onPick={() => set("accent", "theme")} />
                 {(Object.keys(ACCENTS) as (keyof typeof ACCENTS)[]).map((k) => (
@@ -200,6 +209,7 @@ function SettingsPage() {
                     options={(Object.keys(RADII) as (keyof typeof RADII)[]).map((k) => ({ value: k, label: tx(RADII[k].label) }))} />
                 </div>
               </div>
+              </details>
             </Block>
 
             <Block icon={<Type />} title={tr("الخطوط")} hint={tr("كل خيار زوج متناسق: خط للعناوين وخط للنص، بالعربية والإنجليزية.")}>

@@ -13,7 +13,7 @@ export function BackToDashboard({ label = t("العودة إلى لوحتي") }:
   return (
     <Link
       to="/dashboard"
-      className="inline-flex items-center gap-1.5 rounded-sm border border-border bg-card px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-secondary hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+      className="hidden sm:inline-flex items-center gap-1.5 rounded-sm border border-border bg-card px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-secondary hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
     >
       {/* في الواجهة RTL يشير السهم لليمين = رجوع */}
       <ChevronRight className="h-4 w-4" />

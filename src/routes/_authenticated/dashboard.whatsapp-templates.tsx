@@ -199,17 +199,22 @@ function TemplatesPage() {
   );
 }
 
+// المحرّر يعرض المتغيرات بكلمات مفهومة [اسم العميلة] ويحفظها كرموز {{client_name}}
+const toFriendly = (body: string) => VARIABLES.reduce((acc, v) => acc.split(v.k).join(`[${v.desc}]`), body ?? "");
+const fromFriendly = (text: string) => VARIABLES.reduce((acc, v) => acc.split(`[${v.desc}]`).join(v.k), text ?? "");
+
 function TemplateCard({ t, dirty, justSaved, onChange, onSave, onRemove }: {
   t: any; dirty: boolean; justSaved: boolean; onChange: (patch: any) => void; onSave: () => void; onRemove: () => void;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
-  const insert = (k: string) => {
+  const insert = (key: string) => {
     const el = ref.current;
-    const body: string = t.body ?? "";
+    const k = toFriendly(key);
+    const body: string = toFriendly(t.body ?? "");
     const start = el?.selectionStart ?? body.length;
     const end = el?.selectionEnd ?? body.length;
     const next = body.slice(0, start) + k + body.slice(end);
-    onChange({ body: next });
+    onChange({ body: fromFriendly(next) });
     requestAnimationFrame(() => {
       if (!el) return;
       el.focus();
@@ -248,8 +253,8 @@ function TemplateCard({ t, dirty, justSaved, onChange, onSave, onRemove }: {
         <div>
           <textarea
             ref={ref}
-            value={t.body}
-            onChange={(e) => onChange({ body: e.target.value })}
+            value={toFriendly(t.body)}
+            onChange={(e) => onChange({ body: fromFriendly(e.target.value) })}
             rows={7}
             className="w-full rounded-xl border border-border bg-background p-3 text-sm leading-loose focus:border-gold/60 focus:outline-none"
             dir="rtl"
@@ -261,7 +266,6 @@ function TemplateCard({ t, dirty, justSaved, onChange, onSave, onRemove }: {
                 type="button"
                 onClick={() => insert(v.k)}
                 className="rounded-full border border-gold/30 bg-gold/5 px-2.5 py-1 text-[11px] text-gold transition-colors hover:bg-gold/15 active:scale-95"
-                title={v.k}
               >
                 + {v.desc}
               </button>
