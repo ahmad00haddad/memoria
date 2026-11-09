@@ -499,3 +499,34 @@ html[data-pfont][dir="rtl"] :is(body, button, input, textarea, select, [dir="rtl
 html[data-pfont][dir="rtl"] :is(h1, h2, h3, .font-serif) { font-family: var(--pf-ar-display); font-weight: var(--pf-ar-display-w); font-style: normal; }
 html[data-pfont][lang="en"] :is(body, button, input, textarea, select, .font-sans) { font-family: var(--pf-en-body); }
 html[data-pfont][lang="en"] :is(h1, h2, h3, .font-serif) { font-family: var(--pf-en-display); font-weight: var(--pf-en-display-w); font-style: normal; }
+
+/* ── انتقالات اللوحة كتطبيق (View Transitions) — الهاتف فقط ── */
+@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+  .vt-bottom-nav { view-transition-name: bottom-nav; }
+  .vt-top-bar { view-transition-name: top-bar; }
+  ::view-transition-group(bottom-nav), ::view-transition-group(top-bar) { animation: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 260ms; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  /* RTL: الصفحة الأعمق تدخل من اليسار، والرجوع يعيدها لليسار */
+  html:active-view-transition-type(forward)::view-transition-old(root) { animation-name: vt-out-right; }
+  html:active-view-transition-type(forward)::view-transition-new(root) { animation-name: vt-in-left; }
+  html:active-view-transition-type(back)::view-transition-old(root) { animation-name: vt-out-left; }
+  html:active-view-transition-type(back)::view-transition-new(root) { animation-name: vt-in-right; }
+  html:active-view-transition-type(tab)::view-transition-old(root) { animation: 140ms ease-out both vt-fade-out; }
+  html:active-view-transition-type(tab)::view-transition-new(root) { animation: 180ms ease-out both vt-fade-in; }
+}
+@media (min-width: 768px), (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+}
+@keyframes vt-in-left { from { transform: translateX(-100%); } }
+@keyframes vt-out-right { to { transform: translateX(30%); opacity: 0.6; } }
+@keyframes vt-in-right { from { transform: translateX(30%); opacity: 0.6; } }
+@keyframes vt-out-left { to { transform: translateX(-100%); } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+@keyframes vt-fade-out { to { opacity: 0; } }
+
+/* ── لمسة كتطبيق: ضغط محسوس، بلا وميض أزرق، بلا تكبير بالنقر المزدوج ── */
+@media (hover: none) {
+  .app-shell a, .app-shell button, .app-shell [role="button"], .vt-bottom-nav a, .vt-bottom-nav button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+  .app-shell a:active, .app-shell button:not(:disabled):active, .vt-bottom-nav a:active, .vt-bottom-nav button:active { transform: scale(0.97); transition: transform 80ms ease-out; }
+  .app-shell { overscroll-behavior-y: contain; }
+}

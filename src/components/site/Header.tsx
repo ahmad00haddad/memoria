@@ -139,7 +139,7 @@ export function Header() {
   return (
     <>
     {appMode && (
-      <div className="sm:hidden sticky top-0 z-40 flex h-12 items-center justify-between border-b border-border/50 bg-background/95 px-3 backdrop-blur">
+      <div className="vt-top-bar sm:hidden sticky top-0 z-40 flex h-12 items-center justify-between border-b border-border/50 bg-background/95 px-3 backdrop-blur">
         <Link to="/dashboard" className="inline-flex min-h-10 items-center gap-1 text-sm text-foreground">
           <ChevronRight className="h-5 w-5" />{t("لوحتي")}
         </Link>

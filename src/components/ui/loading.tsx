@@ -1,12 +1,22 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { t, tx } from "@/i18n";
 
+// هيكل صفحة بدل الدوّار: الصفحة «موجودة» فوراً بشكلها، والمحتوى يملؤها (إحساس تطبيق)
 export function PageLoader({ label = t("جارٍ التحميل…") }: { label?: string }) {
   return (
-    <div className="min-h-[60vh] grid place-items-center">
-      <div className="flex flex-col items-center gap-3 text-muted-foreground">
-        <div className="h-8 w-8 rounded-full border-2 border-border border-t-gold animate-spin" />
-        <span className="text-sm">{tx(label)}</span>
+    <div className="container-editorial max-w-4xl py-6 sm:py-12" role="status" aria-live="polite">
+      <span className="sr-only">{tx(label)}</span>
+      <Skeleton className="h-4 w-20 mb-4" />
+      <Skeleton className="h-9 w-48 mb-3" />
+      <Skeleton className="h-4 w-3/4 mb-8" />
+      <div className="space-y-3">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="rounded-2xl border border-border bg-card p-4 space-y-2.5">
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-3.5 w-2/3" />
+            <Skeleton className="h-3.5 w-1/3" />
+          </div>
+        ))}
       </div>
     </div>
   );

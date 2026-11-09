@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { getCached, fetchPage, cacheKey } from "@/lib/page-cache";
 import { getLang, dirOf } from "@/i18n";
 import { g } from "@/hooks/use-gender";
@@ -322,6 +323,7 @@ function ProductionBoard() {
   );
 
   return (
+    <PullToRefresh onRefresh={async () => { if (uid) await load(uid); }}>
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12">
@@ -484,6 +486,7 @@ function ProductionBoard() {
 
       <Footer />
     </div>
+    </PullToRefresh>
   );
 }
 

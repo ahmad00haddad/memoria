@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -82,6 +83,7 @@ function NotificationsPage() {
   }, [shown]);
 
   return (
+    <PullToRefresh onRefresh={load}>
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial py-12 pb-28 max-w-3xl">
@@ -158,5 +160,6 @@ function NotificationsPage() {
       </section>
       <Footer />
     </div>
+    </PullToRefresh>
   );
 }

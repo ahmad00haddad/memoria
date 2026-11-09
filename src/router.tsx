@@ -25,6 +25,17 @@ export const getRouter = () => {
     defaultPreloadStaleTime: 5 * 60_000,
     // تحميل الصفحة عند لمس/تمرير الرابط قبل الضغط → انتقال فوري
     defaultPreload: "intent",
+    // انتقالات كتطبيق: صفحة أعمق تنزلق للداخل، الرجوع ينزلق للخلف، تبويبات نفس المستوى تتلاشى
+    defaultViewTransition: {
+      types: ({ fromLocation, toLocation, pathChanged }) => {
+        if (!pathChanged || !fromLocation) return false;
+        const app = (p: string) => p.startsWith("/dashboard") || p === "/notifications";
+        if (!app(fromLocation.pathname) || !app(toLocation.pathname)) return false;
+        const depth = (p: string) => p.replace(/\/+$/, "").split("/").filter(Boolean).length;
+        const a = depth(fromLocation.pathname), b = depth(toLocation.pathname);
+        return [b > a ? "forward" : b < a ? "back" : "tab"];
+      },
+    },
   });
 
   return router;

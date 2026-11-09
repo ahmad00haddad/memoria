@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { getLang, dirOf } from "@/i18n";
 import { g } from "@/hooks/use-gender";
 import { ShareLinkButton } from "@/components/dashboard/ShareLinkButton";
@@ -59,7 +60,16 @@ function BookingsList() {
   const confirmFn = useServerFn(confirmBookingAfterDeposit);
   const [list, setList] = useState<any[]>(cachedBookingsList ?? []);
   const [loading, setLoading] = useState(!cachedBookingsList);
-  const [filter, setFilter] = useState<FilterKey>("all");
+  // الفلتر يبقى كما تركته المصوّرة عند الرجوع
+  const [filter, setFilterState] = useState<FilterKey>(() => { try { return (sessionStorage.getItem("memoria-bk-filter") as FilterKey) || "all"; } catch { return "all"; } });
+  const setFilter = (f: FilterKey) => { setFilterState(f); try { sessionStorage.setItem("memoria-bk-filter", f); } catch { /* ignore */ } };
+  const refreshList = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const { data } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).is("deleted_at", null)
+      .not("phone_verified_at" as any, "is", null).order("event_date", { ascending: false });
+    if (data) { cachedBookingsList = data; setList(data); }
+  };
   const [q, setQ] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [fresh, setFresh] = useState<string[]>([]);
@@ -198,6 +208,7 @@ function BookingsList() {
   const firstSwipeable = displayed.find(hasProof)?.id;
 
   return (
+    <PullToRefresh onRefresh={refreshList}>
     <div className="min-h-screen bg-background text-foreground" dir={dirOf(getLang())}>
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-5 pb-24">
@@ -302,6 +313,7 @@ function BookingsList() {
       </main>
       <Footer />
     </div>
+    </PullToRefresh>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Outlet, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
+import { OfflineBanner } from "@/components/site/OfflineBanner";
 import { SubscriptionGuard } from "@/components/dashboard/SubscriptionGuard";
 import { PageLoader } from "@/components/ui/loading";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,6 +56,29 @@ function DashboardLayout() {
     if (ric) ric(run, { timeout: 3000 }); else setTimeout(run, 1500);
   }, [ready, router]);
 
+  // سحب من حافة الشاشة اليمنى (RTL) = رجوع، كما في التطبيقات
+  useEffect(() => {
+    if (pathname === "/dashboard" || pathname === "/dashboard/") return;
+    let sx = 0, sy = 0, track = false;
+    const start = (e: TouchEvent) => {
+      const t = e.touches[0];
+      track = e.touches.length === 1 && t.clientX > window.innerWidth - 28;
+      sx = t.clientX; sy = t.clientY;
+    };
+    const end = (e: TouchEvent) => {
+      if (!track) return;
+      track = false;
+      const t = e.changedTouches[0];
+      if (sx - t.clientX > 70 && Math.abs(t.clientY - sy) < 50) {
+        const idx = (window.history.state as any)?.__TSR_index ?? 0;
+        if (idx > 0) router.history.back(); else nav({ to: "/dashboard" });
+      }
+    };
+    window.addEventListener("touchstart", start, { passive: true });
+    window.addEventListener("touchend", end, { passive: true });
+    return () => { window.removeEventListener("touchstart", start); window.removeEventListener("touchend", end); };
+  }, [pathname, router, nav]);
+
   // حارس الإعداد لكل صفحات اللوحة (لا للرئيسية فقط): أي دخول قبل إكمال الإعداد يذهب للمعالج
   useEffect(() => {
     let alive = true;
@@ -73,7 +97,8 @@ function DashboardLayout() {
 
   return (
     <>
-      <div className="pb-20 md:pb-0">
+      <div className="app-shell pb-20 md:pb-0">
+        <OfflineBanner />
         <SubscriptionGuard />
         <Outlet />
       </div>
