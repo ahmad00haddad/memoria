@@ -487,10 +487,6 @@ function Dashboard() {
       supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
       supabase.from("whatsapp_templates").select("id", { count: "exact", head: true }).eq("photographer_id", session.user.id),
     ]);
-    if (data && !(data as any).onboarding_completed_at) {
-      navigate({ to: "/onboarding" });
-      return;
-    }
     const all = (bks ?? []) as any[];
     const earning = all.filter((b) => b.status === "confirmed" || b.status === "completed");
     const confirmed = all.filter((b) => b.status === "confirmed").length;
@@ -641,7 +637,19 @@ function Dashboard() {
         </div>
 
         {/* بانر الاشتراك: فقط عندما يتطلّب إجراءً — الاقتراب من الانتهاء يظهر كمهمة اليوم */}
-        {(subStatus === "expired" || subStatus === "canceled" || subStatus === "pending_review" || (isNewUser && subStatus === "trial")) && <SubscriptionBanner sub={{ ...sub, status: subStatus }} />}
+        {(subStatus === "expired" || subStatus === "canceled" || subStatus === "pending_review") && <SubscriptionBanner sub={{ ...sub, status: subStatus }} />}
+
+        {/* الإعداد مؤجَّل («تخطّي»): بطاقة واحدة تعيدها للمعالج على نفس الخطوة */}
+        {profile && !profile.onboarding_completed_at && (
+          <Link to="/onboarding" className="mb-5 flex items-center gap-3 rounded-2xl border border-gold/50 bg-gold/10 p-4 active:scale-[0.99] transition-transform">
+            <Sparkles className="h-6 w-6 shrink-0 text-gold" />
+            <div className="flex-1">
+              <div className="font-medium">{g(tr("أكملي إعداد ملفك"), tr("أكمل إعداد ملفك"))}</div>
+              <div className="text-sm text-muted-foreground">{g(tr("بضع خطوات قصيرة وتصبح صفحتكِ جاهزة للحجز"), tr("بضع خطوات قصيرة وتصبح صفحتك جاهزة للحجز"))}</div>
+            </div>
+            <ArrowLeft className="h-5 w-5 shrink-0 text-gold ltr:rotate-180" />
+          </Link>
+        )}
 
         {isNewUser ? (
           <>

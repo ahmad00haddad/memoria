@@ -11,6 +11,7 @@ import { uploadProfilePhoto } from "@/lib/upload";
 import { hapticVibrate } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { PageLoader } from "@/components/ui/loading";
+import { deferOnboarding, markOnboardingDone } from "@/lib/onboarding-gate";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { toast } from "sonner";
@@ -254,6 +255,7 @@ function Onboarding() {
     } as any).eq("id", uid);
     setSaving(false);
     if (error) { toast.error(error.message || tr("تعذّر إكمال الإعداد")); return; }
+    markOnboardingDone(uid);
     if (!canPublish) {
       toast.success(g(tr("أكملتِ الإعداد! آخر خطوة: ارفعي 3 صور من أعمالكِ لتُنشر صفحتكِ."), tr("أكملت الإعداد! آخر خطوة: ارفع 3 صور من أعمالك لتُنشر صفحتك.")), { duration: 8000 });
       setTimeout(() => nav({ to: "/dashboard/profile" }), 900);
@@ -269,11 +271,10 @@ function Onboarding() {
     if (saving) return;
     setSaving(true);
     try {
-      const { error } = await supabase.from("profiles").update({
-        onboarding_completed_at: new Date().toISOString(),
-        onboarding_step: STEPS_().length,
-      } as any).eq("id", uid);
+      // لا نُنهي الإعداد: نحفظ الخطوة ونؤجّل التحويل لهذه الجلسة فقط
+      const { error } = await supabase.from("profiles").update({ onboarding_step: step } as any).eq("id", uid);
       if (error) throw error;
+      deferOnboarding();
       nav({ to: "/dashboard" });
     } catch (e: any) {
       toast.error(e?.message || g(tr("تعذّر التخطي، حاولي مجدداً."), tr("تعذّر التخطي، حاول مجدداً.")));

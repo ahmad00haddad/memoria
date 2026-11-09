@@ -177,12 +177,10 @@ export function PhotographerTour() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const nav = useNavigate();
   const [st, setSt] = useState<State>(EMPTY);
-  const [loaded, setLoaded] = useState(false);
   const [prog, setProg] = useState<Progress | null>(null);
 
   useEffect(() => {
     setSt(read());
-    setLoaded(true);
     const on = () => setSt(read());
     window.addEventListener("photographer-tour", on);
     return () => window.removeEventListener("photographer-tour", on);
@@ -190,11 +188,7 @@ export function PhotographerTour() {
 
   const inDashboard = pathname.startsWith("/dashboard");
 
-  // أول دخول للوحة: تبدأ الجولة وحدها مرة واحدة
-  useEffect(() => {
-    // ننتظر قراءة الحالة المحفوظة أولاً، وإلا أعدنا الجولة لأولها في كل تحميل
-    if (loaded && inDashboard && st.status === "idle" && pathname === "/dashboard") write({ status: "active", step: 0, min: false });
-  }, [loaded, inDashboard, st.status, pathname]);
+  // لا تبدأ وحدها: معالج الإعداد + بطاقة «أكملي ملفك» يكفيان. تُشغَّل يدوياً من «أعيدي الجولة».
 
   // التقدّم الحقيقي: عند تغيير الصفحة وكل بضع ثوانٍ أثناء الجولة
   useEffect(() => {
