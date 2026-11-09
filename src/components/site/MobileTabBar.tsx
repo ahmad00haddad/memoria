@@ -1,14 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Search, LayoutDashboard, User, HelpCircle, Briefcase, Tag, PlusCircle, Calendar, ListChecks, CalendarDays } from "lucide-react";
+import { Home, Search, LayoutDashboard, User, HelpCircle, Briefcase, Tag, PlusCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 import { openCommandPalette } from "@/components/CommandPalette";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useEffect, useState } from "react";
 import { t as tr, tx } from "@/i18n";
+import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 
 export function MobileTabBar() {
-  const { authed, isPhotographer, userId } = useAuthState();
+  const { authed, isPhotographer } = useAuthState();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const [visitorRole, setVisitorRole] = useState<"client" | "photographer" | "guest" | null>(null);
@@ -25,16 +25,6 @@ export function MobileTabBar() {
     return currentPath.startsWith(path);
   };
 
-  // عدد الطلبات التي تنتظر المصوّرة — يظهر كشارة على تبويب الحجوزات
-  const [pending, setPending] = useState(0);
-  useEffect(() => {
-    if (!authed || !isPhotographer || !userId) return;
-    let cancelled = false;
-    supabase.from("bookings").select("id", { count: "exact", head: true })
-      .eq("photographer_id", userId).is("deleted_at", null).in("status", ["quote", "pending_deposit"])
-      .then(({ count }) => { if (!cancelled) setPending(count ?? 0); });
-    return () => { cancelled = true; };
-  }, [authed, isPhotographer, userId, currentPath]);
 
   // إخفاء الشريط السفلي في صفحات الملف الشخصي للمصورات لترك مساحة لزر الحجز
   if (currentPath.startsWith("/photographers/") && currentPath !== "/photographers/join") return null;
@@ -42,41 +32,8 @@ export function MobileTabBar() {
   // داخل الداشبورد يعرض الـ layout شريطه الخاص (MobileBottomNav): نتجنب تراكب شريطين في القاع
   if (currentPath === "/dashboard" || currentPath.startsWith("/dashboard/")) return null;
 
-  // المصوّرة المسجّلة: أدوات عملها اليومية بدل صفحات التسويق
-  if (authed && isPhotographer) {
-    const tabs = [
-      { to: "/dashboard", label: tr("لوحتي"), icon: LayoutDashboard, active: currentPath === "/dashboard" || currentPath === "/dashboard/" },
-      { to: "/dashboard/bookings", label: tr("الحجوزات"), icon: Calendar, active: currentPath.startsWith("/dashboard/bookings"), badge: pending },
-      { to: "/dashboard/production", label: tr("الإنتاج"), icon: ListChecks, active: currentPath.startsWith("/dashboard/production") },
-      { to: "/dashboard/calendar", label: tr("التقويم"), icon: CalendarDays, active: currentPath.startsWith("/dashboard/calendar") },
-    ];
-    return (
-      <div className="sm:hidden fixed bottom-0 end-0 start-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around h-16">
-          {tabs.map((t) => (
-            <Link key={t.to} to={t.to as any} className={`relative flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${t.active ? "text-gold" : "text-muted-foreground"}`}>
-              {t.active && <motion.span layoutId="tabbar-active" className="absolute top-0 h-0.5 w-8 rounded-full bg-gold" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
-              <span className="relative">
-                <motion.span className="inline-flex" animate={{ y: t.active ? -2 : 0, scale: t.active ? 1.08 : 1 }} transition={{ type: "spring", stiffness: 400, damping: 22 }}>
-                  <t.icon className="h-5 w-5" strokeWidth={t.active ? 2.2 : 1.8} />
-                </motion.span>
-                {!!t.badge && (
-                  <motion.span key={t.badge} initial={{ scale: 0.4 }} animate={{ scale: 1 }} className="absolute -top-1.5 -end-2 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-bold text-charcoal tabular-nums">
-                    {tx(t.badge)}
-                  </motion.span>
-                )}
-              </span>
-              <span className="text-[11px] font-medium">{tx(t.label)}</span>
-            </Link>
-          ))}
-          <button onClick={openCommandPalette} className="flex flex-col items-center justify-center w-full h-full gap-1 text-muted-foreground">
-            <Search className="h-5 w-5" strokeWidth={1.8} />
-            <span className="text-[11px] font-medium">{tr("بحث")}</span>
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // المصوّرة المسجّلة: نفس شريط اللوحة في كل مكان (لا شريطين مختلفين)
+  if (authed && isPhotographer) return <MobileBottomNav />;
 
   return (
     <div className="sm:hidden fixed bottom-0 end-0 start-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">

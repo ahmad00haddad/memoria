@@ -309,7 +309,7 @@ function SettingsPage() {
       {/* الجوال: زر معاينة عائم */}
       {previewSrc && (
         <button type="button" onClick={() => setMobilePreview(true)}
-          className={`lg:hidden fixed end-4 z-40 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-3 text-sm text-background shadow-lg ${dirty ? "bottom-24" : "bottom-6"}`}>
+          className={`lg:hidden fixed end-4 z-40 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-3 text-sm text-background shadow-lg ${dirty ? "bottom-24" : "bottom-24 md:bottom-6"}`}>
           <Smartphone className="h-4 w-4" /> {tr("معاينة")}
         </button>
       )}

@@ -10,7 +10,7 @@ import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2, Copy, Check, X, CircleCheck, Star, Zap } from "lucide-react";
+import { Plus, Trash2, Copy, Check, X, CircleCheck, Star, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { parseFeatures, serializeFeatures, type Feature, type FeatureKind } from "@/lib/packageFeatures";
 import { hapticVibrate } from "@/lib/utils";
 import { t, tx } from "@/i18n";
@@ -54,6 +54,8 @@ function PricingMgr() {
   const [justSaved, setJustSaved] = useState(false);
   const [deposit, setDeposit] = useState<{ percent: number; fixed: number | null }>({ percent: 25, fixed: null });
   const keyOf = (r: Rule) => r.id ?? r._key ?? "";
+  // الباقات المحفوظة تظهر مطوية (اسم + سعر)؛ تُفتح واحدة للتعديل. الجديدة مفتوحة دائماً.
+  const [openKey, setOpenKey] = useState<string | null>(null);
   const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "", subtitle: r.subtitle ?? "", cta_label: r.cta_label ?? "" })));
   const withKeys = (rs: Rule[]) => rs.map((r) => ({ ...r, _key: r.id ?? Math.random().toString(36).slice(2) }));
 
@@ -141,6 +143,7 @@ function PricingMgr() {
     const incomplete = filled.map((r) => ({ r, miss: missingDisclosures(r as any) })).find((x) => x.miss.length);
     if (incomplete) {
       hapticVibrate("error");
+      setOpenKey(keyOf(incomplete.r));
       return toast.error(t("أكملي تفاصيل «{0}»: {1}", [incomplete.r.label, incomplete.miss.join("، ")]), { duration: 7000 });
     }
     setSaving(true);
@@ -269,12 +272,39 @@ function PricingMgr() {
           {t("إضافة باقة جديدة")}
         </button>
 
-        <div id="pricing-list" className="grid scroll-mt-20 gap-5 md:grid-cols-2">
+        <div id="pricing-list" className="grid grid-cols-1 scroll-mt-20 gap-3 md:grid-cols-2 md:gap-5">
           <AnimatePresence initial={false}>
           {rules.map((r, i) => {
             const price = Number(r.price) || 0;
             const dep = deposit.fixed ?? Math.round((price * deposit.percent) / 100);
             const odd = price > 0 && (price < 30 || price > 5000);
+            const k = keyOf(r);
+            const isOpen = !r.id || rules.length <= 2 || openKey === k;
+            if (!isOpen) {
+              const svc = r.service === "cinematic_video" ? t("فيديو سينمائي") : r.service === "photo_video" ? t("صور + فيديو") : t("تصوير فوتوغرافي");
+              const kind = r.package === "addon" ? t("إضافة") : r.package === "full_day" ? t("يوم كامل") : t("بالساعة");
+              const incomplete = r.package !== "addon" && missingDisclosures(r as any).length > 0;
+              return (
+                <motion.button
+                  key={k}
+                  layout
+                  type="button"
+                  onClick={() => setOpenKey(k)}
+                  className="flex w-full min-w-0 items-center gap-3 rounded-2xl bg-card p-4 text-start ring-1 ring-border/70 transition-shadow hover:ring-gold/40 active:scale-[0.99]"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate font-serif text-lg">{r.label ? tx(r.label) : t("باقة بلا اسم")}</div>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                      <span>{svc} · {kind}</span>
+                      {r.is_visible === false && <span>· {t("مخفية")}</span>}
+                      {incomplete && <span className="text-amber-600">· {t("ناقصة")}</span>}
+                    </div>
+                  </div>
+                  <div className="shrink-0 font-serif text-xl tabular-nums">{price} <span className="text-xs">{t("د.أ")}</span></div>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </motion.button>
+              );
+            }
             return (
             <motion.div
               key={keyOf(r)}
@@ -283,8 +313,13 @@ function PricingMgr() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94 }}
               transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative rounded-2xl bg-card p-6 ring-1 ring-border/70 transition-shadow hover:ring-gold/40"
+              className="group relative min-w-0 rounded-2xl bg-card p-5 ring-1 ring-gold/40 transition-shadow sm:p-6"
             >
+              {r.id && rules.length > 2 && (
+                <button type="button" onClick={() => setOpenKey(null)} className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                  <ChevronUp className="h-3.5 w-3.5" />{" "}{t("طيّ الباقة")}
+                </button>
+              )}
               <div className="flex items-start justify-between gap-3 mb-5">
                 <div className="flex gap-2">
                   <select aria-label={t("نوع الخدمة")} value={r.service} onChange={(e) => upd(i, "service", e.target.value)} className="rounded-full bg-secondary px-3 py-1.5 text-xs outline-none ring-1 ring-transparent focus:ring-gold/50">

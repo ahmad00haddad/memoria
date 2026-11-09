@@ -1,5 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+// تاريخ مقروء في نص الإشعار بدل 2026-11-01
+const arDate = (d?: string | null) => {
+  if (!d) return "";
+  const x = new Date(`${String(d).slice(0, 10)}T00:00:00Z`);
+  return isNaN(x.getTime()) ? String(d) : x.toLocaleDateString("ar-JO", { day: "numeric", month: "long", timeZone: "UTC" });
+};
+
+
 // Cron-invoked endpoint. Sends:
 //  1) 24h event reminders for confirmed bookings happening tomorrow
 //  2) 7-day subscription-expiry warning
@@ -174,7 +182,7 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
               subject: `أكّدي جاهزيتكِ لحجز ${bk.client_name || ""}`.trim(),
               title: "هل أنتِ جاهزة للموعد؟",
               lines: [
-                `موعد ${bk.client_name || "العروس"} يوم ${bk.event_date} الساعة ${String(bk.start_time || "").slice(0, 5)}.`,
+                `موعد ${bk.client_name || "العروس"} يوم ${arDate(bk.event_date)} الساعة ${String(bk.start_time || "").slice(0, 5)}.`,
                 "اضغطي \"جاهزة للموعد\" من صفحة الحجز. العروس ترى التأكيد، وإن لم يصل قبل يومين تظهر لها رسالة قلق.",
               ],
               cta: { label: "تأكيد الجاهزية", url: `${base}/dashboard/bookings/${bk.id}` },

@@ -150,6 +150,9 @@ function JoinPage() {
       if (m.includes("already registered") || m.includes("user already")) {
         return fail(tr("هذا البريد مسجّل بالفعل. سجّلي الدخول بدلاً من إنشاء حساب جديد."));
       }
+      if ((error as any).code === "email_address_invalid" || (m.includes("email") && m.includes("invalid"))) {
+        return fail(tr("البريد الإلكتروني غير صحيح. تأكّدي من كتابته (مثال: name@gmail.com)."));
+      }
       if (m.includes("password")) {
         return fail(tr("كلمة المرور ضعيفة، استخدمي 8 أحرف على الأقل مع أرقام ورموز."));
       }

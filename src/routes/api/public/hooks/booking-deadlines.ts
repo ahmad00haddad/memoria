@@ -1,5 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+// تاريخ مقروء في نص الإشعار بدل 2026-11-01
+const arDate = (d?: string | null) => {
+  if (!d) return "";
+  const x = new Date(`${String(d).slice(0, 10)}T00:00:00Z`);
+  return isNaN(x.getTime()) ? String(d) : x.toLocaleDateString("ar-JO", { day: "numeric", month: "long", timeZone: "UTC" });
+};
+
+
 // ============================================================================
 // /api/public/hooks/booking-deadlines — كل 30 دقيقة من Cloudflare Cron
 // ----------------------------------------------------------------------------
@@ -61,7 +69,7 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
                 subject: "طلب حجزك أُلغي تلقائياً",
                 title: "المصوّرة لم تردّ على طلبك",
                 lines: [
-                  `${name} لم تردّ على طلب حجزك بتاريخ ${b.event_date} خلال 24 ساعة، فأُلغي الطلب تلقائياً.`,
+                  `${name} لم تردّ على طلب حجزك بتاريخ ${arDate(b.event_date)} خلال 24 ساعة، فأُلغي الطلب تلقائياً.`,
                   "لم يُدفع أي مبلغ. يمكنك اختيار مصوّرة أخرى متاحة بنفس التاريخ.",
                 ],
                 template: "approval_timeout_client",
@@ -70,7 +78,7 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
               });
               await notifyPhotographer(b.photographer_id, {
                 title: "فاتك طلب حجز",
-                body: `طلب ${b.client_name} بتاريخ ${b.event_date} أُلغي تلقائياً لأنه لم يصل ردّك خلال 24 ساعة. التاريخ صار متاحاً من جديد.`,
+                body: `طلب ${b.client_name} بتاريخ ${arDate(b.event_date)} أُلغي تلقائياً لأنه لم يصل ردّك خلال 24 ساعة. التاريخ صار متاحاً من جديد.`,
                 link: `/dashboard/bookings/${b.id}`,
                 template: "approval_timeout_photographer",
                 bookingId: b.id,
@@ -80,14 +88,14 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
                 subject: "انتهت مهلة العربون",
                 title: "أُلغي طلب حجزك",
                 lines: [
-                  `انتهت مهلة دفع العربون (48 ساعة) لحجزك مع ${name} بتاريخ ${b.event_date}، فأُلغي الطلب وصار التاريخ متاحاً لغيرك.`,
+                  `انتهت مهلة دفع العربون (48 ساعة) لحجزك مع ${name} بتاريخ ${arDate(b.event_date)}، فأُلغي الطلب وصار التاريخ متاحاً لغيرك.`,
                   "إذا كنتِ ما زلتِ تريدين الحجز، تواصلي مع المصوّرة أو أرسلي طلباً جديداً إن كان التاريخ متاحاً.",
                 ],
                 template: "deposit_timeout_client",
               });
               await notifyPhotographer(b.photographer_id, {
                 title: "انتهت مهلة العربون",
-                body: `${b.client_name} لم ترسل العربون خلال 48 ساعة لحجز ${b.event_date}، فأُلغي الطلب وصار التاريخ متاحاً.`,
+                body: `${b.client_name} لم ترسل العربون خلال 48 ساعة لحجز ${arDate(b.event_date)}، فأُلغي الطلب وصار التاريخ متاحاً.`,
                 link: `/dashboard/bookings/${b.id}`,
                 template: "deposit_timeout_photographer",
                 bookingId: b.id,
@@ -119,7 +127,7 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
             const hours = Math.max(1, Math.round(left / H));
             await notifyPhotographer(b.photographer_id, {
               title: `⏳ باقي ${hours} ساعة للرد على ${b.client_name}`,
-              body: `طلب الحجز بتاريخ ${b.event_date} ما زال بانتظار موافقتك. إن لم تردّي يُلغى تلقائياً ويُفتح التاريخ لغيرها.`,
+              body: `طلب الحجز بتاريخ ${arDate(b.event_date)} ما زال بانتظار موافقتك. إن لم تردّي يُلغى تلقائياً ويُفتح التاريخ لغيرها.`,
               link: `/dashboard/bookings/${b.id}`,
               template: "approval_reminder_photographer",
               bookingId: b.id,
@@ -145,7 +153,7 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
               await mark(b.id, sent, ["dep24", "dep6", "dep48"]);
               await notifyPhotographer(b.photographer_id, {
                 title: "⏳ مرّت 48 ساعة بدون إيصال عربون",
-                body: `افحصي حسابك: إذا وصل ${b.deposit_amount} د.أ اضغطي "وصلني العربون" بصفحة الحجز. إذا ما وصل، راسليها أو ألغي الحجز ليفتح التاريخ (${b.event_date}).`,
+                body: `افحصي حسابك: إذا وصل ${b.deposit_amount} د.أ اضغطي "وصلني العربون" بصفحة الحجز. إذا ما وصل، راسليها أو ألغي الحجز ليفتح التاريخ (${arDate(b.event_date)}).`,
                 link: `/dashboard/bookings/${b.id}`,
                 template: "deposit_overdue_photographer",
                 bookingId: b.id,
@@ -176,7 +184,7 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
               subject: `باقي ${hours} ساعة لتثبيت حجزك`,
               title: "تذكير بالعربون",
               lines: [
-                `${name} وافقت على حجزك بتاريخ ${b.event_date}، والتاريخ محجوز لكِ لمدة ${hours} ساعة أخرى فقط.`,
+                `${name} وافقت على حجزك بتاريخ ${arDate(b.event_date)}، والتاريخ محجوز لكِ لمدة ${hours} ساعة أخرى فقط.`,
                 `إذا حوّلتِ العربون (${b.deposit_amount} د.أ) لا تنسي رفع صورة الإيصال من صفحة الحجز، حتى تثبّت ${name} حجزكِ بسرعة.`,
               ],
               template: "deposit_reminder_client",
@@ -247,7 +255,7 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
               });
               await notifyPhotographer(b.photographer_id, {
                 title: `💰 المتبقي من ${b.client_name} لم يُسجَّل بعد`,
-                body: `مرّ أسبوع على حجز ${b.event_date} والمتبقي ${remaining} د.أ. إذا استلمتِه سجّليه من صفحة الحجز، وإلا ذكّرناها الآن.`,
+                body: `مرّ أسبوع على حجز ${arDate(b.event_date)} والمتبقي ${remaining} د.أ. إذا استلمتِه سجّليه من صفحة الحجز، وإلا ذكّرناها الآن.`,
                 link: `/dashboard/bookings/${b.id}`,
                 template: "balance_due_7d_photographer",
                 bookingId: b.id,

@@ -395,7 +395,7 @@ function ProfilePage() {
                   {usernameState === "checking" ? tr("نتحقّق…") : usernameState === "taken" ? tr("محجوز") : usernameState === "free" ? tr("متاح ✓") : ""}
                 </span>
               </div>
-              {p.username && <span className="mt-1 block text-xs text-muted-foreground" dir="ltr">{typeof window !== "undefined" ? window.location.host : ""}/photographers/{tx(p.username)}</span>}
+              {p.username && <span className="mt-1 block break-all text-xs text-muted-foreground" dir="ltr">{typeof window !== "undefined" ? window.location.host : ""}/photographers/{tx(p.username)}</span>}
             </label>
             <Field label={tr("شعار قصير — مثال: PHOTOGRAPHY")} v={p.tagline} on={(v) => setP({ ...p, tagline: v })} />
             <div className="grid gap-4 sm:grid-cols-2">
@@ -578,7 +578,7 @@ function ProfilePage() {
       {/* الموبايل: زر عائم يفتح نفس المعاينة الحية (بما فيها التعديلات غير المحفوظة) */}
       <button
         onClick={() => setPreviewOpen(true)}
-        className={`lg:hidden fixed end-4 z-40 inline-flex items-center gap-2 rounded-full bg-charcoal px-4 py-3 text-sm font-medium text-ivory shadow-lg transition-[bottom] dark:bg-gold dark:text-charcoal ${isDirty ? "bottom-24" : "bottom-6"}`}
+        className={`lg:hidden fixed end-4 z-40 inline-flex items-center gap-2 rounded-full bg-charcoal px-4 py-3 text-sm font-medium text-ivory shadow-lg transition-[bottom] dark:bg-gold dark:text-charcoal ${isDirty ? "bottom-40 md:bottom-24" : "bottom-24 md:bottom-6"}`}
       >
         <Eye className="h-4 w-4" />{" "}{tr("معاينة صفحتي")}
       </button>

@@ -179,7 +179,7 @@ export const Route = createFileRoute("/api/public/hooks/payment")({
                 const { sendWhatsAppText } = await import("@/lib/whatsapp.server");
                 await sendWhatsAppText(
                   info.client_phone,
-                  `تم استلام العربون وتأكيد حجزك مع ${photographerName} بتاريخ ${info.event_date}. يمكنك متابعة الحجز عبر الرابط.`,
+                  `تم استلام العربون وتأكيد حجزك مع ${photographerName} بتاريخ ${info.event_date ? new Date(`${String(info.event_date).slice(0, 10)}T00:00:00Z`).toLocaleDateString("ar-JO", { day: "numeric", month: "long", timeZone: "UTC" }) : ""}. يمكنك متابعة الحجز عبر الرابط.`,
                 );
               }
             } catch (e) {
