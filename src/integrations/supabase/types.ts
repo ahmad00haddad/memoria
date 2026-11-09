@@ -10,7 +10,32 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.18"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -102,6 +127,12 @@ export type Database = {
       }
       bookings: {
         Row: {
+          approved_at: string | null
+          auto_cancel_kind: string | null
+          auto_cancel_notified_at: string | null
+          needs_approval: boolean
+          phone_verified_at: string | null
+          reminders_sent: string[]
           addons: Json | null
           base_price: number
           cancellation_reason: string | null
@@ -120,6 +151,7 @@ export type Database = {
           delivered_at: string | null
           delivery_days_promised: number | null
           delivery_due_at: string | null
+          delivery_link: string | null
           deposit_amount: number
           deposit_checkout_session_id: string | null
           deposit_confirmed_at: string | null
@@ -146,6 +178,7 @@ export type Database = {
           refund_status: string | null
           selection_link: string | null
           service: Database["public"]["Enums"]["service_type"]
+          sneak_peek_url: string | null
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
           token_expires_at: string | null
@@ -158,6 +191,12 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          approved_at?: string | null
+          auto_cancel_kind?: string | null
+          auto_cancel_notified_at?: string | null
+          needs_approval?: boolean
+          phone_verified_at?: string | null
+          reminders_sent?: string[]
           addons?: Json | null
           base_price?: number
           cancellation_reason?: string | null
@@ -176,6 +215,7 @@ export type Database = {
           delivered_at?: string | null
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
+          delivery_link?: string | null
           deposit_amount?: number
           deposit_checkout_session_id?: string | null
           deposit_confirmed_at?: string | null
@@ -202,6 +242,7 @@ export type Database = {
           refund_status?: string | null
           selection_link?: string | null
           service: Database["public"]["Enums"]["service_type"]
+          sneak_peek_url?: string | null
           start_time: string
           status?: Database["public"]["Enums"]["booking_status"]
           token_expires_at?: string | null
@@ -214,6 +255,12 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          approved_at?: string | null
+          auto_cancel_kind?: string | null
+          auto_cancel_notified_at?: string | null
+          needs_approval?: boolean
+          phone_verified_at?: string | null
+          reminders_sent?: string[]
           addons?: Json | null
           base_price?: number
           cancellation_reason?: string | null
@@ -232,6 +279,7 @@ export type Database = {
           delivered_at?: string | null
           delivery_days_promised?: number | null
           delivery_due_at?: string | null
+          delivery_link?: string | null
           deposit_amount?: number
           deposit_checkout_session_id?: string | null
           deposit_confirmed_at?: string | null
@@ -258,6 +306,7 @@ export type Database = {
           refund_status?: string | null
           selection_link?: string | null
           service?: Database["public"]["Enums"]["service_type"]
+          sneak_peek_url?: string | null
           start_time?: string
           status?: Database["public"]["Enums"]["booking_status"]
           token_expires_at?: string | null
@@ -278,6 +327,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      contact_messages: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       contract_templates: {
         Row: {
@@ -575,6 +660,7 @@ export type Database = {
           id: string
           processed_at: string
           provider: string
+          reference_type: string | null
           related_booking_id: string | null
           related_user_id: string | null
         }
@@ -584,6 +670,7 @@ export type Database = {
           id: string
           processed_at?: string
           provider: string
+          reference_type?: string | null
           related_booking_id?: string | null
           related_user_id?: string | null
         }
@@ -593,6 +680,7 @@ export type Database = {
           id?: string
           processed_at?: string
           provider?: string
+          reference_type?: string | null
           related_booking_id?: string | null
           related_user_id?: string | null
         }
@@ -683,6 +771,7 @@ export type Database = {
       pricing_rules: {
         Row: {
           created_at: string
+          cta_label: string | null
           description: string | null
           id: string
           label: string
@@ -691,9 +780,11 @@ export type Database = {
           photographer_id: string
           price: number
           service: Database["public"]["Enums"]["service_type"]
+          subtitle: string | null
         }
         Insert: {
           created_at?: string
+          cta_label?: string | null
           description?: string | null
           id?: string
           label: string
@@ -702,9 +793,11 @@ export type Database = {
           photographer_id: string
           price: number
           service: Database["public"]["Enums"]["service_type"]
+          subtitle?: string | null
         }
         Update: {
           created_at?: string
+          cta_label?: string | null
           description?: string | null
           id?: string
           label?: string
@@ -713,6 +806,7 @@ export type Database = {
           photographer_id?: string
           price?: number
           service?: Database["public"]["Enums"]["service_type"]
+          subtitle?: string | null
         }
         Relationships: [
           {
@@ -724,13 +818,63 @@ export type Database = {
           },
         ]
       }
+      production_stage_audit: {
+        Row: {
+          booking_id: string
+          from_stage: string
+          id: string
+          moved_at: string
+          moved_by: string
+          photographer_id: string
+          reason: string | null
+          to_stage: string
+        }
+        Insert: {
+          booking_id: string
+          from_stage: string
+          id?: string
+          moved_at?: string
+          moved_by: string
+          photographer_id: string
+          reason?: string | null
+          to_stage: string
+        }
+        Update: {
+          booking_id?: string
+          from_stage?: string
+          id?: string
+          moved_at?: string
+          moved_by?: string
+          photographer_id?: string
+          reason?: string | null
+          to_stage?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_stage_audit_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "production_stage_audit_photographer_id_fkey"
+            columns: ["photographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          audio_url: string | null
           avatar_url: string | null
           base_location: string | null
           bio: string | null
           booking_notes: string | null
           city: string | null
+          completeness_score: number | null
           cover_url: string | null
           created_at: string
           deleted_at: string | null
@@ -742,28 +886,37 @@ export type Database = {
           fixed_deposit: number | null
           free_km: number
           id: string
+          income_goal: number | null
           instagram: string | null
+          is_demo: boolean
           is_featured: boolean
           is_published: boolean
           min_session_minutes: number
+          notification_preferences: Json
           onboarding_completed_at: string | null
           onboarding_step: number
           portfolio_urls: string[]
           quickstart_dismissed_at: string | null
           referral_code: string | null
           referred_by: string | null
+          seo_description: string | null
+          seo_title: string | null
           tagline: string | null
           travel_fee_per_km: number
           updated_at: string
           username: string
           verification_status: string
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
+          audio_url?: string | null
           avatar_url?: string | null
           base_location?: string | null
           bio?: string | null
           booking_notes?: string | null
           city?: string | null
+          completeness_score?: number | null
           cover_url?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -775,28 +928,37 @@ export type Database = {
           fixed_deposit?: number | null
           free_km?: number
           id: string
+          income_goal?: number | null
           instagram?: string | null
+          is_demo?: boolean
           is_featured?: boolean
           is_published?: boolean
           min_session_minutes?: number
+          notification_preferences?: Json
           onboarding_completed_at?: string | null
           onboarding_step?: number
           portfolio_urls?: string[]
           quickstart_dismissed_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           tagline?: string | null
           travel_fee_per_km?: number
           updated_at?: string
           username: string
           verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
+          audio_url?: string | null
           avatar_url?: string | null
           base_location?: string | null
           bio?: string | null
           booking_notes?: string | null
           city?: string | null
+          completeness_score?: number | null
           cover_url?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -808,21 +970,82 @@ export type Database = {
           fixed_deposit?: number | null
           free_km?: number
           id?: string
+          income_goal?: number | null
           instagram?: string | null
+          is_demo?: boolean
           is_featured?: boolean
           is_published?: boolean
           min_session_minutes?: number
+          notification_preferences?: Json
           onboarding_completed_at?: string | null
           onboarding_step?: number
           portfolio_urls?: string[]
           quickstart_dismissed_at?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
           tagline?: string | null
           travel_fee_per_km?: number
           updated_at?: string
           username?: string
           verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string
+          endpoint: string
+          id: string
+          last_used_at: string
+          p256dh_key: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          last_used_at?: string
+          p256dh_key: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          last_used_at?: string
+          p256dh_key?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          token: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          token: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          token?: string
         }
         Relationships: []
       }
@@ -833,6 +1056,7 @@ export type Database = {
           referred_id: string
           referrer_id: string
           reward_granted: boolean
+          updated_at: string
         }
         Insert: {
           created_at?: string
@@ -840,6 +1064,7 @@ export type Database = {
           referred_id: string
           referrer_id: string
           reward_granted?: boolean
+          updated_at?: string
         }
         Update: {
           created_at?: string
@@ -847,6 +1072,7 @@ export type Database = {
           referred_id?: string
           referrer_id?: string
           reward_granted?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
@@ -941,13 +1167,16 @@ export type Database = {
           currency: string
           id: string
           method: Database["public"]["Enums"]["payment_method"]
+          months: number
           notes: string | null
           period_months: number
           photographer_id: string
           proof_url: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          session_id: string | null
           status: Database["public"]["Enums"]["payment_status"]
+          tier: string | null
           stripe_payment_intent_id: string | null
         }
         Insert: {
@@ -957,13 +1186,16 @@ export type Database = {
           currency?: string
           id?: string
           method: Database["public"]["Enums"]["payment_method"]
+          months?: number
           notes?: string | null
           period_months?: number
           photographer_id: string
           proof_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          session_id?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
+          tier?: string | null
           stripe_payment_intent_id?: string | null
         }
         Update: {
@@ -973,13 +1205,16 @@ export type Database = {
           currency?: string
           id?: string
           method?: Database["public"]["Enums"]["payment_method"]
+          months?: number
           notes?: string | null
           period_months?: number
           photographer_id?: string
           proof_url?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          session_id?: string | null
           status?: Database["public"]["Enums"]["payment_status"]
+          tier?: string | null
           stripe_payment_intent_id?: string | null
         }
         Relationships: []
@@ -991,6 +1226,8 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          legacy_price_until: string | null
+          tier: string
           photographer_id: string
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
@@ -1005,6 +1242,8 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          legacy_price_until?: string | null
+          tier?: string
           photographer_id: string
           plan?: Database["public"]["Enums"]["subscription_plan"]
           status?: Database["public"]["Enums"]["subscription_status"]
@@ -1019,6 +1258,8 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          legacy_price_until?: string | null
+          tier?: string
           photographer_id?: string
           plan?: Database["public"]["Enums"]["subscription_plan"]
           status?: Database["public"]["Enums"]["subscription_status"]
@@ -1049,6 +1290,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      whatsapp_log: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          payload: Json
+          photographer_id: string | null
+          recipient_phone: string
+          retry_count: number
+          status: string
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          payload: Json
+          photographer_id?: string | null
+          recipient_phone: string
+          retry_count?: number
+          status?: string
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          payload?: Json
+          photographer_id?: string | null
+          recipient_phone?: string
+          retry_count?: number
+          status?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_log_photographer_id_fkey"
+            columns: ["photographer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       whatsapp_templates: {
         Row: {
@@ -1091,6 +1379,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      __plpgsql_show_dependency_tb:
+        | {
+            Args: {
+              anycompatiblerangetype?: unknown
+              anycompatibletype?: unknown
+              anyelememttype?: unknown
+              anyenumtype?: unknown
+              anyrangetype?: unknown
+              funcoid: unknown
+              relid?: unknown
+            }
+            Returns: {
+              name: string
+              oid: unknown
+              params: string
+              schema: string
+              type: string
+            }[]
+          }
+        | {
+            Args: {
+              anycompatiblerangetype?: unknown
+              anycompatibletype?: unknown
+              anyelememttype?: unknown
+              anyenumtype?: unknown
+              anyrangetype?: unknown
+              name: string
+              relid?: unknown
+            }
+            Returns: {
+              name: string
+              oid: unknown
+              params: string
+              schema: string
+              type: string
+            }[]
+          }
       admin_renew_subscription: {
         Args: { _months: number; _photographer_id: string }
         Returns: undefined
@@ -1099,12 +1424,18 @@ export type Database = {
         Args: { _photographer_id: string; _published: boolean }
         Returns: undefined
       }
+      admin_verify_photographer: {
+        Args: { _photographer_id: string; _status: string }
+        Returns: undefined
+      }
       approve_review: { Args: { _review_id: string }; Returns: undefined }
+      auto_generate_contract: { Args: { _booking_id: string }; Returns: string }
       booking_token_exists: { Args: { _token: string }; Returns: boolean }
       cancel_booking: {
         Args: { _booking_id: string; _reason: string }
         Returns: Json
       }
+      check_storage_health: { Args: never; Returns: Json }
       client_add_note: {
         Args: { _note: string; _token: string }
         Returns: undefined
@@ -1138,9 +1469,54 @@ export type Database = {
         Returns: undefined
       }
       get_booking_by_token: { Args: { _token: string }; Returns: Json }
+      get_booking_payment_status: {
+        Args: { _booking_id: string }
+        Returns: {
+          booking_id: string
+          deposit_paid: boolean
+          final_paid: boolean
+          final_paid_at: string
+          status: string
+        }[]
+      }
+      get_bookings_with_contract: {
+        Args: { _photographer_id: string }
+        Returns: {
+          booking_id: string
+          client_email: string
+          client_name: string
+          client_phone: string
+          created_at: string
+          delivery_due_at: string
+          deposit_amount: number
+          deposit_confirmed_at: string
+          end_time: string
+          event_date: string
+          has_contract: boolean
+          production_stage: string
+          start_time: string
+          status: string
+          total_price: number
+        }[]
+      }
       get_photographer_busy_dates: { Args: { _pid: string }; Returns: string[] }
+      get_photographer_stats: {
+        Args: { _photographer_id: string }
+        Returns: Json
+      }
       get_public_profile_data: { Args: { p_id: string }; Returns: Json }
       get_referrer_id: { Args: { _code: string }; Returns: string }
+      get_sitemap_photographers: {
+        Args: never
+        Returns: {
+          updated_at: string
+          username: string
+        }[]
+      }
+      grant_referral_reward: {
+        Args: { _referred_id: string }
+        Returns: undefined
+      }
       has_booking_conflict: {
         Args: {
           _date: string
@@ -1166,32 +1542,342 @@ export type Database = {
         Args: { _photographer_id: string }
         Returns: boolean
       }
-      log_audit: {
+      photographer_tier: {
+        Args: { _pid: string }
+        Returns: string
+      }
+      pro_photographers: {
+        Args: { _ids: string[] }
+        Returns: string[]
+      }
+      log_audit:
+        | {
+            Args: {
+              _action: string
+              _after?: Json
+              _before?: Json
+              _entity_id: string
+              _entity_type: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _action: string
+              _after?: Json
+              _before?: Json
+              _entity_id: string
+              _entity_type: string
+            }
+            Returns: undefined
+          }
+      log_production_stage_move: {
         Args: {
-          _action: string
-          _after?: Json
-          _before?: Json
-          _entity_id: string
-          _entity_type: string
+          p_booking_id: string
+          p_from_stage: string
+          p_reason?: string
+          p_to_stage: string
         }
         Returns: undefined
       }
+      plpgsql_check_function:
+        | {
+            Args: {
+              all_warnings?: boolean
+              anycompatiblerangetype?: unknown
+              anycompatibletype?: unknown
+              anyelememttype?: unknown
+              anyenumtype?: unknown
+              anyrangetype?: unknown
+              compatibility_warnings?: boolean
+              constant_tracing?: boolean
+              extra_warnings?: boolean
+              fatal_errors?: boolean
+              format?: string
+              funcoid: unknown
+              incomment_options_usage_warning?: boolean
+              newtable?: unknown
+              oldtable?: unknown
+              other_warnings?: boolean
+              performance_warnings?: boolean
+              relid?: unknown
+              security_warnings?: boolean
+              use_incomment_options?: boolean
+              without_warnings?: boolean
+            }
+            Returns: string[]
+          }
+        | {
+            Args: {
+              all_warnings?: boolean
+              anycompatiblerangetype?: unknown
+              anycompatibletype?: unknown
+              anyelememttype?: unknown
+              anyenumtype?: unknown
+              anyrangetype?: unknown
+              compatibility_warnings?: boolean
+              constant_tracing?: boolean
+              extra_warnings?: boolean
+              fatal_errors?: boolean
+              format?: string
+              incomment_options_usage_warning?: boolean
+              name: string
+              newtable?: unknown
+              oldtable?: unknown
+              other_warnings?: boolean
+              performance_warnings?: boolean
+              relid?: unknown
+              security_warnings?: boolean
+              use_incomment_options?: boolean
+              without_warnings?: boolean
+            }
+            Returns: string[]
+          }
+      plpgsql_check_function_tb:
+        | {
+            Args: {
+              all_warnings?: boolean
+              anycompatiblerangetype?: unknown
+              anycompatibletype?: unknown
+              anyelememttype?: unknown
+              anyenumtype?: unknown
+              anyrangetype?: unknown
+              compatibility_warnings?: boolean
+              constant_tracing?: boolean
+              extra_warnings?: boolean
+              fatal_errors?: boolean
+              funcoid: unknown
+              incomment_options_usage_warning?: boolean
+              newtable?: unknown
+              oldtable?: unknown
+              other_warnings?: boolean
+              performance_warnings?: boolean
+              relid?: unknown
+              security_warnings?: boolean
+              use_incomment_options?: boolean
+              without_warnings?: boolean
+            }
+            Returns: {
+              context: string
+              detail: string
+              functionid: unknown
+              hint: string
+              level: string
+              lineno: number
+              message: string
+              position: number
+              query: string
+              sqlstate: string
+              statement: string
+            }[]
+          }
+        | {
+            Args: {
+              all_warnings?: boolean
+              anycompatiblerangetype?: unknown
+              anycompatibletype?: unknown
+              anyelememttype?: unknown
+              anyenumtype?: unknown
+              anyrangetype?: unknown
+              compatibility_warnings?: boolean
+              constant_tracing?: boolean
+              extra_warnings?: boolean
+              fatal_errors?: boolean
+              incomment_options_usage_warning?: boolean
+              name: string
+              newtable?: unknown
+              oldtable?: unknown
+              other_warnings?: boolean
+              performance_warnings?: boolean
+              relid?: unknown
+              security_warnings?: boolean
+              use_incomment_options?: boolean
+              without_warnings?: boolean
+            }
+            Returns: {
+              context: string
+              detail: string
+              functionid: unknown
+              hint: string
+              level: string
+              lineno: number
+              message: string
+              position: number
+              query: string
+              sqlstate: string
+              statement: string
+            }[]
+          }
+      plpgsql_check_pragma: { Args: { name: string[] }; Returns: number }
+      plpgsql_check_profiler: { Args: { enable?: boolean }; Returns: boolean }
+      plpgsql_check_tracer: {
+        Args: { enable?: boolean; verbosity?: string }
+        Returns: boolean
+      }
+      plpgsql_coverage_branches:
+        | { Args: { funcoid: unknown }; Returns: number }
+        | { Args: { name: string }; Returns: number }
+      plpgsql_coverage_statements:
+        | { Args: { funcoid: unknown }; Returns: number }
+        | { Args: { name: string }; Returns: number }
+      plpgsql_profiler_function_statements_tb:
+        | {
+            Args: { funcoid: unknown }
+            Returns: {
+              avg_time: number
+              block_num: number
+              exec_stmts: number
+              exec_stmts_err: number
+              lineno: number
+              max_time: number
+              parent_note: string
+              parent_stmtid: number
+              processed_rows: number
+              queryid: number
+              stmtid: number
+              stmtname: string
+              total_time: number
+            }[]
+          }
+        | {
+            Args: { name: string }
+            Returns: {
+              avg_time: number
+              block_num: number
+              exec_stmts: number
+              exec_stmts_err: number
+              lineno: number
+              max_time: number
+              parent_note: string
+              parent_stmtid: number
+              processed_rows: number
+              queryid: number
+              stmtid: number
+              stmtname: string
+              total_time: number
+            }[]
+          }
+      plpgsql_profiler_function_tb:
+        | {
+            Args: { funcoid: unknown }
+            Returns: {
+              avg_time: number
+              cmds_on_row: number
+              exec_stmts: number
+              exec_stmts_err: number
+              lineno: number
+              max_time: number[]
+              processed_rows: number[]
+              queryids: number[]
+              source: string
+              stmt_lineno: number
+              total_time: number
+            }[]
+          }
+        | {
+            Args: { name: string }
+            Returns: {
+              avg_time: number
+              cmds_on_row: number
+              exec_stmts: number
+              exec_stmts_err: number
+              lineno: number
+              max_time: number[]
+              processed_rows: number[]
+              queryids: number[]
+              source: string
+              stmt_lineno: number
+              total_time: number
+            }[]
+          }
+      plpgsql_profiler_functions_all: {
+        Args: never
+        Returns: {
+          avg_time: number
+          exec_count: number
+          exec_stmts_err: number
+          funcoid: unknown
+          max_time: number
+          min_time: number
+          stddev_time: number
+          total_time: number
+        }[]
+      }
+      plpgsql_profiler_install_fake_queryid_hook: {
+        Args: never
+        Returns: undefined
+      }
+      plpgsql_profiler_remove_fake_queryid_hook: {
+        Args: never
+        Returns: undefined
+      }
+      plpgsql_profiler_reset: { Args: { funcoid: unknown }; Returns: undefined }
+      plpgsql_profiler_reset_all: { Args: never; Returns: undefined }
+      plpgsql_show_dependency_tb:
+        | {
+            Args: {
+              anycompatiblerangetype?: unknown
+              anycompatibletype?: unknown
+              anyelememttype?: unknown
+              anyenumtype?: unknown
+              anyrangetype?: unknown
+              fnname: string
+              relid?: unknown
+            }
+            Returns: {
+              name: string
+              oid: unknown
+              params: string
+              schema: string
+              type: string
+            }[]
+          }
+        | {
+            Args: {
+              anycompatiblerangetype?: unknown
+              anycompatibletype?: unknown
+              anyelememttype?: unknown
+              anyenumtype?: unknown
+              anyrangetype?: unknown
+              funcoid: unknown
+              relid?: unknown
+            }
+            Returns: {
+              name: string
+              oid: unknown
+              params: string
+              schema: string
+              type: string
+            }[]
+          }
       refresh_featured_photographers: { Args: never; Returns: undefined }
       regenerate_booking_token: {
         Args: { _booking_id: string }
         Returns: string
       }
       reject_review: { Args: { _review_id: string }; Returns: undefined }
-      renew_subscription_paid: {
-        Args: {
-          _amount: number
-          _months: number
-          _photographer_id: string
-          _provider: string
-          _ref: string
-        }
-        Returns: undefined
-      }
+      renew_subscription_paid:
+        | {
+            Args: {
+              _amount: number
+              _months: number
+              _photographer_id: string
+              _provider: string
+              _ref: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _amount?: number
+              _currency?: string
+              _intent?: string
+              _months: number
+              _photographer_id: string
+              _provider?: string
+            }
+            Returns: Json
+          }
       restore_photographer: {
         Args: { _photographer_id: string }
         Returns: undefined
@@ -1244,7 +1930,7 @@ export type Database = {
         | "completed"
         | "cancelled"
       package_type: "hourly" | "full_day" | "addon"
-      payment_method: "cliq" | "stripe"
+      payment_method: "cliq" | "stripe" | "hyperpay" | "gateway"
       payment_status: "pending" | "approved" | "rejected"
       service_type: "photography" | "cinematic_video" | "photo_video"
       subscription_plan: "starter"
@@ -1379,6 +2065,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "photographer", "client"],
@@ -1390,7 +2079,7 @@ export const Constants = {
         "cancelled",
       ],
       package_type: ["hourly", "full_day", "addon"],
-      payment_method: ["cliq", "stripe"],
+      payment_method: ["cliq", "stripe", "hyperpay", "gateway"],
       payment_status: ["pending", "approved", "rejected"],
       service_type: ["photography", "cinematic_video", "photo_video"],
       subscription_plan: ["starter"],
