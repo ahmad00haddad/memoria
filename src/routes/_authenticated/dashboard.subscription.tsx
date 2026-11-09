@@ -339,7 +339,10 @@ function SubscriptionPage() {
         {payments.length > 0 && (
           <div className="mt-12">
             <h2 className="font-serif text-2xl mb-4">{t("سجل المدفوعات")}</h2>
-            <div className="rounded-sm border border-border bg-card overflow-hidden">
+            {!showAllPays && !payments.some((p) => p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p))) && (
+              <p className="text-sm text-muted-foreground">{t("لا دفعات مكتملة بعد.")}</p>
+            )}
+            <div className="rounded-sm border border-border bg-card overflow-hidden empty:hidden">
               {payments.filter((p) => showAllPays || p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p))).map((p) => (
                 <div key={p.id} className="flex items-center justify-between p-4 border-b border-border last:border-0">
                   <div>
