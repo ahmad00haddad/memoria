@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { getCached, fetchPage, cacheKey } from "@/lib/page-cache";
 import { getLang, dirOf } from "@/i18n";
 import { g } from "@/hooks/use-gender";
 import { Lightbulb } from "lucide-react";
@@ -115,12 +116,7 @@ function ProductionBoard() {
   const load = async (id: string, isRetry = false) => {
     try {
       if (isRetry) toast.loading(tr("نعيد المحاولة…"), { id: "load-retry" });
-      const { data, error } = await supabase.from("bookings")
-        .select("id,client_name,event_date,start_time,end_time,total_price,production_stage,delivery_due_at,selection_link,status,editing_started_at,editing_completed_at,delivered_at,final_paid_at")
-        .eq("photographer_id", id).is("deleted_at", null).in("status", ["confirmed", "completed"]).order("event_date", { ascending: true });
-
-      if (error) throw new Error(error.message);
-
+      const data = await fetchPage<any[]>("production", id);
       setBookings(data ?? []);
       if (isRetry) toast.success(tr("تم التحديث"), { id: "load-retry" });
       setErr(null);
@@ -145,6 +141,9 @@ function ProductionBoard() {
           return nav({ to: "/login", search: { redirect: window.location.pathname } });
         }
         setUid(session.user.id);
+        // فوري من الكاش ثم تحديث صامت
+        const cached = getCached<any[]>(cacheKey("production", session.user.id));
+        if (cached) { setBookings(cached); setLoading(false); }
         await load(session.user.id);
       } catch (e: any) {
         toast.error(g(tr("تعذّر التحقق من هويتك. حدّثي الصفحة."), tr("تعذّر التحقق من هويتك. حدّث الصفحة.")));

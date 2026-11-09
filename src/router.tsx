@@ -23,6 +23,8 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 5 * 60_000,
+    // تحميل الصفحة عند لمس/تمرير الرابط قبل الضغط → انتقال فوري
+    defaultPreload: "intent",
   });
 
   return router;

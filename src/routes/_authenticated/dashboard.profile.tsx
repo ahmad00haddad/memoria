@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { getCached, setCached, fetchPage, cacheKey } from "@/lib/page-cache";
 import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
 import { LivePhonePreview } from "@/components/dashboard/LivePhonePreview";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -83,16 +84,22 @@ function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return nav({ to: "/login" });
       setUid(session.user.id);
-      const [{ data }, { data: priv }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
-        supabase.from("photographer_private").select("*").eq("user_id", session.user.id).maybeSingle(),
-      ]);
-      const merged = { ...(data ?? {}), ...(priv ?? {}), payment_methods: parseMethods((priv as any)?.payment_methods) };
+      // فوري من الكاش، ثم تحديث صامت إن لم تبدأ التعديل
+      const cached = getCached(cacheKey("profile", session.user.id));
+      if (cached) { setP(cached); setOriginalP(cached); setLoading(false); }
+      const merged = await fetchPage("profile", session.user.id);
+      if (cached && pRef.current && origRef.current && JSON.stringify(pRef.current) !== JSON.stringify(origRef.current)) return;
       setP(merged);
       setOriginalP(merged);
       setLoading(false);
     })();
   }, [nav]);
+  const pRef = useRef<any>(null);
+  const origRef = useRef<any>(null);
+  pRef.current = p;
+  origRef.current = originalP;
+  // أي حفظ يحدّث originalP → نحدّث الكاش لتفتح الصفحة فوراً في المرة القادمة
+  useEffect(() => { if (uid && originalP) setCached(cacheKey("profile", uid), originalP); }, [uid, originalP]);
 
   // Idea 9: Unsaved Changes Warning
   useEffect(() => {

@@ -14,21 +14,26 @@ export function isOnboardingDeferred() {
   try { return sessionStorage.getItem(LATER_KEY) === "1"; } catch { return false; }
 }
 
+const DONE_KEY = "memoria-onb-done:";
 export function markOnboardingDone(uid: string) {
   doneFor.add(uid);
+  try { localStorage.setItem(DONE_KEY + uid, "1"); } catch { /* ignore */ }
+}
+function rememberedDone(uid: string) {
+  try { return localStorage.getItem(DONE_KEY + uid) === "1"; } catch { return false; }
 }
 
 /** true = يجب التحويل لمعالج الإعداد */
 export async function checkOnboarding(uid: string): Promise<boolean> {
-  if (doneFor.has(uid)) return false;
+  if (doneFor.has(uid) || rememberedDone(uid)) { doneFor.add(uid); return false; }
   const [{ data: p }, { count }] = await Promise.all([
     supabase.from("profiles").select("onboarding_completed_at, display_name, username").eq("id", uid).maybeSingle(),
     supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", uid).neq("package", "addon"),
   ]);
-  if ((p as any)?.onboarding_completed_at) { doneFor.add(uid); return false; }
+  if ((p as any)?.onboarding_completed_at) { markOnboardingDone(uid); return false; }
   if (p?.display_name && p?.username && (count ?? 0) > 0) {
     await supabase.from("profiles").update({ onboarding_completed_at: new Date().toISOString() } as any).eq("id", uid);
-    doneFor.add(uid);
+    markOnboardingDone(uid);
     return false;
   }
   return !isOnboardingDeferred();

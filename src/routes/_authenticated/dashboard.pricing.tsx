@@ -4,7 +4,8 @@ import { Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { getCached, setCached, fetchPage, cacheKey } from "@/lib/page-cache";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
@@ -59,20 +60,25 @@ function PricingMgr() {
   const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "", subtitle: r.subtitle ?? "", cta_label: r.cta_label ?? "" })));
   const withKeys = (rs: Rule[]) => rs.map((r) => ({ ...r, _key: r.id ?? Math.random().toString(36).slice(2) }));
 
+  const dirtyRef = useRef(false);
+  dirtyRef.current = !loading && snapshot(rules) !== saved;
+
   useEffect(() => {
     (async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return nav({ to: "/login" });
         setUid(session.user.id);
-        const [{ data, error }, { data: prof }] = await Promise.all([
-          supabase.from("pricing_rules").select("*").eq("photographer_id", session.user.id).order("price"),
-          supabase.from("profiles").select("deposit_percent,fixed_deposit").eq("id", session.user.id).maybeSingle(),
-        ]);
-        if (error) throw error;
-        setRules(withKeys((data ?? []) as Rule[]));
-        setSaved(snapshot((data ?? []) as Rule[]));
-        if (prof) setDeposit({ percent: Number((prof as any).deposit_percent ?? 25), fixed: (prof as any).fixed_deposit ? Number((prof as any).fixed_deposit) : null });
+        const apply = ({ rules: data, prof }: { rules: any[]; prof: any }) => {
+          setRules(withKeys((data ?? []) as Rule[]));
+          setSaved(snapshot((data ?? []) as Rule[]));
+          if (prof) setDeposit({ percent: Number(prof.deposit_percent ?? 25), fixed: prof.fixed_deposit ? Number(prof.fixed_deposit) : null });
+        };
+        // فوري من الكاش، ثم تحديث صامت (لا نلمس تعديلات غير محفوظة)
+        const cached = getCached(cacheKey("pricing", session.user.id));
+        if (cached) { apply(cached); setLoading(false); }
+        const fresh = await fetchPage("pricing", session.user.id);
+        if (!cached || !dirtyRef.current) apply(fresh);
       } catch (error: any) {
         setLoadError(error?.message || t("تعذّر تحميل الأسعار الآن."));
       } finally {
@@ -181,6 +187,7 @@ function PricingMgr() {
     const { data } = await supabase.from("pricing_rules").select("*").eq("photographer_id", uid).order("price");
     setRules(withKeys((data ?? []) as Rule[]));
     setSaved(snapshot((data ?? []) as Rule[]));
+    setCached(cacheKey("pricing", uid), { rules: data ?? [], prof: { deposit_percent: deposit.percent, fixed_deposit: deposit.fixed } });
     setSaving(false);
     setJustSaved(true);
     hapticVibrate("success");

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 import { SubscriptionGuard } from "@/components/dashboard/SubscriptionGuard";
 import { PageLoader } from "@/components/ui/loading";
@@ -12,7 +12,20 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function DashboardLayout() {
   const nav = useNavigate();
+  const router = useRouter();
   const [ready, setReady] = useState(false);
+
+  // تحميل كود صفحات الشريط السفلي مسبقاً في وقت الفراغ → انتقال بلا انتظار
+  useEffect(() => {
+    if (!ready) return;
+    const run = () => {
+      for (const to of ["/dashboard", "/dashboard/bookings", "/dashboard/calendar", "/dashboard/profile", "/dashboard/pricing", "/dashboard/production"]) {
+        router.preloadRoute({ to: to as any }).catch(() => {});
+      }
+    };
+    const ric = (window as any).requestIdleCallback as ((cb: () => void, o?: any) => void) | undefined;
+    if (ric) ric(run, { timeout: 3000 }); else setTimeout(run, 1500);
+  }, [ready, router]);
 
   // حارس الإعداد لكل صفحات اللوحة (لا للرئيسية فقط): أي دخول قبل إكمال الإعداد يذهب للمعالج
   useEffect(() => {

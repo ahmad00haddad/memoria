@@ -1,4 +1,5 @@
 import { arCount } from "@/lib/ar-count";
+import { prefetchDashboardPages } from "@/lib/page-cache";
 import { Lightbulb, Settings } from "lucide-react";
 import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -518,6 +519,8 @@ function Dashboard() {
     const computedStats = { confirmed, pending, completed, revenue, avgRating: avg, reviews: rvs?.length ?? 0, monthRevenue, lastMonthRevenue, revenueSeries, upcoming30, pendingDepositsAmount, pendingDepositNames, deliveriesDueSoon, focus, newBookings, newReviews };
     const loadedProfile = { ...(data ?? {}), ical_token: priv?.ical_token ?? null };
 
+    // جلب صامت لبيانات ملفي/الأسعار/الإنتاج حتى تفتح فوراً
+    prefetchDashboardPages(session.user.id);
     cachedDashboard = {
       profile: loadedProfile,
       sub: s,
