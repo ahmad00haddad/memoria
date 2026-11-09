@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { useAutosave, AutosaveChip } from "@/hooks/use-autosave";
 import { g } from "@/hooks/use-gender";
 import { Lightbulb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +14,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2, Copy, Check, X, CircleCheck, Star, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { parseFeatures, serializeFeatures, type Feature, type FeatureKind } from "@/lib/packageFeatures";
-import { hapticVibrate } from "@/lib/utils";
 import { t, tx } from "@/i18n";
 import { usePlan } from "@/hooks/use-plan";
 import { BasicLimitNote } from "@/components/dashboard/BasicLimitNote";
@@ -52,9 +52,9 @@ function PricingMgr() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string>("[]");
   const [saving, setSaving] = useState(false);
-  const [justSaved, setJustSaved] = useState(false);
   const [deposit, setDeposit] = useState<{ percent: number; fixed: number | null }>({ percent: 25, fixed: null });
-  const keyOf = (r: Rule) => r.id ?? r._key ?? "";
+  // المفتاح ثابت حتى بعد أن تأخذ الباقة الجديدة id من الحفظ التلقائي (فلا تنطوي أثناء الكتابة)
+  const keyOf = (r: Rule) => r._key ?? r.id ?? "";
   // الباقات المحفوظة تظهر مطوية (اسم + سعر)؛ تُفتح واحدة للتعديل. الجديدة مفتوحة دائماً.
   const [openKey, setOpenKey] = useState<string | null>(null);
   const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "", subtitle: r.subtitle ?? "", cta_label: r.cta_label ?? "" })));
@@ -95,11 +95,13 @@ function PricingMgr() {
       { service: "photo_video", package: "full_day", label: t("باقة VIP (تصوير + فيديو)"), price: 400, per_photo_price: 0, subtitle: t("التجربة المتكاملة صوراً وفيديو"), description: t("تغطية فريقين تصوير فيديو سينمائي ألبوم حراري فاخر") }
     ];
     setRules([...rules, ...withKeys(templates)]);
-    toast.success(g(t("أضفنا ٣ باقات مقترحة — عدّلي الأسعار ثم احفظي."), t("أضفنا ٣ باقات مقترحة — عدّل الأسعار ثم احفظ.")));
+    toast.success(g(t("أضفنا ٣ باقات مقترحة — عدّلي الأسعار واختاري «من يصوّر»، وتُحفظ تلقائياً."), t("أضفنا ٣ باقات مقترحة — عدّل الأسعار واختر «من يصوّر»، وتُحفظ تلقائياً.")));
   };
 
   const add = () => {
-    setRules([...withKeys([{ service: "photography", package: "hourly", label: "", price: 0 }]), ...rules]);
+    const fresh = withKeys([{ service: "photography", package: "hourly", label: "", price: 0 }]);
+    setOpenKey(fresh[0]._key!);
+    setRules([...fresh, ...rules]);
     if (typeof window !== "undefined") requestAnimationFrame(() => document.getElementById("pricing-list")?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
   const duplicate = (i: number) => {
@@ -137,63 +139,66 @@ function PricingMgr() {
       onDismiss: commit,
     });
   };
+  // حفظ تلقائي لكل باقة على حدة: تُحفظ الباقة المكتملة (اسم + سعر + «من يصوّر») التي تغيّرت فقط.
+  // الناقصة تبقى عندكِ بعلامة «ناقصة» دون رسائل خطأ متكررة.
+  const rowReady = (r: Rule) => !!r.label?.trim() && Number(r.price) > 0 && missingDisclosures(r as any).length === 0;
+  const overBasic = isBasic && rules.filter((r) => rowReady(r) && r.package !== "addon" && r.is_visible !== false).length > BASIC_LIMITS.packages;
+  const rulesRef = useRef(rules);
+  rulesRef.current = rules;
   const save = async () => {
-    const filled = rules.filter((r) => r.label?.trim() || Number(r.price) > 0);
-    const bad = filled.find((r) => !r.label?.trim() || !(Number(r.price) > 0));
-    if (bad) { hapticVibrate("error"); return toast.error(t("كل باقة تحتاج اسماً وسعراً أكبر من صفر.")); }
-    // الإفصاح الإلزامي: لا تُحفظ باقة أساسية تنقصها معلومة تراها العروس قبل الطلب
-    if (isBasic && filled.filter((r) => r.package !== "addon" && r.is_visible !== false).length > BASIC_LIMITS.packages) {
-      hapticVibrate("error");
-      return toast.error(g(t("باقة Basic تُظهر {0} باقات فقط — أخفي الباقي بزر «ظاهرة للعرائس» أو رقّي لـPro.", [BASIC_LIMITS.packages]), t("باقة Basic تُظهر {0} باقات فقط — أخفِ الباقي بزر «ظاهرة للعرائس» أو رقِّ لـPro.", [BASIC_LIMITS.packages])), { duration: 7000 });
-    }
-    const incomplete = filled.map((r) => ({ r, miss: missingDisclosures(r as any) })).find((x) => x.miss.length);
-    if (incomplete) {
-      hapticVibrate("error");
-      setOpenKey(keyOf(incomplete.r));
-      return toast.error(t("أكملي تفاصيل «{0}»: {1}", [incomplete.r.label, incomplete.miss.join("، ")]), { duration: 7000 });
-    }
+    const current = rulesRef.current;
+    const norm = (r: Rule) => JSON.stringify(JSON.parse(snapshot([r]))[0]);
+    const savedById = new Map<string, string>((JSON.parse(saved) as any[]).filter((x) => x.id).map((x) => [x.id, JSON.stringify(x)]));
+    const toWrite = current.filter((r) => rowReady(r) && (!r.id || savedById.get(r.id) !== norm(r)));
+    const newIds = new Map<string, string>();
     setSaving(true);
-    for (const r of filled) {
-      const { _key, ...clean } = r;
-      const payload = {
-        ...clean,
-        label: r.label.trim(),
-        photographer_id: uid,
-        price: Number(r.price),
-        per_photo_price: r.per_photo_price ? Math.max(0, Number(r.per_photo_price)) : 0,
-        subtitle: r.subtitle?.trim() || null,
-        cta_label: r.cta_label?.trim() || null,
-        hours: numOrNull(r.hours),
-        deliverable_count: numOrNull(r.deliverable_count),
-        delivery_days: numOrNull(r.delivery_days),
-        shooter: r.package === "addon" ? null : (r.shooter || null),
-        overtime_fee: numOrNull(r.overtime_fee),
-        excludes: r.excludes?.trim() || null,
-        unedited_included: !!r.unedited_included,
-        revision_rounds: numOrNull(r.revision_rounds),
-        is_visible: r.is_visible !== false,
-      };
-      const write = (p: any) => r.id
-        ? supabase.from("pricing_rules").update(p).eq("id", r.id)
-        : supabase.from("pricing_rules").insert(p);
-      let { error } = await write(payload);
-      // Database not migrated yet (subtitle/cta_label missing): still save the rest
-      if (error && /subtitle|cta_label/.test(error.message)) {
-        const { subtitle, cta_label, ...rest } = payload;
-        ({ error } = await write(rest));
+    try {
+      for (const r of toWrite) {
+        const { _key, id: _id, ...clean } = r as any;
+        const payload: any = {
+          ...clean,
+          label: r.label.trim(),
+          photographer_id: uid,
+          price: Number(r.price),
+          per_photo_price: r.per_photo_price ? Math.max(0, Number(r.per_photo_price)) : 0,
+          subtitle: r.subtitle?.trim() || null,
+          cta_label: r.cta_label?.trim() || null,
+          hours: numOrNull(r.hours),
+          deliverable_count: numOrNull(r.deliverable_count),
+          delivery_days: numOrNull(r.delivery_days),
+          shooter: r.package === "addon" ? null : (r.shooter || null),
+          overtime_fee: numOrNull(r.overtime_fee),
+          excludes: r.excludes?.trim() || null,
+          unedited_included: !!r.unedited_included,
+          revision_rounds: numOrNull(r.revision_rounds),
+          is_visible: r.is_visible !== false,
+        };
+        if (r.id) {
+          const { error } = await supabase.from("pricing_rules").update(payload).eq("id", r.id);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase.from("pricing_rules").insert(payload).select("id").single();
+          if (error) throw error;
+          newIds.set(r._key!, (data as any).id);
+        }
       }
-      if (error) { setSaving(false); return toast.error(t("تعذّر حفظ \"{0}\": {1}", [payload.label, friendlyError(error.message)])); }
+    } catch (e: any) {
+      toast.error(t("تعذّر الحفظ: {0}", [friendlyError(e?.message ?? "")]), { id: "pricing-save" });
+      throw e;
+    } finally {
+      setSaving(false);
     }
-    const { data } = await supabase.from("pricing_rules").select("*").eq("photographer_id", uid).order("price");
-    setRules(withKeys((data ?? []) as Rule[]));
-    setSaved(snapshot((data ?? []) as Rule[]));
-    setCached(cacheKey("pricing", uid), { rules: data ?? [], prof: { deposit_percent: deposit.percent, fixed_deposit: deposit.fixed } });
-    setSaving(false);
-    setJustSaved(true);
-    hapticVibrate("success");
-    setTimeout(() => setJustSaved(false), 1800);
-    toast.success(t("حُفظت الباقات — تظهر الآن في ملفك العام"));
+    // نثبّت الـ id للباقات الجديدة دون إعادة رسم القائمة (لا تضيع الكتابة الجارية)
+    const withIds = (rs: Rule[]) => rs.map((x) => (x._key && newIds.has(x._key) ? { ...x, id: newIds.get(x._key)! } : x));
+    const next = withIds(rulesRef.current);
+    if (newIds.size) setRules((cur) => withIds(cur));
+    // المحفوظ = ما كُتب الآن + القيم المحفوظة سابقاً لما لم يُكتب (الناقصة تبقى «غير محفوظة» بلا تكرار)
+    const writtenKeys = new Set(toWrite.map((r) => r._key));
+    const snap = snapshot(next.map((r) => (writtenKeys.has(r._key) ? r : (r.id && savedById.has(r.id) ? { ...r, ...JSON.parse(savedById.get(r.id)!) } : r))));
+    setSaved(snap);
+    setCached(cacheKey("pricing", uid), { rules: next.filter((r) => r.id), prof: { deposit_percent: deposit.percent, fixed_deposit: deposit.fixed } });
   };
+  const autosave = useAutosave({ dirty: !loading && snapshot(rules) !== saved, blocked: overBasic, save, version: snapshot(rules) });
 
   if (loading) return <PageLoader />;
   if (loadError) {
@@ -395,23 +400,7 @@ function PricingMgr() {
           </button>
         </div>
 
-        <AnimatePresence>
-          {(snapshot(rules) !== saved || justSaved) && (
-            <motion.div
-              initial={{ y: 60, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 60, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 34 }}
-              className="sticky bottom-20 sm:bottom-6 z-20 mt-8 flex justify-end"
-            >
-              <button onClick={save} disabled={saving || justSaved} className="inline-flex items-center gap-2 rounded-full bg-charcoal px-8 py-3 text-ivory shadow-elegant transition hover:opacity-90 active:scale-[0.98] disabled:opacity-80 dark:bg-gold dark:text-charcoal">
-                {saving && <span className="h-4 w-4 animate-spin rounded-full border-2 border-ivory/30 border-t-ivory dark:border-charcoal/30 dark:border-t-charcoal" />}
-                {justSaved && <Check className="h-4 w-4" />}
-                {saving ? t("نحفظ…") : justSaved ? t("حُفظت") : t("حفظ التغييرات")}
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <AutosaveChip status={autosave.status} retry={autosave.retry} />
       </section>
       <Footer />
     </div>

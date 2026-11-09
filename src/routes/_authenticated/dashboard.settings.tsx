@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useAutosave, AutosaveChip } from "@/hooks/use-autosave";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
@@ -77,18 +78,16 @@ function SettingsPage() {
 
   const bizDirty = JSON.stringify(biz) !== JSON.stringify(savedBiz);
   const dirty = useMemo(() => JSON.stringify(s) !== JSON.stringify(saved), [s, saved]) || bizDirty;
+  const autosave = useAutosave({ dirty, save: () => save(), version: JSON.stringify([s, biz]) });
   const set = <K extends keyof PageSettings>(k: K, v: PageSettings[K]) => setS((x) => ({ ...x, [k]: v }));
 
-  // تنبيه قبل مغادرة الصفحة بتغييرات غير محفوظة
-  useEffect(() => {
-    if (!dirty) return;
-    const h = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
-    window.addEventListener("beforeunload", h);
-    return () => window.removeEventListener("beforeunload", h);
-  }, [dirty]);
+  const sRef = useRef(s);
+  sRef.current = s;
 
+  // حفظ تلقائي بعد توقّف التعديل (لا زر «حفظ»)
   const save = async () => {
     setSaving(true);
+    const sent = s;
     try {
       if (bizDirty) {
         if (biz.policy !== savedBiz.policy || biz.percent !== savedBiz.percent) {
@@ -101,12 +100,13 @@ function SettingsPage() {
         }
         setSavedBiz(biz);
       }
-      const res = await saveFn({ data: { settings: s } });
+      const res = await saveFn({ data: { settings: sent } });
       setSaved(res.settings);
-      setS(res.settings);
-      toast.success(tr("تم الحفظ — صفحتك العامة تحدّثت"));
+      // لا نمسح ما عدّلته أثناء الحفظ
+      if (JSON.stringify(sRef.current) === JSON.stringify(sent)) setS(res.settings);
     } catch (e: any) {
-      toast.error(e?.message || tr("تعذّر الحفظ، حاولي مرة أخرى"));
+      console.error("[settings] autosave", e?.message);
+      throw e;
     } finally {
       setSaving(false);
     }
@@ -335,23 +335,7 @@ function SettingsPage() {
         )}
       </AnimatePresence>
 
-      {/* شريط الحفظ يظهر فقط عند وجود تغييرات */}
-      <AnimatePresence>
-        {dirty && (
-          <motion.div initial={{ y: 80 }} animate={{ y: 0 }} exit={{ y: 80 }}
-            className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
-            <div className="container-editorial flex items-center justify-between gap-3">
-              <span className="text-sm text-muted-foreground">{tr("لديك تغييرات غير محفوظة")}</span>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => { setS(saved); setBiz(savedBiz); }} disabled={saving} className="rounded-sm border border-border px-4 py-2 text-sm hover:bg-secondary">{tr("تراجع")}</button>
-                <button type="button" onClick={save} disabled={saving} className="rounded-sm bg-foreground px-5 py-2 text-sm font-medium text-background disabled:opacity-60">
-                  {saving ? tr("جارٍ الحفظ…") : tr("حفظ ونشر")}
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <AutosaveChip status={autosave.status} retry={autosave.retry} />
       <Footer />
     </div>
   );

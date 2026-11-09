@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { useAutosave, AutosaveChip } from "@/hooks/use-autosave";
 import { getCached, setCached, fetchPage, cacheKey } from "@/lib/page-cache";
 import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
 import { LivePhonePreview } from "@/components/dashboard/LivePhonePreview";
@@ -101,19 +102,6 @@ function ProfilePage() {
   // أي حفظ يحدّث originalP → نحدّث الكاش لتفتح الصفحة فوراً في المرة القادمة
   useEffect(() => { if (uid && originalP) setCached(cacheKey("profile", uid), originalP); }, [uid, originalP]);
 
-  // Idea 9: Unsaved Changes Warning
-  useEffect(() => {
-    const isDirty = originalP && p && JSON.stringify(originalP) !== JSON.stringify(p);
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = tr("لديك تعديلات غير محفوظة. هل أنت متأكد من المغادرة؟");
-        return e.returnValue;
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [originalP, p]);
 
   const onAvatar = async (f: File) => {
     const res = await uploadProfilePhoto(f, uid, "avatar");
@@ -201,53 +189,64 @@ function ProfilePage() {
     if (await savePortfolio(arr)) toast.success(input.trim() ? tr("رُبطت الصورة بالرابط") : tr("أُزيل الرابط"));
   };
 
+  // حفظ تلقائي: الملف يُحفظ بعد توقّف الكتابة. اسم مستخدم محجوز/قيد الفحص يوقف الحفظ (ورسالته ظاهرة تحت الحقل)،
+  // وطريقة دفع نصف مكتملة لا تُحفظ حتى تكتمل (حقولها الناقصة ظاهرة في المحرّر) دون رسائل متكررة.
   const save = async () => {
-    if (usernameState === "taken") return toast.error(g(tr("اسم المستخدم محجوز — اختاري اسماً آخر"), tr("اسم المستخدم محجوز — اختر اسماً آخر")));
+    const cur = p;
+    const finalDepositPercent = Math.max(0, Math.min(100, numOr(cur.deposit_percent, 25)));
+    const finalFixedDeposit = cur.fixed_deposit ? Math.max(0, Number(cur.fixed_deposit)) : null;
     setSaving(true);
-    const finalDepositPercent = Math.max(0, Math.min(100, numOr(p.deposit_percent, 25)));
-    const finalFixedDeposit = p.fixed_deposit ? Math.max(0, Number(p.fixed_deposit)) : null;
-
-    const { error } = await supabase.from("profiles").update({
-      display_name: p.display_name, username: p.username, bio: p.bio, city: p.city,
-      base_location: p.base_location, instagram: p.instagram,
-      equipment: p.equipment, deposit_percent: finalDepositPercent,
-      travel_fee_per_km: Math.max(0, numOr(p.travel_fee_per_km, 0.5)), free_km: Math.max(0, numOr(p.free_km, 20)),
-      avatar_url: p.avatar_url, cover_url: p.cover_url, portfolio_urls: p.portfolio_urls ?? [],
-      is_published: !!p.is_published,
-      tagline: p.tagline ?? null,
-      booking_notes: p.booking_notes ?? null,
-      fixed_deposit: finalFixedDeposit,
-    }).eq("id", uid);
-    const half = (p.payment_methods ?? []).find((m: any) => isStarted(m) && !isComplete(m));
-    if (half) {
+    try {
+      const { error } = await supabase.from("profiles").update({
+        display_name: cur.display_name, username: cur.username, bio: cur.bio, city: cur.city,
+        base_location: cur.base_location, instagram: cur.instagram,
+        equipment: cur.equipment, deposit_percent: finalDepositPercent,
+        travel_fee_per_km: Math.max(0, numOr(cur.travel_fee_per_km, 0.5)), free_km: Math.max(0, numOr(cur.free_km, 20)),
+        avatar_url: cur.avatar_url, cover_url: cur.cover_url, portfolio_urls: cur.portfolio_urls ?? [],
+        is_published: !!cur.is_published,
+        tagline: cur.tagline ?? null,
+        booking_notes: cur.booking_notes ?? null,
+        fixed_deposit: finalFixedDeposit,
+      }).eq("id", uid);
+      if (error) throw error;
+      const half = (cur.payment_methods ?? []).find((m: any) => isStarted(m) && !isComplete(m));
+      let methods = originalP?.payment_methods ?? [];
+      if (!half) {
+        methods = normalizeMethods(cur.payment_methods ?? []);
+        const { error: pErr } = await (supabase as any).from("photographer_private").upsert({
+          user_id: uid, phone: cur.phone ?? null, whatsapp: cur.whatsapp ?? null,
+          payment_methods: methods, ...legacyColumns(methods),
+        }, { onConflict: "user_id" });
+        if (pErr) throw pErr;
+      }
+      const wasPublished = !!originalP?.is_published;
+      const savedP = half ? { ...cur, payment_methods: originalP?.payment_methods ?? [] } : { ...cur, payment_methods: methods, ...legacyColumns(methods) };
+      setOriginalP(savedP);
+      // لا نمسّ ما كُتب أثناء الحفظ
+      if (!half && JSON.stringify(pRef.current) === JSON.stringify(cur)) setP(savedP);
+      if (cur.is_published !== wasPublished) {
+        loadVerification();
+        if (cur.is_published) {
+          toast.success(tr("ملفك منشور الآن للعرائس"));
+          if (!methods.length) toast.warning(g(tr("أضيفي طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتكِ."), tr("أضف طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتك.")), { duration: 8000 });
+        }
+      }
+    } catch (e: any) {
+      toast.error(e?.message || tr("تعذّر الحفظ"), { id: "profile-save" });
+      throw e;
+    } finally {
       setSaving(false);
-      window.dispatchEvent(new CustomEvent("memoria-open-section", { detail: "sec-contact" }));
-      return toast.error(g(tr("أكملي طريقة استلام العربون: {0}", [missingFields(half).map((x) => tr(x)).join("، ")]), tr("أكمل طريقة استلام العربون: {0}", [missingFields(half).map((x) => tr(x)).join("، ")])), { duration: 7000 });
-    }
-    const methods = normalizeMethods(p.payment_methods ?? []);
-    const { error: pErr } = await (supabase as any).from("photographer_private").upsert({
-      user_id: uid,
-      phone: p.phone ?? null,
-      whatsapp: p.whatsapp ?? null,
-      payment_methods: methods,
-      ...legacyColumns(methods),
-    }, { onConflict: "user_id" });
-    setSaving(false);
-    if (error || pErr) return toast.error((error ?? pErr)!.message);
-    const saved = { ...p, payment_methods: methods, ...legacyColumns(methods) };
-    setP(saved);
-    setOriginalP(saved);
-    loadVerification();
-    toast.success(p.is_published && !originalP?.is_published ? tr("حُفظ ملفك وأصبح منشوراً للعرائس") : tr("حُفظت التغييرات"));
-    // منشورة بلا طريقة لاستلام العربون: العروس توافَق ثم لا تعرف أين تحوّل
-    if (p.is_published && !methods.length) {
-      toast.warning(g(tr("أضيفي طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتكِ."), tr("أضف طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتك.")), { duration: 8000 });
     }
   };
+  const autosave = useAutosave({
+    dirty: !loading && !!originalP && JSON.stringify(originalP) !== JSON.stringify(p),
+    blocked: usernameState === "taken" || usernameState === "checking" || !String(p?.username ?? "").trim(),
+    save,
+    version: JSON.stringify(p),
+  });
 
   if (loading) return <PageLoader />;
 
-  const isDirty = !!originalP && JSON.stringify(originalP) !== JSON.stringify(p);
   const portfolioCount = (p.portfolio_urls ?? []).length;
   const bioWords = String(p.bio ?? "").trim().split(/\s+/).filter(Boolean).length;
   const depositPct = Math.max(0, Math.min(100, numOr(p.deposit_percent, 25)));
@@ -585,7 +584,7 @@ function ProfilePage() {
       {/* الموبايل: زر عائم يفتح نفس المعاينة الحية (بما فيها التعديلات غير المحفوظة) */}
       <button
         onClick={() => setPreviewOpen(true)}
-        className={`lg:hidden fixed end-4 z-40 inline-flex items-center gap-2 rounded-full bg-charcoal px-4 py-3 text-sm font-medium text-ivory shadow-lg transition-[bottom] dark:bg-gold dark:text-charcoal ${isDirty ? "bottom-40 md:bottom-24" : "bottom-24 md:bottom-6"}`}
+        className={`lg:hidden fixed end-4 z-40 inline-flex items-center gap-2 rounded-full bg-charcoal px-4 py-3 text-sm font-medium text-ivory shadow-lg transition-[bottom] dark:bg-gold dark:text-charcoal bottom-24 md:bottom-6`}
       >
         <Eye className="h-4 w-4" />{" "}{tr("معاينة صفحتي")}
       </button>
@@ -603,27 +602,7 @@ function ProfilePage() {
         </SheetContent>
       </Sheet>
 
-      {/* شريط الحفظ يظهر فقط عند وجود تغييرات */}
-      <AnimatePresence>
-        {isDirty && (
-          <motion.div
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 34 }}
-            className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+4.5rem)] z-40 px-4 sm:bottom-6"
-          >
-            <div className="mx-auto flex max-w-xl items-center gap-3 rounded-full bg-charcoal py-2 ps-5 pe-2 text-ivory shadow-2xl dark:bg-card dark:text-foreground dark:ring-1 dark:ring-gold/30">
-              <span className="flex-1 text-sm">{g(tr("لديكِ تغييرات غير محفوظة"), tr("لديك تغييرات غير محفوظة"))}</span>
-              <button onClick={() => setP(originalP)} className="rounded-full px-3 py-2 text-sm text-ivory/70 hover:text-ivory dark:text-muted-foreground dark:hover:text-foreground">{tr("تراجع")}</button>
-              <button onClick={save} disabled={saving || usernameState === "taken"} className="inline-flex items-center gap-2 rounded-full bg-gold px-5 py-2 text-sm font-medium text-charcoal disabled:opacity-60 active:scale-95 transition-transform">
-                {saving && <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-charcoal/30 border-t-charcoal" />}
-                {saving ? tr("نحفظ…") : tr("حفظ")}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <AutosaveChip status={autosave.status} retry={autosave.retry} />
       <Footer />
     </div>
   );

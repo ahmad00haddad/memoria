@@ -4,6 +4,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { LayoutDashboard, Calendar, ListChecks, User, Plus, CalendarX, Link2, MessageCircle, Clapperboard, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthState } from "@/hooks/use-auth-state";
+import { ManualBookingSheet } from "@/components/dashboard/ManualBookingSheet";
+import { BlockDaySheet } from "@/components/dashboard/BlockDaySheet";
 import { supabase } from "@/integrations/supabase/client";
 import { g } from "@/hooks/use-gender";
 import { tx, t } from "@/i18n";
@@ -71,6 +73,9 @@ export function MobileBottomNav() {
 function QuickActions({ open, onClose }: { open: boolean; onClose: () => void }) {
   const nav = useNavigate();
   const { userId } = useAuthState();
+  // أفعال قصيرة تُنجز في نافذة من الأسفل دون مغادرة الصفحة
+  const [sheet, setSheet] = useState<"booking" | "block" | null>(null);
+  const openSheet = (k: "booking" | "block") => { onClose(); setTimeout(() => setSheet(k), 180); };
 
   const go = (to: string) => {
     onClose();
@@ -93,8 +98,8 @@ function QuickActions({ open, onClose }: { open: boolean; onClose: () => void })
   };
 
   const actions = [
-    { icon: Plus, label: t("حجز جديد"), hint: g(t("لعميلة تواصلت معكِ خارج المنصّة"), t("لعميلة تواصلت معك خارج المنصّة")), run: () => go("/dashboard/bookings?new=1") },
-    { icon: CalendarX, label: t("حجب يوم"), hint: t("سفر أو ارتباط آخر"), run: () => go("/dashboard/calendar") },
+    { icon: Plus, label: t("حجز جديد"), hint: g(t("لعميلة تواصلت معكِ خارج المنصّة"), t("لعميلة تواصلت معك خارج المنصّة")), run: () => openSheet("booking") },
+    { icon: CalendarX, label: t("حجب يوم"), hint: t("سفر أو ارتباط آخر"), run: () => openSheet("block") },
     { icon: Link2, label: t("مشاركة رابط ملفّي"), hint: t("للبايو أو الواتساب"), run: copyLink },
     { icon: MessageCircle, label: t("عروض الأسعار"), hint: t("أسعار اقترحتها العرائس"), run: () => go("/dashboard/offers") },
     { icon: MessageCircle, label: t("قوالب واتساب"), hint: t("رسائل جاهزة للعميلات"), run: () => go("/dashboard/whatsapp-templates") },
@@ -102,6 +107,9 @@ function QuickActions({ open, onClose }: { open: boolean; onClose: () => void })
   ];
 
   return (
+    <>
+    <ManualBookingSheet open={sheet === "booking"} onClose={() => setSheet(null)} />
+    <BlockDaySheet open={sheet === "block"} onClose={() => setSheet(null)} />
     <AnimatePresence>
       {open && (
         <>
@@ -149,5 +157,6 @@ function QuickActions({ open, onClose }: { open: boolean; onClose: () => void })
         </>
       )}
     </AnimatePresence>
+    </>
   );
 }
