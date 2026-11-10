@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Final — Manual booking form, quick actions, components</title>
+<link rel="stylesheet" href="shared.css"><link rel="stylesheet" href="final.css">
+<style>
+.mz{height:100%}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fgap>*+*{margin-top:14px}
+.chk{display:flex;gap:10px;align-items:center;min-height:44px}
+.chk input{width:20px;height:20px;accent-color:var(--ink)}
+.acts{list-style:none;margin:0;padding:0}
+.acts li{display:flex;align-items:center;gap:14px;min-height:60px;border-bottom:1px solid var(--line)}
+.acts li:last-child{border:0}
+.acts small{display:block;color:var(--ink-3);font-size:12px}
+.board{width:760px;padding:32px;border-radius:10px;height:auto}
+.board h3{font:500 11px/1 "Geist",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);direction:ltr;text-align:start;margin:28px 0 12px}
+.board h3:first-child{margin-top:0}
+.rowx{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sw{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.sw div{height:56px;border-radius:var(--r1);border:1px solid var(--line);font:500 10px/1.3 "Geist",sans-serif;padding:6px;direction:ltr;display:flex;align-items:flex-end}
+</style>
+</head>
+<body>
+<div class="proto-head"><h1>Final direction — Form, sheets, components</h1><p>The manual-booking workflow with its real fields (ManualBookingSheet.tsx), the quick-action sheet, and the component set in light and dark. <button onclick="document.querySelectorAll('.mz').forEach(e=>e.dataset.theme=e.dataset.theme==='dark'?'':'dark')">Toggle dark</button> · <a href="index.html">← index</a></p></div>
+<div class="stage">
+<div><p class="cap">Mobile · quick actions (the "+")</p>
+<div class="phone"><div class="mz m"><div class="scrim"></div>
+  <div class="sheet"><div class="grab"></div>
+    <div style="display:flex;align-items:center"><h2 class="t-heading" style="flex:1">إجراء سريع</h2><button class="iconbtn" aria-label="إغلاق"><svg class="i"><use href="#x"/></svg></button></div>
+    <ul class="acts">
+      <li><svg class="i"><use href="#plus"/></svg><div><b style="font-weight:500">حجز جديد</b><small>لعميلة تواصلت معكِ خارج المنصّة</small></div></li>
+      <li><svg class="i"><use href="#calx"/></svg><div><b style="font-weight:500">حجب يوم</b><small>سفر أو ارتباط آخر</small></div></li>
+      <li><svg class="i"><use href="#link"/></svg><div><b style="font-weight:500">مشاركة رابط ملفّي</b><small>للبايو أو الواتساب</small></div></li>
+      <li><svg class="i"><use href="#tag"/></svg><div><b style="font-weight:500">عروض الأسعار</b><small>أسعار اقترحتها العرائس</small></div></li>
+      <li><svg class="i"><use href="#msg"/></svg><div><b style="font-weight:500">قوالب واتساب</b><small>رسائل جاهزة للعميلات</small></div></li>
+      <li><svg class="i"><use href="#layers"/></svg><div><b style="font-weight:500">متابعة الإنتاج</b><small>من التصوير إلى التسليم</small></div></li>
+    </ul></div>
+</div></div></div>
+
+<div><p class="cap">Mobile · manual booking — same fields, same order of validation</p>
+<div class="phone"><div class="mz m"><div class="scrim"></div>
+  <div class="sheet" style="max-height:94%"><div class="grab"></div>
+    <div style="display:flex;align-items:center;margin-bottom:8px"><h2 class="t-heading" style="flex:1">حجز يدوي</h2><button class="iconbtn" aria-label="إغلاق"><svg class="i"><use href="#x"/></svg></button></div>
+    <form class="fgap">
+      <label class="field"><span>اسم العميلة</span><input class="input" value="سارة أحمد"></label>
+      <label class="field error"><span>رقم الواتساب</span><input class="input" dir="ltr" inputmode="tel" value="0791"><small>الرقم ناقص. اكتبيه بعشر خانات مثل 07XXXXXXXX.</small></label>
+      <label class="field"><span>التاريخ</span><input class="input" type="date" value="2026-12-12"></label>
+      <div class="g2"><label class="field"><span>من</span><input class="input" type="time" value="17:00"></label><label class="field"><span>إلى</span><input class="input" type="time" value="23:00"></label></div>
+      <label class="field"><span>الباقة</span><select class="input"><option>باقة ذهبية — 280 د.أ</option></select></label>
+      <div class="g2"><label class="field"><span>المجموع (د.أ)</span><input class="input" dir="ltr" inputmode="decimal" value="280"></label><label class="field"><span>العربون (د.أ)</span><input class="input" dir="ltr" inputmode="decimal" value="100"></label></div>
+      <label class="chk"><input type="checkbox" checked><span>العربون وصلني <span style="color:var(--ink-3)">— تأكّدت من تطبيق البنك</span></span></label>
+      <details><summary style="min-height:44px;display:flex;align-items:center;color:var(--ink-2)">الإيميل، القاعة والملاحظات (اختياري)</summary></details>
+      <button class="btn lg block" type="button">إضافة الحجز</button>
+    </form></div>
+</div></div></div>
+
+<div><p class="cap">Mobile · success state (existing behaviour kept)</p>
+<div class="phone"><div class="mz m"><div class="scrim"></div>
+  <div class="sheet"><div class="grab"></div>
+    <h2 class="t-heading">انضاف الحجز</h2>
+    <p style="color:var(--ink-2);margin:6px 0 16px">الحجز بتقويمكِ ومؤكَّد. والعقد جاهز للتوقيع. ابعتي الرابط للعميلة لتتابع كل شيء من المنصة.</p>
+    <button class="btn wa lg block"><svg class="i"><use href="#wa"/></svg>ابعتي للعميلة على واتساب</button>
+    <div class="g2" style="margin-top:8px"><button class="btn secondary">نسخ الرسالة</button><button class="btn secondary">فتح الحجز</button></div>
+    <button class="btn quiet block" style="margin-top:4px">حجز يدوي آخر</button>
+  </div>
+  <div style="position:absolute;inset:16px 16px auto 16px;z-index:6"><div class="toast"><svg class="i"><use href="#check"/></svg>انضاف الحجز</div></div>
+</div></div></div>
+</div>
+
+<div class="stage">
+<div><p class="cap">Components · light</p><div class="desk mz board">
+  <h3>Buttons — 44px default, 48px primary on mobile, 36px compact on desktop only</h3>
+  <div class="rowx"><button class="btn">وافقي على الطلب</button><button class="btn secondary">نسخ الرسالة</button><button class="btn quiet">تخطّي</button><button class="btn danger">إلغاء الحجز</button><button class="btn wa"><svg class="i"><use href="#wa"/></svg>واتساب</button><button class="btn" disabled>نضيف الحجز…</button><button class="btn sm">حجز جديد</button></div>
+  <h3>Status — dot plus word, one vocabulary everywhere</h3>
+  <div class="rowx"><span class="status action">بانتظار موافقتكِ</span><span class="status waiting">بانتظار العربون</span><span class="status ok">مؤكّد</span><span class="status done">مكتمل</span><span class="status off">ملغى</span><span class="badge action">تسليم متأخر</span><span class="badge waiting">قيد المراجعة</span><span class="badge ok">مُعتمد</span><span class="badge info">جديد</span><span class="count n">3</span></div>
+  <h3>Fields</h3>
+  <div class="g2" style="max-width:560px"><label class="field"><span>اسم العميلة</span><input class="input" placeholder="سارة أحمد"><small>كما ستظهر في العقد.</small></label><label class="field error"><span>رقم الواتساب</span><input class="input" dir="ltr" value="0791"><small>الرقم ناقص.</small></label></div>
+  <div class="seg" style="max-width:360px;margin-top:12px"><button aria-pressed="true">تصوير</button><button>فيديو</button><button>صور + فيديو</button></div>
+  <h3>Feedback</h3>
+  <div class="rowx"><div class="toast"><svg class="i"><use href="#check"/></svg>حُفظ</div><div class="toast err">تعذّر الحفظ. تحقّقي من الاتصال ثم حاولي مجدداً.</div><span class="saved"><svg class="i" style="width:14px;height:14px"><use href="#check"/></svg>حُفظ</span></div>
+  <div class="offline" style="margin-top:12px">بلا اتصال — نعرض آخر نسخة محفوظة</div>
+  <h3>Empty and loading</h3>
+  <div class="g2"><div class="empty"><h4 class="t-section">لا شيء يحتاج إجراء</h4><p>كل شيء مرتّب في هذا القسم.</p><button class="btn secondary sm">حجز يدوي</button></div>
+    <div><div style="display:grid;grid-template-columns:52px 1fr 80px;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)"><i class="sk" style="height:36px"></i><div><i class="sk" style="height:12px;width:60%"></i><i class="sk" style="height:10px;width:40%;margin-top:8px"></i></div><i class="sk" style="height:12px"></i></div><div style="display:grid;grid-template-columns:52px 1fr 80px;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)"><i class="sk" style="height:36px"></i><div><i class="sk" style="height:12px;width:50%"></i><i class="sk" style="height:10px;width:35%;margin-top:8px"></i></div><i class="sk" style="height:12px"></i></div></div></div>
+  <h3>Colour tokens</h3>
+  <div class="sw"><div style="background:var(--paper)">paper</div><div style="background:var(--surface)">surface</div><div style="background:var(--sunken)">sunken</div><div style="background:var(--ink);color:var(--on-ink)">ink</div><div style="background:var(--brass)">brass</div><div style="background:var(--brass-wash);color:var(--brass-ink)">brass-ink</div><div style="background:var(--clay);color:#fff">clay</div><div style="background:var(--ochre);color:#fff">ochre</div><div style="background:var(--sage);color:#fff">sage</div><div style="background:var(--slate);color:#fff">slate</div><div style="background:var(--line)">line</div><div style="background:var(--line-input);color:#fff">line-input</div></div>
+</div></div>
+<div><p class="cap">Components · dark</p><div class="desk mz board" data-theme="dark" style="width:520px">
+  <h3>Buttons</h3>
+  <div class="rowx"><button class="btn">وافقي على الطلب</button><button class="btn secondary">نسخ</button><button class="btn danger">إلغاء</button><button class="btn wa"><svg class="i"><use href="#wa"/></svg>واتساب</button></div>
+  <h3>Status</h3>
+  <div class="rowx"><span class="status action">بانتظار موافقتكِ</span><span class="status waiting">بانتظار العربون</span><span class="status ok">مؤكّد</span><span class="badge action">متأخر</span><span class="badge ok">مُعتمد</span></div>
+  <h3>Field</h3>
+  <label class="field" style="max-width:280px"><span>اسم العميلة</span><input class="input" placeholder="سارة أحمد"></label>
+  <h3>Rows</h3>
+  <ul class="rows"><li><div class="day"><b>14</b><span>تشرين ٢</span></div><div><strong>ريم وخالد</strong><small>زفاف · عمّان</small></div><span class="status action">موافقتكِ</span></li><li><div class="day"><b>28</b><span>تشرين ٢</span></div><div><strong>هبة وأحمد</strong><small>زفاف · السلط</small></div><span class="status ok">مؤكّد</span></li></ul>
+  <h3>Feedback</h3><div class="toast"><svg class="i"><use href="#check"/></svg>حُفظ</div>
+</div></div>
+</div>
+<script src="icons.js"></script>
+</body></html>

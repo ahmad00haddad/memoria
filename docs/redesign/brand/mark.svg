@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <title>Memoria — Kept Frame (outline, use at 32px and above)</title>
+  <!-- print: 22x30 portrait, 3-unit stroke, centred on the 48 grid with the corner mount -->
+  <rect x="15.5" y="6.5" width="22" height="30" rx="1" stroke="#1F1915" stroke-width="3"/>
+  <!-- photo-corner mount: right isosceles triangle, 15-unit legs, overhangs the print by 5 units on both edges -->
+  <path d="M9 42V27L24 42Z" fill="#BE9761" stroke="#F9F6F1" stroke-width="1.5" stroke-linejoin="round" paint-order="stroke"/>
+</svg>

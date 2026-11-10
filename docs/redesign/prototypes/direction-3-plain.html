@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Direction 3 — Plain (Contemporary Minimal)</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.p{--bg:#FCFCFA;--panel:#F5F4F1;--line:#E7E5E0;--ink:#1B1A18;--ink2:#5F5C57;--ink3:#8B8882;--green:#2F6B4F;--red:#B3402E;--amber:#8F6A1E;
+  background:var(--bg);color:var(--ink);font:400 13px/1.5 "Readex Pro",sans-serif;height:100%}
+.p .btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;background:var(--ink);color:#fff;font-size:13px;font-weight:500}
+.p .btn.o{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.p kbd{font:500 11px "Geist";color:var(--ink3);border:1px solid var(--line);border-radius:4px;padding:1px 5px;direction:ltr}
+.p .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-inline-end:8px;background:var(--ink3)}
+.p .dot.r{background:var(--red)}.p .dot.a{background:var(--amber)}.p .dot.g{background:var(--green)}
+
+.p.d{display:grid;grid-template-columns:208px 1fr}
+.p .side{background:var(--panel);border-inline-end:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+.p .side .ws{display:flex;align-items:center;gap:8px;padding:6px 8px 14px;font-weight:600}
+.p .side .ws i{width:20px;height:20px;border-radius:5px;background:var(--ink);display:block}
+.p .side a{display:flex;align-items:center;gap:10px;height:32px;padding:0 8px;border-radius:6px;color:var(--ink2)}
+.p .side a .i{width:16px;height:16px}
+.p .side a.on{background:#EAE8E3;color:var(--ink);font-weight:500}
+.p .side a span{margin-inline-start:auto;font-size:11px;color:var(--ink3)}
+.p .side hr{border:0;border-top:1px solid var(--line);margin:8px 4px;width:calc(100% - 8px)}
+.p .head{display:flex;align-items:center;gap:12px;height:48px;padding:0 20px;border-bottom:1px solid var(--line)}
+.p .head h1{font-size:14px;font-weight:600;margin:0}
+.p .head .sp{margin-inline-start:auto;display:flex;gap:8px;align-items:center}
+.p .strip{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line)}
+.p .strip div{padding:14px 20px;border-inline-start:1px solid var(--line)}
+.p .strip div:first-child{border:0}
+.p .strip b{display:block;font:600 22px/1.2 "Geist","Readex Pro";margin-top:2px}
+.p .strip span{color:var(--ink3);font-size:12px}
+.p .todo{margin:16px 20px;border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;background:#fff}
+.p .todo p{margin:0;flex:1}
+.p table{width:100%;border-collapse:collapse}
+.p th{font-weight:500;color:var(--ink3);font-size:12px;text-align:start;padding:8px 20px;border-bottom:1px solid var(--line)}
+.p td{padding:0 20px;height:40px;border-bottom:1px solid var(--line)}
+.p td.n{font-family:"Geist","Readex Pro";direction:ltr;text-align:end}
+.p .tabs{display:flex;gap:16px;padding:0 20px;border-bottom:1px solid var(--line);color:var(--ink3)}
+.p .tabs a{padding:10px 0}.p .tabs a.on{color:var(--ink);box-shadow:inset 0 -2px var(--ink);font-weight:500}
+
+.p.m .head{height:52px;padding:0 16px}.p.m .head h1{font-size:17px}
+.p.m .strip div{padding:10px 12px}.p.m .strip b{font-size:18px}
+.p.m .todo{margin:12px;flex-wrap:wrap}.p.m .todo .btn{height:44px;width:100%;justify-content:center}
+.p.m .rw{display:flex;align-items:center;gap:10px;padding:0 16px;height:60px;border-bottom:1px solid var(--line)}
+.p.m .rw small{display:block;color:var(--ink3);font-size:12px}
+.p.m .rw .n{margin-inline-start:auto;font-family:"Geist";color:var(--ink2)}
+.p.m .bar{position:absolute;inset:auto 0 0 0;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);background:var(--bg);padding:8px 0 22px;font-size:11px;color:var(--ink3);text-align:center}
+.p.m .bar a{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;justify-content:center}
+.p.m .bar a.on{color:var(--ink);font-weight:500}
+</style>
+</head>
+<body>
+<div class="proto-head"><h1>Direction 3 — Plain</h1><p>Contemporary Minimal. One sans family, near-white, 6px radius, dense tables, keyboard hints. The fastest and most "tool-like" direction; also the one closest to every other modern SaaS. <a href="index.html">← all directions</a></p></div>
+<div class="stage">
+<div><p class="cap">Desktop · dashboard</p>
+<div class="desk"><div class="p d">
+  <aside class="side"><div class="ws"><i></i>ميموريا</div>
+    <a class="on"><svg class="i"><use href="#home"/></svg>اليوم</a><a><svg class="i"><use href="#list"/></svg>الحجوزات<span class="num">3</span></a><a><svg class="i"><use href="#cal"/></svg>التقويم</a><a><svg class="i"><use href="#layers"/></svg>الإنتاج<span class="num">1</span></a><hr><a><svg class="i"><use href="#tag"/></svg>الأسعار</a><a><svg class="i"><use href="#file"/></svg>العقود</a><a><svg class="i"><use href="#msg"/></svg>قوالب واتساب</a><a><svg class="i"><use href="#user"/></svg>ملفّي</a></aside>
+  <main>
+    <div class="head"><h1>اليوم</h1><span style="color:var(--ink3)">الثلاثاء 10 تشرين الثاني</span><span class="sp"><span class="btn o"><svg class="i" style="width:14px;height:14px"><use href="#search"/></svg>بحث <kbd>Ctrl K</kbd></span><span class="btn"><svg class="i" style="width:14px;height:14px"><use href="#plus"/></svg>حجز جديد</span></span></div>
+    <div class="strip"><div><span>إيرادات هذا الشهر</span><b>170 د.أ</b></div><div><span>عرابين معلّقة</span><b>0 د.أ</b></div><div><span>تسليمات خلال 7 أيام</span><b>1</b></div></div>
+    <div class="todo"><i class="dot r"></i><p><strong>تسليم صور سارة ومحمد متأخر يومين.</strong> حدّثي مرحلة الإنتاج أو أرسلي موعداً جديداً.</p><a class="btn">افتحي الحجز</a></div>
+    <div class="tabs"><a class="on">القادم</a><a>يحتاج ردّكِ · 1</a><a>بانتظار العربون · 1</a><a>مكتمل</a></div>
+    <table><tr><th>العروس</th><th>المناسبة</th><th>التاريخ</th><th>الحالة</th><th style="text-align:end">المبلغ</th></tr>
+      <tr><td><b>ريم وخالد</b></td><td>زفاف · عمّان</td><td class="num">14 تشرين 2</td><td><i class="dot r"></i>بانتظار ردّكِ</td><td class="n">320 د.أ</td></tr>
+      <tr><td><b>دانا وعمر</b></td><td>خطوبة · إربد</td><td class="num">21 تشرين 2</td><td><i class="dot a"></i>بانتظار العربون</td><td class="n">150 د.أ</td></tr>
+      <tr><td><b>هبة وأحمد</b></td><td>زفاف · السلط</td><td class="num">28 تشرين 2</td><td><i class="dot g"></i>مؤكّد</td><td class="n">450 د.أ</td></tr>
+      <tr><td><b>لانا ويزن</b></td><td>حنّاء · عمّان</td><td class="num">05 كانون 1</td><td><i class="dot g"></i>مؤكّد</td><td class="n">200 د.أ</td></tr>
+      <tr><td><b>سارة ومحمد</b></td><td>زفاف · عمّان</td><td class="num">25 تشرين 1</td><td><i class="dot r"></i>تسليم متأخر</td><td class="n">380 د.أ</td></tr>
+    </table>
+  </main>
+</div></div></div>
+<div><p class="cap">Mobile · dashboard + navigation</p>
+<div class="phone"><div class="p m"><div class="scroll">
+  <div class="head"><h1>اليوم</h1><span class="sp"><svg class="i"><use href="#search"/></svg><svg class="i"><use href="#plus"/></svg></span></div>
+  <div class="strip"><div><span>هذا الشهر</span><b>170</b></div><div><span>عرابين</span><b>0</b></div><div><span>تسليمات</span><b>1</b></div></div>
+  <div class="todo"><i class="dot r"></i><p><strong>تسليم سارة ومحمد متأخر يومين</strong></p><a class="btn">افتحي الحجز</a></div>
+  <div class="tabs"><a class="on">القادم</a><a>يحتاج ردّكِ · 1</a><a>العربون · 1</a></div>
+  <div class="rw"><i class="dot r"></i><div><b>ريم وخالد</b><small>زفاف · عمّان · 14 تشرين 2</small></div><span class="n">320</span></div>
+  <div class="rw"><i class="dot a"></i><div><b>دانا وعمر</b><small>خطوبة · إربد · 21 تشرين 2</small></div><span class="n">150</span></div>
+  <div class="rw"><i class="dot g"></i><div><b>هبة وأحمد</b><small>زفاف · السلط · 28 تشرين 2</small></div><span class="n">450</span></div>
+  <div class="rw"><i class="dot g"></i><div><b>لانا ويزن</b><small>حنّاء · عمّان · 05 كانون 1</small></div><span class="n">200</span></div>
+  </div>
+  <nav class="bar"><a class="on"><svg class="i"><use href="#home"/></svg>اليوم</a><a><svg class="i"><use href="#list"/></svg>الحجوزات</a><a><svg class="i"><use href="#cal"/></svg>التقويم</a><a><svg class="i"><use href="#user"/></svg>ملفّي</a></nav>
+</div></div></div>
+</div>
+<script src="icons.js"></script>
+</body></html>

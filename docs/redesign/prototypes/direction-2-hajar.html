@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Direction 2 — Hajar (Modern Heritage)</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.h{--stone:#EDE6D8;--card:#F8F4EC;--basalt:#2A2623;--basalt2:#3A3531;--text2:#5E564E;--line:#D9D0BF;--terra:#A5553A;--olive:#66704C;--sand:#C9B58F;
+  background:var(--stone);color:var(--basalt);font:400 14px/1.6 "Readex Pro",sans-serif;height:100%}
+.h .kufi{font-family:"Reem Kufi","Readex Pro",sans-serif;font-weight:500}
+.h .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;background:var(--terra);color:#fff;font-weight:500}
+.h .chip{display:inline-block;font-size:12px;padding:3px 10px;border-radius:999px;background:var(--stone);color:var(--text2)}
+.h .chip.act{background:var(--terra);color:#fff} .h .chip.ok{background:#DDE2CF;color:#424A2E} .h .chip.wait{background:#EADFC6;color:#6B5320}
+
+.h.d{display:grid;grid-template-columns:232px 1fr}
+.h .rail{background:var(--basalt);color:#E9E1D2;padding:28px 18px;display:flex;flex-direction:column;gap:6px}
+.h .rail .logo{font:500 24px/1 "Reem Kufi";padding:0 12px 26px;display:flex;align-items:center;gap:10px}
+.h .rail .logo i{width:22px;height:28px;border-radius:11px 11px 0 0;background:var(--sand);display:block}
+.h .rail a{display:flex;align-items:center;gap:12px;height:44px;padding:0 12px;border-radius:12px;color:#BDB3A2;font-size:14px}
+.h .rail a.on{background:var(--basalt2);color:#fff}
+.h .rail a b{margin-inline-start:auto;font-weight:500;font-size:12px;background:var(--terra);color:#fff;border-radius:999px;padding:0 8px}
+.h .main{padding:32px 40px;overflow:hidden}
+.h h1{font:500 34px/1.3 "Reem Kufi";margin:0 0 4px}
+.h .sub{color:var(--text2);margin:0 0 24px}
+.h .hero{display:grid;grid-template-columns:150px 1fr auto;gap:24px;align-items:center;background:var(--card);border-radius:20px;padding:20px 24px 20px 28px}
+.h .arch{height:150px;border-radius:75px 75px 6px 6px;background:var(--basalt);color:var(--sand);display:grid;place-items:center;text-align:center}
+.h .arch b{display:block;font:500 46px/1 "Reem Kufi";color:#F3EBDD}
+.h .hero h2{font:500 22px/1.4 "Reem Kufi";margin:6px 0 4px}
+.h .hero p{margin:0;color:var(--text2)}
+.h .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:18px 0}
+.h .tile{background:var(--card);border-radius:16px;padding:16px 18px;border-top:3px solid var(--sand)}
+.h .tile b{display:block;font:500 30px/1.2 "Reem Kufi"}
+.h .tile span{font-size:12px;color:var(--text2)}
+.h .rows{background:var(--card);border-radius:16px;padding:6px 18px}
+.h .row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.h .row:last-child{border:0}
+.h .row .d{width:44px;height:52px;border-radius:22px 22px 4px 4px;background:var(--stone);display:grid;place-items:center;font:500 18px "Reem Kufi"}
+.h .row small{display:block;color:var(--text2);font-size:12px}
+.h .row .chip{margin-inline-start:auto}
+
+.h.m .top{display:flex;justify-content:space-between;align-items:center;padding:16px 20px}
+.h.m .pad{padding:4px 16px 120px}
+.h.m h1{font-size:26px}
+.h.m .hero{grid-template-columns:84px 1fr;padding:16px;gap:14px;border-radius:18px}
+.h.m .arch{height:104px;border-radius:42px 42px 6px 6px}.h.m .arch b{font-size:32px}
+.h.m .hero h2{font-size:17px}
+.h.m .hero .btn{grid-column:1/-1;height:48px}
+.h.m .tiles{gap:8px}.h.m .tile{padding:12px}.h.m .tile b{font-size:22px}
+.h.m .bar{position:absolute;inset:auto 14px 18px 14px;height:64px;border-radius:999px;background:var(--basalt);color:#A79E8E;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;justify-items:center;font-size:10px}
+.h.m .bar a{display:flex;flex-direction:column;align-items:center;gap:3px}
+.h.m .bar a.on{color:#fff}
+.h.m .bar .add{width:46px;height:46px;border-radius:50%;background:var(--terra);color:#fff;justify-content:center}
+</style>
+</head>
+<body>
+<div class="proto-head"><h1>Direction 2 — Hajar («حجر»)</h1><p>Modern Heritage. Amman limestone and basalt, the Levantine arch as the one recurring shape, Kufic headings, terracotta for action. Warm and local; heavier and more decorative than Folio. <a href="index.html">← all directions</a></p></div>
+<div class="stage">
+<div><p class="cap">Desktop · dashboard</p>
+<div class="desk"><div class="h d">
+  <aside class="rail"><div class="logo"><i></i>ميموريا</div>
+    <a class="on"><svg class="i"><use href="#home"/></svg>الرئيسية</a><a><svg class="i"><use href="#list"/></svg>الحجوزات<b class="num">1</b></a><a><svg class="i"><use href="#cal"/></svg>التقويم</a><a><svg class="i"><use href="#layers"/></svg>الإنتاج</a><a><svg class="i"><use href="#tag"/></svg>الأسعار</a><a><svg class="i"><use href="#file"/></svg>العقود</a><a><svg class="i"><use href="#user"/></svg>ملفّي</a></aside>
+  <main class="main">
+    <h1>نهاركِ سعيد، ليلى</h1><p class="sub">الثلاثاء، <span class="num">10</span> تشرين الثاني</p>
+    <section class="hero"><div class="arch"><div><b class="num">2</b>يوم تأخير</div></div><div><span class="chip act">الأهم اليوم</span><h2>تسليم صور سارة ومحمد متأخر يومين</h2><p>حدّثي مرحلة الإنتاج أو أرسلي للعروس موعداً جديداً.</p></div><a class="btn">افتحي الحجز</a></section>
+    <section class="tiles"><div class="tile"><span>إيرادات هذا الشهر</span><b class="num">170 د.أ</b><span>أقل بـ 32٪ عن الماضي</span></div><div class="tile"><span>عرابين معلّقة</span><b class="num">0 د.أ</b><span>لا شيء معلّق</span></div><div class="tile"><span>تسليمات خلال 7 أيام</span><b class="num">1</b><span>في لوحة الإنتاج</span></div></section>
+    <section class="rows">
+      <div class="row"><span class="d num">14</span><div><strong>ريم وخالد</strong><small>زفاف · عمّان · تشرين الثاني</small></div><span class="chip act">بانتظار ردّكِ</span></div>
+      <div class="row"><span class="d num">21</span><div><strong>دانا وعمر</strong><small>خطوبة · إربد · تشرين الثاني</small></div><span class="chip wait">بانتظار العربون</span></div>
+      <div class="row"><span class="d num">28</span><div><strong>هبة وأحمد</strong><small>زفاف · السلط · تشرين الثاني</small></div><span class="chip ok">مؤكّد</span></div>
+    </section>
+  </main>
+</div></div></div>
+<div><p class="cap">Mobile · dashboard + navigation</p>
+<div class="phone"><div class="h m"><div class="scroll">
+  <div class="top"><span class="kufi" style="font-size:22px">ميموريا</span><svg class="i"><use href="#bell"/></svg></div>
+  <div class="pad"><h1>نهاركِ سعيد، ليلى</h1><p class="sub">الثلاثاء، <span class="num">10</span> تشرين الثاني</p>
+    <section class="hero"><div class="arch"><div><b class="num">2</b>يوم</div></div><div><span class="chip act">الأهم اليوم</span><h2>تسليم صور سارة ومحمد متأخر</h2></div><a class="btn">افتحي الحجز</a></section>
+    <section class="tiles"><div class="tile"><span>هذا الشهر</span><b class="num">170</b></div><div class="tile"><span>عرابين</span><b class="num">0</b></div><div class="tile"><span>تسليمات</span><b class="num">1</b></div></section>
+    <section class="rows">
+      <div class="row"><span class="d num">14</span><div><strong>ريم وخالد</strong><small>زفاف · عمّان</small></div><span class="chip act">ردّكِ</span></div>
+      <div class="row"><span class="d num">21</span><div><strong>دانا وعمر</strong><small>خطوبة · إربد</small></div><span class="chip wait">العربون</span></div>
+      <div class="row"><span class="d num">28</span><div><strong>هبة وأحمد</strong><small>زفاف · السلط</small></div><span class="chip ok">مؤكّد</span></div>
+    </section></div></div>
+  <nav class="bar"><a class="on"><svg class="i"><use href="#home"/></svg>الرئيسية</a><a><svg class="i"><use href="#list"/></svg>الحجوزات</a><a class="add"><svg class="i"><use href="#plus"/></svg></a><a><svg class="i"><use href="#cal"/></svg>التقويم</a><a><svg class="i"><use href="#user"/></svg>ملفّي</a></nav>
+</div></div></div>
+</div>
+<script src="icons.js"></script>
+</body></html>

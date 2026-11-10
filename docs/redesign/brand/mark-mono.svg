@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <title>Memoria — Kept Frame (one colour, inherits currentColor)</title>
+  <defs><mask id="m"><rect width="48" height="48" fill="#fff"/><path d="M9 42V27L24 42Z" fill="#000" stroke="#000" stroke-width="4" stroke-linejoin="round"/></mask></defs>
+  <rect x="15.5" y="6.5" width="22" height="30" rx="1" stroke="currentColor" stroke-width="3" mask="url(#m)"/>
+  <path d="M9 42V27L24 42Z" fill="currentColor"/>
+</svg>

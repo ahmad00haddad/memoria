@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <title>Memoria</title>
+  <style>.f{fill:#1F1915}.c{fill:#A87E45}.k{fill:#000;stroke:#000}@media (prefers-color-scheme:dark){.f{fill:#F2EEE7}.c{fill:#D2B281}}</style>
+  <defs><mask id="s"><rect width="48" height="48" fill="#fff"/><path class="k" d="M6 44V25L25 44Z" stroke-width="5" stroke-linejoin="round"/></mask></defs>
+  <rect class="f" x="14" y="4" width="26" height="34" rx="1.5" mask="url(#s)"/>
+  <path class="c" d="M6 44V25L25 44Z"/>
+</svg>

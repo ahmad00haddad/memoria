@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Final — Bookings list and booking detail</title>
+<link rel="stylesheet" href="shared.css"><link rel="stylesheet" href="final.css">
+<style>
+.mz{height:100%}
+.two{display:grid;grid-template-columns:400px 1fr;height:calc(100% - 64px)}
+.listcol{border-inline-end:1px solid var(--line);padding:24px 24px 0 28px;overflow:hidden}
+.detail{padding:28px 44px;overflow:hidden}
+.search{position:relative;margin:16px 0 4px}
+.search .i{position:absolute;inset-inline-start:12px;top:14px;color:var(--ink-3)}
+.search .input{height:44px;padding-inline-start:40px;font-size:14px}
+.grp{font-size:12px;color:var(--ink-3);padding:14px 0 2px}
+.rows>li.sel{background:var(--sunken);margin-inline:-12px;padding-inline:12px}
+.next{display:flex;align-items:center;gap:20px;border:1px solid var(--ink);border-radius:var(--r2);padding:16px 20px;margin:20px 0}
+.next p{margin:2px 0 0;color:var(--ink-2)}
+.cols{display:grid;grid-template-columns:1fr 280px;gap:40px;margin-top:20px}
+dl{margin:0;display:grid;grid-template-columns:110px 1fr;row-gap:0}
+dl>*{padding:11px 0;border-bottom:1px solid var(--line);margin:0}
+dt{color:var(--ink-3);font-size:13px}
+.money dl{grid-template-columns:1fr auto}
+.money dd{font:400 16px var(--font-display);direction:ltr;text-align:end}
+.money .tot dt,.money .tot dd{border-bottom:1px solid var(--ink);font-weight:500;color:var(--ink)}
+.proof{height:120px;background:var(--sunken);border:1px solid var(--line);border-radius:var(--r2);display:grid;place-items:center;color:var(--ink-3);font-size:12px;margin-top:12px}
+.hd{display:flex;align-items:flex-start;gap:16px}
+.m .stick{position:absolute;inset:auto 0 0 0;background:var(--paper);border-top:1px solid var(--ink);padding:12px 20px 26px;display:grid;grid-template-columns:1fr 48px 48px;gap:8px;z-index:3}
+.m .stick .iconbtn{border:1px solid var(--line-strong);width:48px;height:48px}
+.m dl{grid-template-columns:96px 1fr}
+</style>
+</head>
+<body>
+<div class="proto-head"><h1>Final direction — Bookings</h1><p>List and detail keep every existing filter, action and field. Desktop gains a two-pane layout (list stays visible while a booking is open); mobile keeps list → detail with one sticky next-step bar instead of today's quarter-screen sticky card. <button onclick="document.querySelectorAll('.mz').forEach(e=>e.dataset.theme=e.dataset.theme==='dark'?'':'dark')">Toggle dark</button> · <a href="index.html">← index</a></p></div>
+<div class="stage">
+<div><p class="cap">Desktop ≥ 1024 · /dashboard/bookings + /dashboard/bookings/$id</p>
+<div class="desk"><div class="mz">
+  <header class="mast"><span class="brand"><svg><use href="#mark"/></svg>Memoria</span>
+    <nav><a>الرئيسية</a><a aria-current="page">الحجوزات <span class="count n">1</span></a><a>التقويم</a><a>الإنتاج</a><a>الأسعار</a><a>المزيد</a></nav>
+    <span class="end"><button class="btn quiet sm"><svg class="i"><use href="#search"/></svg>بحث <span class="kbd">Ctrl K</span></button><button class="iconbtn"><svg class="i"><use href="#bell"/></svg></button><button class="btn sm"><svg class="i"><use href="#plus"/></svg>حجز يدوي</button></span></header>
+  <div class="two">
+    <section class="listcol">
+      <div style="display:flex;align-items:baseline;gap:12px"><h1 class="t-title">الحجوزات</h1><span class="t-meta"><span class="n">5</span> حجوزات</span></div>
+      <div class="search"><svg class="i"><use href="#search"/></svg><input class="input" placeholder="ابحثي بالاسم أو الهاتف أو المكان"></div>
+      <nav class="segtabs"><a aria-current="true">الكل</a><a>تحتاج إجراء · <span class="n">1</span></a><a>القادمة</a><a>بانتظار العربون</a><a>مؤكّدة</a></nav>
+      <div class="grp">هذا الشهر</div>
+      <ul class="rows">
+        <li class="sel"><div class="day"><b>14</b><span>تشرين ٢</span></div><div><strong>ريم وخالد</strong><small>زفاف · عمّان</small></div><span class="status action">بانتظار موافقتكِ</span></li>
+        <li><div class="day"><b>21</b><span>تشرين ٢</span></div><div><strong>دانا وعمر</strong><small>خطوبة · إربد</small></div><span class="status waiting">بانتظار العربون</span></li>
+        <li><div class="day"><b>28</b><span>تشرين ٢</span></div><div><strong>هبة وأحمد</strong><small>زفاف · السلط</small></div><span class="status ok">مؤكّد</span></li>
+      </ul>
+      <div class="grp">لاحقاً</div>
+      <ul class="rows"><li><div class="day"><b>05</b><span>كانون ١</span></div><div><strong>لانا ويزن</strong><small>حنّاء · عمّان</small></div><span class="status ok">مؤكّد</span></li></ul>
+    </section>
+    <section class="detail">
+      <div class="hd"><div style="flex:1"><h2 class="t-title">ريم وخالد</h2><span class="t-meta">زفاف · السبت <span class="n">14</span> تشرين الثاني · <span class="n">17:00–23:00</span> · باقة ذهبية</span></div>
+        <button class="btn wa sm"><svg class="i"><use href="#wa"/></svg>واتساب</button><button class="iconbtn" aria-label="خيارات"><svg class="i"><use href="#more"/></svg></button></div>
+      <div class="next"><div style="flex:1"><span class="status action">الخطوة التالية</span><p>راجعي تفاصيل الطلب ثم وافقي ليصل العروس رابط العربون.</p></div><button class="btn secondary">رفض</button><button class="btn">وافقي على الطلب</button></div>
+      <nav class="segtabs"><a aria-current="true">نظرة عامة</a><a>المحادثة</a><a>الإنتاج</a></nav>
+      <div class="cols">
+        <div><div class="sec"><h3 class="t-section">العميلة والمكان</h3></div>
+          <dl><dt>الهاتف</dt><dd class="n" style="text-align:start">0790 000 001</dd><dt>البريد</dt><dd>reem@example.com</dd><dt>المكان</dt><dd>قاعة الياسمين، عمّان</dd><dt>الباقة</dt><dd>ذهبية · <span class="n">6</span> ساعات · <span class="n">50</span> صورة معدّلة</dd><dt>ملاحظات</dt><dd>تصوير تحضيرات العروس من الساعة <span class="n">15:00</span>.</dd></dl></div>
+        <div class="money"><div class="sec"><h3 class="t-section">المبالغ</h3></div>
+          <dl><dt>السعر الأساسي</dt><dd>280</dd><dt>أجرة المسافة</dt><dd>40</dd><dt class="tot">الإجمالي</dt><dd class="tot">320 د.أ</dd><dt>العربون</dt><dd>100</dd><dt>المتبقّي</dt><dd>220</dd></dl>
+          <div class="proof">إثبات العربون يظهر هنا بعد رفعه</div></div>
+      </div>
+    </section>
+  </div>
+</div></div></div>
+</div>
+
+<div class="stage">
+<div><p class="cap">Mobile · bookings list</p>
+<div class="phone"><div class="mz m"><div class="scroll">
+  <header class="topbar"><span class="ttl">الحجوزات</span><button class="iconbtn" aria-label="بحث"><svg class="i"><use href="#search"/></svg></button><button class="iconbtn" aria-label="الإشعارات"><svg class="i"><use href="#bell"/></svg></button></header>
+  <div class="mpage" style="padding-top:4px">
+    <nav class="segtabs" style="margin-inline:-20px;padding-inline:20px"><a aria-current="true">الكل</a><a>تحتاج إجراء · <span class="n">1</span></a><a>القادمة</a><a>بانتظار العربون</a><a>مؤكّدة</a></nav>
+    <div class="grp">هذا الشهر</div>
+    <ul class="rows">
+      <li><div class="day"><b>14</b><span>تشرين ٢</span></div><div><strong>ريم وخالد</strong><small>زفاف · عمّان · <span class="n">320</span> د.أ</small></div><span class="status action">موافقتكِ</span></li>
+      <li><div class="day"><b>21</b><span>تشرين ٢</span></div><div><strong>دانا وعمر</strong><small>خطوبة · إربد · <span class="n">150</span> د.أ</small></div><span class="status waiting">العربون</span></li>
+      <li><div class="day"><b>28</b><span>تشرين ٢</span></div><div><strong>هبة وأحمد</strong><small>زفاف · السلط · <span class="n">450</span> د.أ</small></div><span class="status ok">مؤكّد</span></li>
+    </ul>
+    <div class="grp">لاحقاً</div>
+    <ul class="rows"><li><div class="day"><b>05</b><span>كانون ١</span></div><div><strong>لانا ويزن</strong><small>حنّاء · عمّان · <span class="n">200</span> د.أ</small></div><span class="status ok">مؤكّد</span></li></ul>
+    <div class="grp">سابقة</div>
+    <ul class="rows"><li><div class="day"><b>25</b><span>تشرين ١</span></div><div><strong>سارة ومحمد</strong><small>زفاف · عمّان · <span class="n">380</span> د.أ</small></div><span class="status action">تسليم متأخر</span></li></ul>
+  </div></div>
+  <nav class="tabbar"><a><svg class="i"><use href="#home"/></svg>الرئيسية</a><a aria-current="page"><svg class="i"><use href="#list"/></svg>الحجوزات</a><a class="add"><svg class="i"><use href="#plus"/></svg></a><a><svg class="i"><use href="#cal"/></svg>التقويم</a><a><svg class="i"><use href="#user"/></svg>ملفّي</a></nav>
+</div></div></div>
+
+<div><p class="cap">Mobile · booking detail (tab bar hidden, one sticky action bar)</p>
+<div class="phone"><div class="mz m"><div class="scroll">
+  <header class="topbar"><button class="iconbtn" aria-label="رجوع"><svg class="i"><use href="#back"/></svg></button><span class="ttl">ريم وخالد</span><button class="iconbtn" aria-label="خيارات"><svg class="i"><use href="#more"/></svg></button></header>
+  <div class="mpage">
+    <span class="status action">بانتظار موافقتكِ</span>
+    <h1 class="t-title" style="margin-top:6px">السبت <span class="n">14</span> تشرين الثاني</h1>
+    <span class="t-meta">زفاف · <span class="n">17:00–23:00</span> · قاعة الياسمين، عمّان</span>
+    <nav class="segtabs" style="margin-top:16px"><a aria-current="true">نظرة عامة</a><a>المحادثة</a><a>الإنتاج</a></nav>
+    <div class="money"><dl style="margin-top:8px"><dt class="tot">الإجمالي</dt><dd class="tot">320 د.أ</dd><dt>العربون</dt><dd>100</dd><dt>المتبقّي</dt><dd>220</dd></dl></div>
+    <div class="sec" style="margin-top:24px"><h3 class="t-section">العميلة</h3></div>
+    <dl><dt>الهاتف</dt><dd class="n" style="text-align:start">0790 000 001</dd><dt>الباقة</dt><dd>ذهبية · <span class="n">6</span> ساعات</dd><dt>ملاحظات</dt><dd>تصوير التحضيرات من <span class="n">15:00</span>.</dd></dl>
+  </div></div>
+  <div class="stick"><button class="btn lg">وافقي على الطلب</button><button class="iconbtn" aria-label="واتساب" style="color:var(--whatsapp)"><svg class="i"><use href="#wa"/></svg></button><button class="iconbtn" aria-label="اتصال"><svg class="i"><use href="#phone"/></svg></button></div>
+</div></div></div>
+</div>
+<script src="icons.js"></script>
+</body></html>

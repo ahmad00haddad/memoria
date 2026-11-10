@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Memoria — Logo explorations</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+body{background:#F9F6F1;color:#1F1915;font-family:"Geist",system-ui,sans-serif;padding:32px 40px 80px;max-width:1280px}
+h1{font:500 28px/1.2 "Newsreader",serif;margin:0 0 6px} h2{font:500 20px/1.3 "Newsreader",serif;margin:48px 0 6px;border-top:1px solid #1F1915;padding-top:14px}
+p{max-width:760px;font-size:14px;line-height:1.6;color:#4E4640;margin:0 0 16px}
+.row{display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap;margin:14px 0}
+.cell{text-align:center;font-size:11px;color:#6F6761}
+.cell svg,.cell img{display:block;margin:0 auto 6px}
+.tile{display:grid;place-items:center;border-radius:4px}
+.ink{background:#1F1915;color:#F9F6F1}.paper{background:#FFFDFA;color:#1F1915;border:1px solid #DFDAD1}.brass{background:#BE9761;color:#1F1915}
+.photo{background:linear-gradient(160deg,#8b7a66,#3c332b 70%);color:#fff}
+.lock{display:flex;align-items:center;gap:14px}
+.wm{font:500 34px/1 "Newsreader",serif;letter-spacing:-.01em}
+.wma{font:400 34px/1 "Amiri",serif}
+.rule{width:1px;height:30px;background:currentColor;opacity:.35}
+.verdict{font-size:13px;border-inline-start:3px solid #A04034;padding:2px 12px;color:#1F1915;max-width:760px}
+.verdict.win{border-color:#4A6D51}
+.ic{border-radius:22%;overflow:hidden;display:block}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs>
+  <!-- A · Kept Frame -->
+  <symbol id="a" viewBox="0 0 48 48"><mask id="am"><rect width="48" height="48" fill="#fff"/><path d="M9 42V27L24 42Z" fill="#000" stroke="#000" stroke-width="4" stroke-linejoin="round"/></mask><rect x="15.5" y="6.5" width="22" height="30" rx="1" fill="none" stroke="currentColor" stroke-width="3" mask="url(#am)"/><path d="M9 42V27L24 42Z" fill="currentColor"/></symbol>
+  <symbol id="a-s" viewBox="0 0 48 48"><mask id="asm"><rect width="48" height="48" fill="#fff"/><path d="M6 44V25L25 44Z" fill="#000" stroke="#000" stroke-width="5" stroke-linejoin="round"/></mask><rect x="14" y="4" width="26" height="34" rx="1.5" fill="currentColor" mask="url(#asm)"/><path d="M6 44V25L25 44Z" fill="currentColor"/></symbol>
+  <!-- B · Notch (sheet-film notch code) -->
+  <symbol id="b" viewBox="0 0 48 48"><path fill="currentColor" d="M11 6h9l3 4 3-4h3v4h4V6h1a3 3 0 0 0 6 0h-1 1a2 2 0 0 1 2 2v32a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" transform="translate(-1 0)"/></symbol>
+  <!-- C · Threshold (arch) -->
+  <symbol id="c" viewBox="0 0 48 48"><path fill="currentColor" fill-rule="evenodd" d="M8 6h32v36H8zM17 42V23a7 7 0 0 1 14 0v19z"/></symbol>
+</defs></svg>
+
+<h1>Memoria — logo explorations</h1>
+<p>Three symbol concepts, each tested at 16–128px, in one colour, reversed, and as an app tile. Rule carried over from the earlier brief (docs/logo-concepts/BRIEF.md): the symbol contains no letter, so it survives a name change; the wordmark sits beside it as a separate element.</p>
+
+<h2>A · Kept Frame — recommended</h2>
+<p>A portrait print held by one album corner. The corner mount is the oldest way a photograph is kept without glue or damage: it says "preserved", not "taken". No camera, lens, ring, flower or heart. Two shapes, one rectangle and one triangle.</p>
+<div class="row">
+  <div class="cell"><svg width="128" height="128"><use href="#a"/></svg>128</div>
+  <div class="cell"><svg width="64" height="64"><use href="#a"/></svg>64</div>
+  <div class="cell"><svg width="32" height="32"><use href="#a"/></svg>32 outline</div>
+  <div class="cell"><svg width="24" height="24"><use href="#a-s"/></svg>24 solid</div>
+  <div class="cell"><svg width="16" height="16"><use href="#a-s"/></svg>16 solid</div>
+  <div class="cell"><img src="../brand/mark.svg" width="96" height="96" alt="">colour</div>
+  <div class="cell"><div class="tile ink" style="width:96px;height:96px"><svg width="64" height="64"><use href="#a"/></svg></div>reversed</div>
+  <div class="cell"><div class="tile photo" style="width:96px;height:96px"><svg width="56" height="56"><use href="#a"/></svg></div>over a photo</div>
+  <div class="cell"><img class="ic" src="../brand/app-icon.svg" width="96" height="96" alt="">app icon</div>
+  <div class="cell"><img class="ic" src="../brand/app-icon.svg" width="40" height="40" alt="">40</div>
+</div>
+<div class="row" style="align-items:center;gap:56px">
+  <div class="lock"><svg width="44" height="44"><use href="#a"/></svg><span class="wm">Memoria</span></div>
+  <div class="lock" dir="rtl"><svg width="44" height="44"><use href="#a"/></svg><span class="wma">ميموريا</span></div>
+  <div class="lock"><svg width="40" height="40"><use href="#a"/></svg><span class="wm" style="font-size:28px">Memoria</span><span class="rule"></span><span class="wma" style="font-size:28px">ميموريا</span></div>
+</div>
+<p class="verdict win">Chosen. Reads at 16px as "a picture with something holding it", is not a category cliché, carries the brand idea (keeping), and gives the product a reusable motif: the corner can mark a selected photo, a confirmed booking, or a saved state.</p>
+
+<h2>B · Notch</h2>
+<p>A sheet of film identified by its notch code: the cuts on the edge that let a photographer recognise a film by touch in the dark. Abstract, monochrome by nature, and genuinely from photographic craft.</p>
+<div class="row">
+  <div class="cell"><svg width="128" height="128"><use href="#b"/></svg>128</div><div class="cell"><svg width="64" height="64"><use href="#b"/></svg>64</div><div class="cell"><svg width="32" height="32"><use href="#b"/></svg>32</div><div class="cell"><svg width="16" height="16"><use href="#b"/></svg>16</div>
+  <div class="cell"><div class="tile ink" style="width:96px;height:96px"><svg width="64" height="64"><use href="#b"/></svg></div>reversed</div>
+  <div class="cell"><div class="tile brass" style="width:96px;height:96px;border-radius:22%"><svg width="56" height="56"><use href="#b"/></svg></div>app tile</div>
+  <div class="lock"><svg width="44" height="44"><use href="#b"/></svg><span class="wm">Memoria</span></div>
+</div>
+<p class="verdict">Rejected. The reference is invisible to brides and to most digital-era photographers; without the story it is a ticket or a SIM card. Inside a rounded app tile it becomes a rectangle inside a rectangle.</p>
+
+<h2>C · Threshold</h2>
+<p>The Levantine arch as a doorway: the threshold of a new life, and a frame without a camera. It already appears in the product as the arch-masked hero image.</p>
+<div class="row">
+  <div class="cell"><svg width="128" height="128"><use href="#c"/></svg>128</div><div class="cell"><svg width="64" height="64"><use href="#c"/></svg>64</div><div class="cell"><svg width="32" height="32"><use href="#c"/></svg>32</div><div class="cell"><svg width="16" height="16"><use href="#c"/></svg>16</div>
+  <div class="cell"><div class="tile ink" style="width:96px;height:96px"><svg width="64" height="64"><use href="#c"/></svg></div>reversed</div>
+  <div class="cell"><div class="tile brass" style="width:96px;height:96px;border-radius:22%"><svg width="56" height="56"><use href="#c"/></svg></div>app tile</div>
+  <div class="lock"><svg width="44" height="44"><use href="#c"/></svg><span class="wm">Memoria</span></div>
+</div>
+<p class="verdict">Rejected as the logo, kept as an image mask. The arch is the most repeated shape in boutique and wedding branding of the last five years; it is strong and legible but not ownable. It says "venue" more than "memory".</p>
+
+<h2>Current mark, for comparison</h2>
+<div class="row"><div class="cell"><img src="../../../public/brand/mark.svg" width="128" height="128" alt="">128</div><div class="cell"><img src="../../../public/brand/mark.svg" width="32" height="32" alt="">32</div><div class="cell"><img src="../../../public/brand/mark.svg" width="16" height="16" alt="">16</div></div>
+<p class="verdict">A faceted gem built from 20+ gradient polygons: reads as jewellery, cannot be reproduced in one colour, turns to a brown smudge at 16px, and its rose-copper palette matches nothing in the interface.</p>
+</body></html>

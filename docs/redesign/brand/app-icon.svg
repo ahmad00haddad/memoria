@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <title>Memoria app icon (any). Export PNG 192 and 512. Symbol occupies the central 56%.</title>
+  <rect width="512" height="512" fill="#1F1915"/>
+  <g transform="translate(112 112) scale(6)">
+    <rect x="15.5" y="6.5" width="22" height="30" rx="1" stroke="#F9F6F1" stroke-width="3"/>
+    <path d="M9 42V27L24 42Z" fill="#D2B281" stroke="#1F1915" stroke-width="1.5" stroke-linejoin="round" paint-order="stroke"/>
+  </g>
+</svg>

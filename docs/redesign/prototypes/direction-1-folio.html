@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Direction 1 — Folio (Editorial Classic)</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+.f{--paper:#F9F6F1;--surface:#FFFDFA;--sunken:#F2EEE6;--line:#DFDAD1;--line2:#C3BDB3;--ink:#1F1915;--ink2:#4E4640;--ink3:#6F6761;--brass:#BE9761;--brassink:#805B31;--clay:#A04034;--sage:#4A6D51;--ochre:#966626;
+  background:var(--paper);color:var(--ink);font:400 14px/1.6 "Readex Pro",sans-serif;height:100%}
+.f .serif{font-family:"Newsreader","Amiri",serif;font-weight:400}
+.f .eyebrow{font-size:12px;color:var(--ink3);letter-spacing:0}
+.f .btn{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 20px;border-radius:2px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);font-weight:500;font-size:14px}
+.f .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line2)}
+.f .mark{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--clay);margin-inline-end:8px;vertical-align:middle}
+.f .st{font-size:12px;color:var(--ink2)} .f .st::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-inline-end:6px;background:var(--ink3);vertical-align:middle}
+.f .st.wait::before{background:var(--ochre)} .f .st.ok::before{background:var(--sage)} .f .st.act::before{background:var(--clay)} .f .st.act{color:var(--clay);font-weight:500}
+
+/* desktop */
+.f .mast{display:flex;align-items:baseline;gap:36px;padding:22px 56px 16px;border-bottom:1px solid var(--ink)}
+.f .word{font:500 24px/1 "Newsreader",serif;letter-spacing:-.01em}
+.f .word small{font:400 13px "Readex Pro";color:var(--ink3);margin-inline-start:8px;letter-spacing:0}
+.f .mast nav{display:flex;gap:26px;font-size:14px;color:var(--ink2)}
+.f .mast nav a.on{color:var(--ink);font-weight:500;box-shadow:0 17px 0 -15px var(--ink)}
+.f .mast .end{margin-inline-start:auto;display:flex;gap:18px;color:var(--ink2);align-items:center}
+.f .grid{display:grid;grid-template-columns:1fr 340px;gap:0 56px;padding:36px 56px}
+.f h1{font:400 44px/1.2 "Amiri",serif;margin:6px 0 28px}
+.f .lead{border-block:1px solid var(--line);padding:22px 0;display:flex;align-items:center;gap:24px}
+.f .lead h2{font:400 26px/1.35 "Amiri",serif;margin:2px 0 4px}
+.f .lead p{margin:0;color:var(--ink2);font-size:14px}
+.f .figs{display:grid;grid-template-columns:repeat(3,1fr);margin-top:28px}
+.f .figs>div{padding-inline:20px;border-inline-start:1px solid var(--line)}
+.f .figs>div:first-child{padding-inline-start:0;border:0}
+.f .figs b{display:block;font:400 40px/1.1 "Newsreader",serif;margin:6px 0 2px}
+.f .figs b small{font:400 14px "Readex Pro";color:var(--ink3);margin-inline-start:4px}
+.f .figs span{font-size:12px;color:var(--ink3)}
+.f .sec{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--ink);padding-bottom:8px;margin-top:36px}
+.f .sec h3{font:400 20px/1.2 "Amiri",serif;margin:0}
+.f .sec a{font-size:12px;color:var(--ink3)}
+.f .tools{display:grid;grid-template-columns:repeat(3,1fr);column-gap:28px}
+.f .tools a{display:flex;justify-content:space-between;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
+.f .tools a span{font-size:12px;color:var(--ink3)}
+.f .next li{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);align-items:center}
+.f .next ul{list-style:none;margin:0;padding:0}
+.f .day{text-align:center;line-height:1}
+.f .day b{display:block;font:400 30px/1 "Newsreader",serif}
+.f .day span{font-size:11px;color:var(--ink3)}
+.f .next strong{font-weight:500;display:block}
+.f .next small{color:var(--ink3);font-size:12px;display:block}
+
+/* mobile */
+.f.m .top{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 10px;border-bottom:1px solid var(--line)}
+.f.m .pad{padding:20px 20px 110px}
+.f.m h1{font-size:32px;margin:4px 0 20px}
+.f.m .lead{display:block;padding:18px 0}
+.f.m .lead h2{font-size:22px}
+.f.m .lead .btn{margin-top:14px;width:100%;justify-content:center;height:48px}
+.f.m .figs{margin-top:20px}
+.f.m .figs>div{padding-inline:12px}
+.f.m .figs b{font-size:28px}
+.f.m .sec{margin-top:28px}
+.f.m .tabbar{position:absolute;inset:auto 0 0 0;display:grid;grid-template-columns:repeat(5,1fr);background:var(--paper);border-top:1px solid var(--ink);padding:8px 0 22px;text-align:center;font-size:11px;color:var(--ink3)}
+.f.m .tabbar a{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:48px;justify-content:center}
+.f.m .tabbar a.on{color:var(--ink);font-weight:500}
+.f.m .tabbar .add{align-self:center;justify-self:center;width:48px;height:48px;background:var(--ink);color:var(--paper);border-radius:2px;display:grid;place-items:center}
+</style>
+</head>
+<body>
+<div class="proto-head"><h1>Direction 1 — Folio</h1><p>Editorial Classic. Paper and ink, hairline rules instead of cards, one serif for titles and money, one sans for everything you operate. Colour is information only: clay = needs you, ochre = waiting, sage = settled. <a href="index.html">← all directions</a></p></div>
+<div class="stage">
+<div><p class="cap">Desktop · dashboard</p>
+<div class="desk"><div class="f">
+  <header class="mast"><span class="word">Memoria<small>ميموريا</small></span>
+    <nav><a class="on">اليوم</a><a>الحجوزات</a><a>التقويم</a><a>الإنتاج</a><a>الأسعار</a><a>ملفّي</a></nav>
+    <span class="end"><svg class="i"><use href="#search"/></svg><svg class="i"><use href="#bell"/></svg><span style="font-size:13px">ليلى</span></span></header>
+  <div class="grid">
+    <main>
+      <span class="eyebrow">الثلاثاء، <span class="num">10</span> تشرين الثاني <span class="num">2026</span></span>
+      <h1>نهاركِ سعيد، ليلى</h1>
+      <section class="lead"><div style="flex:1"><span class="eyebrow"><i class="mark"></i>الأهم اليوم</span><h2>تسليم صور سارة ومحمد متأخر يومين</h2><p>حدّثي مرحلة الإنتاج أو أرسلي للعروس موعداً جديداً.</p></div><a class="btn">افتحي الحجز</a></section>
+      <section class="figs">
+        <div><span>إيرادات هذا الشهر</span><b class="num">170<small>د.أ</small></b><span>أقل بـ <span class="num">32٪</span> عن الشهر الماضي</span></div>
+        <div><span>عرابين بانتظار التأكيد</span><b class="num">0<small>د.أ</small></b><span>لا شيء معلّق</span></div>
+        <div><span>تسليمات خلال <span class="num">7</span> أيام</span><b class="num">1</b><span>تابعيها في الإنتاج</span></div>
+      </section>
+      <div class="sec"><h3>أدواتكِ</h3><a>كل الأدوات (<span class="num">10</span>)</a></div>
+      <div class="tools"><a>الحجوزات<span><span class="num">3</span> حجوزات</span></a><a>متابعة الإنتاج<span><span class="num">1</span> قريب</span></a><a>التقويم<span>حجب الأيام</span></a><a>الأسعار<span><span class="num">20</span> باقة</span></a><a>العقود<span>توقيع إلكتروني</span></a><a>ملفّي<span>الصور والنبذة</span></a></div>
+    </main>
+    <aside class="next">
+      <div class="sec" style="margin-top:0"><h3>القادم</h3><a>كل الحجوزات</a></div>
+      <ul>
+        <li><div class="day"><b class="num">14</b><span>تشرين ٢</span></div><div><strong>ريم وخالد</strong><small>زفاف · عمّان · <span class="num">6</span> ساعات</small><span class="st act">بانتظار ردّكِ</span></div></li>
+        <li><div class="day"><b class="num">21</b><span>تشرين ٢</span></div><div><strong>دانا وعمر</strong><small>خطوبة · إربد · <span class="num">3</span> ساعات</small><span class="st wait">بانتظار العربون</span></div></li>
+        <li><div class="day"><b class="num">28</b><span>تشرين ٢</span></div><div><strong>هبة وأحمد</strong><small>زفاف · السلط · <span class="num">8</span> ساعات</small><span class="st ok">مؤكّد</span></div></li>
+        <li><div class="day"><b class="num">05</b><span>كانون ١</span></div><div><strong>لانا ويزن</strong><small>حنّاء · عمّان · <span class="num">4</span> ساعات</small><span class="st ok">مؤكّد</span></div></li>
+      </ul>
+    </aside>
+  </div>
+</div></div></div>
+
+<div><p class="cap">Mobile · dashboard + navigation</p>
+<div class="phone"><div class="f m"><div class="scroll">
+  <div class="top"><span class="word" style="font-size:20px">Memoria</span><svg class="i"><use href="#bell"/></svg></div>
+  <div class="pad">
+    <span class="eyebrow">الثلاثاء، <span class="num">10</span> تشرين الثاني</span>
+    <h1>نهاركِ سعيد، ليلى</h1>
+    <section class="lead"><span class="eyebrow"><i class="mark"></i>الأهم اليوم</span><h2>تسليم صور سارة ومحمد متأخر يومين</h2><p>حدّثي مرحلة الإنتاج أو أرسلي موعداً جديداً.</p><a class="btn">افتحي الحجز</a></section>
+    <section class="figs">
+      <div><span>هذا الشهر</span><b class="num">170<small>د.أ</small></b></div>
+      <div><span>عرابين معلّقة</span><b class="num">0<small>د.أ</small></b></div>
+      <div><span>تسليمات قريبة</span><b class="num">1</b></div>
+    </section>
+    <div class="sec"><h3>القادم</h3><a>الكل</a></div>
+    <div class="next"><ul>
+      <li><div class="day"><b class="num">14</b><span>تشرين ٢</span></div><div><strong>ريم وخالد</strong><small>زفاف · عمّان</small><span class="st act">بانتظار ردّكِ</span></div></li>
+      <li><div class="day"><b class="num">21</b><span>تشرين ٢</span></div><div><strong>دانا وعمر</strong><small>خطوبة · إربد</small><span class="st wait">بانتظار العربون</span></div></li>
+      <li><div class="day"><b class="num">28</b><span>تشرين ٢</span></div><div><strong>هبة وأحمد</strong><small>زفاف · السلط</small><span class="st ok">مؤكّد</span></div></li>
+    </ul></div>
+  </div></div>
+  <nav class="tabbar"><a class="on"><svg class="i"><use href="#home"/></svg>اليوم</a><a><svg class="i"><use href="#list"/></svg>الحجوزات</a><a class="add" aria-label="إجراء سريع"><svg class="i"><use href="#plus"/></svg></a><a><svg class="i"><use href="#cal"/></svg>التقويم</a><a><svg class="i"><use href="#user"/></svg>ملفّي</a></nav>
+</div></div></div>
+</div>
+<script src="icons.js"></script>
+</body></html>

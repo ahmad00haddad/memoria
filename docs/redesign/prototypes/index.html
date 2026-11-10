@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Memoria redesign — prototypes</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+body{background:#F9F6F1;color:#1F1915;font-family:"Geist",system-ui,sans-serif;padding:40px;max-width:900px}
+h1{font:500 32px/1.2 "Newsreader",serif;margin:0 0 8px} h2{font:500 20px "Newsreader",serif;border-top:1px solid #1F1915;padding-top:12px;margin:40px 0 4px}
+p{color:#4E4640;font-size:14px;line-height:1.6;max-width:680px}
+ul{list-style:none;padding:0;margin:8px 0}
+li{border-bottom:1px solid #DFDAD1}
+li a{display:flex;justify-content:space-between;gap:24px;padding:14px 0;font-size:15px}
+li a span{color:#6F6761;font-size:13px;text-align:end}
+li a:hover{background:#F2EEE6}
+code{font-size:12px;background:#F2EEE6;padding:2px 6px;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>Memoria redesign — prototypes</h1>
+<p>Static, separate from the app. They use the fonts already installed in <code>node_modules</code>, so serve them from the repository root: <code>python -m http.server 4180</code>, then open <code>http://localhost:4180/docs/redesign/prototypes/</code>. Content mirrors the real dashboard (same labels, same data shapes) with a demo photographer.</p>
+
+<h2>Five directions — same screen, five philosophies</h2>
+<ul>
+  <li><a href="direction-1-folio.html">1 · Folio<span>Editorial Classic — paper, ink, hairlines</span></a></li>
+  <li><a href="direction-2-hajar.html">2 · Hajar<span>Modern Heritage — limestone, arch, Kufic</span></a></li>
+  <li><a href="direction-3-plain.html">3 · Plain<span>Contemporary Minimal — one sans, dense</span></a></li>
+  <li><a href="direction-4-contact-sheet.html">4 · Contact Sheet<span>Photography culture — darkroom, frames</span></a></li>
+  <li><a href="direction-5-sijill.html">5 · Sijill<span>Unexpected — the bound keepsake ledger</span></a></li>
+</ul>
+
+<h2>Final direction — Folio, with Plain's density</h2>
+<ul>
+  <li><a href="final-1-dashboard.html">Dashboard<span>desktop · mobile before/after · dark</span></a></li>
+  <li><a href="final-2-bookings.html">Bookings<span>list + detail, desktop two-pane, mobile</span></a></li>
+  <li><a href="final-3-form-and-components.html">Form, sheets, components<span>manual booking · quick actions · component board</span></a></li>
+  <li><a href="logos.html">Logo explorations<span>three concepts, sizes, mono, app icon</span></a></li>
+</ul>
+<p>Token source of truth: <code>final.css</code>. Written specification: <code>docs/redesign/README.md</code>.</p>
+</body></html>
