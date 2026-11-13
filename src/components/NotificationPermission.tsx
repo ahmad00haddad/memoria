@@ -6,6 +6,7 @@
 import { useState, useEffect } from "react";
 import { Bell, X } from "lucide-react";
 import { t } from "@/i18n";
+import { ensurePushSubscription } from "@/lib/push-client";
 
 export function NotificationPermission() {
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">("default");
@@ -17,6 +18,8 @@ export function NotificationPermission() {
       return;
     }
     setPermission(Notification.permission);
+    // أذنت سابقاً (قبل وجود Push): اشتراك صامت
+    if (Notification.permission === "granted") void ensurePushSubscription();
     // تحقق إذا كان المستخدم رفض سابقاً وتم حفظ ذلك
     try {
       if (localStorage.getItem("memoria_notif_dismissed") === "1") {
@@ -31,6 +34,7 @@ export function NotificationPermission() {
       const result = await Notification.requestPermission();
       setPermission(result);
       if (result === "granted") {
+        void ensurePushSubscription();
         setDismissed(true);
       }
     } catch {

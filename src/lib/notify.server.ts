@@ -34,6 +34,11 @@ export async function notifyPhotographer(photographerId: string, msg: Photograph
   }
 
   try {
+    const { sendPushToUser } = await import("@/lib/push.server");
+    await sendPushToUser(photographerId, { title: msg.title, body: msg.body, link: msg.link });
+  } catch (e) { console.error("[notify] push failed", e); }
+
+  try {
     const { sendTelegramToPhotographer } = await import("@/lib/telegram.server");
     await sendTelegramToPhotographer(photographerId, `<b>${escapeHtml(msg.title)}</b>\n${escapeHtml(msg.body)}\n\n${url}`);
   } catch (e) { console.error("[notify] telegram failed", e); }
@@ -97,6 +102,11 @@ export async function notifyBride(bookingId: string, msg: BrideMsg) {
     try {
       await supabaseAdmin.from("notifications").insert({
         user_id: b.client_user_id, title: msg.title, body: msg.lines[0] ?? "",
+        link: b.client_tracking_token ? `/track/${b.client_tracking_token}` : "/",
+      });
+      const { sendPushToUser } = await import("@/lib/push.server");
+      await sendPushToUser(b.client_user_id, {
+        title: msg.title, body: msg.lines[0] ?? "",
         link: b.client_tracking_token ? `/track/${b.client_tracking_token}` : "/",
       });
     } catch (e) { console.error("[notify] bride in-app failed", e); }
