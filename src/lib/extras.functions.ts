@@ -20,7 +20,7 @@ function daysTo(eventDate: string) {
 async function ownBooking(context: any, bookingId: string) {
   const { supabase, userId } = context;
   const { data: bk, error } = await supabase.from("bookings")
-    .select("id, photographer_id, status, event_date, client_email, client_name, client_tracking_token, deleted_at, base_price")
+    .select("id, photographer_id, status, event_date, client_email, client_name, client_tracking_token, deleted_at, base_price, needs_approval, approved_at")
     .eq("id", bookingId).maybeSingle();
   if (error) throw new Error(error.message);
   if (!bk || bk.deleted_at) throw new Error(tr("الحجز غير موجود"));
@@ -28,13 +28,15 @@ async function ownBooking(context: any, bookingId: string) {
   return bk;
 }
 
-async function bookingByToken(token: string) {
+// allowPending: يسمح بحجز وافقت عليه المصوّرة ولم يُدفع عربونه بعد (لنقل الموعد فقط)
+async function bookingByToken(token: string, allowPending = false) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: bk } = await (supabaseAdmin as any).from("bookings")
     .select("id, photographer_id, status, event_date, total_price, client_name, deleted_at, verified_via, client_email")
     .eq("client_tracking_token", token).maybeSingle();
   if (!bk || bk.deleted_at) throw new Error(tr("الحجز غير موجود"));
-  if (bk.status !== "confirmed" && bk.status !== "completed") throw new Error(tr("هذا متاح بعد تأكيد الحجز"));
+  const okStatus = bk.status === "confirmed" || bk.status === "completed" || (allowPending && bk.status === "pending_deposit");
+  if (!okStatus) throw new Error(tr("هذا متاح بعد تأكيد الحجز"));
   return { bk, supabaseAdmin: supabaseAdmin as any };
 }
 
@@ -126,7 +128,10 @@ export const addAddendum = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const bk = await ownBooking(context, data.booking_id);
-    if (bk.status !== "confirmed" && bk.status !== "completed") throw new Error(tr("الملحق متاح بعد تأكيد الحجز"));
+    // نقل الموعد وحده مسموح قبل العربون، بشرط أن المصوّرة وافقت على الطلب (بدل إلغاء وطلب جديد)
+    const approvedPending = bk.status === "pending_deposit" && !((bk as any).needs_approval && !(bk as any).approved_at);
+    const statusOk = bk.status === "confirmed" || bk.status === "completed" || (data.kind === "reschedule" && approvedPending);
+    if (!statusOk) throw new Error(tr("الملحق متاح بعد تأكيد الحجز"));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.kind === "reschedule") {
       const { data: full } = await supabaseAdmin.from("bookings").select("start_time, end_time").eq("id", bk.id).maybeSingle();
@@ -164,7 +169,7 @@ export const addAddendum = createServerFn({ method: "POST" })
             `مرحباً ${bk.client_name || ""}،`.trim(),
             `أُضيف ملحق على حجزكِ: ${data.description}`,
             data.kind === "substitute" ? `مصوّرة بديلة مقترحة: ${data.extra.substitute_name}. إذا رفضتِ يحق لكِ استرداد العربون كاملاً.`
-              : data.kind === "reschedule" ? `موعد جديد مقترح: ${data.extra.new_event_date} (بدل الإلغاء، والعربون ينتقل معه).`
+              : data.kind === "reschedule" ? (bk.status === "pending_deposit" ? `موعد جديد مقترح: ${data.extra.new_event_date} (بدل الإلغاء، بنفس الباقة والسعر).` : `موعد جديد مقترح: ${data.extra.new_event_date} (بدل الإلغاء، والعربون ينتقل معه).`)
               : data.amount > 0 ? `المبلغ الإضافي: ${data.amount} د.أ (يُضاف إلى المتبقي).`
               : data.amount < 0 ? `تخفيض: ${-data.amount} د.أ من المتبقي.` : "بدون مبلغ إضافي.",
             "لا يُعتمد الملحق إلا بعد موافقتكِ من صفحة الحجز.",
@@ -206,7 +211,13 @@ export const respondAddendum = createServerFn({ method: "POST" })
     return { token: d.token, id: d.id, accept: !!d.accept, code: d.code ?? null };
   })
   .handler(async ({ data }) => {
-    const { bk, supabaseAdmin } = await bookingByToken(data.token);
+    const { bk, supabaseAdmin } = await bookingByToken(data.token, true);
+    // قبل العربون: الملحق الوحيد المسموح هو نقل الموعد
+    const prePaid = bk.status === "pending_deposit";
+    if (prePaid) {
+      const { data: k } = await supabaseAdmin.from("booking_addenda").select("kind").eq("id", data.id).eq("booking_id", bk.id).maybeSingle();
+      if (k?.kind !== "reschedule") throw new Error(tr("هذا متاح بعد تأكيد الحجز"));
+    }
     // الموافقة على مبلغ إضافي تحتاج رمزاً من بريد العروس (المصوّرة تعرف الرابط ولا تعرف الرمز)
     if (data.accept) {
       const { data: pending } = await supabaseAdmin.from("booking_addenda")
@@ -222,7 +233,8 @@ export const respondAddendum = createServerFn({ method: "POST" })
       }
       const { stepUpApplies, consumeStepUpCode } = await import("@/lib/stepup.server");
       const needsCode = pending && (Number(pending.amount) > 0 || pending.kind === "reschedule");
-      if (needsCode && stepUpApplies(bk)) await consumeStepUpCode(bk.id, "addendum", data.code);
+      // قبل العربون لا مال على المحك: لا رمز
+      if (needsCode && !prePaid && stepUpApplies(bk)) await consumeStepUpCode(bk.id, "addendum", data.code);
     }
     const { data: upd, error } = await supabaseAdmin.from("booking_addenda")
       .update({ status: data.accept ? "accepted" : "declined", responded_at: new Date().toISOString() })

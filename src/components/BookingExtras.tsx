@@ -89,7 +89,9 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
   const [newEnd, setNewEnd] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const active = b.status === "confirmed" || b.status === "completed";
+  // قبل العربون (بعد موافقتها على الطلب): نقل الموعد فقط
+  const moveOnly = b.status === "pending_deposit" && !(b.needs_approval && !b.approved_at);
+  const active = b.status === "confirmed" || b.status === "completed" || moveOnly;
   const loadAddenda = async () => {
     const { data } = await (supabase as any).from("booking_addenda")
       .select("id, description, amount, status, created_at, kind, substitute_name, substitute_link, new_event_date, new_start_time, new_end_time").eq("booking_id", b.id).neq("status", "withdrawn").order("created_at");
@@ -100,7 +102,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
   useEffect(() => {
     const h = (e: Event) => {
       const text = String((e as CustomEvent).detail ?? "").slice(0, 1000);
-      setDesc(text); setAmount(""); setKind("general"); setOpen(true);
+      setDesc(text); setAmount(""); setKind(moveOnly ? "reschedule" : "general"); setOpen(true);
       setTimeout(() => document.getElementById("addendum-form")?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
     };
     window.addEventListener("memoria-prefill-addendum", h);
@@ -125,14 +127,14 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
     setKind(k); setAmount("");
     // نص جاهز يوفّر الكتابة، والمصوّرة تعدّله
     if (k === "substitute") setDesc(tr("لظرف طارئ لن أستطيع التصوير بنفسي، وأقترح زميلة موثوقة بنفس الباقة والسعر."));
-    else if (k === "reschedule") setDesc(tr("بدل الإلغاء: ننقل الحجز لموعد جديد، والعربون المدفوع ينتقل معه."));
+    else if (k === "reschedule") setDesc(moveOnly ? tr("بدل الإلغاء: ننقل الطلب لموعد جديد بنفس الباقة والسعر.") : tr("بدل الإلغاء: ننقل الحجز لموعد جديد، والعربون المدفوع ينتقل معه."));
     else if (k === "discount") setDesc(tr("تخفيض متّفق عليه (باقة أصغر أو خدمة أقل)."));
     else setDesc("");
   };
   const onAdd = async () => {
     const amt = Number(amount || 0);
     const what = kind === "substitute" ? tr("إذا رفضت البديلة يحق لها استرداد العربون كاملاً، وتلغين الحجز.")
-      : kind === "reschedule" ? tr("بعد موافقتها ينتقل الحجز للتاريخ الجديد ويبقى العربون كما هو.")
+      : kind === "reschedule" ? (moveOnly ? tr("بعد موافقتها ينتقل الطلب للتاريخ الجديد، ثم تحوّل العربون كالمعتاد.") : tr("بعد موافقتها ينتقل الحجز للتاريخ الجديد ويبقى العربون كما هو."))
       : kind === "discount" ? tr("بعد موافقتها يُخصم {0} د.أ من المتبقي.", [amt])
       : amt > 0 ? tr("بعد موافقتها يُضاف {0} د.أ إلى المتبقي.", [amt]) : tr("بدون مبلغ إضافي.");
     const ok = await confirm({ title: tr("إرسال الملحق للعروس؟"), description: what, confirmText: tr("إرسال") });
@@ -145,7 +147,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
         new_event_date: newDate, new_start_time: newStart, new_end_time: newEnd,
       } });
       toast.success(tr("أُرسل الملحق للعروس"));
-      setDesc(""); setAmount(""); setKind("general"); setSubName(""); setSubLink(""); setNewDate(""); setNewStart(""); setNewEnd("");
+      setDesc(""); setAmount(""); setKind(moveOnly ? "reschedule" : "general"); setSubName(""); setSubLink(""); setNewDate(""); setNewStart(""); setNewEnd("");
       setOpen(false); loadAddenda();
     } catch (e: any) { toast.error(e?.message || tr("تعذّر الإرسال")); }
     finally { setBusy(false); }
@@ -174,7 +176,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
         ) : null
       )}
 
-      {(info || (d !== null && d >= 0)) && <div className="rounded-xl border border-border p-4">
+      {!moveOnly && (info || (d !== null && d >= 0)) && <div className="rounded-xl border border-border p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><ClipboardList className="h-4 w-4 text-gold" /> {tr("تفاصيل يوم العرس من العروس")}</div>
         {info ? <EventDaySummary info={info} /> : <p className="text-xs text-muted-foreground">{tr("لم تعبّئها العروس بعد. تظهر لها في صفحة الحجز.")}</p>}
       </div>}
@@ -182,9 +184,11 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
       <div className="rounded-xl border border-border p-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-sm font-semibold"><FileSignature className="h-4 w-4 text-gold" /> {tr("ملاحق الاتفاق")}</div>
-          {!open && <button onClick={() => setOpen(true)} className="text-xs text-gold underline">{tr("+ ملحق جديد")}</button>}
+          {!open && <button onClick={() => { if (moveOnly) pickKind("reschedule"); setOpen(true); }} className="text-xs text-gold underline">{moveOnly ? tr("+ نقل الموعد") : tr("+ ملحق جديد")}</button>}
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">{tr("اتفقتما على شيء جديد (ساعة إضافية، ألبوم، تغيير)؟ اكتبيه هنا. لا يُعتمد إلا بموافقة العروس.")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{moveOnly
+          ? tr("العروس تريد يوماً آخر؟ اقترحي التاريخ الجديد هنا بدل الإلغاء. لا يُعتمد إلا بموافقتها. باقي الملاحق تُتاح بعد تأكيد العربون.")
+          : tr("اتفقتما على شيء جديد (ساعة إضافية، ألبوم، تغيير)؟ اكتبيه هنا. لا يُعتمد إلا بموافقة العروس.")}</p>
         {addenda.length > 0 && (
           <ul className="mt-3 space-y-2">
             {addenda.map((a) => (
@@ -207,7 +211,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
                 ["discount", tr("تخفيض")],
                 ["reschedule", tr("نقل الموعد")],
                 ["substitute", tr("مصوّرة بديلة")],
-              ] as [AddKind, string][]).map(([k, label]) => (
+              ] as [AddKind, string][]).filter(([k]) => !moveOnly || k === "reschedule").map(([k, label]) => (
                 <button key={k} type="button" onClick={() => pickKind(k)}
                   className={`rounded-full border px-3 py-1 text-xs ${kind === k ? "border-gold bg-gold/10" : "border-border"}`}>{tx(label)}</button>
               ))}
@@ -275,11 +279,13 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
   const [stepFor, setStepFor] = useState<string | null>(null);
   const [stepCode, setStepCode] = useState("");
 
-  if (b.status !== "confirmed" && b.status !== "completed") return null;
+  // قبل العربون: يظهر فقط ملحق نقل الموعد (إن وُجد)
+  const prePaid = b.status === "pending_deposit";
+  if (b.status !== "confirmed" && b.status !== "completed" && !prePaid) return null;
   const d = daysToEvent(b.event_date);
   const upcoming = b.status === "confirmed" && d !== null && d >= 0;
-  const pending: Addendum[] = (b.addenda ?? []).filter((a: Addendum) => a.status === "pending");
-  const decided: Addendum[] = (b.addenda ?? []).filter((a: Addendum) => a.status !== "pending");
+  const pending: Addendum[] = (b.addenda ?? []).filter((a: Addendum) => a.status === "pending" && (!prePaid || a.kind === "reschedule"));
+  const decided: Addendum[] = (b.addenda ?? []).filter((a: Addendum) => a.status !== "pending" && (!prePaid || a.kind === "reschedule"));
 
   const onSave = async () => {
     setBusy(true);
@@ -289,12 +295,12 @@ export function BrideExtras({ b, token, onChange }: { b: any; token: string; onC
   };
   const onRespond = async (a: Addendum, accept: boolean) => {
     // مبلغ إضافي: نطلب رمز البريد أولاً (يظهر الصندوق تحت الملحق)، ثم يُرسل الرد مع الرمز
-    const needsCode = Number(a.amount) > 0 || a.kind === "reschedule";
+    const needsCode = !prePaid && (Number(a.amount) > 0 || a.kind === "reschedule");
     if (accept && needsCode && b.step_up && stepFor !== a.id) { setStepFor(a.id); setStepCode(""); return; }
     const ok = await confirm({
       title: accept ? tr("الموافقة على الملحق؟") : tr("رفض الملحق؟"),
       description: accept
-        ? (a.kind === "reschedule" ? tr("ينتقل حجزكِ إلى {0}، ويبقى عربونكِ كما هو.", [a.new_event_date ?? ""])
+        ? (a.kind === "reschedule" ? (prePaid ? tr("ينتقل طلبكِ إلى {0} بنفس الباقة والسعر.", [a.new_event_date ?? ""]) : tr("ينتقل حجزكِ إلى {0}، ويبقى عربونكِ كما هو.", [a.new_event_date ?? ""]))
           : a.kind === "substitute" ? tr("توافقين أن تصوّركِ {0} بدل المصوّرة، بنفس الباقة والسعر.", [a.substitute_name ?? ""])
           : Number(a.amount) > 0 ? tr("سيُضاف {0} د.أ إلى المبلغ المتبقي.", [a.amount])
           : Number(a.amount) < 0 ? tr("سيُخصم {0} د.أ من المبلغ المتبقي.", [-Number(a.amount)])
