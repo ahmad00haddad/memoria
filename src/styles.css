@@ -71,6 +71,8 @@
   --charcoal: oklch(0.22 0.012 55);        /* warm espresso charcoal */
   --gold: oklch(0.67 0.085 72);            /* muted champagne, deep enough for text on ivory */
   --gold-foreground: oklch(0.2 0.012 55);
+  /* ذهبي للنص: أغمق من --gold ليبلغ تباين 6:1 على العاجي (الذهبي الأصلي 2.9:1). يتبع لون المصوّرة لأنه مشتق من --gold */
+  --gold-text: color-mix(in oklab, var(--gold) 60%, var(--charcoal));
 
   --background: var(--ivory);
   --foreground: var(--charcoal);
@@ -88,7 +90,7 @@
   --accent: var(--gold);
   --accent-foreground: var(--charcoal);
 
-  --destructive: oklch(0.55 0.22 25);
+  --destructive: oklch(0.5 0.15 28); /* أحمر طيني هادئ بدل الأحمر الصارخ */
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.88 0.015 80);
   --input: oklch(0.9 0.012 80);
@@ -102,6 +104,8 @@
 
 .dark {
   --gold: oklch(0.78 0.075 78);
+  --gold-text: var(--gold);
+  --destructive: oklch(0.7 0.13 28);
   --background: oklch(0.17 0.01 55);
   --foreground: oklch(0.97 0.01 80);
   --card: oklch(0.22 0.012 55);
@@ -205,12 +209,12 @@
 @utility eyebrow {
   font-size: 0.75rem;
   letter-spacing: 0.28em;
-  color: var(--color-gold);
+  color: var(--gold-text);
   [dir="rtl"] & { letter-spacing: 0.04em; font-size: 0.8rem; }
 }
 
 @utility text-gold {
-  color: var(--color-gold);
+  color: var(--gold-text);
 }
 
 @utility bg-gradient-royal {
