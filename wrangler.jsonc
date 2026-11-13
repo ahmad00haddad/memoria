@@ -23,7 +23,7 @@
     "ZBOONI_PRO_MONTHLY_URL": "https://memoriaa.zbooni.com/products/shtrk-pro-shhry",
     "ZBOONI_PRO_YEARLY_URL": "https://memoriaa.zbooni.com/products/shtrk-pro-snwy-12-shhr",
     // Web Push (VAPID). The private key is the Worker secret VAPID_PRIVATE_KEY.
-    "VAPID_PUBLIC_KEY": "BPUF_xt9dzuKsPqw9Lun9DUlJIQSRAPcfWYtEsf94u8Nyija17ktasIDOluot4Tz2ykYpu3yzvgo_2Z2QCB8oyk",
+    "VAPID_PUBLIC_KEY": "BIdgUHwxCiWV8BtTHyCuj2CmfNtWD7XM8r2cOIbxDIH-uERcb6OscdLeA57ddpIJiwNqe39rmH_reFL86FHnQi8",
     "SUPABASE_URL": "https://qrpkfanblpjiqgkufnrb.supabase.co",
     "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_dMDE64mY-OTPE7PXzJ-SsA_lpt3mIDW"
   }
