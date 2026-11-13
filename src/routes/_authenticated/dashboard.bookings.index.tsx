@@ -23,10 +23,9 @@ import { locale } from "@/i18n";
 import { t, tx } from "@/i18n";
 import { arCount } from "@/lib/ar-count";
 
-export const Route = createFileRoute("/_authenticated/dashboard/bookings/")({ component: BookingsList });
+import { awaitingApproval, awaitingDeposit, hasProof, isOverdue, needsAction } from "@/components/dashboard/bookings-filters";
 
-// الطلب اللي لسا بانتظار موافقة المصوّرة مش "بانتظار العربون" (بيظهر تحت "تحتاج إجراء")
-const awaitingDeposit = (b: any) => (b.status === "pending_deposit" || b.status === "quote") && !(b.needs_approval && !b.approved_at);
+export const Route = createFileRoute("/_authenticated/dashboard/bookings/")({ component: BookingsList });
 
 const STATUS_LABELS: Record<string, string> = {
   pending_deposit: "بانتظار العربون",
@@ -51,10 +50,6 @@ let cachedBookingsList: any[] | null = null;
 
 type FilterKey = "all" | "action" | "upcoming" | "pending_deposit" | "confirmed" | "completed" | "cancelled";
 
-const hasProof = (b: any) => b.status === "pending_deposit" && (b.deposit_proof_url || b.deposit_sent_at);
-const isOverdue = (b: any) => b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "cancelled" && daysFromToday(b.delivery_due_at) < 0;
-const needsAction = (b: any) => hasProof(b) || isOverdue(b);
-
 function BookingsList() {
   const nav = useNavigate();
   const confirmFn = useServerFn(confirmBookingAfterDeposit);
@@ -64,14 +59,29 @@ function BookingsList() {
   const [filter, setFilterState] = useState<FilterKey>(() => { try { return (sessionStorage.getItem("memoria-bk-filter") as FilterKey) || "all"; } catch { return "all"; } });
   const setFilter = (f: FilterKey) => { setFilterState(f); try { sessionStorage.setItem("memoria-bk-filter", f); } catch { /* ignore */ } };
   const refreshList = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-    const { data } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).is("deleted_at", null)
-      .not("phone_verified_at" as any, "is", null).order("event_date", { ascending: false });
-    if (data) { cachedBookingsList = data; setList(data); }
+    const failed = (msg?: string) => {
+      if (cachedBookingsList && cachedBookingsList.length > 0) toast.error(g(t("تعذّر التحديث — تحقّقي من الاتصال"), t("تعذّر التحديث — تحقّق من الاتصال")));
+      else setLoadError(msg || t("تعذّر تحميل الحجوزات"));
+    };
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data, error } = await supabase.from("bookings").select("*").eq("photographer_id", session.user.id).is("deleted_at", null)
+        .not("phone_verified_at" as any, "is", null).order("event_date", { ascending: false });
+      if (error) { failed(error.message); return; }
+      if (data) { cachedBookingsList = data; setList(data); setLoadError(null); setStale(false); }
+    } catch (e: any) {
+      failed(e?.message);
+    }
+  };
+  const retryLoad = async () => {
+    setLoadError(null);
+    setLoading(true);
+    try { await refreshList(); } finally { setLoading(false); }
   };
   const [q, setQ] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [stale, setStale] = useState(false);
   const [fresh, setFresh] = useState<string[]>([]);
   const [lastOpened, setLastOpened] = useState<{ id: string; name: string } | null>(null);
   const [showSwipeHint, setShowSwipeHint] = useState(false);
@@ -106,6 +116,7 @@ function BookingsList() {
         if (error) throw error;
         cachedBookingsList = data ?? [];
         setList(data ?? []);
+        setStale(false);
         // طلب جديد يدخل القائمة لحظياً مع وهج ذهبي
         channel = supabase.channel(`bookings-list-${session.user.id}`)
           .on("postgres_changes", { event: "INSERT", schema: "public", table: "bookings", filter: `photographer_id=eq.${session.user.id}` }, (payload) => {
@@ -117,7 +128,8 @@ function BookingsList() {
           })
           .subscribe();
       } catch (error: any) {
-        setLoadError(error?.message || t("تعذّر تحميل الحجوزات"));
+        if (cachedBookingsList && cachedBookingsList.length > 0) setStale(true);
+        else setLoadError(error?.message || t("تعذّر تحميل الحجوزات"));
       } finally {
         setLoading(false);
       }
@@ -272,7 +284,15 @@ function BookingsList() {
         </div>
 
         {loading && <ListSkeleton />}
-        {loadError && <p className="text-center text-sm text-red-500 py-8">{friendlyError(loadError)}</p>}
+        {stale && !loading && !loadError && (
+          <p className="text-center text-xs text-muted-foreground">{g(t("بيانات غير محدّثة — اسحبي للتحديث"), t("بيانات غير محدّثة — اسحب للتحديث"))}</p>
+        )}
+        {loadError && (
+          <div className="py-8 text-center">
+            <p className="text-sm text-red-500">{friendlyError(loadError)}</p>
+            <button onClick={retryLoad} className="mt-3 rounded-full border border-border px-4 py-1.5 text-xs hover:bg-secondary">{t("إعادة المحاولة")}</button>
+          </div>
+        )}
 
         {!loading && !loadError && displayed.length === 0 && (
           list.length === 0 ? (
@@ -396,7 +416,7 @@ function BookingRow({ booking, query, conflict, fresh, showHint, onHintSeen, onC
             </div>
           </div>
           <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${STATUS_COLORS[booking.status] ?? "bg-muted text-muted-foreground"}`}>
-            {booking.needs_approval && !booking.approved_at && booking.status === "pending_deposit" ? t("بانتظار موافقتك") : STATUS_LABELS[booking.status] ?? booking.status}
+            {awaitingApproval(booking) ? t("بانتظار موافقتك") : STATUS_LABELS[booking.status] ?? booking.status}
           </span>
         </div>
 

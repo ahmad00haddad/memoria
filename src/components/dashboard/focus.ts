@@ -29,6 +29,7 @@ export type FocusBooking = {
   deposit_sent_at: string | null;
   final_paid_at: string | null;
   deposit_amount: number | null;
+  total_price?: number | null;
   needs_approval?: boolean | null;
   approved_at?: string | null;
   phone_verified_at?: string | null;
@@ -74,11 +75,17 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
 
     // ٠) طلب ينتظر موافقتها — أعلى أولوية: بعد 24 ساعة يُلغى تلقائياً
     if (b.needs_approval && !b.approved_at && b.phone_verified_at && (b.status === "pending_deposit" || b.status === "quote")) {
-      const left = Math.max(0, Math.ceil((new Date(b.phone_verified_at).getTime() + DAY - now) / 3600000));
+      const msLeft = new Date(b.phone_verified_at).getTime() + DAY - now;
+      const left = Math.ceil(msLeft / 3600000);
+      const leftText = msLeft <= 0
+        ? t("انتهت المهلة — سيُلغى الطلب خلال دقائق")
+        : msLeft < 3600000
+          ? t("باقي أقل من ساعة — بعدها يُلغى الطلب تلقائياً")
+          : t("باقي {0} ساعة — بعدها يُلغى الطلب تلقائياً", [left]);
       items.push({
         id: `approve-${b.id}`, tone: "urgent", priority: 110,
         title: t("طلب {0} بانتظار موافقتك", [name]),
-        detail: t("باقي {0} ساعة — بعدها يُلغى الطلب تلقائياً", [left]),
+        detail: leftText,
         cta: g(t("وافقي أو ارفضي"), t("وافق أو ارفض")), ...link,
       });
       continue;
@@ -123,6 +130,18 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
       }
     }
 
+    // ٤أ) وافقت ولم يصل العربون بعد ٤٨ ساعة — بلا حدّ أعلى للعمر
+    if (b.status === "pending_deposit" && !b.deposit_proof_url && !b.deposit_sent_at && b.approved_at
+      && now - new Date(b.approved_at).getTime() > 2 * DAY) {
+      items.push({
+        id: `deposit-wait-${b.id}`, tone: "soon", priority: 65,
+        title: t("عربون {0} لم يصل", [name]),
+        detail: g(t("وافقتِ {0} — أكّدي وصوله من البنك أو ألغي الطلب ليُفتح التاريخ", [ageLabel(b.approved_at)]), t("وافقتَ {0} — أكّد وصوله من البنك أو ألغِ الطلب ليُفتح التاريخ", [ageLabel(b.approved_at)])),
+        cta: g(t("افتحي الطلب"), t("افتح الطلب")), ...link,
+      });
+      continue;
+    }
+
     // ٤) طلب جديد لم يُرد عليه
     if (b.status === "quote" || (b.status === "pending_deposit" && !b.deposit_proof_url && !b.deposit_sent_at)) {
       const ageDays = (now - new Date(b.created_at).getTime()) / DAY;
@@ -157,6 +176,19 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
         id: `final-${b.id}`, tone: "info", priority: 30,
         title: t("الدفعة النهائية من {0} لم تصل", [name]),
         detail: t("المعرض سيبقى بعلامة مائية حتى تسجيل الدفعة"),
+        cta: g(t("سجّلي الدفعة"), t("سجّل الدفعة")), ...link,
+      });
+    } else if (
+      b.event_date && (b.status === "confirmed" || b.status === "completed") && !b.final_paid_at
+      && daysFromToday(b.event_date) < 0
+      && !(typeof b.total_price === "number" && b.total_price - (b.deposit_amount ?? 0) <= 0)
+    ) {
+      // انتهى العرس والمتبقي لم يُدفع قبل التسليم
+      const since = -daysFromToday(b.event_date);
+      items.push({
+        id: `final-${b.id}`, tone: "soon", priority: 40 + Math.min(9, since),
+        title: t("متبقّي {0} لم يُدفع", [name]),
+        detail: g(t("العرس كان {0} — ذكّريها قبل تسليم الصور", [relativeDay(-since)]), t("العرس كان {0} — ذكّرها قبل تسليم الصور", [relativeDay(-since)])),
         cta: g(t("سجّلي الدفعة"), t("سجّل الدفعة")), ...link,
       });
     }

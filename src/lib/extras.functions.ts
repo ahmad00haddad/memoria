@@ -128,6 +128,15 @@ export const addAddendum = createServerFn({ method: "POST" })
     const bk = await ownBooking(context, data.booking_id);
     if (bk.status !== "confirmed" && bk.status !== "completed") throw new Error(tr("الملحق متاح بعد تأكيد الحجز"));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (data.kind === "reschedule") {
+      const { data: full } = await supabaseAdmin.from("bookings").select("start_time, end_time").eq("id", bk.id).maybeSingle();
+      const { data: clash, error: clashErr } = await supabaseAdmin.rpc("has_booking_conflict", {
+        _pid: bk.photographer_id, _date: data.extra.new_event_date!,
+        _start: (data.extra.new_start_time ?? full?.start_time) as string, _end: (data.extra.new_end_time ?? full?.end_time) as string, _exclude: bk.id,
+      });
+      if (clashErr) console.error("[addAddendum] conflict check failed:", clashErr);
+      else if (clash) throw new Error(tr("عندكِ حجز آخر في هذا التاريخ. اختاري تاريخاً آخر."));
+    }
     // سقف حماية للعروس: مجموع الملاحق (المعلّقة + الموافَق عليها) لا يتجاوز نصف سعر الباقة (حد أدنى 100 د.أ)،
     // وملحقات معلّقة قليلة؛ أي زيادة أكبر تحتاج حجزاً جديداً أو دعماً.
     const { data: existing } = await (supabaseAdmin as any).from("booking_addenda")
