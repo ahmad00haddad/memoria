@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { g } from "@/hooks/use-gender";
 import { Lightbulb } from "lucide-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -124,13 +125,17 @@ function CalendarPage() {
     load(uid);
   };
 
-  // نقرة على يوم في التقويم: حجب أو فتح، مع تراجع
-  const toggleDay = async (d: string, blockedId?: string) => {
+  // نقرة على يوم: نافذة صغيرة بالخيارات (لا حجب بالخطأ من لمسة واحدة)
+  const [daySel, setDaySel] = useState<{ date: string; blockedId?: string } | null>(null);
+  const [dayReason, setDayReason] = useState("");
+  const openDay = (d: string, blockedId?: string) => { hapticVibrate("light"); setDayReason(""); setDaySel({ date: d, blockedId }); };
+
+  const toggleDay = async (d: string, blockedId?: string, why?: string) => {
     hapticVibrate("light");
     if (blockedId) return unblock(blockedId);
-    const tmp = { id: `tmp-${d}`, date: d, reason: null };
+    const tmp = { id: `tmp-${d}`, date: d, reason: why || null };
     setUnavail((l) => [...l, tmp]);
-    const { data, error } = await supabase.from("photographer_unavailability").insert({ photographer_id: uid, date: d, reason: null }).select("id").maybeSingle();
+    const { data, error } = await supabase.from("photographer_unavailability").insert({ photographer_id: uid, date: d, reason: why || null }).select("id").maybeSingle();
     if (error) { setUnavail((l) => l.filter((u) => u.id !== tmp.id)); return toast.error(error.message); }
     toast(t("حُجب يوم {0} — لن يظهر للعرائس", [new Date(d).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })]), {
       action: { label: t("تراجع"), onClick: async () => { if (data?.id) await supabase.from("photographer_unavailability").delete().eq("id", data.id); load(uid); } },
@@ -230,7 +235,7 @@ function CalendarPage() {
           <MonthGrid
             bookings={bookings}
             blocked={unavail}
-            onToggle={toggleDay}
+            onToggle={openDay}
             onOpenBooking={(b) => b.id && nav({ to: "/dashboard/bookings/$id", params: { id: b.id } })}
           />
         </div>
@@ -434,6 +439,42 @@ function CalendarPage() {
             ))}
         </div>
       </section>
+      <Sheet open={!!daySel} onOpenChange={(o) => !o && setDaySel(null)}>
+        <SheetContent side="bottom" className="rounded-t-3xl px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          {daySel && (() => {
+            const label = new Date(`${daySel.date}T00:00:00`).toLocaleDateString(locale("ar-JO"), { weekday: "long", day: "numeric", month: "long" });
+            const dayBookings = bookings.filter((b) => b.event_date === daySel.date && b.status !== "cancelled");
+            const row = unavail.find((u) => u.id === daySel.blockedId);
+            return (
+              <>
+                <SheetHeader className="text-start"><SheetTitle>{label}</SheetTitle></SheetHeader>
+                {dayBookings.length > 0 && (
+                  <ul className="mt-3 divide-y divide-border rounded-xl border border-border">
+                    {dayBookings.map((b) => (
+                      <li key={b.id ?? b.start_time}>
+                        <button type="button" onClick={() => { setDaySel(null); if (b.id) nav({ to: "/dashboard/bookings/$id", params: { id: b.id } }); }} className="flex min-h-12 w-full items-center justify-between px-4 text-sm">
+                          <span>{b.client_name}</span><span className="text-xs text-muted-foreground" dir="ltr">{b.start_time?.slice(0, 5)}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {daySel.blockedId ? (
+                  <>
+                    <p className="mt-4 text-sm text-muted-foreground">{t("هذا اليوم محجوب — لا يظهر متاحاً للعرائس.")}{row?.reason ? ` (${row.reason})` : ""}</p>
+                    <button type="button" onClick={() => { const id = daySel.blockedId!; setDaySel(null); void toggleDay(daySel.date, id); }} className="mt-4 h-12 w-full rounded-full border border-border text-sm font-medium">{t("فكّ الحجب")}</button>
+                  </>
+                ) : (
+                  <>
+                    <input value={dayReason} onChange={(e) => setDayReason(e.target.value)} maxLength={80} placeholder={t("السبب (اختياري، لا يظهر للعرائس)")} className="mt-4 h-12 w-full rounded-xl border border-border bg-background px-3 text-base" />
+                    <button type="button" onClick={() => { const d = daySel.date; setDaySel(null); void toggleDay(d, undefined, dayReason.trim()); }} className="mt-3 h-12 w-full rounded-full bg-gold text-sm font-medium text-white">{g(t("احجبي هذا اليوم"), t("احجب هذا اليوم"))}</button>
+                  </>
+                )}
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
       <Footer />
     </div>
   );
