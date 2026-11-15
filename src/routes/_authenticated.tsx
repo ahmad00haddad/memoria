@@ -3,6 +3,7 @@ import { GenderProvider } from "@/hooks/use-gender";
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { currentUidSync } from "@/lib/page-cache";
 import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -12,6 +13,11 @@ export const Route = createFileRoute("/_authenticated")({
     // SSR. Checking there would always "fail" and bounce a signed-in user out on
     // a hard page load (deep links / refresh). Defer the guard to the client.
     if (typeof window === "undefined") return { session: null, userId: null };
+
+    // جلسة محفوظة على الجهاز: لا ننتظر تجديد التوكن عبر الشبكة قبل رسم الصفحة (كان يؤخّر الفتح ~1.5 ثانية).
+    // Supabase يجدّده في الخلفية، وأي طلب لاحق ينتظره تلقائياً.
+    const fastUid = currentUidSync();
+    if (fastUid) return { session: null, userId: fastUid };
 
     const { data: { session }, error } = await supabase.auth.getSession();
 

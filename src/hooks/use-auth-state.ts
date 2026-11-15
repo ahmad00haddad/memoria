@@ -50,7 +50,15 @@ function start() {
     // setTimeout (not a microtask): calling Supabase from inside this callback
     // while it still holds the auth lock deadlocks, leaving pages stuck loading.
     if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") return;
-    if (event === "SIGNED_OUT") { roleCache.clear(); void import("@/lib/page-cache").then((m) => m.clearAppCache()); }
+    if (event === "SIGNED_OUT") {
+      roleCache.clear();
+      void import("@/lib/page-cache").then((m) => m.clearAppCache());
+      // الحارس لم يعد ينتظر الشبكة: جلسة انتهت فعلاً → صفحة الدخول
+      const p = window.location.pathname;
+      if (/^\/(dashboard|admin|notifications|onboarding)/.test(p)) {
+        setTimeout(() => { if (window.location.pathname === p) window.location.assign(`/login?redirect=${encodeURIComponent(p)}`); }, 300);
+      }
+    }
     setTimeout(() => { void load(session); }, 0);
   });
 }

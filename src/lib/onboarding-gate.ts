@@ -19,7 +19,7 @@ export function markOnboardingDone(uid: string) {
   doneFor.add(uid);
   try { localStorage.setItem(DONE_KEY + uid, "1"); } catch { /* ignore */ }
 }
-function rememberedDone(uid: string) {
+export function rememberedDone(uid: string) {
   try { return localStorage.getItem(DONE_KEY + uid) === "1"; } catch { return false; }
 }
 

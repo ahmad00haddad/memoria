@@ -364,6 +364,7 @@ function RootComponent() {
 
   // Page entrance animation (Task 7)
   const firstPage = useRef(true);
+  const appRoute = pathname.startsWith("/dashboard") || pathname === "/notifications";
   useEffect(() => { firstPage.current = false; }, []);
 
   // Entrance choreography plays on a browser's first visit only (see lib/intro).
@@ -412,9 +413,10 @@ function RootComponent() {
               <motion.div
                 id="main-content"
                 key={pathname}
-                initial={firstPage.current ? false : { opacity: 0, y: 6 }}
+                // صفحات اللوحة: الانتقال بـ View Transitions، بلا انتظار تلاشي الصفحة السابقة (كان يضيف ~280ms)
+                initial={firstPage.current || appRoute ? false : { opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
+                exit={appRoute ? undefined : { opacity: 0, y: -6 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               >
                 {/* Remounts with each page: on return visits initial={false} renders every

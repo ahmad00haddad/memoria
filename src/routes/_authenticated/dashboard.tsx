@@ -5,7 +5,8 @@ import { OfflineBanner } from "@/components/site/OfflineBanner";
 import { SubscriptionGuard } from "@/components/dashboard/SubscriptionGuard";
 import { PageLoader } from "@/components/ui/loading";
 import { supabase } from "@/integrations/supabase/client";
-import { checkOnboarding } from "@/lib/onboarding-gate";
+import { checkOnboarding, rememberedDone } from "@/lib/onboarding-gate";
+import { currentUidSync } from "@/lib/page-cache";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardLayout,
@@ -14,7 +15,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function DashboardLayout() {
   const nav = useNavigate();
   const router = useRouter();
-  const [ready, setReady] = useState(false);
+  // الإعداد مكتمل ومحفوظ على الجهاز: نرسم فوراً بلا انتظار الشبكة
+  const [ready, setReady] = useState(() => { if (typeof window === "undefined") return false; const u = currentUidSync(); return !!u && rememberedDone(u); });
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   // كل صفحة تتذكّر مكان التمرير: الرجوع لـ«لوحتي» (أو أي صفحة) يعيدكِ لنفس المكان بدل أعلى الصفحة
