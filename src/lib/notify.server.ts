@@ -35,7 +35,16 @@ export async function notifyPhotographer(photographerId: string, msg: Photograph
 
   try {
     const { sendPushToUser } = await import("@/lib/push.server");
-    await sendPushToUser(photographerId, { title: msg.title, body: msg.body, link: msg.link });
+    // أزرار في الإشعار نفسه: فتح الحجز + واتساب العروس مباشرة
+    const actions: { action: string; title: string; url: string }[] = [{ action: "open", title: "فتح الحجز", url: msg.link }];
+    if (msg.bookingId) {
+      const { data: bk } = await supabaseAdmin.from("bookings").select("client_phone").eq("id", msg.bookingId).maybeSingle();
+      let ph = String((bk as any)?.client_phone ?? "").replace(/\D/g, "");
+      if (ph.startsWith("00")) ph = ph.slice(2);
+      if (ph.startsWith("0")) ph = `962${ph.slice(1)}`;
+      if (ph.length >= 10) actions.push({ action: "wa", title: "واتساب", url: `https://wa.me/${ph}` });
+    }
+    await sendPushToUser(photographerId, { title: msg.title, body: msg.body, link: msg.link, actions });
   } catch (e) { console.error("[notify] push failed", e); }
 
   try {

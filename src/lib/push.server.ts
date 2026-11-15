@@ -11,7 +11,9 @@ export function isPushConfigured() {
   return Boolean(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
 }
 
-export type PushMsg = { title: string; body: string; /** مسار داخل الموقع */ link: string };
+export type PushMsg = { title: string; body: string; /** مسار داخل الموقع */ link: string;
+  /** أزرار داخل الإشعار (حتى 2): رابط داخلي يبدأ بـ / أو رابط خارجي كامل */
+  actions?: { action: string; title: string; url: string }[] };
 
 export async function sendPushToUser(userId: string, msg: PushMsg) {
   try {
@@ -28,6 +30,7 @@ export async function sendPushToUser(userId: string, msg: PushMsg) {
     };
     const data = JSON.stringify({
       title: msg.title, body: msg.body, url: `${appBase()}${msg.link}`,
+      actions: (msg.actions ?? []).slice(0, 2).map((a) => ({ ...a, url: a.url.startsWith("/") ? `${appBase()}${a.url}` : a.url })),
     });
 
     const dead: string[] = [];

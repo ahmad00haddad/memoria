@@ -165,7 +165,8 @@ async function networkFirstWithOffline(request) {
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   try {
-    const { title, body, icon, badge, url } = event.data.json();
+    const { title, body, icon, badge, url, actions } = event.data.json();
+    const acts = Array.isArray(actions) ? actions.slice(0, 2) : [];
     event.waitUntil(
       self.registration.showNotification(title || "Memoria", {
         body: body || "",
@@ -173,8 +174,8 @@ self.addEventListener("push", (event) => {
         badge: badge || "/app-icon-192.png",
         dir: "rtl",
         lang: "ar",
-        data: { url: url || "/" },
-        actions: url ? [{ action: "open", title: "فتح" }] : [],
+        data: { url: url || "/", actions: Object.fromEntries(acts.map((a) => [a.action, a.url])) },
+        actions: acts.length ? acts.map((a) => ({ action: a.action, title: a.title })) : (url ? [{ action: "open", title: "فتح" }] : []),
       })
     );
   } catch (e) {
@@ -184,7 +185,8 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || "/";
+  // زر داخل الإشعار (فتح الحجز / واتساب) أو الضغط على الإشعار نفسه
+  const url = (event.action && event.notification.data?.actions?.[event.action]) || event.notification.data?.url || "/";
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
