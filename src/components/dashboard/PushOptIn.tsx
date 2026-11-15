@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { g } from "@/hooks/use-gender";
 import { t } from "@/i18n";
-import { ensurePushSubscription, pushSupported, subscribePushDetailed } from "@/lib/push-client";
+import { pushSupported, subscribePushDetailed } from "@/lib/push-client";
 import { sendTestPush } from "@/lib/push.functions";
 
 const KEY = "memoria_push_optin_dismissed";
@@ -16,7 +16,8 @@ export function PushOptIn() {
 
   useEffect(() => {
     if (!pushSupported()) return;
-    if (Notification.permission === "granted") { void ensurePushSubscription(); return; }
+    // أذنت سابقاً لكن الاشتراك لم يُحفظ (مثل Brave): تعود البطاقة لتعيد المحاولة
+    if (Notification.permission === "granted") { subscribePushDetailed().then((r) => { if (!r.ok) setState("ask"); }); return; }
     if (Notification.permission === "denied") return;
     try { if (localStorage.getItem(KEY)) return; } catch { /* ignore */ }
     setState("ask");
