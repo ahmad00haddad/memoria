@@ -19,6 +19,21 @@ export function pushSupported() {
   return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 }
 
+export type PushResult = { ok: true } | { ok: false; reason: "brave" | "unsupported" | "error"; detail?: string };
+
+/** نفس ensurePushSubscription لكن يشرح سبب الفشل (Brave يمنع خدمة Push افتراضياً) */
+export async function subscribePushDetailed(): Promise<PushResult> {
+  if (!pushSupported()) return { ok: false, reason: "unsupported" };
+  lastError = null;
+  const ok = await ensurePushSubscription();
+  if (ok) return { ok: true };
+  const isBrave = !!(navigator as any).brave;
+  const msg = String((lastError as any)?.message ?? lastError ?? "");
+  if (isBrave || /push service|AbortError|Registration failed/i.test(msg)) return { ok: false, reason: isBrave ? "brave" : "error", detail: msg };
+  return { ok: false, reason: "error", detail: msg };
+}
+let lastError: unknown = null;
+
 /** يشترك (أو يجدّد الاشتراك) ويحفظه. يرجع true عند النجاح. لا يطلب إذناً. */
 export async function ensurePushSubscription(): Promise<boolean> {
   try {
@@ -40,8 +55,10 @@ export async function ensurePushSubscription(): Promise<boolean> {
       user_agent: navigator.userAgent.slice(0, 200),
       last_used_at: new Date().toISOString(),
     }, { onConflict: "user_id,endpoint" });
+    if (error) lastError = error;
     return !error;
   } catch (e) {
+    lastError = e;
     console.error("[push] subscribe failed", e);
     return false;
   }

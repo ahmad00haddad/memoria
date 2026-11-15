@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { g } from "@/hooks/use-gender";
 import { t } from "@/i18n";
-import { ensurePushSubscription, pushSupported } from "@/lib/push-client";
+import { ensurePushSubscription, pushSupported, subscribePushDetailed } from "@/lib/push-client";
 import { sendTestPush } from "@/lib/push.functions";
 
 const KEY = "memoria_push_optin_dismissed";
@@ -28,9 +28,22 @@ export function PushOptIn() {
     setState("busy");
     const res = await Notification.requestPermission().catch(() => "denied" as NotificationPermission);
     if (res !== "granted") { setState("hidden"); return; }
-    const ok = await ensurePushSubscription();
+    const res2 = await subscribePushDetailed();
     setState("hidden");
-    if (!ok) { toast.error(t("تعذّر تفعيل الإشعارات على هذا الجهاز")); return; }
+    if (!res2.ok) {
+      if (res2.reason === "brave") {
+        // Brave يوقف خدمة Push افتراضياً
+        toast.error(t("متصفح Brave يمنع الإشعارات افتراضياً"), {
+          description: g(t("افتحي إعدادات Brave ← الخصوصية والأمان ← فعّلي «استخدام خدمات Google لرسائل Push»، ثم اضغطي «تفعيل» مرة أخرى."), t("افتح إعدادات Brave ← الخصوصية والأمان ← فعّل «استخدام خدمات Google لرسائل Push»، ثم اضغط «تفعيل» مرة أخرى.")),
+          duration: 15000,
+        });
+        try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+        setState("ask");
+        return;
+      }
+      toast.error(t("تعذّر تفعيل الإشعارات على هذا الجهاز"), { description: res2.detail?.slice(0, 120) });
+      return;
+    }
     toast.success(g(t("تم! سيصلكِ إشعار تجربة الآن"), t("تم! سيصلك إشعار تجربة الآن")));
     testFn().catch(() => {});
   };
