@@ -1,5 +1,5 @@
 import { arCount } from "@/lib/ar-count";
-import { prefetchDashboardPages } from "@/lib/page-cache";
+import { prefetchDashboardPages, currentUidSync } from "@/lib/page-cache";
 import { Lightbulb, Settings, ScrollText, Tag, HelpCircle, CreditCard, Gift, ExternalLink } from "lucide-react";
 import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
@@ -376,7 +376,11 @@ let cachedDashboard: {
   hasCliq: boolean;
   templatesCount: number;
   stats: any;
-} | null = null;
+} | null = (() => {
+  // فتح التطبيق صباحاً: نعرض آخر لوحة محفوظة فوراً ثم نحدّثها
+  if (typeof window === "undefined") return null;
+  try { const o = JSON.parse(localStorage.getItem("memoria-home:v1") || "null"); return o && o.uid === currentUidSync() ? o.data : null; } catch { return null; }
+})();
 
 
 function getCompleteness(profile: any) {
@@ -529,6 +533,7 @@ function Dashboard() {
       templatesCount: tplCount ?? 0,
       stats: computedStats
     };
+    try { localStorage.setItem("memoria-home:v1", JSON.stringify({ uid: session.user.id, data: cachedDashboard })); } catch { /* ignore */ }
 
     setProfile(loadedProfile);
     setSub(s);
@@ -545,6 +550,23 @@ function Dashboard() {
       .catch((e) => { console.error("[dashboard] load failed", e); toast.error(g(tr("تعذّر تحميل اللوحة، حاولي مجدداً"), tr("تعذّر تحميل اللوحة، حاول مجدداً"))); })
       .finally(() => setLoading(false));
   }, [navigate]);
+
+  // تحديث حيّ: طلب جديد أو عربون وصل يظهر في «اليوم» دون سحب للتحديث
+  useEffect(() => {
+    let ch: ReturnType<typeof supabase.channel> | null = null;
+    let t: number | undefined;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      ch = supabase.channel(`home-bookings-${session.user.id}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "bookings", filter: `photographer_id=eq.${session.user.id}` }, () => {
+          window.clearTimeout(t);
+          t = window.setTimeout(() => { loadData().catch(() => {}); }, 800);
+        })
+        .subscribe();
+    });
+    return () => { window.clearTimeout(t); if (ch) supabase.removeChannel(ch); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const dismissQuickStart = async () => {
     setQsDismissed(true);

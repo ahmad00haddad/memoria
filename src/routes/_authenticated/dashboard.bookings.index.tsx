@@ -1,4 +1,5 @@
 import { friendlyError } from "@/lib/friendlyErrors";
+import { currentUidSync } from "@/lib/page-cache";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { getLang, dirOf } from "@/i18n";
 import { g } from "@/hooks/use-gender";
@@ -46,7 +47,11 @@ const STATUS_COLORS: Record<string, string> = {
 const SWIPE_HINT_KEY = "memoria:swipe-hint-seen";
 const LAST_BOOKING_KEY = "memoria:last-booking";
 
-let cachedBookingsList: any[] | null = null;
+let cachedBookingsList: any[] | null = (() => {
+  if (typeof window === "undefined") return null;
+  try { const o = JSON.parse(localStorage.getItem("memoria-bookings:v1") || "null"); return o && o.uid === currentUidSync() ? o.rows : null; } catch { return null; }
+})();
+const persistBookings = (rows: any[]) => { try { localStorage.setItem("memoria-bookings:v1", JSON.stringify({ uid: currentUidSync(), rows })); } catch { /* ignore */ } };
 
 type FilterKey = "all" | "action" | "upcoming" | "pending_deposit" | "confirmed" | "completed" | "cancelled";
 
@@ -114,7 +119,7 @@ function BookingsList() {
           .not("phone_verified_at" as any, "is", null) // طلبات غير مؤكدة (سبام محتمل) لا تظهر
           .order("event_date", { ascending: false });
         if (error) throw error;
-        cachedBookingsList = data ?? [];
+        cachedBookingsList = data ?? []; persistBookings(cachedBookingsList);
         setList(data ?? []);
         setStale(false);
         // طلب جديد يدخل القائمة لحظياً مع وهج ذهبي

@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { parseMethods } from "@/lib/payment-methods";
 
-// كاش بيانات صفحات اللوحة (في الذاكرة + sessionStorage): الصفحة تُرسم فوراً من آخر بيانات
+// كاش بيانات صفحات اللوحة (في الذاكرة + localStorage، يبقى بعد إغلاق التطبيق): الصفحة تُرسم فوراً من آخر بيانات
 // ثم تتحدّث بصمت. وبعد فتح الرئيسية نجلب بيانات الصفحات الثقيلة في الخلفية،
 // فيبدو التنقل فورياً كتطبيق حقيقي.
 
@@ -12,7 +12,7 @@ export function getCached<T = any>(key: string): T | undefined {
   const m = mem.get(key);
   if (m) return m.v as T;
   try {
-    const raw = sessionStorage.getItem(SS + key);
+    const raw = localStorage.getItem(SS + key);
     if (raw) { const o = JSON.parse(raw); mem.set(key, o); return o.v as T; }
   } catch { /* ignore */ }
   return undefined;
@@ -21,7 +21,25 @@ export function getCached<T = any>(key: string): T | undefined {
 export function setCached(key: string, v: any) {
   const o = { at: Date.now(), v };
   mem.set(key, o);
-  try { sessionStorage.setItem(SS + key, JSON.stringify(o)); } catch { /* ignore */ }
+  try { localStorage.setItem(SS + key, JSON.stringify(o)); } catch { /* ignore */ }
+}
+
+/** المستخدم الحالي بلا انتظار (من جلسة Supabase المحفوظة) — لا نعرض كاش حساب آخر */
+export function currentUidSync(): string | null {
+  try {
+    const k = Object.keys(localStorage).find((x) => x.startsWith("sb-") && x.endsWith("-auth-token"));
+    return k ? (JSON.parse(localStorage.getItem(k) || "null")?.user?.id ?? null) : null;
+  } catch { return null; }
+}
+
+/** عند الخروج: نمسح كل بيانات اللوحة المحفوظة على الجهاز (جهاز مشترك) */
+export function clearAppCache() {
+  mem.clear();
+  try {
+    for (const k of Object.keys(localStorage)) {
+      if (k.startsWith(SS) || k.startsWith("memoria-home:") || k.startsWith("memoria-bookings:")) localStorage.removeItem(k);
+    }
+  } catch { /* ignore */ }
 }
 
 const fetchers: Record<string, (uid: string) => Promise<any>> = {

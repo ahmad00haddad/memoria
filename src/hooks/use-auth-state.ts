@@ -50,6 +50,7 @@ function start() {
     // setTimeout (not a microtask): calling Supabase from inside this callback
     // while it still holds the auth lock deadlocks, leaving pages stuck loading.
     if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") return;
+    if (event === "SIGNED_OUT") { roleCache.clear(); void import("@/lib/page-cache").then((m) => m.clearAppCache()); }
     setTimeout(() => { void load(session); }, 0);
   });
 }

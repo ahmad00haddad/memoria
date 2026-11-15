@@ -301,8 +301,18 @@ function RootComponent() {
 
     if ("serviceWorker" in navigator) {
       const onLoad = () => {
-        navigator.serviceWorker.register("/sw.js").catch(() => {});
+        navigator.serviceWorker.register("/sw.js").then((reg) => {
+          // فحص النسخة الجديدة عند العودة للتطبيق
+          document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") reg.update().catch(() => {}); });
+        }).catch(() => {});
       };
+      // نسخة جديدة استلمت التحكم: نحدّث بصمت عندما يكون التطبيق في الخلفية (لا «حدّث الصفحة»)
+      let hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!hadController) { hadController = true; return; }
+        const reloadWhenHidden = () => { if (document.visibilityState === "hidden") window.location.reload(); };
+        document.addEventListener("visibilitychange", reloadWhenHidden, { once: true });
+      });
       window.addEventListener("load", onLoad);
       // إن كانت الصفحة محمّلة مسبقاً
       if (document.readyState === "complete") onLoad();
