@@ -140,9 +140,15 @@ export function Header() {
     <>
     {appMode && (
       <div className="vt-top-bar sm:hidden sticky top-0 z-40 flex h-12 items-center justify-between border-b border-border/50 bg-background/95 px-3 backdrop-blur">
-        <Link to="/dashboard" className="inline-flex min-h-10 items-center gap-1 text-sm text-foreground">
-          <ChevronRight className="h-5 w-5" />{t("لوحتي")}
-        </Link>
+        {/^\/dashboard\/bookings\/.+/.test(pathname) ? (
+          <Link to="/dashboard/bookings" className="inline-flex min-h-10 items-center gap-1 text-sm text-foreground">
+            <ChevronRight className="h-5 w-5" />{t("الحجوزات")}
+          </Link>
+        ) : (
+          <Link to="/dashboard" className="inline-flex min-h-10 items-center gap-1 text-sm text-foreground">
+            <ChevronRight className="h-5 w-5" />{t("لوحتي")}
+          </Link>
+        )}
         <Link to="/notifications" aria-label={t("الإشعارات")} className="relative grid h-10 w-10 place-items-center text-muted-foreground">
           <Bell className="h-5 w-5" />
           {unreadNotifs > 0 && <span className="absolute end-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] text-white">{unreadNotifs > 9 ? "9+" : unreadNotifs}</span>}

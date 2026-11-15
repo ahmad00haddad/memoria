@@ -546,7 +546,7 @@ function BookingDetail() {
     <div className="min-h-screen bg-background">
       <Header />
       <section className="container-editorial pt-8 pb-16 max-w-4xl">
-        <Link to="/dashboard/bookings" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors group">
+        <Link to="/dashboard/bookings" className="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors group">
           <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />{" "}{tr("الحجوزات")}
         </Link>
 
@@ -554,7 +554,7 @@ function BookingDetail() {
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="font-serif text-4xl leading-tight">{tx(b.client_name)}</h1>
+              <h1 className="font-serif text-3xl sm:text-4xl leading-tight">{tx(b.client_name)}</h1>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span
                   key={b.status}
@@ -573,6 +573,14 @@ function BookingDetail() {
               {eventIn !== null && eventIn >= 0 && eventIn <= 30 && <span className="text-gold"> ({relativeDay(eventIn)})</span>}
               {" "}· {b.start_time?.slice(0,5)}–{b.end_time?.slice(0,5)}
             </div>
+            {/* المال بنظرة: كم بقي (أو مدفوع بالكامل) دون فتح «المبالغ» */}
+            {b.status !== "cancelled" && Number(b.total_price) > 0 && (
+              <div className="mt-1.5 text-sm">
+                {b.final_paid_at || remaining <= 0
+                  ? <span className="text-emerald-700 dark:text-emerald-400">{tr("مدفوع بالكامل · {0} د.أ", [Number(b.total_price).toLocaleString()])}</span>
+                  : <span><span className="text-muted-foreground">{tr("المتبقي")}</span>{" "}<strong className="font-serif text-base tabular-nums">{tr("{0} د.أ", [remaining.toLocaleString()])}</strong>{" "}<span className="text-muted-foreground">{tr("من {0}", [Number(b.total_price).toLocaleString()])}</span></span>}
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <WhatsAppQuickSend booking={b} />
@@ -632,7 +640,7 @@ function BookingDetail() {
               {next.secondary && (
                 <button
                   onClick={next.secondary.run}
-                  className="inline-flex items-center justify-center rounded-full border border-ivory/30 px-5 py-2.5 text-sm transition-transform active:scale-95 dark:border-border"
+                  className="inline-flex min-h-11 flex-1 sm:flex-none items-center justify-center rounded-full border border-ivory/30 px-5 py-2.5 text-sm transition-transform active:scale-95 dark:border-border"
                 >
                   {tx(next.secondary.label)}
                 </button>
@@ -640,7 +648,7 @@ function BookingDetail() {
               <button
                 onClick={next.run}
                 disabled={next.busy}
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-medium text-charcoal transition-transform active:scale-95 disabled:opacity-60"
+                className="inline-flex min-h-11 flex-1 sm:flex-none shrink-0 items-center justify-center gap-2 rounded-full bg-gold px-5 py-2.5 text-sm font-medium text-charcoal transition-transform active:scale-95 disabled:opacity-60"
               >
                 {next.busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-charcoal/30 border-t-charcoal" /> : next.icon}
                 {tx(next.cta)}
@@ -652,13 +660,13 @@ function BookingDetail() {
 
         {/* ── تلميحات خاصة بهذا الحجز ── */}
         <AnimatePresence initial={false}>
-          {hints.map((h) => (
+          {hints.map((h, hi) => (
             <motion.div
               key={h.key}
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="overflow-hidden"
+              className={`overflow-hidden ${hi > 0 ? "hidden sm:block" : ""}`}
             >
               <div className="mt-3 flex items-start gap-3 rounded-xl border border-gold/25 bg-gold/5 px-4 py-3 text-sm">
                 <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
@@ -675,7 +683,7 @@ function BookingDetail() {
         </AnimatePresence>
 
         {/* ── التبويبات ── */}
-        <div role="tablist" aria-label={tr("أقسام الحجز")} className="mt-8 flex gap-1 overflow-x-auto scrollbar-none border-b border-border">
+        <div role="tablist" aria-label={tr("أقسام الحجز")} className="sticky top-12 z-20 -mx-4 mt-6 flex gap-1 overflow-x-auto scrollbar-none border-b border-border bg-background/95 px-4 backdrop-blur sm:static sm:mx-0 sm:mt-8 sm:px-0 sm:bg-transparent sm:backdrop-blur-none">
           {TABS.map((t) => (
             <button
               key={t.key}
