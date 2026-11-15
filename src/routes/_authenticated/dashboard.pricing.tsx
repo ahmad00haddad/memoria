@@ -57,6 +57,11 @@ function PricingMgr() {
   const keyOf = (r: Rule) => r._key ?? r.id ?? "";
   // الباقات المحفوظة تظهر مطوية (اسم + سعر)؛ تُفتح واحدة للتعديل. الجديدة مفتوحة دائماً.
   const [openKey, setOpenKey] = useState<string | null>(null);
+  // باقة جديدة: الأساسيات فقط (اسم، سعر، من يصوّر)؛ الوصف والميزات عند الطلب
+  const [fullKeys, setFullKeys] = useState<Set<string>>(new Set());
+  // «قصيرة» = أُضيفت الآن (لا تتغيّر حين يحفظها الحفظ التلقائي فتأخذ id، فلا يقفز النموذج أثناء الكتابة)
+  const [newKeys, setNewKeys] = useState<Set<string>>(new Set());
+  const isShort = (k: string) => newKeys.has(k) && !fullKeys.has(k);
   const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "", subtitle: r.subtitle ?? "", cta_label: r.cta_label ?? "" })));
   const withKeys = (rs: Rule[]) => rs.map((r) => ({ ...r, _key: r.id ?? Math.random().toString(36).slice(2) }));
 
@@ -101,6 +106,7 @@ function PricingMgr() {
   const add = () => {
     const fresh = withKeys([{ service: "photography", package: "hourly", label: "", price: 0 }]);
     setOpenKey(fresh[0]._key!);
+    setNewKeys((s) => new Set(s).add(fresh[0]._key!));
     setRules([...fresh, ...rules]);
     if (typeof window !== "undefined") requestAnimationFrame(() => document.getElementById("pricing-list")?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
@@ -357,7 +363,7 @@ function PricingMgr() {
 
               <label className="block text-xs text-muted-foreground mb-1">{t("اسم الباقة")}</label>
               <input placeholder={t("مثال: باقة ٤ ساعات")} value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="w-full bg-transparent font-serif text-2xl border-b border-border pb-2 mb-3 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
-              <input maxLength={120} aria-label={t("وصف قصير تحت الاسم")} placeholder={t("سطر قصير تحت الاسم، مثال: مثالية للحفلات العائلية الأنيقة")} value={r.subtitle ?? ""} onChange={(e) => upd(i, "subtitle", e.target.value)} className="w-full bg-transparent text-sm text-muted-foreground border-b border-border/60 pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
+              {!isShort(k) && <input maxLength={120} aria-label={t("وصف قصير تحت الاسم")} placeholder={t("سطر قصير تحت الاسم، مثال: مثالية للحفلات العائلية الأنيقة")} value={r.subtitle ?? ""} onChange={(e) => upd(i, "subtitle", e.target.value)} className="w-full bg-transparent text-sm text-muted-foreground border-b border-border/60 pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />}
 
               <div className="grid grid-cols-2 gap-4 mb-5">
                 <div>
@@ -369,26 +375,32 @@ function PricingMgr() {
                     <span className="mt-1 block text-[11px] text-muted-foreground tabular-nums">{t("العربون {0} د.أ", [dep])}</span>
                   ) : null}
                 </div>
-                <div>
+                {!isShort(k) && <div>
                   <label className="block text-xs text-muted-foreground mb-1">{t("سعر الصورة الإضافية")}</label>
                   <input type="number" min="0" inputMode="decimal" placeholder={t("اختياري")} value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="w-full bg-transparent font-serif text-3xl tabular-nums border-b border-border pb-1 outline-none transition-colors focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/50" />
-                </div>
+                </div>}
               </div>
 
-              {r.package !== "addon" && (
+              {r.package !== "addon" && !isShort(k) && (
                 <label className="mb-4 flex items-center gap-2 text-sm">
                   <input type="checkbox" checked={r.is_visible !== false} onChange={(e) => upd(i, "is_visible", e.target.checked)} className="h-4 w-4" />
                   {t("ظاهرة للعرائس")}
                   {r.is_visible === false && <span className="text-xs text-muted-foreground">{t("— مخفية، محفوظة عندكِ فقط")}</span>}
                 </label>
               )}
-              {r.package !== "addon" && <DisclosureFields r={r} set={(k, v) => upd(i, k, v)} />}
+              {r.package !== "addon" && <DisclosureFields r={r} set={(f, v) => upd(i, f, v)} />}
 
+              {isShort(k) ? (
+                <button type="button" onClick={() => setFullKeys((s) => new Set(s).add(k))} className="min-h-10 text-sm text-gold">
+                  {g(t("+ أضيفي وصفاً وميزات (اختياري)"), t("+ أضف وصفاً وميزات (اختياري)"))}
+                </button>
+              ) : (<>
               <label className="block text-xs text-muted-foreground mb-1">{t("ماذا تشمل الباقة؟")}{" "}<span className="text-muted-foreground/70">{t("— ميزة في كل سطر، والأرقام تظهر بالخط العريض تلقائياً")}</span></label>
               <FeatureEditor value={r.description ?? ""} onChange={(v) => upd(i, "description", v)} />
 
               <label className="block text-xs text-muted-foreground mt-5 mb-1">{t("نص زر الحجز")}{" "}<span className="text-muted-foreground/70">{t("(اختياري)")}</span></label>
               <input maxLength={40} placeholder={t("احجزي هذه الباقة")} value={r.cta_label ?? ""} onChange={(e) => upd(i, "cta_label", e.target.value)} className="w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50" />
+              </>)}
             </motion.div>
             );
           })}
