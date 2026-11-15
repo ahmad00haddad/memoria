@@ -103,7 +103,7 @@ export const updateProfileReport = createServerFn({ method: "POST" })
       .update({ status: data.status, admin_notes: data.admin_notes || null }).eq("id", data.id).select("photographer_id").maybeSingle();
     if (error) throw new Error(error.message);
     if (data.hide_profile && r?.photographer_id) {
-      const { error: e2 } = await admin.from("profiles").update({ is_published: false }).eq("id", r.photographer_id);
+      const { error: e2 } = await admin.from("profiles").update({ is_published: false, moderation_hidden_at: new Date().toISOString() }).eq("id", r.photographer_id);
       if (e2) throw new Error(e2.message);
       await admin.from("audit_logs").insert({ action: "profile.hide_after_report", actor_id: userId, entity_type: "profile", entity_id: r.photographer_id, after_data: { report_id: data.id } });
     }

@@ -103,7 +103,7 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
     }
 
     // ٢) تسليم متأخر
-    if (b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "cancelled") {
+    if (b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "cancelled" && b.status !== "completed") {
       const d = daysFromToday(b.delivery_due_at);
       if (d < 0) {
         items.push({
@@ -157,7 +157,7 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
     }
 
     // ٥) تسليم خلال ٧ أيام
-    if (b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "cancelled") {
+    if (b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "cancelled" && b.status !== "completed") {
       const d = daysFromToday(b.delivery_due_at);
       if (d >= 0 && d <= 7) {
         items.push({
@@ -171,7 +171,8 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
     }
 
     // ٦) سُلّم ولم تصل الدفعة النهائية
-    if (b.production_stage === "delivered" && !b.final_paid_at && b.status !== "cancelled") {
+    if (b.production_stage === "delivered" && !b.final_paid_at && b.status !== "cancelled"
+      && !(typeof b.total_price === "number" && b.total_price - (b.deposit_amount ?? 0) <= 0)) {
       items.push({
         id: `final-${b.id}`, tone: "info", priority: 30,
         title: t("الدفعة النهائية من {0} لم تصل", [name]),

@@ -165,7 +165,12 @@ export const adminTogglePublish = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error: updErr } = await supabaseAdmin.from("profiles").update({ is_published: data.published, updated_at: new Date().toISOString() }).eq("id", data.photographer_id);
+    const { error: updErr } = await supabaseAdmin.from("profiles").update({
+      is_published: data.published,
+      // إخفاء الإدارة يمنع المصوّرة من إعادة النشر بنفسها حتى تنشرها الإدارة
+      moderation_hidden_at: data.published ? null : new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as any).eq("id", data.photographer_id);
     if (updErr) throw new Error(updErr.message);
     await supabaseAdmin.from("audit_logs").insert({
       action: "profile.set_published",
@@ -188,13 +193,16 @@ export const adminRenewSubscription = createServerFn({ method: "POST" })
     
     const { data: sub } = await supabaseAdmin
       .from("subscriptions")
-      .select("current_period_end, trial_ends_at")
+      .select("status, current_period_end, trial_ends_at")
       .eq("photographer_id", data.photographer_id)
       .maybeSingle();
 
-    const currentEnd = sub?.current_period_end ? new Date(sub.current_period_end) : null;
     const now = new Date();
-    const start = currentEnd && currentEnd > now ? currentEnd : now;
+    // نبدأ من الأبعد: الآن / نهاية الفترة / نهاية التجربة الجارية — لا تضيع أيام (التجديد اليدوي يبقي الباقة كما هي عمداً)
+    const ends = [now.getTime()];
+    if (sub?.current_period_end) ends.push(new Date(sub.current_period_end).getTime());
+    if ((sub as any)?.status === "trial" && sub?.trial_ends_at) ends.push(new Date(sub.trial_ends_at).getTime());
+    const start = new Date(Math.max(...ends));
     const end = new Date(start);
     end.setMonth(end.getMonth() + data.months);
 
@@ -359,49 +367,12 @@ export const adminApproveSubscriptionPayment = createServerFn({ method: "POST" }
     if (pErr || !payment) throw new Error(t("الدفعة غير موجودة"));
     if (payment.status !== "pending") throw new Error(t("تمت معالجة هذه الدفعة سابقًا"));
 
-    // Mark payment as approved
-    const { error: e1 } = await supabaseAdmin
-      .from("subscription_payments")
-      .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: userId, period_months: data.months })
-      .eq("id", data.payment_id);
-    if (e1) throw new Error(e1.message);
-
-    // Renew subscription directly without RPC (avoids auth.uid() issue)
-    const { data: sub } = await supabaseAdmin
-      .from("subscriptions")
-      .select("status, current_period_end, trial_ends_at")
-      .eq("photographer_id", payment.photographer_id)
-      .maybeSingle();
-
-    const now = new Date();
-    // نبدأ من نهاية الفترة الحالية أو التجربة المجانية — لا تضيع أيام مدفوعة/تجريبية.
-    const ends = [now.getTime()];
-    if (sub?.current_period_end) ends.push(new Date(sub.current_period_end).getTime());
-    if ((sub as any)?.status === "trial" && sub?.trial_ends_at) ends.push(new Date(sub.trial_ends_at).getTime());
-    const start = new Date(Math.max(...ends));
-    const end = new Date(start);
-    end.setMonth(end.getMonth() + data.months);
-
-    const { error: e2 } = await supabaseAdmin
-      .from("subscriptions")
-      .upsert({
-        photographer_id: payment.photographer_id,
-        status: "active",
-        tier: (payment as any).tier ?? "pro",
-        current_period_start: now.toISOString(),
-        current_period_end: end.toISOString(),
-        trial_ends_at: (sub as any)?.trial_ends_at ?? now.toISOString(),
-        updated_at: now.toISOString(),
-      }, { onConflict: "photographer_id" });
-    if (e2) throw new Error(e2.message);
-
-    await supabaseAdmin.from("audit_logs").insert({
-      action: "subscription.approve",
-      actor_id: userId,
-      entity_type: "subscription_payment",
-      entity_id: data.payment_id,
-      after_data: { months: data.months, photographer_id: payment.photographer_id, period_end: end.toISOString() },
+    // اعتماد ذرّي في قاعدة البيانات: قلب الحالة + تمديد الفترة + مكافأة الإحالة + سجل التدقيق في معاملة واحدة
+    const { data: res, error: rpcErr } = await (supabaseAdmin as any).rpc("apply_subscription_payment", {
+      _payment_id: data.payment_id, _months: data.months, _actor: userId,
     });
+    if (rpcErr) throw new Error(rpcErr.message);
+    if ((res as any)?.already) throw new Error(t("تمت معالجة هذه الدفعة سابقًا"));
 
     return { ok: true };
   });

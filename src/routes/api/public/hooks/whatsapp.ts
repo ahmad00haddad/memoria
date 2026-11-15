@@ -96,7 +96,15 @@ export const Route = createFileRoute("/api/public/hooks/whatsapp")({
               continue;
             }
 
-            await v.markBookingVerified(b.id, "whatsapp");
+            try {
+              await v.markBookingVerified(b.id, "whatsapp");
+            } catch (e: any) {
+              if (e?.message && String(e.message).includes("حُجز قبل تأكيد")) {
+                await sendWhatsAppText(from, "⚠️ هذا التاريخ حُجز قبل تأكيد رقمكِ. اختاري تاريخاً آخر من صفحة المصوّرة.");
+                continue;
+              }
+              throw e;
+            }
             await sendWhatsAppText(from, [
               "تم تأكيد طلب حجزك ✅",
               "",

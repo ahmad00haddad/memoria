@@ -178,13 +178,12 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
           if (!due.length) continue;
           try {
             await mark(b.id, sent, due);
-            const hours = Math.max(1, Math.round(left / H));
             const name = await nameOf(b.photographer_id);
             await notifyBride(b.id, {
-              subject: `باقي ${hours} ساعة لتثبيت حجزك`,
+              subject: "تذكير: ثبّتي حجزك بالعربون",
               title: "تذكير بالعربون",
               lines: [
-                `${name} وافقت على حجزك بتاريخ ${arDate(b.event_date)}، والتاريخ محجوز لكِ لمدة ${hours} ساعة أخرى فقط.`,
+                `${name} وافقت على حجزك بتاريخ ${arDate(b.event_date)}، والتاريخ محجوز لكِ بانتظار العربون.`,
                 `إذا حوّلتِ العربون (${b.deposit_amount} د.أ) لا تنسي رفع صورة الإيصال من صفحة الحجز، حتى تثبّت ${name} حجزكِ بسرعة.`,
               ],
               template: "deposit_reminder_client",
@@ -306,8 +305,8 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
             .gte("expires_at", new Date().toISOString())
             .lte("expires_at", new Date(Date.now() + 7 * 24 * H).toISOString()).limit(100);
           for (const gl of (gals ?? []) as any[]) {
-            const { data: b } = await admin.from("bookings").select("id, reminders_sent, deleted_at").eq("id", gl.booking_id).maybeSingle();
-            if (!b || b.deleted_at) continue;
+            const { data: b } = await admin.from("bookings").select("id, reminders_sent, deleted_at, status").eq("id", gl.booking_id).maybeSingle();
+            if (!b || b.deleted_at || (b as any).status === "cancelled") continue;
             const sent: string[] = b.reminders_sent ?? [];
             if (sent.includes("gal7")) continue;
             try {

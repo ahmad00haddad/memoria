@@ -72,6 +72,8 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       const { count: pendingAll } = await (supabaseAdmin as any).from("bookings")
         .select("id", { count: "exact", head: true })
         .eq("client_phone", data.client_phone).gte("event_date", today)
+        // طلبات آخر 30 يوماً فقط: الطلب المعتمد يبقى معلّقاً حتى يُلغى، فلا نحسب المهجورة القديمة
+        .gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString())
         .in("status", ["pending_deposit", "quote"]).is("deleted_at", null);
       if ((pendingAll ?? 0) >= 6) {
         throw new Error(tr("عندكِ طلبات معلّقة كثيرة. انتظري ردّ المصوّرات أو ألغي بعضها من صفحات المتابعة قبل طلب جديد."));
@@ -82,6 +84,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     const { count: pendingSameDay } = await (supabaseAdmin as any).from("bookings")
       .select("id", { count: "exact", head: true })
       .eq("client_phone", data.client_phone).eq("event_date", data.event_date)
+      .gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString())
       .in("status", ["pending_deposit", "quote"]).is("deleted_at", null);
     if ((pendingSameDay ?? 0) >= 3) {
       throw new Error(tr("عندكِ 3 طلبات معلّقة لنفس التاريخ. انتظري ردّهن أو ألغي واحداً من صفحة متابعته قبل طلب جديد."));
@@ -128,10 +131,12 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     // Photographer's deposit configuration
     const { data: profile, error: profErr } = await (supabaseAdmin as any)
       .from("profiles")
-      .select("id, display_name, username, fixed_deposit, deposit_percent, min_session_minutes, gender")
+      .select("id, display_name, username, fixed_deposit, deposit_percent, min_session_minutes, gender, is_published, deleted_at")
       .eq("id", data.photographer_id)
       .single();
     if (profErr || !profile) throw new Error(tr("المصوّرة غير موجودة"));
+    // صفحة غير منشورة أو محذوفة لا تستقبل حجوزات حتى لو وصل أحدٌ لمعرّفها
+    if (!profile.is_published || profile.deleted_at) throw new Error(tr("الصفحة غير موجودة"));
 
     // احترام الحد الأدنى لمدة الجلسة الذي حدّدته المصوّرة
     const bookedMinutes = sessionMinutes(data.start_time, data.end_time);
@@ -140,8 +145,9 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       throw new Error(tr("الحد الأدنى لمدة الجلسة لدى هذه المصوّرة هو {0} ساعة", [Math.round(minMinutes / 60 * 10) / 10]));
     }
 
+    // العربون لا يتجاوز المجموع (عربون ثابت أكبر من سعر الباقة)
     const deposit = total > 0
-      ? (profile.fixed_deposit != null
+      ? Math.min(total, profile.fixed_deposit != null
           ? Number(profile.fixed_deposit)
           : Math.round(total * (Number(profile.deposit_percent ?? 25) / 100)))
       : 0;
@@ -189,32 +195,12 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     const deduped = result.deduped === true;
     if (!deduped) {
       // لقطة ثابتة للباقة لحظة الطلب: أي تعديل لاحق من المصوّرة لا يغيّر ما اتفقتا عليه
-      const m: any = mainRule;
-      const days = m.delivery_days != null ? Number(m.delivery_days) : null;
-      const snapshot = {
-        label: m.label, price: Number(m.price), service: m.service, subtitle: m.subtitle ?? null, description: m.description ?? null,
-        hours: m.hours != null ? Number(m.hours) : null, deliverable_count: m.deliverable_count ?? null, delivery_days: days,
-        shooter: m.shooter ?? null, overtime_fee: m.overtime_fee != null ? Number(m.overtime_fee) : null,
-        excludes: m.excludes ?? null, unedited_included: !!m.unedited_included, revision_rounds: m.revision_rounds ?? null,
-        addons: items.filter((x) => x.kind === "addon"), gender: (profile as any).gender ?? "female", taken_at: new Date().toISOString(),
-      };
-      const promised: Record<string, unknown> = { package_snapshot: snapshot };
-      if (m.service === "photography" && m.deliverable_count != null) promised.photos_promised = m.deliverable_count;
-      if (days != null) {
-        promised.delivery_days_promised = days;
-        const due = new Date(`${data.event_date}T12:00:00Z`);
-        due.setUTCDate(due.getUTCDate() + days);
-        promised.delivery_due_at = due.toISOString();
-      }
-      if (m.overtime_fee != null) promised.overtime_fee_per_hour = Number(m.overtime_fee);
-      // مدة مطلوبة أطول من ساعات الباقة: تنبيه ظاهر للمصوّرة بملاحظات الطلب (الفرق يُتفق عليه كساعات إضافية)
-      if (m.hours != null && bookedMinutes > Number(m.hours) * 60 + 15) {
-        const extra = Math.round(((bookedMinutes - Number(m.hours) * 60) / 60) * 10) / 10;
-        promised.client_notes = `${data.client_notes ? data.client_notes + "\n\n" : ""}[تنبيه آلي] المدة المطلوبة ${Math.round(bookedMinutes / 6) / 10} ساعة وباقة "${m.label}" ${m.hours} ساعة؛ الفرق ${extra} ساعة يُتفق عليه كساعات إضافية${m.overtime_fee ? ` (${m.overtime_fee} د.أ للساعة)` : ""}.`;
-      }
       // طلب العروس يمر بموافقة المصوّرة قبل العربون. إن فشل الوسم نلغي الطلب بدل أن يتجاوز الموافقة.
-      const { error: naErr } = await supabaseAdmin.from("bookings")
-        .update({ needs_approval: true, ...promised } as any).eq("id", row.id);
+      const { applyPackagePromises } = await import("@/lib/booking-promises.server");
+      const { error: naErr } = await applyPackagePromises(supabaseAdmin, {
+        bookingId: row.id, eventDate: data.event_date, mainRule, items,
+        profile: profile as any, bookedMinutes, clientNotes: data.client_notes, needsApproval: true,
+      });
       if (naErr) {
         await supabaseAdmin.from("bookings").update({ deleted_at: new Date().toISOString() } as any).eq("id", row.id);
         throw new Error(tr("تعذّر إرسال الطلب، حاولي مرة أخرى"));
@@ -615,7 +601,7 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: bk, error } = await supabase
       .from("bookings")
-      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id, client_phone, client_tracking_token, client_name, event_date, total_price, deposit_checkout_session_id, needs_approval, approved_at")
+      .select("id, photographer_id, deposit_sent_at, deposit_confirmed_at, deposit_proof_url, status, client_user_id, client_phone, client_tracking_token, client_name, event_date, total_price, deposit_checkout_session_id, needs_approval, approved_at, start_time, end_time")
       .eq("id", data.booking_id)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -649,9 +635,20 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     if (bk.status !== "pending_deposit" && bk.status !== "quote") {
       throw new Error(tr("هذا الحجز ليس بانتظار العربون"));
     }
+    // لا تأكيد إذا كان حجز آخر يشغل نفس اليوم (فشل الفحص يوقف التأكيد)
+    {
+      const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+      const { data: clash, error: clashErr } = await (admin as any).rpc("has_booking_conflict", {
+        _pid: bk.photographer_id, _date: bk.event_date, _start: (bk as any).start_time, _end: (bk as any).end_time, _exclude: bk.id,
+      });
+      if (clashErr) throw new Error(clashErr.message);
+      if (clash) throw new Error(tr("عندكِ حجز آخر يشغل هذا اليوم. ألغي أحدهما أو انقلي موعده قبل التأكيد."));
+    }
     const patch: any = { status: "confirmed", updated_at: new Date().toISOString() };
     if (!bk.deposit_confirmed_at) patch.deposit_confirmed_at = new Date().toISOString();
-    const { error: uerr } = await supabase.from("bookings").update(patch).eq("id", data.booking_id);
+    // الملكية متحقَّق منها أعلاه؛ status/deposit_confirmed_at محميان من الطلبات المباشرة فالكتابة عبر service-role
+    const { supabaseAdmin: adminW } = await import("@/integrations/supabase/client.server");
+    const { error: uerr } = await adminW.from("bookings").update(patch).eq("id", data.booking_id).eq("photographer_id", userId);
     if (uerr) throw new Error(uerr.message);
     // سجلّ تدقيق (عبر service-role لتجاوز RLS على audit_logs).
     try {

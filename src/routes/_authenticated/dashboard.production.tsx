@@ -200,14 +200,9 @@ function ProductionBoard() {
               logMoveFn({ data: { bookingId: b.id, fromStage: next.key, toStage: prevStage } }).catch(() => {});
               try { await load(uid); } catch { /* ignore */ }
             } catch (undoErr: any) {
-              // fallback
-              const { error } = await supabase.from("bookings").update(previousState).eq("id", b.id).eq("photographer_id", uid);
-              if (!error) {
-                toast.success(tr("تم التراجع بنجاح"));
-                try { await load(uid); } catch { /* ignore */ }
-              } else {
-                toast.error(g(tr("تعذّر التراجع، حاولي يدوياً."), tr("تعذّر التراجع، حاول يدوياً.")));
-              }
+              // لا كتابة مباشرة على الحجز من المتصفح (أعمدة المرحلة محمية): نُظهر الخطأ ونعيد التحميل
+              toast.error(undoErr?.message || g(tr("تعذّر التراجع، حاولي يدوياً."), tr("تعذّر التراجع، حاول يدوياً.")));
+              try { await load(uid); } catch { /* ignore */ }
             } finally {
               setUndoLockUntil((prev) => { const n = { ...prev }; delete n[b.id]; return n; });
               setMovingId(null);

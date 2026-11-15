@@ -491,7 +491,7 @@ function BookingDetail() {
       const label = STAGES.find((s) => s.key === stage)?.label ?? "";
       return { title: tr("المرحلة الحالية: {0}", [label]), detail: b.delivery_due_at ? tr("التسليم {0}", [relativeDay(daysFromToday(b.delivery_due_at))]) : g(tr("حدّثي المرحلة لتعرف العميلة أين وصلت صورها"), tr("حدّث المرحلة لتعرف العميلة أين وصلت صورها")), cta: g(tr("حدّثي الإنتاج"), tr("حدّث الإنتاج")), icon: <Edit3 className="h-4 w-4" />, run: () => setTab("production") };
     }
-    if (!b.final_paid_at) {
+    if (!b.final_paid_at && Number(b.total_price) - Number(b.deposit_amount || 0) > 0) {
       return { title: tr("سُلّمت الصور — الدفعة النهائية لم تصل"), detail: tr("المتبقي {0} د.أ", [Number(b.total_price) - Number(b.deposit_amount || 0)]), cta: g(tr("سجّلي استلام الدفعة"), tr("سجّل استلام الدفعة")), icon: <BadgeDollarSign className="h-4 w-4" />, run: markFinalPaid, busy: actionLoading === "final" };
     }
     return { title: tr("اكتمل الحجز"), detail: tr("رأي العميلة يساعد العرائس الأخريات على اختيارك"), cta: g(tr("اطلبي تقييماً"), tr("اطلب تقييماً")), icon: <Star className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 أتمنى أن تكون الصور قد نالت إعجابك! يسعدني سماع رأيك هنا: {1}/review/{2} شكراً لكِ!", [b.client_name, origin, b.client_tracking_token])) };
@@ -526,7 +526,7 @@ function BookingDetail() {
         action: { label: g(tr("ذكّريها بواتساب"), tr("ذكّرها بواتساب")), run: () => openWhatsApp(tr("مرحباً {0} 🤍 ألف مبروك! باقي مبلغ التصوير {1} د.أ — يرجى تحويله حتى أسلّمك الصور. التفاصيل هنا: {2}", [b.client_name, remainingDue, trackUrl])) },
       });
     }
-    if (b.production_stage === "delivered" && !b.final_paid_at && b.status !== "cancelled") {
+    if (b.production_stage === "delivered" && !b.final_paid_at && remainingDue > 0 && b.status !== "cancelled") {
       list.push({ key: "watermark", text: g(tr("صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّلي الدفعة النهائية."), tr("صور المعرض تظهر للعميلة بعلامة مائية حتى تسجّل الدفعة النهائية.")) });
     }
     return list.filter((h) => !dismissedHints.includes(h.key));
@@ -784,7 +784,7 @@ function BookingDetail() {
                         {tr("{0} د.أ", [remaining.toLocaleString()])}</span>
                     } bold />
                     {b.final_paid_at && <div className="text-xs text-emerald-700 dark:text-emerald-400">{tr("استُلم المتبقي في {0}", [new Date(b.final_paid_at).toLocaleDateString(locale("ar-JO"))])}</div>}
-                    {!b.final_paid_at && (b.status === "confirmed" || b.status === "completed") && (
+                    {!b.final_paid_at && remaining > 0 && (b.status === "confirmed" || b.status === "completed") && (
                       <button onClick={markFinalPaid} disabled={actionLoading === "final"} className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-4 py-2 text-sm hover:border-gold/50 hover:text-gold transition-colors active:scale-95 disabled:opacity-60">
                         <BadgeDollarSign className="h-4 w-4" />{" "}{tr("تسجيل استلام المتبقي (تحويل أو كاش)")}
                       </button>

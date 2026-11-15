@@ -40,8 +40,31 @@ export function appBase(): string {
  * يعلّم الحجز مؤكَّداً (مرة واحدة فقط) ثم يُبلغ المصوّرة ويرسل للعروس رابط التتبع.
  * يُعيد false إن كان مؤكداً مسبقاً.
  */
-export async function markBookingVerified(bookingId: string, via: "whatsapp" | "email" | "auto"): Promise<boolean> {
+export const DATE_TAKEN_BEFORE_VERIFY = "هذا التاريخ حُجز قبل تأكيد رقمكِ. اختاري تاريخاً آخر.";
+
+export async function markBookingVerified(
+  bookingId: string,
+  via: "whatsapp" | "email" | "auto",
+  opts?: { skipConflictCheck?: boolean; offerAccepted?: boolean },
+): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // الرمز قد يصل بعد انتهاء حجز الـ30 دقيقة: أعيدي فحص اليوم قبل التوثيق (إلا لو فُحص في الطلب نفسه)
+  if (!opts?.skipConflictCheck) {
+    const { data: cur } = await supabaseAdmin.from("bookings")
+      .select("photographer_id, event_date, start_time, end_time, phone_verified_at")
+      .eq("id", bookingId).maybeSingle();
+    if (cur && !(cur as any).phone_verified_at) {
+      const { data: clash, error: clashErr } = await (supabaseAdmin as any).rpc("has_booking_conflict", {
+        _pid: cur.photographer_id, _date: cur.event_date, _start: cur.start_time, _end: cur.end_time, _exclude: bookingId,
+      });
+      if (clashErr) throw new Error(clashErr.message);
+      if (clash) {
+        await supabaseAdmin.from("bookings").update({ deleted_at: new Date().toISOString() } as any).eq("id", bookingId);
+        const { t } = await import("@/i18n");
+        throw new Error(t(DATE_TAKEN_BEFORE_VERIFY));
+      }
+    }
+  }
   const { data: updated } = await supabaseAdmin
     .from("bookings")
     .update({
@@ -56,12 +79,12 @@ export async function markBookingVerified(bookingId: string, via: "whatsapp" | "
     .select("id")
     .maybeSingle();
   if (!updated) return false;
-  await notifyNewBooking(bookingId, via);
+  await notifyNewBooking(bookingId, via, !!opts?.offerAccepted);
   return true;
 }
 
 /** إشعارات الطلب الجديد — تُرسل فقط بعد التأكيد حتى لا يصل السبام للمصوّرة. */
-async function notifyNewBooking(bookingId: string, via: string) {
+async function notifyNewBooking(bookingId: string, via: string, offerAccepted = false) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: b } = await supabaseAdmin
     .from("bookings")
@@ -81,8 +104,10 @@ async function notifyNewBooking(bookingId: string, via: string) {
 
   const { notifyPhotographer } = await import("@/lib/notify.server");
   await notifyPhotographer(b.photographer_id, {
-    title: "طلب حجز جديد بانتظار موافقتك",
-    body: `${b.client_name} تطلب ${summaryLabel} بتاريخ ${b.event_date} (${total} د.أ). عندك 24 ساعة توافقي أو ترفضي، وبعدها يُلغى الطلب تلقائياً.`,
+    title: offerAccepted ? "العروس وافقت على عرضكِ — بانتظار العربون" : "طلب حجز جديد بانتظار موافقتك",
+    body: offerAccepted
+      ? `${b.client_name} — ${summaryLabel} بتاريخ ${b.event_date} (${total} د.أ). الحجز محجوز لكِ بانتظار تحويل العربون.`
+      : `${b.client_name} تطلب ${summaryLabel} بتاريخ ${b.event_date} (${total} د.أ). عندك 24 ساعة توافقي أو ترفضي، وبعدها يُلغى الطلب تلقائياً.`,
     link: `/dashboard/bookings/${b.id}`,
     template: "new_booking_photographer",
     bookingId: b.id,

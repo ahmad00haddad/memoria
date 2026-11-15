@@ -1007,7 +1007,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     }
     const start = f.start_time || "12:00";
     const end = f.end_time || "18:00";
-    if (toMin(end) <= toMin(start)) {
+    // النهاية قبل البداية = تعدّي منتصف الليل (يقبله الخادم وقاعدة البيانات)؛ المرفوض فقط بداية = نهاية
+    if (toMin(end) === toMin(start)) {
       return toast.error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
     }
     if (isBlocked) return toast.error(tr("هذا اليوم غير متاح، الرجاء اختيار يوم آخر"));
@@ -1360,6 +1361,9 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           <Field label={tr("من")} type="time" v={f.start_time} on={(v) => { setTimesTouched(true); setF({ ...f, start_time: v }); }} />
           <Field label={tr("إلى")} type="time" v={f.end_time} on={(v) => { setTimesTouched(true); setF({ ...f, end_time: v }); }} />
         </div>
+        {!!f.start_time && !!f.end_time && toMin(f.end_time) < toMin(f.start_time) && (
+          <p className="text-xs text-muted-foreground">{tr("ينتهي بعد منتصف الليل")}</p>
+        )}
         {isBlocked && <p className="text-sm text-destructive sm:col-span-2">{tr("⚠️ هذا اليوم غير متاح")}</p>}
         {hasConflict && <p className="text-sm text-destructive sm:col-span-2">{tr("⚠️ يتعارض مع فترة محجوزة")}</p>}
       </motion.div>

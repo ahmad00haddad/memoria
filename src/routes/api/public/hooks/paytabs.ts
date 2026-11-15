@@ -40,6 +40,7 @@ export const Route = createFileRoute("/api/public/hooks/paytabs")({
         // ----- callback / IPN: JSON -----
         if (!(await verifyBodySignature(raw, request.headers.get("signature")))) {
           console.warn("[paytabs] callback signature mismatch");
+          return new Response("invalid signature", { status: 401 });
         }
         let tranRef = "";
         try {

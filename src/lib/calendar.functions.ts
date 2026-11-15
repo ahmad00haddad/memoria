@@ -66,7 +66,7 @@ export const getCalendarMonthData = createServerFn({ method: "POST" })
 
     // أيام التسليم القادمة (لتمييزها بلون مختلف)
     const deliveryDueSoon = (bookings ?? [])
-      .filter((b: any) => b.delivery_due_at && b.production_stage !== "delivered")
+      .filter((b: any) => b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "completed")
       .map((b: any) => ({
         date: String(b.delivery_due_at).slice(0, 10),
         booking_id: b.id,
@@ -103,17 +103,22 @@ export const toggleUnavailability = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
 
     // التحقق من وجود تعارض مع حجز مؤكّد
-    const { data: conflict } = await supabase
-      .from("bookings")
-      .select("id, client_name")
-      .eq("photographer_id", userId)
-      .eq("event_date", data.date)
-      .in("status", ["confirmed", "pending_deposit"])
-      .is("deleted_at", null)
-      .limit(1);
-
-    if (conflict && conflict.length > 0) {
-      throw new Error(t("لا يمكن إضافة يوم عدم التوفر — يوجد حجز مؤكّد لـ {0} في هذا التاريخ", [conflict[0].client_name]));
+    // نفس تعريف قاعدة البيانات لـ«اليوم مشغول» (booking_holds) بدل فلتر حالات مكتوب يدوياً
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: busy, error: busyErr } = await (supabaseAdmin as any).rpc("has_booking_conflict", {
+      _pid: userId, _date: data.date, _start: "00:00", _end: "23:59", _exclude: null,
+    });
+    if (busyErr) throw new Error(busyErr.message);
+    if (busy) {
+      const { data: who } = await supabase
+        .from("bookings")
+        .select("client_name")
+        .eq("photographer_id", userId)
+        .eq("event_date", data.date)
+        .in("status", ["confirmed", "pending_deposit", "quote", "completed"])
+        .is("deleted_at", null)
+        .limit(1);
+      throw new Error(t("لا يمكن إضافة يوم عدم التوفر — يوجد حجز مؤكّد لـ {0} في هذا التاريخ", [who?.[0]?.client_name ?? ""]));
     }
 
     // التحقق من وجود مسبق

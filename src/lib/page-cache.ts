@@ -27,8 +27,18 @@ export function setCached(key: string, v: any) {
 /** المستخدم الحالي بلا انتظار (من جلسة Supabase المحفوظة) — لا نعرض كاش حساب آخر */
 export function currentUidSync(): string | null {
   try {
-    const k = Object.keys(localStorage).find((x) => x.startsWith("sb-") && x.endsWith("-auth-token"));
-    return k ? (JSON.parse(localStorage.getItem(k) || "null")?.user?.id ?? null) : null;
+    const keys = Object.keys(localStorage).filter((x) => x.startsWith("sb-") && x.endsWith("-auth-token"));
+    if (!keys.length) return null;
+    // لو وُجد أكثر من مفتاح جلسة نفضّل مفتاح مشروعنا (ref من VITE_SUPABASE_URL)
+    let ref = "";
+    try { ref = new URL(String((import.meta as any).env?.VITE_SUPABASE_URL ?? "")).hostname.split(".")[0]; } catch { /* ignore */ }
+    const k = (ref && keys.find((x) => x.includes(ref))) || keys[0];
+    const s = JSON.parse(localStorage.getItem(k) || "null");
+    // جلسة منتهية بلا refresh_token أو أقدم من 7 أيام: لا نرسم كاش حجوزات منها (يُنتظر فحص الجلسة الحقيقي)
+    if (!s?.refresh_token) return null;
+    const exp = Number(s.expires_at);
+    if (!Number.isFinite(exp) || exp < Date.now() / 1000 - 7 * 86400) return null;
+    return s.user?.id ?? null;
   } catch { return null; }
 }
 
@@ -37,7 +47,10 @@ export function clearAppCache() {
   mem.clear();
   try {
     for (const k of Object.keys(localStorage)) {
-      if (k.startsWith(SS) || k.startsWith("memoria-home:") || k.startsWith("memoria-bookings:")) localStorage.removeItem(k);
+      if (
+        k.startsWith(SS) || k.startsWith("memoria-home:") || k.startsWith("memoria-bookings:")
+        || k.startsWith("memoria:draft:") || k === "memoria:last-booking" || k === "memoria:dashboard-last-visit"
+      ) localStorage.removeItem(k);
     }
   } catch { /* ignore */ }
 }

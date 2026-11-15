@@ -139,8 +139,12 @@ export const addAddendum = createServerFn({ method: "POST" })
         _pid: bk.photographer_id, _date: data.extra.new_event_date!,
         _start: (data.extra.new_start_time ?? full?.start_time) as string, _end: (data.extra.new_end_time ?? full?.end_time) as string, _exclude: bk.id,
       });
-      if (clashErr) console.error("[addAddendum] conflict check failed:", clashErr);
-      else if (clash) throw new Error(tr("عندكِ حجز آخر في هذا التاريخ. اختاري تاريخاً آخر."));
+      if (clashErr) { console.error("[addAddendum] conflict check failed:", clashErr); throw new Error(tr("تعذّر التحقق من التاريخ. حاولي مرة أخرى.")); }
+      if (clash) throw new Error(tr("عندكِ حجز آخر في هذا التاريخ. اختاري تاريخاً آخر."));
+      // يوم أغلقتِه في تقويمكِ (جدول الإغلاق مباشرة: is_photographer_busy يرجع true لليوم نفسه في وضع «حجز واحد باليوم»)
+      const { data: closed } = await (supabaseAdmin as any).from("photographer_unavailability")
+        .select("id").eq("photographer_id", bk.photographer_id).eq("date", data.extra.new_event_date!).limit(1);
+      if (closed && closed.length > 0) throw new Error(tr("هذا اليوم مغلق في تقويمكِ. افتحيه أولاً أو اختاري تاريخاً آخر."));
     }
     // سقف حماية للعروس: مجموع الملاحق (المعلّقة + الموافَق عليها) لا يتجاوز نصف سعر الباقة (حد أدنى 100 د.أ)،
     // وملحقات معلّقة قليلة؛ أي زيادة أكبر تحتاج حجزاً جديداً أو دعماً.
@@ -219,42 +223,82 @@ export const respondAddendum = createServerFn({ method: "POST" })
       if (k?.kind !== "reschedule") throw new Error(tr("هذا متاح بعد تأكيد الحجز"));
     }
     // الموافقة على مبلغ إضافي تحتاج رمزاً من بريد العروس (المصوّرة تعرف الرابط ولا تعرف الرمز)
-    if (data.accept) {
-      const { data: pending } = await supabaseAdmin.from("booking_addenda")
-        .select("amount, kind, new_event_date, new_start_time, new_end_time").eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending").maybeSingle();
-      // نقل الموعد: نتأكد أن التاريخ الجديد ما زال فاضياً عند المصوّرة قبل أي شيء
-      if (pending?.kind === "reschedule") {
-        const { data: full } = await supabaseAdmin.from("bookings").select("start_time, end_time").eq("id", bk.id).maybeSingle();
-        const { data: clash } = await supabaseAdmin.rpc("has_booking_conflict", {
-          _pid: bk.photographer_id, _date: pending.new_event_date,
-          _start: pending.new_start_time ?? full?.start_time, _end: pending.new_end_time ?? full?.end_time, _exclude: bk.id,
-        });
-        if (clash) throw new Error(tr("التاريخ الجديد لم يعد متاحاً عند المصوّرة. راسليها لاقتراح موعد آخر."));
+    if (!data.accept) {
+      const { data: dec, error: decErr } = await supabaseAdmin.from("booking_addenda")
+        .update({ status: "declined", responded_at: new Date().toISOString() })
+        .eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending")
+        .select("id").maybeSingle();
+      if (decErr) throw new Error(decErr.message);
+      if (!dec) throw new Error(tr("هذا الملحق لم يعد بانتظار ردّكِ"));
+      return { ok: true };
+    }
+
+    const { data: pending } = await supabaseAdmin.from("booking_addenda")
+      .select("amount, kind, new_event_date, new_start_time, new_end_time").eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending").maybeSingle();
+    if (!pending) throw new Error(tr("هذا الملحق لم يعد بانتظار ردّكِ"));
+    // نقل الموعد: نتأكد أن التاريخ الجديد ما زال فاضياً عند المصوّرة قبل أي شيء
+    if (pending.kind === "reschedule" && pending.new_event_date) {
+      const todayJo = new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
+      if (String(pending.new_event_date) < todayJo) throw new Error(tr("التاريخ المقترح صار في الماضي. اطلبي من المصوّرة موعداً جديداً."));
+      const { data: full } = await supabaseAdmin.from("bookings").select("start_time, end_time").eq("id", bk.id).maybeSingle();
+      const { data: clash } = await supabaseAdmin.rpc("has_booking_conflict", {
+        _pid: bk.photographer_id, _date: pending.new_event_date,
+        _start: pending.new_start_time ?? full?.start_time, _end: pending.new_end_time ?? full?.end_time, _exclude: bk.id,
+      });
+      if (clash) throw new Error(tr("التاريخ الجديد لم يعد متاحاً عند المصوّرة. راسليها لاقتراح موعد آخر."));
+      const { data: closed } = await (supabaseAdmin as any).from("photographer_unavailability")
+        .select("id").eq("photographer_id", bk.photographer_id).eq("date", pending.new_event_date).limit(1);
+      if (closed && closed.length > 0) throw new Error(tr("التاريخ الجديد لم يعد متاحاً عند المصوّرة. راسليها لاقتراح موعد آخر."));
+    }
+    const { stepUpApplies, consumeStepUpCode } = await import("@/lib/stepup.server");
+    const needsCode = Number(pending.amount) > 0 || pending.kind === "reschedule";
+    // قبل العربون لا مال على المحك: لا رمز
+    if (needsCode && !prePaid && stepUpApplies(bk)) await consumeStepUpCode(bk.id, "addendum", data.code);
+
+    // ١) نكتب الحجز أولاً، ثم نعلّم الملحق «مقبول» فقط إن نجحت الكتابة
+    const { data: cur } = await (supabaseAdmin as any).from("bookings")
+      .select("total_price, deposit_amount, event_date, start_time, end_time, delivery_days_promised, delivery_due_at, ready_confirmed_at, reminders_sent")
+      .eq("id", bk.id).maybeSingle();
+    const patch: Record<string, unknown> = {};
+    if (Number(pending.amount) !== 0) {
+      // التخفيض لا ينزّل المجموع تحت العربون المدفوع
+      patch.total_price = Math.max(Number(cur?.deposit_amount || 0), Number(cur?.total_price || 0) + Number(pending.amount));
+    }
+    if (pending.kind === "reschedule" && pending.new_event_date) {
+      patch.event_date = pending.new_event_date;
+      if (pending.new_start_time) patch.start_time = pending.new_start_time;
+      if (pending.new_end_time) patch.end_time = pending.new_end_time;
+      patch.ready_confirmed_at = null;
+      // تذكيرات مرتبطة بتاريخ المناسبة تُحذف فقط (contract14/contract7 للعقد، bal7 للمتبقي)؛
+      // باقي المفاتيح (appr*, dep*, gal7, msg24:*) لا علاقة لها بتاريخ التصوير فتبقى
+      patch.reminders_sent = ((cur?.reminders_sent ?? []) as string[]).filter((k) => !k.startsWith("contract") && !k.startsWith("bal"));
+      // موعد التسليم يتبع التاريخ الجديد؛ لو لا وعد بأيام يُمسح فيعيد الـtrigger حسابه الافتراضي
+      const days = cur?.delivery_days_promised != null ? Number(cur.delivery_days_promised) : null;
+      if (days != null) {
+        const due = new Date(`${pending.new_event_date}T12:00:00Z`);
+        due.setUTCDate(due.getUTCDate() + days);
+        patch.delivery_due_at = due.toISOString();
+      } else {
+        patch.delivery_due_at = null;
       }
-      const { stepUpApplies, consumeStepUpCode } = await import("@/lib/stepup.server");
-      const needsCode = pending && (Number(pending.amount) > 0 || pending.kind === "reschedule");
-      // قبل العربون لا مال على المحك: لا رمز
-      if (needsCode && !prePaid && stepUpApplies(bk)) await consumeStepUpCode(bk.id, "addendum", data.code);
+    }
+    if (Object.keys(patch).length) {
+      const { error: eb } = await supabaseAdmin.from("bookings").update(patch as any).eq("id", bk.id);
+      if (eb) throw new Error(eb.message);
     }
     const { data: upd, error } = await supabaseAdmin.from("booking_addenda")
-      .update({ status: data.accept ? "accepted" : "declined", responded_at: new Date().toISOString() })
+      .update({ status: "accepted", responded_at: new Date().toISOString() })
       .eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending")
-      .select("amount, kind, new_event_date, new_start_time, new_end_time").maybeSingle();
-    if (error) throw new Error(error.message);
-    if (!upd) throw new Error(tr("هذا الملحق لم يعد بانتظار ردّكِ"));
-    if (data.accept && Number(upd.amount) !== 0) {
-      // التخفيض لا ينزّل المجموع تحت العربون المدفوع
-      const { data: cur } = await supabaseAdmin.from("bookings").select("total_price, deposit_amount").eq("id", bk.id).maybeSingle();
-      const next = Math.max(Number(cur?.deposit_amount || 0), Number(cur?.total_price || 0) + Number(upd.amount));
-      const { error: e2 } = await supabaseAdmin.from("bookings").update({ total_price: next }).eq("id", bk.id);
-      if (e2) throw new Error(e2.message);
-    }
-    if (data.accept && upd.kind === "reschedule" && upd.new_event_date) {
-      const patch: Record<string, unknown> = { event_date: upd.new_event_date, ready_confirmed_at: null, reminders_sent: [] };
-      if (upd.new_start_time) patch.start_time = upd.new_start_time;
-      if (upd.new_end_time) patch.end_time = upd.new_end_time;
-      const { error: e3 } = await supabaseAdmin.from("bookings").update(patch).eq("id", bk.id);
-      if (e3) throw new Error(e3.message);
+      .select("id").maybeSingle();
+    if (error || !upd) {
+      // أحدهم ردّ في الأثناء: نعيد حقول الحجز لما كانت عليه
+      if (Object.keys(patch).length && cur) {
+        const revert: Record<string, unknown> = {};
+        for (const k of Object.keys(patch)) revert[k] = (cur as any)[k] ?? null;
+        await supabaseAdmin.from("bookings").update(revert as any).eq("id", bk.id);
+      }
+      if (error) throw new Error(error.message);
+      throw new Error(tr("هذا الملحق لم يعد بانتظار ردّكِ"));
     }
     return { ok: true };
   });

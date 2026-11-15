@@ -41,6 +41,17 @@ describe("دفعات متأخرة", () => {
   });
 });
 
+describe("إغلاق الحجز والمتبقي صفر", () => {
+  it("حجز مكتمل بمرحلة editing وتسليم متأخر لا يُنتج مهمة late", () => {
+    const items = computeFocusItems([{ ...base, status: "completed", event_date: day(-40), production_stage: "editing", delivery_due_at: day(-5) }], null);
+    expect(items.some((i) => i.id === "late-b1")).toBe(false);
+  });
+  it("سُلّم والمتبقي صفر → لا مهمة final", () => {
+    const items = computeFocusItems([{ ...base, status: "completed", event_date: day(-10), production_stage: "delivered", total_price: 300, deposit_amount: 300 } as any], null);
+    expect(items.some((i) => i.id === "final-b1")).toBe(false);
+  });
+});
+
 describe("طلب بانتظار الموافقة", () => {
   it("[BUG] لا يعرض «باقي 0 ساعة» عند انتهاء المهلة", () => {
     const items = computeFocusItems([{ ...base, status: "pending_deposit", needs_approval: true, approved_at: null, phone_verified_at: iso(1.1) }], null);

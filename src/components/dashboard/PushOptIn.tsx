@@ -6,8 +6,11 @@ import { g } from "@/hooks/use-gender";
 import { t } from "@/i18n";
 import { pushSupported, subscribePushDetailed } from "@/lib/push-client";
 import { sendTestPush } from "@/lib/push.functions";
+import { currentUidSync } from "@/lib/page-cache";
 
-const KEY = "memoria_push_optin_dismissed";
+// مفتاح الإغلاق لكل مستخدم: إغلاق حساب سابق على نفس المتصفح لا يخفي البطاقة عن الحساب التالي
+const KEY_BASE = "memoria_push_optin_dismissed";
+const dismissKey = () => `${KEY_BASE}:${currentUidSync() ?? ""}`;
 
 /** بطاقة واحدة في «اليوم»: كل طلب جديد يصل إشعاراً على الهاتف */
 export function PushOptIn() {
@@ -19,7 +22,7 @@ export function PushOptIn() {
     // أذنت سابقاً لكن الاشتراك لم يُحفظ (مثل Brave): تعود البطاقة لتعيد المحاولة
     if (Notification.permission === "granted") { subscribePushDetailed().then((r) => { if (!r.ok) setState("ask"); }); return; }
     if (Notification.permission === "denied") return;
-    try { if (localStorage.getItem(KEY)) return; } catch { /* ignore */ }
+    try { if (localStorage.getItem(dismissKey())) return; } catch { /* ignore */ }
     setState("ask");
   }, []);
 
@@ -38,7 +41,7 @@ export function PushOptIn() {
           description: g(t("افتحي إعدادات Brave ← الخصوصية والأمان ← فعّلي «استخدام خدمات Google لرسائل Push»، ثم اضغطي «تفعيل» مرة أخرى."), t("افتح إعدادات Brave ← الخصوصية والأمان ← فعّل «استخدام خدمات Google لرسائل Push»، ثم اضغط «تفعيل» مرة أخرى.")),
           duration: 15000,
         });
-        try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+        try { localStorage.removeItem(dismissKey()); } catch { /* ignore */ }
         setState("ask");
         return;
       }
@@ -48,7 +51,7 @@ export function PushOptIn() {
     toast.success(g(t("تم! سيصلكِ إشعار تجربة الآن"), t("تم! سيصلك إشعار تجربة الآن")));
     testFn().catch(() => {});
   };
-  const dismiss = () => { setState("hidden"); try { localStorage.setItem(KEY, "1"); } catch { /* ignore */ } };
+  const dismiss = () => { setState("hidden"); try { localStorage.setItem(dismissKey(), "1"); } catch { /* ignore */ } };
 
   return (
     <div className="mb-6 flex items-center gap-3 rounded-2xl border border-gold/40 bg-gold/5 p-4">

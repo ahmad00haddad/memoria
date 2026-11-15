@@ -30,6 +30,8 @@ export async function checkOnboarding(uid: string): Promise<boolean> {
     supabase.from("profiles").select("onboarding_completed_at, display_name, username").eq("id", uid).maybeSingle(),
     supabase.from("pricing_rules").select("id", { count: "exact", head: true }).eq("photographer_id", uid).neq("package", "addon"),
   ]);
+  // لا صف profiles (حساب إدارة فقط): لا نحوّله لمعالج مصوّرة لا يستطيع الحفظ
+  if (!p) return false;
   if ((p as any)?.onboarding_completed_at) { markOnboardingDone(uid); return false; }
   if (p?.display_name && p?.username && (count ?? 0) > 0) {
     await supabase.from("profiles").update({ onboarding_completed_at: new Date().toISOString() } as any).eq("id", uid);

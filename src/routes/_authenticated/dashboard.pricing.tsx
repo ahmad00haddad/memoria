@@ -121,7 +121,6 @@ function PricingMgr() {
   // حذف مع مهلة تراجع؛ الحذف من قاعدة البيانات بعد انتهاء المهلة فقط
   const del = (i: number) => {
     const r = rules[i];
-    const before = rules;
     setRules(rules.filter((_, idx) => idx !== i));
     if (!r.id) return;
     let settled = false;
@@ -140,7 +139,11 @@ function PricingMgr() {
     };
     toast(t("حُذفت «{0}»", [r.label || "الباقة"]), {
       duration: 5000,
-      action: { label: t("تراجع"), onClick: () => { settled = true; setRules(before); } },
+      action: { label: t("تراجع"), onClick: () => {
+        // نعيد الباقة المحذوفة وحدها في مكانها الأصلي دون التراجع عن تعديلات الباقات الأخرى أثناء المهلة
+        settled = true;
+        setRules((cur) => { const next = [...cur]; next.splice(Math.min(i, next.length), 0, r); return next; });
+      } },
       onAutoClose: commit,
       onDismiss: commit,
     });

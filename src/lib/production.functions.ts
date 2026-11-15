@@ -59,6 +59,9 @@ export const updateProductionStage = createServerFn({ method: "POST" })
       patch.editing_started_at = now;
     }
     if (data.stage === "delivered") {
+      // لا تسليم قبل يوم التصوير
+      const todayJo = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+      if (String((bk as any).event_date) > todayJo) throw new Error(t("لا يمكن التسليم قبل يوم التصوير."));
       // لا «تسليم» بلا صور: رابط تسليم أو صور في معرض التسليم، وإلا تصل العروس رسالة «صورك جاهزة» بلا شيء
       const { data: dl } = await supabase.from("bookings").select("delivery_link").eq("id", data.booking_id).maybeSingle();
       let hasPhotos = false;
@@ -91,15 +94,8 @@ export const updateProductionStage = createServerFn({ method: "POST" })
 
     // نتحقق أن الصف حُدّث فعلاً: سياسة RLS لا تطابق أي صف ترجع "نجاح" بدون خطأ،
     // فكانت الواجهة تعرض "تم النقل" ثم تعود المرحلة القديمة عند إعادة التحميل.
-    const { data: updated, error: updateErr } = await supabase
-      .from("bookings")
-      .update(patch)
-      .eq("id", data.booking_id)
-      .select("production_stage")
-      .maybeSingle();
-    if (updateErr) throw new Error(updateErr.message);
-    if (!updated || updated.production_stage !== data.stage) {
-      // الملكية متحقَّق منها أعلاه — نكمل الكتابة عبر service-role
+    {
+      // الملكية متحقَّق منها أعلاه — الكتابة عبر service-role (أعمدة المرحلة محمية من الطلبات المباشرة)
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { data: forced, error: adminErr } = await supabaseAdmin
         .from("bookings")
@@ -263,14 +259,17 @@ export const markFinalPaymentReceived = createServerFn({ method: "POST" })
     const amount = data.amount ?? Math.max(0, Number(bk.total_price ?? 0) - Number(bk.deposit_amount ?? 0));
     const now = new Date().toISOString();
 
-    const { error: updateErr } = await supabase
+    // الملكية متحقَّق منها أعلاه؛ الكتابة عبر service-role لأن final_paid_at عمود محمي من الطلبات المباشرة
+    const { supabaseAdmin: adminW } = await import("@/integrations/supabase/client.server");
+    const { error: updateErr } = await adminW
       .from("bookings")
       .update({
         final_paid_at: now,
         final_paid_amount: amount,
         updated_at: now,
       })
-      .eq("id", data.booking_id);
+      .eq("id", data.booking_id)
+      .eq("photographer_id", userId);
     if (updateErr) throw new Error(updateErr.message);
 
     // تسجيل في audit_logs
@@ -331,10 +330,13 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
     }
 
     const now = new Date().toISOString();
-    const { error: updateErr } = await supabase
+    // الملكية متحقَّق منها أعلاه؛ status عمود محمي من الطلبات المباشرة فالكتابة عبر service-role
+    const { supabaseAdmin: adminW } = await import("@/integrations/supabase/client.server");
+    const { error: updateErr } = await adminW
       .from("bookings")
-      .update({ status: data.status, updated_at: now })
-      .eq("id", data.booking_id);
+      .update({ status: data.status as any, updated_at: now })
+      .eq("id", data.booking_id)
+      .eq("photographer_id", userId);
     if (updateErr) throw new Error(updateErr.message);
 
     // تسجيل في audit_logs

@@ -1,6 +1,6 @@
 // اشتراك Web Push من المتصفح وحفظه في push_subscriptions (RLS: صفوفها فقط).
 import { supabase } from "@/integrations/supabase/client";
-import { getVapidPublicKey } from "@/lib/push.functions";
+import { getVapidPublicKey, claimPushEndpoint } from "@/lib/push.functions";
 
 function b64urlToBytes(s: string) {
   const pad = "=".repeat((4 - (s.length % 4)) % 4);
@@ -47,6 +47,8 @@ export async function ensurePushSubscription(): Promise<boolean> {
     const sub = (await reg.pushManager.getSubscription())
       ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64urlToBytes(key) }));
 
+    // لو كان الجهاز مسجّلاً لحساب آخر نفك ارتباطه أولاً (فشل هذه الخطوة لا يوقف الاشتراك)
+    try { await claimPushEndpoint({ data: { endpoint: sub.endpoint } }); } catch (e) { console.error("[push] claim failed", e); }
     const { error } = await (supabase as any).from("push_subscriptions").upsert({
       user_id: session.user.id,
       endpoint: sub.endpoint,

@@ -146,52 +146,15 @@ export async function settleSubscriptionPayment(tranRef: string): Promise<{ stat
     return { status: "failed" };
   }
 
-  const now = new Date();
-  const { data: updated } = await (supabaseAdmin as any)
-    .from("subscription_payments")
-    .update({ status: "approved", reviewed_at: now.toISOString(), payment_reference: tranRef, notes: `PayTabs · ${tx?.payment_info?.card_scheme || "card"}` })
-    .eq("id", row.id)
-    .eq("status", "pending")
-    .select("id");
-  if (!updated?.length) return { status: "paid", already: true };
-
   const months = Number(row.period_months) || 1;
-  const { data: sub } = await supabaseAdmin
-    .from("subscriptions")
-    .select("status, current_period_end, trial_ends_at")
-    .eq("photographer_id", row.photographer_id)
-    .maybeSingle();
-  // نبدأ من نهاية الفترة الحالية أو التجربة المجانية — لا تضيع أيام مدفوعة/تجريبية.
-  const ends = [now.getTime()];
-  if (sub?.current_period_end) ends.push(new Date(sub.current_period_end).getTime());
-  if ((sub as any)?.status === "trial" && sub?.trial_ends_at) ends.push(new Date(sub.trial_ends_at).getTime());
-  const start = new Date(Math.max(...ends));
-  const end = new Date(start);
-  end.setMonth(end.getMonth() + months);
-
-  const { error: e2 } = await supabaseAdmin.from("subscriptions").upsert({
-    photographer_id: row.photographer_id,
-    status: "active",
-    tier: row.tier ?? "pro",
-    current_period_start: now.toISOString(),
-    current_period_end: end.toISOString(),
-    trial_ends_at: (sub as any)?.trial_ends_at ?? now.toISOString(),
-    updated_at: now.toISOString(),
-  } as any, { onConflict: "photographer_id" });
-  if (e2) console.error("[paytabs] subscription extend failed:", e2.message);
-
-  try {
-    await (supabaseAdmin.rpc as any)("grant_referral_reward", { _referred_id: row.photographer_id });
-  } catch (e) {
-    console.error("[paytabs] referral reward failed:", e);
-  }
-  await supabaseAdmin.from("audit_logs").insert({
-    action: "subscription.paytabs_paid",
-    actor_id: row.photographer_id,
-    entity_type: "subscription_payment",
-    entity_id: row.id,
-    after_data: { tran_ref: tranRef, months, amount: paidAmount, period_end: end.toISOString() },
-  } as any);
+  // اعتماد ذرّي: لو فشل التمديد تبقى الدفعة pending فيرجع الـhook خطأ وPayTabs يعيد المحاولة
+  const { data: res, error: rpcErr } = await (supabaseAdmin as any).rpc("apply_subscription_payment", {
+    _payment_id: row.id, _months: months, _actor: row.photographer_id, _reference: tranRef,
+    _notes: `PayTabs · ${tx?.payment_info?.card_scheme || "card"}`,
+  });
+  if (rpcErr) throw new Error(`[paytabs] apply_subscription_payment failed: ${rpcErr.message}`);
+  if ((res as any)?.already) return { status: "paid", already: true };
+  const end = new Date((res as any).period_end);
   await supabaseAdmin.from("notifications").insert({
     user_id: row.photographer_id,
     type: "system",

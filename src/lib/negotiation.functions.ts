@@ -97,6 +97,9 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
     }
     const { data: subActive } = await admin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
     if (!subActive) throw new Error(tr("نعتذر، لا يمكن إرسال العرض لأن اشتراك المصورة غير نشط حالياً."));
+    // صفحة غير منشورة أو محذوفة لا تستقبل عروضاً
+    const { data: pubProf } = await admin.from("profiles").select("is_published, deleted_at").eq("id", data.photographer_id).maybeSingle();
+    if (!pubProf || !pubProf.is_published || pubProf.deleted_at) throw new Error(tr("الصفحة غير موجودة"));
     const { data: tier } = await admin.rpc("photographer_tier", { _pid: data.photographer_id });
     if (tier !== "pro") throw new Error(tr("هذه المصوّرة لا تستقبل عروض أسعار — احجزي بسعر الباقة مباشرة."));
 
@@ -239,7 +242,7 @@ export const respondToOffer = createServerFn({ method: "POST" })
     if (new Date(o.expires_at).getTime() < Date.now()) throw new Error(tr("انتهت صلاحية هذا العرض"));
 
     const { data: prof } = await admin.from("profiles")
-      .select("id, display_name, username, fixed_deposit, deposit_percent").eq("id", userId).maybeSingle();
+      .select("id, display_name, username, fixed_deposit, deposit_percent, gender").eq("id", userId).maybeSingle();
     if (!prof) throw new Error(tr("الحساب غير موجود"));
     const photographerName = prof.display_name || prof.username || tr("المصوّرة");
     const offerUrl = `${appBase()}/offer/${o.token}`;
@@ -266,7 +269,7 @@ export const respondToOffer = createServerFn({ method: "POST" })
     // قبول: إنشاء الحجز الفعلي بالسعر المعروض
     const price = Number(o.offered_price);
     const deposit = price > 0
-      ? (prof.fixed_deposit != null ? Number(prof.fixed_deposit) : Math.round(price * (Number(prof.deposit_percent ?? 25) / 100)))
+      ? Math.min(price, prof.fixed_deposit != null ? Number(prof.fixed_deposit) : Math.round(price * (Number(prof.deposit_percent ?? 25) / 100)))
       : 0;
     const { data: created, error } = await admin.rpc("create_booking_guarded", {
       _payload: {
@@ -298,10 +301,30 @@ export const respondToOffer = createServerFn({ method: "POST" })
     const bookingId = (created as any).booking_id as string;
     const trackingToken = (created as any).tracking_token as string;
 
+    // نفس وعود الباقة التي يحصل عليها الحجز العادي (لقطة الباقة، الصور، موعد التسليم، الساعة الإضافية)؛ العرض الحر بلا باقة يتخطّاها
+    try {
+      const { data: rule } = await admin.from("pricing_rules")
+        .select("id, photographer_id, label, price, service, package, description, subtitle, hours, deliverable_count, delivery_days, shooter, overtime_fee, excludes, unedited_included, revision_rounds")
+        .eq("id", o.rule_id).maybeSingle();
+      if (rule && rule.photographer_id === userId && rule.package !== "addon") {
+        const { applyPackagePromises } = await import("@/lib/booking-promises.server");
+        const { error: pe } = await applyPackagePromises(admin, {
+          bookingId, eventDate: String(o.event_date),
+          mainRule: { ...rule, price }, // اللقطة بالسعر المتفق عليه لا المعلن
+          items: [{ rule_id: o.rule_id, label: o.package_label, price, qty: 1, kind: "main" }],
+          profile: { gender: prof.gender ?? null },
+          bookedMinutes: sessionMinutes(o.start_time, o.end_time),
+          clientNotes: o.client_notes ?? null,
+          needsApproval: false, // المصوّرة وافقت بنفسها عند عرض السعر
+        });
+        if (pe) console.error("[offer] promises failed", pe);
+      }
+    } catch (e) { console.error("[offer] promises failed", e); }
+
     // المصوّرة زكّت العرض، فالحجز موثّق تلقائياً
     try {
       const { markBookingVerified } = await import("@/lib/verification.server");
-      await markBookingVerified(bookingId, "auto");
+      await markBookingVerified(bookingId, "auto", { skipConflictCheck: true, offerAccepted: true });
     } catch (e) { console.error("[offer] verify failed", e); }
 
     await admin.from("price_offers").update({

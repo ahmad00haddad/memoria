@@ -67,9 +67,8 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         // ===================================================================
         // 1) 24h event reminders
         // ===================================================================
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const ymd = tomorrow.toISOString().slice(0, 10);
+        // «غداً» بتوقيت الأردن (UTC+3) لا UTC
+        const ymd = new Date(Date.now() + 3 * 3600000 + 86400000).toISOString().slice(0, 10);
 
         const { data: bookings } = await supabaseAdmin
           .from("bookings")
@@ -200,12 +199,11 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         // ===================================================================
         try {
           const { tplBalanceDue } = await import("@/lib/email.server");
-          const yesterday = new Date();
-          yesterday.setDate(yesterday.getDate() - 1);
+          const yesterdayYmd = new Date(Date.now() + 3 * 3600000 - 86400000).toISOString().slice(0, 10);
           const { data: due } = await (supabaseAdmin as any)
             .from("bookings")
             .select("id, photographer_id, client_email, client_name, total_price, deposit_amount, client_tracking_token")
-            .eq("event_date", yesterday.toISOString().slice(0, 10))
+            .eq("event_date", yesterdayYmd)
             .in("status", ["confirmed", "completed"])
             .is("final_paid_at", null)
             .is("deleted_at", null);
@@ -326,10 +324,10 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         // ===================================================================
         // 4) إيميل "اشتراكك انتهى اليوم" — للمصوّرات التي انتهى اشتراكها اليوم
         // ===================================================================
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
-        const todayEnd = new Date();
-        todayEnd.setHours(23, 59, 59, 999);
+        // حدود «اليوم» بتوقيت الأردن (منتصف الليل الأردني = 21:00 UTC اليوم السابق)
+        const todayJoYmd = new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
+        const todayStart = new Date(Date.parse(`${todayJoYmd}T00:00:00Z`) - 3 * 3600000);
+        const todayEnd = new Date(todayStart.getTime() + 86400000 - 1);
 
         const { data: expiredSubs } = await supabaseAdmin
           .from("subscriptions")

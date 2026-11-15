@@ -90,7 +90,6 @@ function TrackingPage() {
   const [b, setB] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const isExpired = b?.status === 'pending_deposit' && !!b?.deposit_due_at && new Date(b.deposit_due_at).getTime() < Date.now();
   // طلب ينتظر موافقة المصوّرة: لا تفاصيل دفع ولا عربون قبل الموافقة
   const awaitingApproval = !!b?.needs_approval && !b?.approved_at && (b?.status === "pending_deposit" || b?.status === "quote");
   // نسخت بيانات الدفع ولم ترفع الإيصال بعد → تذكير ظاهر + تأكيد قبل مغادرة الصفحة
@@ -499,10 +498,10 @@ function TrackingPage() {
               <div className="relative h-64 w-full">
                 <img 
                   src={b.sneak_peek_url} 
-                  className={`w-full h-full object-cover transition-all duration-700 ${b.status === 'completed' ? '' : 'blur-xl scale-110 opacity-70 grayscale'}`} 
-                  alt="Sneak Peek" 
+                  className={`w-full h-full object-cover transition-all duration-700 ${(b.final_paid_at || remainingDue <= 0) ? '' : 'blur-xl scale-110 opacity-70 grayscale'}`}
+                  alt="Sneak Peek"
                 />
-                {b.status !== 'completed' && (
+                {!(b.final_paid_at || remainingDue <= 0) && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/30 backdrop-blur-[2px]">
                     <div className="bg-background/90 p-6 rounded-2xl shadow-elegant text-center max-w-xs border border-border animate-fade-in-up">
                       <LockKeyhole className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
@@ -511,7 +510,7 @@ function TrackingPage() {
                     </div>
                   </div>
                 )}
-                {b.status === 'completed' && (
+                {(b.final_paid_at || remainingDue <= 0) && (
                   <div className="absolute top-4 start-4 bg-background/80 backdrop-blur-sm p-2 rounded-full animate-bounce">
                     <Unlock className="h-5 w-5 text-emerald-500" />
                   </div>

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { t } from "@/i18n";
+import { normalizePhone } from "@/lib/validation";
 
 export const recoverTrackingLinks = createServerFn({ method: "POST" })
   .inputValidator((d: { emailOrPhone: string }) => {
@@ -26,12 +27,16 @@ export const recoverTrackingLinks = createServerFn({ method: "POST" })
       .from("bookings")
       .select("id, client_name, client_email, client_phone, event_date, client_tracking_token, profiles(id, display_name)")
       .is("deleted_at", null)
-      .in("status", ["pending_deposit", "confirmed"])
+      .in("status", ["pending_deposit", "confirmed", "completed"])
       .order("created_at", { ascending: false });
 
+    // البريد: مطابقة تامة غير حسّاسة للحالة (ilike مع تهريب \ % _ حتى لا يعمل كنمط)؛
+    // الجوال: بنفس صيغة التخزين (+962 / 00962 / أرقام عربية → 07xxxxxxxx)
+    const escaped = val.replace(/[\\%_]/g, (c) => `\\${c}`);
+    const phone = normalizePhone(val) ?? val;
     const { data: bookings, error } = isEmail
-      ? await query.eq("client_email", val)
-      : await query.eq("client_phone", val);
+      ? await query.ilike("client_email", escaped)
+      : await query.eq("client_phone", phone);
 
     if (error) {
       console.error("[recover] error searching bookings:", error);

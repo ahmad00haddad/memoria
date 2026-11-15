@@ -203,7 +203,7 @@ function ProfilePage() {
         equipment: cur.equipment, deposit_percent: finalDepositPercent,
         travel_fee_per_km: Math.max(0, numOr(cur.travel_fee_per_km, 0.5)), free_km: Math.max(0, numOr(cur.free_km, 20)),
         avatar_url: cur.avatar_url, cover_url: cur.cover_url, portfolio_urls: cur.portfolio_urls ?? [],
-        is_published: !!cur.is_published,
+        // is_published لا يُكتب من الحفظ التلقائي أبداً (قد يكون من كاش قديم فيعيد نشر صفحة أخفتها الإدارة)؛ له كتابة مستقلة في مفتاح النشر
         tagline: cur.tagline ?? null,
         booking_notes: cur.booking_notes ?? null,
         fixed_deposit: finalFixedDeposit,
@@ -219,23 +219,39 @@ function ProfilePage() {
         }, { onConflict: "user_id" });
         if (pErr) throw pErr;
       }
-      const wasPublished = !!originalP?.is_published;
-      const savedP = half ? { ...cur, payment_methods: originalP?.payment_methods ?? [] } : { ...cur, payment_methods: methods, ...legacyColumns(methods) };
+      const publishedNow = !!originalP?.is_published;
+      const savedP = half
+        ? { ...cur, is_published: publishedNow, payment_methods: originalP?.payment_methods ?? [] }
+        : { ...cur, is_published: publishedNow, payment_methods: methods, ...legacyColumns(methods) };
       setOriginalP(savedP);
       // لا نمسّ ما كُتب أثناء الحفظ
       if (!half && JSON.stringify(pRef.current) === JSON.stringify(cur)) setP(savedP);
-      if (cur.is_published !== wasPublished) {
-        loadVerification();
-        if (cur.is_published) {
-          toast.success(tr("ملفك منشور الآن للعرائس"));
-          if (!methods.length) toast.warning(g(tr("أضيفي طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتكِ."), tr("أضف طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتك.")), { duration: 8000 });
-        }
-      }
     } catch (e: any) {
       toast.error(e?.message || tr("تعذّر الحفظ"), { id: "profile-save" });
       throw e;
     } finally {
       setSaving(false);
+    }
+  };
+  // مفتاح النشر: كتابة مستقلة لعمود is_published فقط (لا تمرّ بالحفظ التلقائي)
+  const togglePublish = async () => {
+    const next = !p.is_published;
+    if (next && portfolioCount < 3 && !p.is_demo) {
+      return toast.error(g(tr("ارفعي 3 صور من أعمالكِ على الأقل قبل نشر صفحتكِ."), tr("ارفع 3 صور من أعمالك على الأقل قبل نشر صفحتك.")));
+    }
+    const { error } = await supabase.from("profiles").update({ is_published: next }).eq("id", uid);
+    if (error) {
+      const m = String(error.message || "");
+      if (m.includes("PROFILE_HIDDEN_BY_ADMIN")) return toast.error(tr("صفحتكِ موقوفة من الإدارة. تواصلي مع الدعم."));
+      if (m.includes("SUBSCRIPTION_INACTIVE")) return toast.error(tr("اشتراككِ منتهٍ. جدّديه لتظهر صفحتكِ."));
+      return toast.error(m || tr("تعذّر الحفظ"));
+    }
+    setP((cur: any) => ({ ...cur, is_published: next }));
+    setOriginalP((o: any) => ({ ...o, is_published: next }));
+    loadVerification();
+    if (next) {
+      toast.success(tr("ملفك منشور الآن للعرائس"));
+      if (!(originalP?.payment_methods ?? []).length) toast.warning(g(tr("أضيفي طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتكِ."), tr("أضف طريقة لاستلام العربون في «التواصل والدفع» — بدونها لا تعرف العروس أين تحوّل بعد موافقتك.")), { duration: 8000 });
     }
   };
   const autosave = useAutosave({
@@ -299,12 +315,7 @@ function ProfilePage() {
               data-tour="publish"
               role="switch"
               aria-checked={!!p.is_published}
-              onClick={() => {
-                if (!p.is_published && portfolioCount < 3 && !p.is_demo) {
-                  return toast.error(g(tr("ارفعي 3 صور من أعمالكِ على الأقل قبل نشر صفحتكِ."), tr("ارفع 3 صور من أعمالك على الأقل قبل نشر صفحتك.")));
-                }
-                setP({ ...p, is_published: !p.is_published });
-              }}
+              onClick={togglePublish}
               className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm transition-colors ${p.is_published ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" : "border-border"}`}
             >
               <span className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${p.is_published ? "bg-emerald-500" : "bg-secondary ring-1 ring-border"}`}>

@@ -237,7 +237,8 @@ function Onboarding() {
     const { count: pkgCount } = await supabase
       .from("pricing_rules")
       .select("id", { count: "exact", head: true })
-      .eq("photographer_id", uid);
+      .eq("photographer_id", uid)
+      .neq("package", "addon");
     if (!pkgCount) {
       setSaving(false);
       toast.error(g(tr("أضيفي باقة سعرية واحدة على الأقل قبل نشر ملفك"), tr("أضف باقة سعرية واحدة على الأقل قبل نشر ملفك")));

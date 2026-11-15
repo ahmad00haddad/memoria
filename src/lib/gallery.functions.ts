@@ -62,15 +62,17 @@ export const getGalleryByToken = createServerFn({ method: "POST" })
     // ── 1. تحقق من صحة رمز التتبع ──
     const { data: bk } = await supabaseAdmin
       .from("bookings")
-      .select("id,client_name,photographer_id,final_paid_at,status")
+      .select("id,client_name,photographer_id,final_paid_at,status,total_price,deposit_amount")
       .eq("client_tracking_token", data.token)
       .maybeSingle();
     if (!bk) throw new Error("invalid token");
 
-    // ── 2. تحقق من حالة الدفع النهائي ──
-    const finalPaid =
-      Boolean(bk.final_paid_at) ||
-      bk.status === "completed";
+    // حجز ملغى: لا معرض
+    if (bk.status === "cancelled") return { gallery: null, photos: [] as any[], final_paid: false };
+
+    // ── 2. تحقق من حالة الدفع النهائي ── (الدفع لا التسليم: «completed» لا يفتح الصور وحده)
+    const remaining = Number(bk.total_price ?? 0) - Number(bk.deposit_amount ?? 0);
+    const finalPaid = Boolean(bk.final_paid_at) || remaining <= 0;
 
     // ── 3. جلب المعرض ──
     const { data: g } = await supabaseAdmin
