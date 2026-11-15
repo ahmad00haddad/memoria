@@ -137,7 +137,7 @@ function Onboarding() {
     if (step === 1) {
       const uname = f.username.trim().toLowerCase();
       if (!f.display_name.trim()) return g(tr("أدخلي الاسم الذي سيظهر للعميل."), tr("أدخل الاسم الذي سيظهر للعميل."));
-      if (uname.length < 3 || !/^[a-z0-9_]+$/.test(uname)) return tr("اسم المستخدم يجب أن يكون ٣ أحرف على الأقل (a-z, 0-9, _).");
+      if (uname.length < 3 || !/^[a-z0-9_]+$/.test(uname)) return tr("اسم الرابط: ٣ أحرف إنجليزية أو أرقام على الأقل، بدون مسافات.");
       if (!f.city.trim()) return g(tr("اختاري المدينة الأساسية."), tr("اختر المدينة الأساسية."));
       if (f.avatar_url.trim() && !/^https?:\/\/.+/i.test(f.avatar_url.trim())) {
         return tr("رابط الصورة يجب أن يبدأ بـ http:// أو https://");
@@ -295,7 +295,7 @@ function Onboarding() {
       <section className="container-editorial py-10 max-w-2xl">
         <div className="mb-6 flex items-center justify-between">
           <div className="text-xs uppercase tracking-[0.3em] text-gold">{tr("إعداد الحساب")}</div>
-          <button onClick={skip} className="text-xs text-muted-foreground hover:text-foreground">{g(tr("تخطّي وإكمال لاحقاً"), tr("تخطَّ وإكمال لاحقاً"))}</button>
+          <button onClick={skip} className="text-xs text-muted-foreground hover:text-foreground">{g(tr("أكملي لاحقاً"), tr("أكمل لاحقاً"))}</button>
         </div>
 
         <div className="mb-6 flex items-center gap-2">
@@ -344,7 +344,7 @@ function Onboarding() {
                 {tr("تستغرق أقل من ٥ دقائق")}
               </div>
               <ul className="space-y-3 text-sm text-muted-foreground">
-                {[tr("الاسم الظاهر للعميل ورابط ملفك الخاص"), tr("أول باقة أسعار لتفعيل الحجوزات"), tr("بيانات الدفع — آمنة ومخفية عن الزوار"), tr("نشر ملفك بنقرة واحدة")].map((t) => (
+                {[tr("اسمك ورابط صفحتك"), tr("أول باقة أسعار لتفعيل الحجوزات"), tr("بيانات الدفع — آمنة ومخفية عن الزوار"), tr("نشر ملفك بنقرة واحدة")].map((t) => (
                   <li key={t} className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-gold shrink-0" />{tx(t)}
                   </li>
@@ -358,10 +358,10 @@ function Onboarding() {
               <Field label={tr("أنا")}>
                 <GenderPicker />
               </Field>
-              <Field label={tr("الاسم الظاهر للعميل *")}>
+              <Field label={tr("الاسم الذي تراه العروس *")}>
                 <input value={f.display_name} onChange={(e) => upd("display_name", e.target.value)} className={inputCx} placeholder={tr("سارة أحمد / استوديو النور")} />
               </Field>
-              <Field label={tr("اسم المستخدم * (يظهر في رابط ملفك)")}>
+              <Field label={tr("اسم الرابط * (بالإنجليزية، يظهر في رابط صفحتك)")}>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground text-sm">{typeof window !== "undefined" ? window.location.host : ""}/photographers/</span>
                   <input value={f.username} onChange={(e) => upd("username", e.target.value)} className={inputCx} placeholder="sara_photo" dir="ltr" />
