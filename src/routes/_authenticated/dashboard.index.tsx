@@ -1,6 +1,6 @@
 import { arCount } from "@/lib/ar-count";
 import { prefetchDashboardPages } from "@/lib/page-cache";
-import { Lightbulb, Settings } from "lucide-react";
+import { Lightbulb, Settings, ScrollText, Tag, HelpCircle, CreditCard, Gift, ExternalLink } from "lucide-react";
 import { g } from "@/hooks/use-gender";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageLoader } from "@/components/ui/loading";
@@ -242,7 +242,7 @@ function QuickStart({ profile, pricingCount, hasCliq, onDismiss }: { profile: an
           <ListChecks className="h-4 w-4 text-gold" />
           <span className="text-sm font-medium">{next ? tr("صفحتك جاهزة {0}%", [pct]) : tr("صفحتك جاهزة")}</span>
         </div>
-        <button onClick={onDismiss} className="text-muted-foreground hover:text-foreground p-1 rounded-sm hover:bg-secondary active:scale-95 transition-transform duration-200" aria-label={tr("إخفاء")}>
+        <button onClick={onDismiss} className="grid h-10 w-10 place-items-center text-muted-foreground hover:text-foreground rounded-full hover:bg-secondary active:scale-95 transition-transform duration-200" aria-label={tr("إخفاء")}>
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -256,7 +256,7 @@ function QuickStart({ profile, pricingCount, hasCliq, onDismiss }: { profile: an
           <span className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
             <PartyPopper className="h-4 w-4" />{" "}{g(tr("صفحتك منشورة وجاهزة لاستقبال الطلبات. شاركي رابطها على إنستغرام."), tr("صفحتك منشورة وجاهزة لاستقبال الطلبات. شارك رابطها على إنستغرام."))}
           </span>
-          <button onClick={onDismiss} className="text-xs text-muted-foreground hover:text-foreground underline">{tr("إخفاء")}</button>
+          <button onClick={onDismiss} className="min-h-10 px-2 text-xs text-muted-foreground hover:text-foreground underline">{tr("إخفاء")}</button>
         </div>
       ) : (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -586,16 +586,16 @@ function Dashboard() {
     { key: "pricing", title: tr("الأسعار"), to: "/dashboard/pricing", icon: <Package />, badge: pricingCount === 0 ? tr("فارغة") : undefined, attention: pricingCount === 0, hint: arCount(pricingCount, tr("باقة واحدة"), tr("باقتان"), tr("باقات"), tr("باقة")) },
     { key: "profile", title: tr("ملفي"), to: "/dashboard/profile", icon: <Star />, badge: (!profile?.avatar_url || !profile?.cover_url) ? tr("ناقص") : undefined, attention: !profile?.avatar_url, hint: tr("الصور والنبذة وبيانات الدفع") },
     { key: "settings", title: tr("الإعدادات"), to: "/dashboard/settings", icon: <Settings />, hint: tr("ألوان صفحتك ولغتها وأقسامها") },
-    { key: "reports", title: tr("التقارير"), to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? tr("{0} د.أ هذا الشهر", [stats.monthRevenue]) : tr("الإيرادات وتصدير CSV") },
-    { key: "contracts", title: tr("العقود"), to: "/dashboard/contracts", icon: <Link2 />, hint: tr("توقيع إلكتروني") },
-    { key: "offers", title: tr("عروض الأسعار"), to: "/dashboard/offers", icon: <MessageCircle />, hint: tr("أسعار اقترحتها العرائس") },
-    { key: "questions", title: tr("أسئلة قبل الحجز"), to: "/dashboard/questions", icon: <MessageCircle />, hint: tr("أسئلة العرائس من صفحتك") },
+    { key: "reports", title: tr("التقارير"), to: "/dashboard/reports", icon: <TrendingUp />, hint: stats.monthRevenue > 0 ? tr("{0} د.أ هذا الشهر", [stats.monthRevenue]) : tr("الإيرادات وتنزيلها كجدول") },
+    { key: "contracts", title: tr("العقود"), to: "/dashboard/contracts", icon: <ScrollText />, hint: tr("توقيع إلكتروني") },
+    { key: "offers", title: tr("عروض الأسعار"), to: "/dashboard/offers", icon: <Tag />, hint: tr("أسعار اقترحتها العرائس") },
+    { key: "questions", title: tr("أسئلة قبل الحجز"), to: "/dashboard/questions", icon: <HelpCircle />, hint: tr("أسئلة العرائس من صفحتك") },
     { key: "whatsapp", title: tr("رسائل واتساب"), to: "/dashboard/whatsapp-templates", icon: <MessageCircle />, hint: tr("{0} جاهزة", [arCount(templatesCount, "قالب واحد", "قالبان", "قوالب", "قالباً")]) },
-    { key: "subscription", title: tr("الاشتراك"), to: "/dashboard/subscription", icon: <LogOut />, badge: subStatus === "expired" ? tr("منتهي") : subStatus === "trial" ? tr("تجريبي") : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? tr("نشط") : tr("التجديد وإثبات الدفع") },
+    { key: "subscription", title: tr("الاشتراك"), to: "/dashboard/subscription", icon: <CreditCard />, badge: subStatus === "expired" ? tr("منتهي") : subStatus === "trial" ? tr("تجريبي") : undefined, attention: subStatus === "expired", hint: subStatus === "active" ? tr("نشط") : tr("التجديد وإثبات الدفع") },
     { key: "notifications", title: tr("الإشعارات"), to: "/notifications", icon: <Bell />, hint: tr("كل التنبيهات") },
     { key: "recap", title: tr("سنتي"), to: "/dashboard/recap", icon: <Sparkles />, hint: tr("ملخّص للمشاركة على إنستغرام") },
-    { key: "referrals", title: tr("الإحالة"), to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: tr("١٤ يوماً مجاناً عن كل زميلة") },
-    { key: "public", title: tr("ملفي العام"), to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ArrowLeft />, hint: tr("كما تراه العرائس") },
+    { key: "referrals", title: tr("الإحالة"), to: "/dashboard/referrals", icon: <Gift />, hint: tr("١٤ يوماً مجاناً عن كل زميلة") },
+    { key: "public", title: tr("ملفي العام"), to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ExternalLink />, hint: tr("كما تراه العرائس") },
   ];
   // إظهار تدريجي: أدوات ما بعد الحجز (عقود، تقارير، سنتي، إحالة) تظهر بعد أول حجز مؤكَّد فقط
   // «اليوم»: تنبيهات الإعداد تصبح مهاماً في نفس القائمة بدل بانرات منفصلة فوقها
@@ -792,7 +792,7 @@ function Dashboard() {
                   type="button"
                   onClick={() => setShowMoreStats((v) => !v)}
                   aria-expanded={showMoreStats}
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="mt-2 inline-flex min-h-10 items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showMoreStats ? tr("أرقام أقل") : tr("كل الأرقام")}
                   <ArrowLeft className={`h-3 w-3 transition-transform duration-300 ${showMoreStats ? "rotate-90" : "-rotate-90"}`} />

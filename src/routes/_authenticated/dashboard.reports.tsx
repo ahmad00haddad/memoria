@@ -133,7 +133,7 @@ function ReportsPage() {
             </div>
             <button onClick={exportCsv} disabled={exporting} className="inline-flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-xs hover:border-gold/50 hover:text-gold disabled:opacity-60">
               {exporting ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current" /> : <Download className="h-3.5 w-3.5" />}
-              {t("تصدير CSV")}
+              {t("تنزيل جدول (Excel)")}
             </button>
           </div>
         </div>

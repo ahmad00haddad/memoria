@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { LayoutDashboard, Calendar, ListChecks, User, Plus, CalendarX, Link2, MessageCircle, Clapperboard, X } from "lucide-react";
+import { LayoutDashboard, Calendar, ListChecks, User, Plus, CalendarX, Link2, MessageCircle, Clapperboard, X, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { ManualBookingSheet } from "@/components/dashboard/ManualBookingSheet";
@@ -101,7 +101,7 @@ function QuickActions({ open, onClose }: { open: boolean; onClose: () => void })
     { icon: Plus, label: t("حجز جديد"), hint: g(t("لعميلة تواصلت معكِ خارج المنصّة"), t("لعميلة تواصلت معك خارج المنصّة")), run: () => openSheet("booking") },
     { icon: CalendarX, label: t("حجب يوم"), hint: t("سفر أو ارتباط آخر"), run: () => openSheet("block") },
     { icon: Link2, label: t("مشاركة رابط ملفّي"), hint: t("للبايو أو الواتساب"), run: copyLink },
-    { icon: MessageCircle, label: t("عروض الأسعار"), hint: t("أسعار اقترحتها العرائس"), run: () => go("/dashboard/offers") },
+    { icon: Tag, label: t("عروض الأسعار"), hint: t("أسعار اقترحتها العرائس"), run: () => go("/dashboard/offers") },
     { icon: MessageCircle, label: t("قوالب واتساب"), hint: t("رسائل جاهزة للعميلات"), run: () => go("/dashboard/whatsapp-templates") },
     { icon: Clapperboard, label: t("متابعة الإنتاج"), hint: t("من التصوير إلى التسليم"), run: () => go("/dashboard/production") },
   ];

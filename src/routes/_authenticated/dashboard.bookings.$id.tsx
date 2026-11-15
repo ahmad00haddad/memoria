@@ -595,16 +595,16 @@ function BookingDetail() {
                   </DropdownMenuItem>
                 )}
                 {trackUrl && (
-                  <DropdownMenuItem onClick={async () => { await navigator.clipboard.writeText(trackUrl).catch(() => {}); toast.success(tr("نُسخ رابط التتبّع")); }}>
-                    <Copy className="h-4 w-4 me-2" />{" "}{tr("نسخ رابط التتبّع")}
+                  <DropdownMenuItem onClick={async () => { await navigator.clipboard.writeText(trackUrl).catch(() => {}); toast.success(tr("نُسخ رابط متابعة العروس")); }}>
+                    <Copy className="h-4 w-4 me-2" />{" "}{tr("نسخ رابط متابعة العروس")}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={async () => {
-                  if (!(await confirm({ title: tr("تجديد رابط التتبّع"), description: g(tr("الرابط القديم سيتوقف عن العمل، وستحتاجين لإرسال الرابط الجديد للعميلة."), tr("الرابط القديم سيتوقف عن العمل، وستحتاج لإرسال الرابط الجديد للعميلة.")), confirmText: tr("تجديد") }))) return;
+                  if (!(await confirm({ title: tr("تجديد رابط متابعة العروس"), description: g(tr("الرابط القديم سيتوقف عن العمل، وستحتاجين لإرسال الرابط الجديد للعميلة."), tr("الرابط القديم سيتوقف عن العمل، وستحتاج لإرسال الرابط الجديد للعميلة.")), confirmText: tr("تجديد") }))) return;
                   try { await regenTokenFn({ data: { booking_id: id } }); toast.success(tr("جُدّد الرابط")); await load(); }
                   catch (e: any) { toast.error(e?.message || tr("تعذّر التجديد")); }
                 }}>
-                  <Clock className="h-4 w-4 me-2" />{" "}{tr("تجديد رابط التتبّع")}
+                  <Clock className="h-4 w-4 me-2" />{" "}{tr("تجديد رابط متابعة العروس")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 {b.status !== "cancelled" && b.status !== "completed" && (
@@ -613,7 +613,7 @@ function BookingDetail() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={async () => {
-                  if (!(await confirm({ title: tr("حذف الحجز"), description: tr("سيُنقل للمحذوفات. يمكن استرجاعه لاحقاً من سجل التدقيق."), confirmText: tr("حذف"), destructive: true }))) return;
+                  if (!(await confirm({ title: tr("حذف الحجز"), description: tr("سيُنقل للمحذوفات، ويمكن استرجاعه لاحقاً عبر الدعم."), confirmText: tr("حذف"), destructive: true }))) return;
                   try { await softDeleteFn({ data: { booking_id: id } }); toast.success(tr("حُذف الحجز")); nav({ to: "/dashboard/bookings" }); }
                   catch (e: any) { toast.error(e?.message || tr("تعذّر الحذف")); }
                 }}>
@@ -1319,7 +1319,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
       {!gallery ? (
         <div className="rounded-xl border border-dashed border-border p-8 text-center">
           <ImagePlus className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="mx-auto mb-4 max-w-sm text-sm text-muted-foreground">{tr("معرض خاص تصل إليه العميلة من رابط التتبّع لمعاينة الصور المختارة.")}</p>
+          <p className="mx-auto mb-4 max-w-sm text-sm text-muted-foreground">{tr("معرض خاص تفتحه العروس من رابط المتابعة لمعاينة الصور المختارة.")}</p>
           <button onClick={create} disabled={busy} className="rounded-full bg-charcoal px-5 py-2 text-sm text-ivory disabled:opacity-60 active:scale-95 transition-transform dark:bg-gold dark:text-charcoal">{tr("إنشاء المعرض")}</button>
         </div>
       ) : (
