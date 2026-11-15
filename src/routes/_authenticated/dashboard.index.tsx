@@ -597,6 +597,9 @@ function Dashboard() {
     { key: "referrals", title: tr("الإحالة"), to: "/dashboard/referrals", icon: <CheckCircleIcon />, hint: tr("١٤ يوماً مجاناً عن كل زميلة") },
     { key: "public", title: tr("ملفي العام"), to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ArrowLeft />, hint: tr("كما تراه العرائس") },
   ];
+  // إظهار تدريجي: أدوات ما بعد الحجز (عقود، تقارير، سنتي، إحالة) تظهر بعد أول حجز مؤكَّد فقط
+  const hasConfirmed = (stats.confirmed ?? 0) + (stats.completed ?? 0) > 0;
+  const visibleTools = hasConfirmed ? tools : tools.filter((t) => !["contracts", "reports", "recap", "referrals"].includes(t.key));
 
   return (
     <PullToRefresh onRefresh={async () => { await loadData(); }}>
@@ -691,7 +694,7 @@ function Dashboard() {
             <AnimatePresence>
               {showAllCards && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden pt-2">
-                  <ToolIndex tools={tools.filter((t) => !["bookings", "profile", "pricing"].includes(t.key))} />
+                  <ToolIndex tools={visibleTools.filter((t) => !["bookings", "profile", "pricing"].includes(t.key))} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -824,7 +827,7 @@ function Dashboard() {
             {(() => {
               // الهاتف: الحجوزات/التقويم/ملفي موجودة في الشريط السفلي فلا نكررها
               const wide = typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
-              const sorted = sortTools(tools.filter((t) => wide || !["bookings", "calendar", "profile"].includes(t.key)));
+              const sorted = sortTools(visibleTools.filter((t) => wide || !["bookings", "calendar", "profile"].includes(t.key)));
               const n = wide ? 6 : 4;
               const main = sorted.slice(0, n);
               const rest = sorted.slice(n);

@@ -202,8 +202,10 @@ function BookingsList() {
 
   // تجميع زمني: القادمة الأقرب أولاً، ثم السابقة الأحدث أولاً
   const groups = useMemo(() => {
-    const week: any[] = [], later: any[] = [], past: any[] = [];
+    const week: any[] = [], later: any[] = [], past: any[] = [], needs: any[] = [];
     for (const b of displayed) {
+      // «تحتاج ردّك» أولاً دائماً (في عرض «الكل»)، ولا تتكرر في المجموعات الزمنية
+      if (filter === "all" && needsAction(b)) { needs.push(b); continue; }
       const d = b.event_date ? daysFromToday(b.event_date) : -1;
       if (d >= 0 && d <= 7) week.push(b);
       else if (d > 7) later.push(b);
@@ -211,11 +213,12 @@ function BookingsList() {
     }
     const asc = (a: any, b: any) => +new Date(a.event_date) - +new Date(b.event_date);
     return [
+      { key: "needs", title: t("تحتاج ردّك"), items: needs.sort(asc) },
       { key: "week", title: t("خلال ٧ أيام"), items: week.sort(asc) },
       { key: "later", title: t("لاحقاً"), items: later.sort(asc) },
       { key: "past", title: t("سابقة"), items: past.sort((a, b) => -asc(a, b)) },
     ].filter((g) => g.items.length > 0);
-  }, [displayed]);
+  }, [displayed, filter]);
 
   const firstSwipeable = displayed.find(hasProof)?.id;
 
