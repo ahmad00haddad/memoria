@@ -9,33 +9,80 @@
   "dir": "rtl",
   "theme_color": "#0c0c0c",
   "background_color": "#0c0c0c",
-  "categories": ["lifestyle", "photography", "booking", "wedding"],
+  "categories": [
+    "lifestyle",
+    "photography",
+    "booking",
+    "wedding"
+  ],
   "icons": [
-    { "src": "/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/app-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/app-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
+    {
+      "name": "الحجوزات",
+      "short_name": "الحجوزات",
+      "description": "طلبات تنتظر ردّك",
+      "url": "/dashboard/bookings",
+      "icons": [
+        {
+          "src": "/app-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "حجز يدوي جديد",
+      "short_name": "حجز جديد",
+      "description": "لعميلة تواصلت معك خارج المنصّة",
+      "url": "/dashboard/bookings?new=1",
+      "icons": [
+        {
+          "src": "/app-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "التقويم",
+      "short_name": "التقويم",
+      "description": "حجب يوم أو مراجعة المواعيد",
+      "url": "/dashboard/calendar",
+      "icons": [
+        {
+          "src": "/app-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
     {
       "name": "ابحثي عن مصوّرة",
       "short_name": "بحث",
       "description": "تصفّحي مصوّرات الأعراس",
       "url": "/search",
-      "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "لوحة المصوّر",
-      "short_name": "داشبورد",
-      "description": "إدارة حجوزاتك ومتابعة أعمالك",
-      "url": "/dashboard/",
-      "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "الحجوزات",
-      "short_name": "الحجوزات",
-      "description": "راجعي طلبات الحجز المعلّقة",
-      "url": "/dashboard/bookings",
-      "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/app-icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

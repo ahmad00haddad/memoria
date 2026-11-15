@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { X, Download, Share } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { t } from "@/i18n";
@@ -7,11 +8,35 @@ function wasDismissed() {
   try { return !!localStorage.getItem("pwa_prompt_dismissed"); } catch { return true; }
 }
 
+// اللحظة الصحيحة فقط (لا عند أول دخول): العروس بعد الحجز (صفحة المتابعة)،
+// والمصوّرة في لوحتها بعد نشر صفحتها أو وصول أول طلب.
+function rightMoment() {
+  const p = window.location.pathname;
+  if (p.startsWith("/track/")) return true;
+  if (p === "/dashboard" || p === "/dashboard/") {
+    try {
+      const d = JSON.parse(localStorage.getItem("memoria-home:v1") || "null")?.data;
+      const st = d?.stats ?? {};
+      return !!d?.profile?.is_published || (st.confirmed ?? 0) + (st.pending ?? 0) + (st.completed ?? 0) > 0;
+    } catch { return false; }
+  }
+  return false;
+}
+
 export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [show, setShow] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(true); // Default true so it doesn't flash before checking
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // الحدث قد يصل في صفحة أخرى: نعيد الفحص عند كل انتقال
+  useEffect(() => {
+    if (isStandalone || show || wasDismissed()) return;
+    if ((deferredPrompt || isIOS) && rightMoment()) {
+      const id = setTimeout(() => setShow(true), 2500);
+      return () => clearTimeout(id);
+    }
+  }, [pathname, deferredPrompt, isIOS, isStandalone, show]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -31,7 +56,7 @@ export function PwaInstallPrompt() {
     if (ios) {
       const timer = setTimeout(() => {
         // Only show if user hasn't dismissed it recently
-        if (!wasDismissed()) setShow(true);
+        if (!wasDismissed() && rightMoment()) setShow(true);
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -40,7 +65,7 @@ export function PwaInstallPrompt() {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      if (!wasDismissed()) setShow(true);
+      if (!wasDismissed() && rightMoment()) setShow(true);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);

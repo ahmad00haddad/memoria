@@ -39,6 +39,7 @@ import { useIntro } from "@/lib/intro";
 import { PullToRefresh } from "@/components/ui/pull-to-refresh";
 import { CopyButton } from "@/components/ui/copy-button";
 import { TodayFocus } from "@/components/dashboard/TodayFocus";
+import { PushOptIn } from "@/components/dashboard/PushOptIn";
 import { missingDisclosures } from "@/components/PackageFacts";
 import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
 import { ToolIndex, Sparkline, sortTools, type Tool } from "@/components/dashboard/ToolIndex";
@@ -750,6 +751,7 @@ function Dashboard() {
           <>
             <TodayFocus items={todayItems} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
 
+            {profile?.is_published && <PushOptIn />}
             <div data-tour="notify"><NotifyChannelsCard promptOnly /></div>
 
             {!hasAnyStats && profile?.is_published && profile?.username && (
