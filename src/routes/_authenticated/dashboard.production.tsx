@@ -173,6 +173,11 @@ function ProductionBoard() {
     }
     
     setMovingId(b.id);
+    // فوري: البطاقة تنتقل الآن، والسيرفر يؤكّد في الخلفية (تُرجع إن فشل)
+    const before = bookings;
+    setBookings((l) => l.map((x) => (x.id === b.id ? { ...x, production_stage: next.key } : x)));
+    setActiveStage(next.key);
+    hapticVibrate("light");
     try {
       await updateStageFn({ data: { booking_id: b.id, stage: next.key } });
 
@@ -210,9 +215,12 @@ function ProductionBoard() {
           }
         }
       });
-      // Mobile: انقلي التبويب تلقائياً حتى لا يختفي الحجز من أمام المصوّرة
-      setActiveStage(next.key);
       try { await load(uid); } catch (e) { console.error(e); }
+    } catch (e: any) {
+      setBookings(before);
+      setActiveStage(prevStage);
+      hapticVibrate("error");
+      toast.error(e?.message || g(tr("تعذّر النقل، حاولي مرة أخرى"), tr("تعذّر النقل، حاول مرة أخرى")));
     } finally {
       setMovingId(null);
     }
