@@ -18,10 +18,13 @@ const toneDot: Record<FocusItem["tone"], string> = {
  */
 export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?: string | null }) {
   const [open, setOpen] = useState(false);
-  const [top, ...rest] = items;
+  const [top, ...others] = items;
+  // «بعدها»: أقرب 3 مهام ظاهرة دائماً، والباقي عند الطلب
+  const next = others.slice(0, 3);
+  const rest = others.slice(3);
 
   return (
-    <div className="mb-10">
+    <div className="mb-8">
       {whatsNew && (
         <motion.p
           initial={{ opacity: 0, y: -4 }}
@@ -50,7 +53,7 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
                     {top.tone === "urgent" && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-gold opacity-60 motion-reduce:hidden" />}
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-gold" />
                   </span>
-                  {t("مهمة اليوم")}
+                  {t("الآن")}
                 </div>
                 <h2 className="font-serif text-3xl sm:text-4xl leading-tight text-balance">{tx(top.title)}</h2>
                 <p className="mt-2 text-sm text-ivory/70 dark:text-muted-foreground">{tx(top.detail)}</p>
@@ -82,6 +85,26 @@ export function TodayFocus({ items, whatsNew }: { items: FocusItem[]; whatsNew?:
           </motion.div>
         )}
       </AnimatePresence>
+
+      {next.length > 0 && (
+        <div className="mt-5">
+          <div className="mb-2 px-1 text-xs font-medium text-muted-foreground">{t("بعدها")}</div>
+          <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+            {next.map((it) => (
+              <li key={it.id}>
+                <Link to={it.to as any} params={it.params as any} className="group flex min-h-14 items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/60 active:bg-secondary">
+                  <span className={`h-2 w-2 shrink-0 rounded-full ${toneDot[it.tone]}`} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{tx(it.title)}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{tx(it.detail)}</span>
+                  </span>
+                  <ArrowLeft className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-x-0.5 group-hover:text-gold" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {rest.length > 0 && (
         <div className="mt-3">

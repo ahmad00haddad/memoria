@@ -42,7 +42,7 @@ import { TodayFocus } from "@/components/dashboard/TodayFocus";
 import { missingDisclosures } from "@/components/PackageFacts";
 import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
 import { ToolIndex, Sparkline, sortTools, type Tool } from "@/components/dashboard/ToolIndex";
-import { computeFocusItems } from "@/components/dashboard/focus";
+import { computeFocusItems, type FocusItem } from "@/components/dashboard/focus";
 import { openCommandPalette } from "@/components/CommandPalette";
 import { Search } from "lucide-react";
 import { locale } from "@/i18n";
@@ -598,6 +598,22 @@ function Dashboard() {
     { key: "public", title: tr("ملفي العام"), to: profile?.username ? `/photographers/${profile.username}` : undefined, external: !!profile?.username, icon: <ArrowLeft />, hint: tr("كما تراه العرائس") },
   ];
   // إظهار تدريجي: أدوات ما بعد الحجز (عقود، تقارير، سنتي، إحالة) تظهر بعد أول حجز مؤكَّد فقط
+  // «اليوم»: تنبيهات الإعداد تصبح مهاماً في نفس القائمة بدل بانرات منفصلة فوقها
+  const setupItems: FocusItem[] = [
+    ...(profile?.is_published && !hasCliq ? [{
+      id: "setup-cliq", tone: "urgent" as const, priority: 120, to: "/dashboard/profile",
+      title: g(tr("أضيفي طريقة لاستلام العربون"), tr("أضف طريقة لاستلام العربون")),
+      detail: g(tr("صفحتكِ منشورة، والعروس لن تعرف أين تحوّل بعد موافقتكِ"), tr("صفحتك منشورة، والعروس لن تعرف أين تحوّل بعد موافقتك")),
+      cta: g(tr("أضيفيها الآن"), tr("أضفها الآن")),
+    }] : []),
+    ...(incompletePkgs > 0 ? [{
+      id: "setup-shooter", tone: "soon" as const, priority: 70, to: "/dashboard/pricing",
+      title: g(tr("حدّدي «من يصوّر» في {0}", [arCount(incompletePkgs, tr("باقة واحدة"), tr("باقتين"), tr("باقات"), tr("باقة"))]), tr("حدّد «من يصوّر» في {0}", [arCount(incompletePkgs, tr("باقة واحدة"), tr("باقتين"), tr("باقات"), tr("باقة"))])),
+      detail: tr("أهم ما تسأل عنه العروس قبل الحجز"),
+      cta: tr("الأسعار"),
+    }] : []),
+  ];
+  const todayItems = [...setupItems, ...((stats.focus ?? []) as FocusItem[])].sort((a, b) => b.priority - a.priority);
   const hasConfirmed = (stats.confirmed ?? 0) + (stats.completed ?? 0) > 0;
   const visibleTools = hasConfirmed ? tools : tools.filter((t) => !["contracts", "reports", "recap", "referrals"].includes(t.key));
 
@@ -612,8 +628,8 @@ function Dashboard() {
         {/* Mobile Large Title */}
         <div className="sm:hidden mb-6 px-2 flex items-center justify-between">
           <div>
-            <div className="text-xs text-muted-foreground">{greeting()}</div>
-            <h1 className="font-serif text-3xl font-bold">{tr("لوحتي")}</h1>
+            <div className="text-xs text-muted-foreground">{greeting()} · {new Date().toLocaleDateString(locale("ar-JO"), { weekday: "long", day: "numeric", month: "long" })}</div>
+            <h1 className="font-serif text-3xl font-bold">{tr("اليوم")}</h1>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={openCommandPalette} aria-label={tr("بحث")} className="grid h-9 w-9 place-items-center rounded-full border border-border hover:bg-secondary active:scale-95 transition-transform"><Search className="h-4 w-4" /></button>
@@ -710,35 +726,7 @@ function Dashboard() {
           </>
         ) : (
           <>
-            {profile?.is_published && !hasCliq && (
-              <Link to="/dashboard/profile" className="mb-4 flex items-start gap-3 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
-                <span>
-                  <strong className="block text-destructive">{tr("لا توجد طريقة لاستلام العربون")}</strong>
-                  {g(tr("صفحتكِ منشورة، لكن العروس بعد موافقتكِ لن تعرف أين تحوّل العربون. أضيفي طريقة الآن (CliQ أو محفظة أو بنك)."), tr("صفحتك منشورة، لكن العروس بعد موافقتك لن تعرف أين تحوّل العربون. أضف طريقة الآن (CliQ أو محفظة أو بنك)."))}
-                </span>
-              </Link>
-            )}
-            {incompletePkgs > 0 && (
-              <Link to="/dashboard/pricing" className="mb-4 flex items-start gap-3 rounded-2xl border border-amber-400/60 bg-amber-50/50 p-4 text-sm dark:border-amber-800/60 dark:bg-amber-950/20">
-                <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-                <span>
-                  <strong className="block">{tr("باقات بدون «من يصوّر فعلياً» ({0})", [incompletePkgs])}</strong>
-                  {g(tr("حدّدي من يصوّر في كل باقة (أنتِ، أنتِ مع فريقكِ، أو فريقكِ بدونكِ) — أهم ما تسأل عنه العروس."), tr("حدّد من يصوّر في كل باقة (أنت، أنت مع فريقك، أو فريقك بدونك) — أهم ما تسأل عنه العروس."))}
-                </span>
-              </Link>
-            )}
-            {delivery && (
-              <div className="mb-4 rounded-2xl border border-border bg-card p-4 text-sm">
-                <strong className="block">{tr("معدّل تسليمك: ~{0} يوماً", [delivery.days])}</strong>
-                <span className="text-muted-foreground">
-                  {delivery.n >= 3
-                    ? g(tr("يظهر للعرائس على صفحتكِ (من آخر {0} تسليمات). كل ما سلّمتِ أسرع، تحسّن الرقم.", [delivery.n]), tr("يظهر للعرائس على صفحتك (من آخر {0} تسليمات). كل ما سلّمت أسرع، تحسّن الرقم.", [delivery.n]))
-                    : g(tr("محسوب من {0} تسليم. يظهر للعرائس على صفحتكِ بعد 3 تسليمات.", [delivery.n]), tr("محسوب من {0} تسليم. يظهر للعرائس على صفحتك بعد 3 تسليمات.", [delivery.n]))}
-                </span>
-              </div>
-            )}
-            <TodayFocus items={stats.focus ?? []} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
+            <TodayFocus items={todayItems} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
 
             <div data-tour="notify"><NotifyChannelsCard promptOnly /></div>
 
@@ -812,6 +800,16 @@ function Dashboard() {
               </div>
             )}
 
+            {delivery && (
+              <div className="mb-4 rounded-2xl border border-border bg-card p-4 text-sm">
+                <strong className="block">{tr("معدّل تسليمك: ~{0} يوماً", [delivery.days])}</strong>
+                <span className="text-muted-foreground">
+                  {delivery.n >= 3
+                    ? g(tr("يظهر للعرائس على صفحتكِ (من آخر {0} تسليمات). كل ما سلّمتِ أسرع، تحسّن الرقم.", [delivery.n]), tr("يظهر للعرائس على صفحتك (من آخر {0} تسليمات). كل ما سلّمت أسرع، تحسّن الرقم.", [delivery.n]))
+                    : g(tr("محسوب من {0} تسليم. يظهر للعرائس على صفحتكِ بعد 3 تسليمات.", [delivery.n]), tr("محسوب من {0} تسليم. يظهر للعرائس على صفحتك بعد 3 تسليمات.", [delivery.n]))}
+                </span>
+              </div>
+            )}
             <AnimatePresence initial={false}>
               {!profile?.quickstart_dismissed_at && !qsDismissed && (
                 <motion.div key="qs" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0, scale: 0.98 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
