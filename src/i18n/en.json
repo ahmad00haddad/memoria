@@ -4357,5 +4357,11 @@
  "بعد {0}": "in {0}",
  "الموقّعة: {0}": "Signing as: {0}",
  "تسجيل استلام المتبقي (تحويل أو كاش)": "Record balance received (transfer or cash)",
- "شكراً لثقتك ولتقييمك.": "Thank you for your trust and your review."
+ "شكراً لثقتك ولتقييمك.": "Thank you for your trust and your review.",
+ "الدخول بواسطة Google": "Sign in with Google",
+ "أو بالبريد الإلكتروني": "or with email",
+ "تابعي باسم": "Continue as",
+ "ليس حسابك؟": "Not you?",
+ "حساب Google آخر": "Another Google account",
+ "أنشئي حسابك بواسطة Google": "Sign up with Google"
 }

@@ -11,6 +11,7 @@ import { friendlyError } from "@/lib/friendlyErrors";
 import { isEmail, EMAIL_HINT } from "@/lib/validation";
 import { toast } from "sonner";
 import { recordReferralAfterSignup } from "@/lib/booking.functions";
+import { GoogleSignIn } from "@/components/auth/GoogleSignIn";
 import { t as tr, tx } from "@/i18n";
 
 export const Route = createFileRoute("/photographers/join")({
@@ -211,6 +212,16 @@ function JoinPage() {
           <h1 className="font-serif text-4xl">{tr("انضمي إلى ميموريا")}</h1>
           <p className="text-sm text-muted-foreground mt-2">{tr("حسابكِ خلال دقيقة، وملفكِ جاهز خلال 5 دقائق — ١٤ يوماً مجاناً بدون بطاقة.")}</p>
         </div>
+        <div className="mb-4 space-y-3">
+          <GoogleSignIn
+            label={tr("أنشئي حسابك بواسطة Google")}
+            onError={fail}
+          />
+          <div className="relative text-center">
+            <span className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></span>
+            <span className="relative bg-background px-3 text-xs text-muted-foreground">{tr("أو بالبريد الإلكتروني")}</span>
+          </div>
+        </div>
         <motion.form
           key={shake}
           animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : undefined}
@@ -265,35 +276,6 @@ function JoinPage() {
             {loading ? tr("ننشئ حسابك…") : tr("إنشاء حسابي")}
           </button>
 
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">{tr("أو")}</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            disabled={loading}
-            onClick={async () => {
-              setErr(null);
-              setLoading(true);
-              const { error } = await supabase.auth.signInWithOAuth({
-                provider: "google",
-                options: {
-                  redirectTo: `${window.location.origin}/dashboard`,
-                },
-              });
-              setLoading(false);
-              if (error) setErr(tr("تعذّر التسجيل عبر Google. حاول مجدداً."));
-            }}
-            className="w-full border border-border py-3 rounded-sm hover:bg-secondary disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
-          >
-            {/* Lovable AI: replace with Google icon if desired */}
-            <span>{tr("التسجيل بواسطة Google")}</span>
-          </button>
           <p className="text-sm text-center text-muted-foreground">
             {tr("لديك حساب؟")}{" "}<Link to="/login" className="text-gold underline">{tr("تسجيل الدخول")}</Link>
           </p>

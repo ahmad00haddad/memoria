@@ -109,15 +109,17 @@ const worker = {
       headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)");
       
       const scriptSrc = nonceStr 
-        ? `'self' 'nonce-${nonceStr}' 'strict-dynamic' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com` 
-        : `'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com`;
+        ? `'self' 'nonce-${nonceStr}' 'strict-dynamic' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://accounts.google.com/gsi/client` 
+        : `'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://accounts.google.com/gsi/client`;
         
       headers.set("Content-Security-Policy", 
         "default-src 'self'; " +
         `script-src ${scriptSrc}; ` +
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io; " +
+        "connect-src 'self' https://accounts.google.com/gsi/ https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com https://*.ingest.sentry.io https://*.ingest.de.sentry.io https://*.ingest.us.sentry.io; " +
         "img-src 'self' data: blob: https:; " +
-        "style-src 'self' 'unsafe-inline'; " +
+        "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; " +
+        // Google One Tap renders its account chooser in an iframe
+        "frame-src 'self' https://accounts.google.com/gsi/ https://challenges.cloudflare.com; " +
         "font-src 'self' data:; " +
         // صفحة المصوّرة تُعرض داخل معاينة الإعدادات (نفس الموقع فقط)؛ الباقي لا يُؤطَّر
         `frame-ancestors ${new URL(request.url).pathname.startsWith("/photographers/") ? "'self'" : "'none'"}; ` +

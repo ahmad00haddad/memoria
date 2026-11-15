@@ -1,6 +1,6 @@
 import { friendlyError } from "@/lib/friendlyErrors";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
 import { emailTypoSuggestion } from "@/lib/form-hints";
 import { useEffect, useState } from "react";
 import { Header } from "@/components/site/Header";
@@ -8,7 +8,8 @@ import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-import { AlertTriangle, RefreshCcw, Home, Eye, EyeOff } from "lucide-react";
+import { AlertTriangle, RefreshCcw, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { GoogleSignIn } from "@/components/auth/GoogleSignIn";
 import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/login")({
@@ -52,12 +53,22 @@ function LoginPage() {
   const [unconfirmed, setUnconfirmed] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
   const [shake, setShake] = useState(0);
+  const [showEmail, setShowEmail] = useState(false);
+  const shakeCtl = useAnimationControls();
+  useEffect(() => {
+    if (shake) void shakeCtl.start({ x: [0, -8, 8, -6, 6, 0], transition: { duration: 0.35 } });
+  }, [shake, shakeCtl]);
   const navigate = useNavigate();
   const emailFix = emailTypoSuggestion(email);
 
   // تذكّر آخر بريد دخلت به المصوّرة على هذا الجهاز
   useEffect(() => {
-    try { const last = localStorage.getItem("memoria_last_email"); if (last) setEmail(last); } catch { /* ignore */ }
+    try {
+      const last = localStorage.getItem("memoria_last_email");
+      if (last) setEmail(last);
+      // Password users from before "continue as" existed: open the email form for them.
+      if (last && !localStorage.getItem("memoria_last_login")) setShowEmail(true);
+    } catch { /* ignore */ }
   }, []);
   const search = Route.useSearch() as any;
   const r = search?.redirect;
@@ -129,13 +140,41 @@ function LoginPage() {
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("بوابة المصوّرات")}</div>
           <h1 className="font-serif text-4xl">{t("تسجيل الدخول")}</h1>
         </div>
-        <motion.form
-          key={shake}
-          animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : undefined}
-          transition={{ duration: 0.35 }}
-          onSubmit={submit}
+        <motion.div
+          animate={shakeCtl}
           className="space-y-4 bg-card border border-border rounded-2xl p-6 shadow-soft"
         >
+          <GoogleSignIn
+            redirectPath={redirectPath}
+            label={t("الدخول بواسطة Google")}
+            onError={(m) => { setErr(m); setShake((n) => n + 1); }}
+            onLastLogin={(l) => { if (l?.provider === "email") setShowEmail(true); }}
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowEmail((v) => !v)}
+            aria-expanded={showEmail}
+            className="relative w-full my-2 block"
+          >
+            <span className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></span>
+            <span className="relative inline-flex items-center gap-1 bg-card px-3 text-xs text-muted-foreground hover:text-foreground">
+              {t("أو بالبريد الإلكتروني")}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showEmail ? "rotate-180" : ""}`} />
+            </span>
+          </button>
+
+          <AnimatePresence initial={false}>
+          {showEmail && (
+          <motion.form
+            key="email-form"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+            onSubmit={submit}
+            className="space-y-4 overflow-hidden px-0.5 pb-0.5"
+          >
           <label className="block">
             <span className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("البريد الإلكتروني")}</span>
             <input
@@ -160,6 +199,28 @@ function LoginPage() {
             <Link to="/forgot-password" className="text-gold underline">{t("نسيتِ كلمة المرور؟")}</Link>
           </div>
           {success && <p className="text-sm text-emerald-600">{tx(success)}</p>}
+          <button disabled={loading} className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory py-3 rounded-full hover:opacity-90 disabled:opacity-60 active:scale-[0.99] transition-transform dark:bg-gold dark:text-charcoal">
+            {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
+            {loading ? t("ندخلك…") : t("دخول")}
+          </button>
+          <button
+            type="button"
+            disabled={loading || linkSent}
+            onClick={async () => {
+              if (!email.trim()) { setErr(t("أدخلي بريدك أولاً لنرسل لكِ رابط الدخول.")); setShake((n) => n + 1); return; }
+              setErr(null);
+              const { error } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}${redirectPath}` } });
+              if (error) { setErr(t("تعذّر إرسال الرابط. تأكّدي أن البريد مسجّل لدينا.")); return; }
+              setLinkSent(true);
+            }}
+            className="w-full text-xs text-muted-foreground hover:text-foreground disabled:opacity-70"
+          >
+            {linkSent ? t("أرسلنا رابط دخول إلى بريدك — افتحيه من هذا الجهاز") : t("ادخلي برابط على بريدك بدل كلمة المرور")}
+          </button>
+
+          </motion.form>
+          )}
+          </AnimatePresence>
           <AnimatePresence initial={false}>
           {err && (
             <motion.div key="login-error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden">
@@ -182,70 +243,13 @@ function LoginPage() {
             </motion.div>
           )}
           </AnimatePresence>
-          <button disabled={loading} className="w-full inline-flex items-center justify-center gap-2 bg-charcoal text-ivory py-3 rounded-full hover:opacity-90 disabled:opacity-60 active:scale-[0.99] transition-transform dark:bg-gold dark:text-charcoal">
-            {loading && <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/30 border-t-current" />}
-            {loading ? t("ندخلك…") : t("دخول")}
-          </button>
-          <button
-            type="button"
-            disabled={loading || linkSent}
-            onClick={async () => {
-              if (!email.trim()) { setErr(t("أدخلي بريدك أولاً لنرسل لكِ رابط الدخول.")); setShake((n) => n + 1); return; }
-              setErr(null);
-              const { error } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}${redirectPath}` } });
-              if (error) { setErr(t("تعذّر إرسال الرابط. تأكّدي أن البريد مسجّل لدينا.")); return; }
-              setLinkSent(true);
-            }}
-            className="w-full text-xs text-muted-foreground hover:text-foreground disabled:opacity-70"
-          >
-            {linkSent ? t("أرسلنا رابط دخول إلى بريدك — افتحيه من هذا الجهاز") : t("ادخلي برابط على بريدك بدل كلمة المرور")}
-          </button>
-
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">{t("أو")}</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            disabled={loading}
-            onClick={async () => {
-              setErr(null);
-              setLoading(true);
-              // The browser leaves for Google here; Supabase sends it back to
-              // /dashboard with the session. Navigating ourselves would cancel it.
-              const { error } = await supabase.auth.signInWithOAuth({
-                provider: "google",
-                options: {
-                  redirectTo: `${window.location.origin}/dashboard`,
-                }
-              });
-              if (error) {
-                setLoading(false);
-                setErr(t("تعذّر تسجيل الدخول عبر Google. حاولي مجدداً."));
-              }
-            }}
-            className="w-full border border-border py-3 rounded-sm hover:bg-secondary disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-            </svg>
-            <span>{t("تسجيل الدخول بواسطة Google")}</span>
-          </button>
           <p className="text-sm text-center text-muted-foreground">
             {t("مصوّرة جديدة؟")}{" "}<Link to="/photographers/join" className="text-gold underline">{t("أنشئي حسابك")}</Link>
           </p>
           <p className="text-xs text-center text-muted-foreground">
             {t("عروس؟ لا تحتاجين حساباً —")}{" "}<Link to="/search" className="underline">{t("ابحثي عن مصوّرة مباشرة")}</Link>.
           </p>
-        </motion.form>
+        </motion.div>
       </div>
       <Footer />
     </div>

@@ -49,6 +49,9 @@ function start() {
   supabase.auth.onAuthStateChange((event, session) => {
     // setTimeout (not a microtask): calling Supabase from inside this callback
     // while it still holds the auth lock deadlocks, leaving pages stuck loading.
+    if (session && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
+      void import("@/lib/google-auth").then((m) => m.rememberLogin(session));
+    }
     if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") return;
     if (event === "SIGNED_OUT") {
       roleCache.clear();
