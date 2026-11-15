@@ -52,6 +52,7 @@ import { Route as AuthenticatedAdminContactMessagesRouteImport } from './routes/
 import { Route as AuthenticatedAdminContractsRouteImport } from './routes/_authenticated/admin.contracts'
 import { Route as AuthenticatedAdminDisputesRouteImport } from './routes/_authenticated/admin.disputes'
 import { Route as AuthenticatedAdminEmailLogRouteImport } from './routes/_authenticated/admin.email-log'
+import { Route as AuthenticatedAdminFunnelRouteImport } from './routes/_authenticated/admin.funnel'
 import { Route as AuthenticatedAdminNotificationsRouteImport } from './routes/_authenticated/admin.notifications'
 import { Route as AuthenticatedAdminPhotographersRouteImport } from './routes/_authenticated/admin.photographers'
 import { Route as AuthenticatedAdminReferralsRouteImport } from './routes/_authenticated/admin.referrals'
@@ -309,6 +310,12 @@ const AuthenticatedAdminEmailLogRoute =
     path: '/email-log',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminFunnelRoute =
+  AuthenticatedAdminFunnelRouteImport.update({
+    id: '/funnel',
+    path: '/funnel',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminNotificationsRoute =
   AuthenticatedAdminNotificationsRouteImport.update({
     id: '/notifications',
@@ -554,6 +561,7 @@ export interface FileRoutesByFullPath {
   '/admin/contracts': typeof AuthenticatedAdminContractsRoute
   '/admin/disputes': typeof AuthenticatedAdminDisputesRoute
   '/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
+  '/admin/funnel': typeof AuthenticatedAdminFunnelRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
   '/admin/referrals': typeof AuthenticatedAdminReferralsRoute
@@ -631,6 +639,7 @@ export interface FileRoutesByTo {
   '/admin/contracts': typeof AuthenticatedAdminContractsRoute
   '/admin/disputes': typeof AuthenticatedAdminDisputesRoute
   '/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
+  '/admin/funnel': typeof AuthenticatedAdminFunnelRoute
   '/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
   '/admin/referrals': typeof AuthenticatedAdminReferralsRoute
@@ -711,6 +720,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/contracts': typeof AuthenticatedAdminContractsRoute
   '/_authenticated/admin/disputes': typeof AuthenticatedAdminDisputesRoute
   '/_authenticated/admin/email-log': typeof AuthenticatedAdminEmailLogRoute
+  '/_authenticated/admin/funnel': typeof AuthenticatedAdminFunnelRoute
   '/_authenticated/admin/notifications': typeof AuthenticatedAdminNotificationsRoute
   '/_authenticated/admin/photographers': typeof AuthenticatedAdminPhotographersRoute
   '/_authenticated/admin/referrals': typeof AuthenticatedAdminReferralsRoute
@@ -792,6 +802,7 @@ export interface FileRouteTypes {
     | '/admin/contracts'
     | '/admin/disputes'
     | '/admin/email-log'
+    | '/admin/funnel'
     | '/admin/notifications'
     | '/admin/photographers'
     | '/admin/referrals'
@@ -869,6 +880,7 @@ export interface FileRouteTypes {
     | '/admin/contracts'
     | '/admin/disputes'
     | '/admin/email-log'
+    | '/admin/funnel'
     | '/admin/notifications'
     | '/admin/photographers'
     | '/admin/referrals'
@@ -948,6 +960,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/contracts'
     | '/_authenticated/admin/disputes'
     | '/_authenticated/admin/email-log'
+    | '/_authenticated/admin/funnel'
     | '/_authenticated/admin/notifications'
     | '/_authenticated/admin/photographers'
     | '/_authenticated/admin/referrals'
@@ -1334,6 +1347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmailLogRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/funnel': {
+      id: '/_authenticated/admin/funnel'
+      path: '/funnel'
+      fullPath: '/admin/funnel'
+      preLoaderRoute: typeof AuthenticatedAdminFunnelRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/notifications': {
       id: '/_authenticated/admin/notifications'
       path: '/notifications'
@@ -1589,6 +1609,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminContractsRoute: typeof AuthenticatedAdminContractsRoute
   AuthenticatedAdminDisputesRoute: typeof AuthenticatedAdminDisputesRoute
   AuthenticatedAdminEmailLogRoute: typeof AuthenticatedAdminEmailLogRoute
+  AuthenticatedAdminFunnelRoute: typeof AuthenticatedAdminFunnelRoute
   AuthenticatedAdminNotificationsRoute: typeof AuthenticatedAdminNotificationsRoute
   AuthenticatedAdminPhotographersRoute: typeof AuthenticatedAdminPhotographersRoute
   AuthenticatedAdminReferralsRoute: typeof AuthenticatedAdminReferralsRoute
@@ -1608,6 +1629,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminContractsRoute: AuthenticatedAdminContractsRoute,
   AuthenticatedAdminDisputesRoute: AuthenticatedAdminDisputesRoute,
   AuthenticatedAdminEmailLogRoute: AuthenticatedAdminEmailLogRoute,
+  AuthenticatedAdminFunnelRoute: AuthenticatedAdminFunnelRoute,
   AuthenticatedAdminNotificationsRoute: AuthenticatedAdminNotificationsRoute,
   AuthenticatedAdminPhotographersRoute: AuthenticatedAdminPhotographersRoute,
   AuthenticatedAdminReferralsRoute: AuthenticatedAdminReferralsRoute,

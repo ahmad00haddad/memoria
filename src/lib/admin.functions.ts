@@ -1020,3 +1020,36 @@ export const deleteContactMessageAdmin = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// «وين بيتعثّروا»: مسار كل مصوّرة من بيانات موجودة (بلا جدول جديد)
+export const photographerFunnelAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context as any;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: profs }, { data: rules }, { data: bks }] = await Promise.all([
+      (supabaseAdmin as any).from("profiles").select("id, display_name, username, created_at, onboarding_step, onboarding_completed_at, is_published, avatar_url, portfolio_urls, is_demo, deleted_at").is("deleted_at", null),
+      (supabaseAdmin as any).from("pricing_rules").select("photographer_id").neq("package", "addon"),
+      (supabaseAdmin as any).from("bookings").select("photographer_id, created_at").is("deleted_at", null),
+    ]);
+    const pkg = new Set((rules ?? []).map((r: any) => r.photographer_id));
+    const firstBooking = new Map<string, string>();
+    for (const b of bks ?? []) { const cur = firstBooking.get(b.photographer_id); if (!cur || b.created_at < cur) firstBooking.set(b.photographer_id, b.created_at); }
+    return (profs ?? []).filter((p: any) => !p.is_demo).map((p: any) => {
+      const photos = (p.portfolio_urls ?? []).length;
+      const hours = (a?: string | null) => (a ? Math.round((new Date(a).getTime() - new Date(p.created_at).getTime()) / 36e5) : null);
+      const stage =
+        firstBooking.has(p.id) ? "booking" :
+        p.is_published ? "published" :
+        pkg.has(p.id) ? "package" :
+        p.onboarding_completed_at ? "onboarded" :
+        "onboarding";
+      return {
+        id: p.id, name: p.display_name || p.username || "—", created_at: p.created_at,
+        step: p.onboarding_step ?? 0, onboarded: !!p.onboarding_completed_at, hasPackage: pkg.has(p.id),
+        photos, avatar: !!p.avatar_url, published: !!p.is_published, firstBookingAt: firstBooking.get(p.id) ?? null,
+        hoursToOnboard: hours(p.onboarding_completed_at), stage,
+      };
+    });
+  });

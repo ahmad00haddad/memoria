@@ -56,6 +56,7 @@ function AdminLayout() {
         <nav className="flex flex-wrap gap-2 mb-2 border-b border-border pb-3">
           <TabLink to="/admin" exact icon={<LayoutDashboard className="h-4 w-4" />} label={t("نظرة عامة")} />
           <TabLink to="/admin/photographers" icon={<Users className="h-4 w-4" />} label={t("المصوّرات")} />
+          <TabLink to="/admin/funnel" icon={<Users className="h-4 w-4" />} label={t("وين بيتعثّروا")} />
           <TabLink to="/admin/bookings" icon={<Calendar className="h-4 w-4" />} label={t("الحجوزات")} />
           <TabLink to="/admin/subscriptions" icon={<CreditCard className="h-4 w-4" />} label={t("الدفعات")} />
           <TabLink to="/admin/reviews" icon={<Star className="h-4 w-4" />} label={t("التقييمات")} />
