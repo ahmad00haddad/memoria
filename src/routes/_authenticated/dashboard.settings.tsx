@@ -34,6 +34,8 @@ function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [allThemes, setAllThemes] = useState(false);
+  const [tab, setTab] = useState<"page" | "work">(() => { try { return (sessionStorage.getItem("memoria-settings-tab") as any) || "page"; } catch { return "page"; } });
+  useEffect(() => { try { sessionStorage.setItem("memoria-settings-tab", tab); } catch { /* ignore */ } }, [tab]);
   const [owner, setOwner] = useState<Owner | null>(null);
   const [saved, setSaved] = useState<PageSettings>(DEFAULT_PAGE_SETTINGS);
   const [s, setS] = useState<PageSettings>(DEFAULT_PAGE_SETTINGS);
@@ -159,6 +161,16 @@ function SettingsPage() {
 
         <div className="gap-8 lg:flex lg:items-start">
           <div className="space-y-5 min-w-0 flex-1">
+            {/* شاشتان قصيرتان بدل صفحة طويلة: شكل الصفحة / إعدادات العمل */}
+            <div role="tablist" className="sticky top-12 z-20 -mx-4 flex gap-2 bg-background/95 px-4 py-2 backdrop-blur sm:static sm:mx-0 sm:px-0 sm:bg-transparent">
+              {([["page", tr("صفحتي")], ["work", tr("عملي")]] as const).map(([k, label]) => (
+                <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
+                  className={`min-h-10 flex-1 rounded-full border px-4 text-sm transition-colors sm:flex-none ${tab === k ? "border-gold bg-gold/10 text-foreground" : "border-border text-muted-foreground"}`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {tab === "page" && (<>
             <Block icon={<Palette />} title={tr("الألوان")}>
               {(owner.cover_url || owner.avatar_url) && (
                 <button type="button" onClick={matchCover} disabled={matching}
@@ -254,7 +266,9 @@ function SettingsPage() {
                 <Toggle label={tr("ملاحظات الحجز")} hint={warnNotes} on={s.show_booking_notes} set={(v) => set("show_booking_notes", v)} />
               </div>
             </Block>
+            </>)}
 
+            {tab === "work" && (<>
             <Block icon={<CalendarDays />} title={tr("الحجوزات في اليوم")} hint={g(tr("كم حجزاً تستقبلين من صفحتك في اليوم الواحد؟"), tr("كم حجزاً تستقبل من صفحتك في اليوم الواحد؟"))}>
               <Choices value={s.bookings_per_day} onChange={(v) => set("bookings_per_day", v)}
                 options={[{ value: "one", label: tr("حجز واحد في اليوم") }, { value: "multi", label: tr("أكثر من حجز إذا اتّسع الوقت") }]} />
@@ -282,7 +296,9 @@ function SettingsPage() {
               <Choices value={biz.team} onChange={(v) => setBiz((x) => ({ ...x, team: v }))}
                 options={[{ value: "female", label: tr("نسائي بالكامل") }, { value: "male", label: tr("رجالي (للجاهات)") }, { value: "mixed", label: tr("مختلط") }, { value: "", label: tr("غير محدّد") }]} />
             </Block>
+            </>)}
 
+            {tab === "page" && (<>
             <Block icon={<Megaphone />} title={tr("نصوص قصيرة")} hint={g(tr("نص عادي فقط، بدون روابط. اتركيه فارغاً لاستخدام النص الافتراضي."), tr("نص عادي فقط، بدون روابط. اتركه فارغاً لاستخدام النص الافتراضي."))}>
               <TextField label={tr("عبارة بطاقة الغلاف")} placeholder={tr("«كل صورة قصة، وكل قصة تستحق الفخامة»")} value={s.hero_quote} max={QUOTE_MAX} onChange={(v) => set("hero_quote", v)} />
               <TextField className="mt-4" label={tr("شريط إعلان أعلى الصفحة")} placeholder={tr("مثال: مواعيد صيف ٢٠٢٧ متاحة الآن")} value={s.announcement} max={ANNOUNCE_MAX} onChange={(v) => set("announcement", v)} />
@@ -292,6 +308,7 @@ function SettingsPage() {
               <Choices value={s.default_lang} onChange={(v) => set("default_lang", v)}
                 options={[{ value: "auto", label: tr("تلقائي (حسب الزائرة)") }, { value: "ar", label: "العربية" }, { value: "en", label: "English" }]} />
             </Block>
+            </>)}
 
             <div className="pt-2 text-center">
               <button type="button" onClick={reset} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
