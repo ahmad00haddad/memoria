@@ -7,10 +7,11 @@ export function LangToggle({ className = "" }: { className?: string }) {
   return (
     <button
       type="button"
-      onClick={() => setLang(next)}
+      // short delay so the elastic release is seen before the reload
+      onClick={() => setTimeout(() => setLang(next), 160)}
       lang={next}
       aria-label={next === "en" ? "Switch to English" : "التبديل إلى العربية"}
-      className={`h-9 min-w-9 px-2 grid place-items-center rounded-sm border border-border/60 text-xs hover:bg-secondary transition-colors ${
+      className={`elastic-press h-9 min-w-9 px-2 grid place-items-center rounded-sm border border-border/60 text-xs hover:bg-secondary ${
         next === "en" ? "font-medium tracking-[0.15em]" : "font-sans"
       } ${className}`}
     >
