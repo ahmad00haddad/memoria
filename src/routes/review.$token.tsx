@@ -126,8 +126,8 @@ function ReviewPage() {
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => { setRating(n); setPop((p) => p + 1); hapticVibrate(n >= 4 ? "success" : "light"); }}
                     aria-label={tr("{0} نجوم", [n])}
-                    animate={pop && n <= rating ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                    transition={{ delay: (n - 1) * 0.05, duration: 0.3 }}
+                    animate={pop && n <= rating ? { scale: [1, 1.4, 0.92, 1], rotate: [0, -14, 6, 0] } : { scale: 1, rotate: 0 }}
+                    transition={{ delay: (n - 1) * 0.07, duration: 0.55, ease: "easeOut" }}
                     className="transition-transform hover:scale-110"
                   >
                     <Star className={`h-9 w-9 transition-colors duration-200 ${(hoverRating || rating) >= n ? "fill-gold text-gold" : "text-muted-foreground/30"}`} />

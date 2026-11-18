@@ -43,7 +43,7 @@ export function CopyButton({
       onClick={copy}
       aria-label={iconOnly ? label : undefined}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs transition-colors hover:border-gold/50 hover:text-gold active:scale-95",
+        "elastic-press inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs hover:border-gold/50 hover:text-gold",
         copied && "border-gold/60 text-gold",
         className,
       )}
@@ -57,7 +57,7 @@ export function CopyButton({
           transition={{ duration: 0.15 }}
           className="inline-flex items-center gap-1.5"
         >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? <Check className="elastic-pop h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {!iconOnly && (copied ? copiedLabel : label)}
         </motion.span>
       </AnimatePresence>

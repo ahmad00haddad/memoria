@@ -44,7 +44,17 @@ export function Lightbox({
     startX.current = e.touches[0].clientX; 
     startY.current = e.touches[0].clientY;
   };
+  // Rubber-band: the photo follows the finger (damped) and springs back if the swipe falls short
+  const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (startX.current == null || startY.current == null) return;
+    const dx = e.touches[0].clientX - startX.current;
+    const dy = e.touches[0].clientY - startY.current;
+    if (dy > 0 && Math.abs(dy) > Math.abs(dx)) setDrag({ x: 0, y: dy * 0.6, active: true });
+    else setDrag({ x: dx * 0.35, y: 0, active: true });
+  };
   const onTouchEnd = (e: React.TouchEvent) => {
+    setDrag({ x: 0, y: 0, active: false });
     if (startX.current == null || startY.current == null) return;
     const dx = e.changedTouches[0].clientX - startX.current;
     const dy = e.changedTouches[0].clientY - startY.current;
@@ -72,6 +82,7 @@ export function Lightbox({
       transition={{ duration: 0.2, ease: "easeOut" }}
       onClick={onClose}
       onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
       <button onClick={onClose} className="absolute top-3 end-3 text-white/80 hover:text-white p-2 z-10" aria-label={t("إغلاق")}>
@@ -112,8 +123,8 @@ export function Lightbox({
       <motion.div
         className="flex max-w-full max-h-full items-center justify-center"
         initial={{ scale: 0.96 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 0.25, ease: EASE_OUT }}
+        animate={{ scale: 1 - Math.min(drag.y, 300) / 1500, x: drag.x, y: drag.y }}
+        transition={drag.active ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 22 }}
       >
       <AnimatePresence initial={false} custom={dir} mode="popLayout">
       <motion.img

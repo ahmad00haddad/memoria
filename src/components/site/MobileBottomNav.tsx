@@ -38,9 +38,9 @@ export function MobileBottomNav() {
       <li key={it.to}>
         <Link
           to={it.to as any}
-          className={`relative flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${active ? "text-gold" : "text-muted-foreground hover:text-foreground"}`}
+          className={`elastic-press relative flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${active ? "text-gold" : "text-muted-foreground hover:text-foreground"}`}
         >
-          <Icon className="h-5 w-5" />
+          <Icon key={String(active)} className={`h-5 w-5 ${active ? "elastic-bump" : ""}`} />
           <span>{tx(it.label)}</span>
         </Link>
       </li>
@@ -57,7 +57,7 @@ export function MobileBottomNav() {
               type="button"
               onClick={() => setOpen(true)}
               aria-label={t("إجراء سريع")}
-              className="-mt-5 grid h-14 w-14 place-items-center rounded-full bg-charcoal text-ivory shadow-lg ring-4 ring-background active:scale-95 transition dark:bg-gold dark:text-charcoal"
+              className="-mt-5 grid h-14 w-14 place-items-center rounded-full bg-charcoal text-ivory shadow-lg ring-4 ring-background elastic-press dark:bg-gold dark:text-charcoal"
             >
               <Plus className="h-6 w-6" />
             </button>

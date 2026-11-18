@@ -42,7 +42,7 @@ export function MobileTabBar() {
         {/* رابط الرئيسية (موجود دائماً) */}
         <Link
           to="/"
-          className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+          className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
             isActive("/") ? "text-gold" : "text-muted-foreground hover:text-foreground"
           }`}
         >
@@ -55,7 +55,7 @@ export function MobileTabBar() {
           <>
             <Link
               to="/search"
-              className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+              className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
                 isActive("/search") ? "text-gold" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -64,7 +64,7 @@ export function MobileTabBar() {
             </Link>
             <Link
               to="/guide"
-              className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+              className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
                 isActive("/guide") ? "text-gold" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -76,7 +76,7 @@ export function MobileTabBar() {
           <>
             <Link
               to="/for-photographers"
-              className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+              className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
                 isActive("/for-photographers") ? "text-gold" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -86,7 +86,7 @@ export function MobileTabBar() {
             {!authed && (
               <Link
                 to="/pricing"
-                className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+                className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
                   isActive("/pricing") ? "text-gold" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
@@ -101,7 +101,7 @@ export function MobileTabBar() {
         {authed ? (
           <Link
             to="/dashboard"
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+            className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
               isActive("/dashboard") && !isActive("/dashboard/profile") ? "text-gold" : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -111,7 +111,7 @@ export function MobileTabBar() {
         ) : (visitorRole === "photographer") ? (
           <Link
             to="/photographers/join"
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+            className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
               isActive("/photographers/join") ? "text-gold" : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -121,7 +121,7 @@ export function MobileTabBar() {
         ) : (
           <Link
             to="/login"
-            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+            className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
               isActive("/login") ? "text-gold" : "text-muted-foreground hover:text-foreground"
             }`}
           >

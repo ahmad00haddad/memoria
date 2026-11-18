@@ -532,7 +532,7 @@ function PhotographerPage() {
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => scrollTo("book")}
-                  className="hidden sm:inline-flex group relative overflow-hidden bg-ivory text-charcoal px-8 py-3.5 rounded-sm font-medium transition before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-gold/40 before:to-transparent before:transition-transform before:duration-700"
+                  className="elastic-press hidden sm:inline-flex group relative overflow-hidden bg-ivory text-charcoal px-8 py-3.5 rounded-sm font-medium before:absolute before:inset-0 before:-translate-x-full hover:before:translate-x-full before:bg-gradient-to-r before:from-transparent before:via-gold/40 before:to-transparent before:transition-transform before:duration-700"
                 >
                   <span className="relative">{tr("احجزي الآن")}</span>
                 </motion.button>
@@ -635,7 +635,7 @@ function PhotographerPage() {
                       ))}
                     </ul>
                   )}
-                  <button onClick={() => pickPackage(p.id)} className={`mt-auto w-full py-2 rounded-sm text-sm transition-transform duration-150 ease-out active:scale-[0.97] bg-charcoal text-ivory hover:opacity-90`}>{p.cta_label?.trim() || tr("احجزي هذه الباقة")}</button>
+                  <button onClick={() => pickPackage(p.id)} className={`elastic-press mt-auto w-full py-2 rounded-sm text-sm bg-charcoal text-ivory hover:opacity-90`}>{p.cta_label?.trim() || tr("احجزي هذه الباقة")}</button>
                   {pickedPackageId === p.id && <DrawFrame key={`pick-${p.id}`} duration={1.2} />}
                 </div>
                 </RiseIn>
@@ -1144,8 +1144,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           <div className="font-mono text-[11px] break-all rounded-sm bg-background border border-border px-2 py-1.5 mb-3 select-all" dir="ltr">{tx(fullUrl)}</div>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => { navigator.clipboard.writeText(fullUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-              className="inline-flex items-center gap-2 rounded-sm bg-charcoal text-ivory px-4 py-2 text-sm">
-              {copied ? <><CheckCircle2 className="h-4 w-4" />{" "}{tr("تم النسخ")}</> : <><ClipboardCopy className="h-4 w-4" />{" "}{tr("نسخ الرابط")}</>}
+              className="elastic-press inline-flex items-center gap-2 rounded-sm bg-charcoal text-ivory px-4 py-2 text-sm">
+              {copied ? <><CheckCircle2 className="elastic-pop h-4 w-4" />{" "}{tr("تم النسخ")}</> : <><ClipboardCopy className="h-4 w-4" />{" "}{tr("نسخ الرابط")}</>}
             </button>
             <a href={`https://wa.me/?text=${encodeURIComponent(tr("رابط تتبّع حجزي في ميموريا:") + fullUrl)}`} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-sm border border-border px-4 py-2 text-sm hover:bg-secondary">
