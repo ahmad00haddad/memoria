@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { X, RefreshCw, Copy, Check, Download, Upload, RefreshCcw } from "lucide-react";
 import { syncExternalIcal, getIcalStatus, type IcalStatus } from "@/lib/ical-sync.functions";
+import { blockUnavailableDay } from "@/lib/calendar.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -107,8 +108,7 @@ function CalendarPage() {
 
   const block = async () => {
     if (!date) return;
-    const { error } = await supabase.from("photographer_unavailability").insert({ photographer_id: uid, date, reason });
-    if (error) return toast.error(error.message);
+    try { await blockUnavailableDay({ data: { date, reason } }); } catch (e: any) { return toast.error(e?.message || t("تعذّر حجب اليوم")); }
     setDate(""); setReason(""); toast.success(t("حُجب اليوم — لن يظهر متاحاً للعرائس"));
     load(uid);
   };
@@ -119,7 +119,7 @@ function CalendarPage() {
     if (error) { load(uid); return toast.error(error.message); }
     if (row) {
       toast(t("فُتح يوم {0}", [new Date(row.date).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })]), {
-        action: { label: t("تراجع"), onClick: async () => { await supabase.from("photographer_unavailability").insert({ photographer_id: uid, date: row.date, reason: row.reason }); load(uid); } },
+        action: { label: t("تراجع"), onClick: async () => { try { await blockUnavailableDay({ data: { date: row.date, reason: row.reason } }); } catch (e: any) { toast.error(e?.message || t("تعذّر حجب اليوم")); } load(uid); } },
       });
     }
     load(uid);
@@ -135,8 +135,9 @@ function CalendarPage() {
     if (blockedId) return unblock(blockedId);
     const tmp = { id: `tmp-${d}`, date: d, reason: why || null };
     setUnavail((l) => [...l, tmp]);
-    const { data, error } = await supabase.from("photographer_unavailability").insert({ photographer_id: uid, date: d, reason: why || null }).select("id").maybeSingle();
-    if (error) { setUnavail((l) => l.filter((u) => u.id !== tmp.id)); return toast.error(error.message); }
+    let data: { id: string | null } | null = null;
+    try { data = await blockUnavailableDay({ data: { date: d, reason: why || null } }); }
+    catch (e: any) { setUnavail((l) => l.filter((u) => u.id !== tmp.id)); return toast.error(e?.message || t("تعذّر حجب اليوم")); }
     toast(t("حُجب يوم {0} — لن يظهر للعرائس", [new Date(d).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })]), {
       action: { label: t("تراجع"), onClick: async () => { if (data?.id) await supabase.from("photographer_unavailability").delete().eq("id", data.id); load(uid); } },
     });

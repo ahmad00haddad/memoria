@@ -256,13 +256,16 @@ export function tplBookingCancelled(args: {
   client_name: string; photographer_name: string; event_date: string;
   refund_amount: number; by: "photographer" | "client";
   track_token?: string; booking_id?: string; reason?: string | null;
+  deposit_confirmed?: boolean;
 }) {
   // عند الإلغاء من المصوّرة: رسالة للعميل (مع معلومات الاسترداد إن وُجدت).
   // عند الإلغاء من العميل: رسالة للمصوّرة (إشعار).
   if (args.by === "photographer") {
-    const refundBlock = args.refund_amount > 0
-      ? `<p>بما أن الإلغاء من المصوّرة، عليها إرجاع العربون كاملاً لكِ مباشرة: <strong style="color:#a07a32;">${args.refund_amount.toFixed(2)} د.أ</strong>.</p>`
-      : "";
+    const refundBlock = args.refund_amount <= 0
+      ? ""
+      : args.deposit_confirmed === false
+        ? `<p>المصوّرة لم تؤكّد وصول العربون لحسابها. إن كان التحويل (<strong style="color:#a07a32;">${args.refund_amount.toFixed(2)} د.أ</strong>) قد وصلها فعليها إرجاعه كاملاً لكِ؛ احتفظي بإيصال التحويل.</p>`
+        : `<p>بما أن الإلغاء من المصوّرة، عليها إرجاع العربون كاملاً لكِ مباشرة: <strong style="color:#a07a32;">${args.refund_amount.toFixed(2)} د.أ</strong>.</p>`;
     return {
       subject: "تم إلغاء حجزك",
       html: layout("تم إلغاء الحجز", `

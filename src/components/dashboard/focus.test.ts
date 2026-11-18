@@ -35,6 +35,10 @@ describe("دفعات متأخرة", () => {
     const items = computeFocusItems([{ ...base, event_date: day(-5), production_stage: "editing", delivery_due_at: day(20) }], null);
     expect(items.some((i) => i.id === "final-b1")).toBe(true);
   });
+  it("عرض سعر مقبول قبل 6 أيام بلا عربون (needs_approval=false) → مهمة «عربون لم يصل»", () => {
+    const items = computeFocusItems([{ ...base, status: "pending_deposit", created_at: iso(6), phone_verified_at: iso(6), needs_approval: false, approved_at: null, event_date: day(40) }], null);
+    expect(items.some((i) => i.id === "deposit-wait-b1")).toBe(true);
+  });
   it("[BUG] وافقت قبل 6 أيام والعربون لم يصل → يجب أن تبقى مهمة (لا تختفي بصمت)", () => {
     const items = computeFocusItems([{ ...base, status: "pending_deposit", created_at: iso(6), approved_at: iso(6), needs_approval: true, event_date: day(40) }], null);
     expect(items.length).toBeGreaterThan(0);

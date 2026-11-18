@@ -241,10 +241,11 @@ export const respondAddendum = createServerFn({ method: "POST" })
       const todayJo = new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
       if (String(pending.new_event_date) < todayJo) throw new Error(tr("التاريخ المقترح صار في الماضي. اطلبي من المصوّرة موعداً جديداً."));
       const { data: full } = await supabaseAdmin.from("bookings").select("start_time, end_time").eq("id", bk.id).maybeSingle();
-      const { data: clash } = await supabaseAdmin.rpc("has_booking_conflict", {
+      const { data: clash, error: clashErr } = await supabaseAdmin.rpc("has_booking_conflict", {
         _pid: bk.photographer_id, _date: pending.new_event_date,
         _start: pending.new_start_time ?? full?.start_time, _end: pending.new_end_time ?? full?.end_time, _exclude: bk.id,
       });
+      if (clashErr) throw new Error(tr("تعذّر التحقق من التاريخ. حاولي مرة أخرى."));
       if (clash) throw new Error(tr("التاريخ الجديد لم يعد متاحاً عند المصوّرة. راسليها لاقتراح موعد آخر."));
       const { data: closed } = await (supabaseAdmin as any).from("photographer_unavailability")
         .select("id").eq("photographer_id", bk.photographer_id).eq("date", pending.new_event_date).limit(1);

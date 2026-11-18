@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { t as tr } from "@/i18n";
 
-// مسار الحجز: طلب → موافقة المصوّرة (24 ساعة) → عربون (48 ساعة) → تثبيت.
+// مسار الحجز: طلب → موافقة المصوّرة (24 ساعة) → عربون (48 ساعة مهلة متّفق عليها، بلا إلغاء تلقائي؛ اليوم يبقى محجوزاً) → تثبيت.
 // الموافقة والرفض من جهة المصوّرة فقط، وكل خطوة تُبلَّغ بها العروس فوراً.
 
 const isId = (s: unknown) => typeof s === "string" && /^[0-9a-f-]{36}$/i.test(s);

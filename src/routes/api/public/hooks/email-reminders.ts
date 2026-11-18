@@ -272,12 +272,10 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         // 2+3) تذكيرات انتهاء الاشتراك — 7 أيام و3 أيام
         // ===================================================================
         for (const daysLeft of [7, 3]) {
-          const winStart = new Date();
-          winStart.setDate(winStart.getDate() + daysLeft);
-          winStart.setHours(0, 0, 0, 0);
-
-          const winEnd = new Date(winStart);
-          winEnd.setDate(winEnd.getDate() + 1);
+          // يوم كامل بتوقيت الأردن (UTC+3) بعد daysLeft أيام
+          const dayJo = new Date(Date.now() + 3 * 3600000 + daysLeft * 86400000).toISOString().slice(0, 10);
+          const winStart = new Date(Date.parse(`${dayJo}T00:00:00Z`) - 3 * 3600000);
+          const winEnd = new Date(winStart.getTime() + 86400000);
 
           const template = `subscription_expiring_${daysLeft}d`;
 

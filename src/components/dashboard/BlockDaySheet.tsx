@@ -4,6 +4,7 @@ import { CalendarX } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { t } from "@/i18n";
+import { blockUnavailableDay } from "@/lib/calendar.functions";
 
 /** حجب يوم من أي مكان دون مغادرة الصفحة */
 export function BlockDaySheet({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -12,16 +13,14 @@ export function BlockDaySheet({ open, onClose }: { open: boolean; onClose: () =>
   const [busy, setBusy] = useState(false);
   useEffect(() => { if (open) { setDate(""); setReason(""); } }, [open]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10); // اليوم بتوقيت الأردن
   const save = async () => {
     if (!date || busy) return;
     setBusy(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { setBusy(false); return; }
-    const { data, error } = await supabase.from("photographer_unavailability")
-      .insert({ photographer_id: session.user.id, date, reason: reason.trim() || null }).select("id").maybeSingle();
+    let data: { id: string | null } | null = null;
+    try { data = await blockUnavailableDay({ data: { date, reason: reason.trim() || null } }); }
+    catch (e: any) { setBusy(false); return toast.error(e?.message || t("تعذّر حجب اليوم")); }
     setBusy(false);
-    if (error) return toast.error(error.message);
     onClose();
     toast.success(t("حُجب اليوم — لن يظهر متاحاً للعرائس"), {
       action: { label: t("تراجع"), onClick: async () => { if (data?.id) await supabase.from("photographer_unavailability").delete().eq("id", data.id); } },

@@ -131,12 +131,14 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
     }
 
     // ٤أ) وافقت ولم يصل العربون بعد ٤٨ ساعة — بلا حدّ أعلى للعمر
-    if (b.status === "pending_deposit" && !b.deposit_proof_url && !b.deposit_sent_at && b.approved_at
-      && now - new Date(b.approved_at).getTime() > 2 * DAY) {
+    // عرض السعر المقبول لا يمر بموافقة (needs_approval=false): مهلته تبدأ من التوثيق
+    const depositSince = b.approved_at ?? (!b.needs_approval ? b.phone_verified_at : null);
+    if (b.status === "pending_deposit" && !b.deposit_proof_url && !b.deposit_sent_at && depositSince
+      && now - new Date(depositSince).getTime() > 2 * DAY) {
       items.push({
         id: `deposit-wait-${b.id}`, tone: "soon", priority: 65,
         title: t("عربون {0} لم يصل", [name]),
-        detail: g(t("وافقتِ {0} — أكّدي وصوله من البنك أو ألغي الطلب ليُفتح التاريخ", [ageLabel(b.approved_at)]), t("وافقتَ {0} — أكّد وصوله من البنك أو ألغِ الطلب ليُفتح التاريخ", [ageLabel(b.approved_at)])),
+        detail: g(t("وافقتِ {0} — أكّدي وصوله من البنك أو ألغي الطلب ليُفتح التاريخ", [ageLabel(depositSince)]), t("وافقتَ {0} — أكّد وصوله من البنك أو ألغِ الطلب ليُفتح التاريخ", [ageLabel(depositSince)])),
         cta: g(t("افتحي الطلب"), t("افتح الطلب")), ...link,
       });
       continue;

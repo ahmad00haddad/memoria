@@ -38,6 +38,11 @@ export const cancelBooking = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase } = context;
 
+    // هل أكّدت المصوّرة وصول العربون؟ (العروس قد ترفع إيصالاً لتحويل لم يصل فعلاً)
+    const { data: pre } = await (supabase as any).from("bookings")
+      .select("deposit_confirmed_at").eq("id", data.booking_id).maybeSingle();
+    const depositConfirmed = !!pre?.deposit_confirmed_at;
+
     const { data: res, error } = await supabase.rpc("cancel_booking", {
       _booking_id: data.booking_id,
       _reason: data.reason,
@@ -70,6 +75,7 @@ export const cancelBooking = createServerFn({ method: "POST" })
           by: "photographer",
           track_token: info.tracking_token,
           reason: data.reason,
+          deposit_confirmed: depositConfirmed,
         });
         await sendEmail({
           to: info.client_email, subject: t.subject, html: t.html,
@@ -78,9 +84,11 @@ export const cancelBooking = createServerFn({ method: "POST" })
       }
       if (info.client_phone) {
         const { sendWhatsAppNotification } = await import("@/lib/whatsapp.server");
-        const refundNote = Number(info.refund_amount || 0) > 0
-          ? tr("بما أن الإلغاء من المصوّرة، عليها إرجاع العربون كاملاً ({0} دينار) لكِ مباشرة.", [info.refund_amount])
-          : tr("لم يُحوَّل أي عربون لهذا الحجز، فلا شيء مستحق عليكِ.");
+        const refundNote = Number(info.refund_amount || 0) <= 0
+          ? tr("لم يُحوَّل أي عربون لهذا الحجز، فلا شيء مستحق عليكِ.")
+          : depositConfirmed
+            ? tr("بما أن الإلغاء من المصوّرة، عليها إرجاع العربون كاملاً ({0} دينار) لكِ مباشرة.", [info.refund_amount])
+            : tr("المصوّرة لم تؤكّد وصول العربون لحسابها. إن كان التحويل ({0} دينار) قد وصلها فعليها إرجاعه كاملاً لكِ؛ احتفظي بإيصال التحويل.", [info.refund_amount]);
         await sendWhatsAppNotification(
           info.photographer_id,
           info.client_phone,

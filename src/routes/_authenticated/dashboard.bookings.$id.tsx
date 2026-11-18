@@ -313,7 +313,7 @@ function BookingDetail() {
     if (actionLoading || !b) return;
     const ok = await confirm({
       title: tr("الموافقة على طلب {0}؟", [b.client_name]),
-      description: tr("{0} · من {1} إلى {2}. بعد الموافقة يصل للعروس رقمكِ وطرق الدفع، ويُحجز التاريخ لها 48 ساعة.", [b.event_date, b.start_time?.slice(0, 5) ?? "", b.end_time?.slice(0, 5) ?? ""]),
+      description: tr("{0} · من {1} إلى {2}. بعد الموافقة يصل للعروس رقمكِ وطرق الدفع، ويبقى التاريخ محجوزاً لها حتى تؤكّد وصول العربون أو تلغي الطلب.", [b.event_date, b.start_time?.slice(0, 5) ?? "", b.end_time?.slice(0, 5) ?? ""]),
       confirmText: tr("موافقة"),
     });
     if (!ok) return;

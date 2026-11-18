@@ -149,3 +149,52 @@ export const toggleUnavailability = createServerFn({ method: "POST" })
       return { action: "added" as const, date: data.date };
     }
   });
+
+/**
+ * حجب يوم من التقويم (كل مسارات الواجهة تمر من هنا): يرفض اليوم الذي يشغله حجز
+ * بنفس تعريف قاعدة البيانات (booking_holds) — لا يوم مغلق وعليه حجز عروس.
+ */
+export const blockUnavailableDay = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { date: string; reason?: string | null }) => {
+    if (!d || typeof d.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(d.date)) {
+      throw new Error("invalid date (YYYY-MM-DD)");
+    }
+    if (d.reason != null && (typeof d.reason !== "string" || d.reason.length > 500)) {
+      throw new Error("invalid reason");
+    }
+    return { date: d.date, reason: d.reason?.trim() || null };
+  })
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context as any;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: busy, error: busyErr } = await (supabaseAdmin as any).rpc("has_booking_conflict", {
+      _pid: userId, _date: data.date, _start: "00:00", _end: "23:59", _exclude: null,
+    });
+    if (busyErr) throw new Error(busyErr.message);
+    if (busy) {
+      const { data: who } = await supabase
+        .from("bookings")
+        .select("client_name")
+        .eq("photographer_id", userId)
+        .eq("event_date", data.date)
+        .in("status", ["confirmed", "pending_deposit", "quote", "completed"])
+        .is("deleted_at", null)
+        .limit(1);
+      throw new Error(t("لا يمكن حجب هذا اليوم — عليه حجز لـ {0}. ألغي الحجز أو انقلي موعده أولاً.", [who?.[0]?.client_name ?? ""]));
+    }
+    const { data: existing } = await supabase
+      .from("photographer_unavailability")
+      .select("id")
+      .eq("photographer_id", userId)
+      .eq("date", data.date)
+      .maybeSingle();
+    if (existing) return { id: existing.id as string };
+    const { data: row, error } = await supabase
+      .from("photographer_unavailability")
+      .insert({ photographer_id: userId, date: data.date, reason: data.reason })
+      .select("id")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { id: (row?.id ?? null) as string | null };
+  });

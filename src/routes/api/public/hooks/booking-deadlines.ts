@@ -83,24 +83,8 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
                 template: "approval_timeout_photographer",
                 bookingId: b.id,
               });
-            } else {
-              await notifyBride(b.id, {
-                subject: "انتهت مهلة العربون",
-                title: "أُلغي طلب حجزك",
-                lines: [
-                  `انتهت مهلة دفع العربون (48 ساعة) لحجزك مع ${name} بتاريخ ${arDate(b.event_date)}، فأُلغي الطلب وصار التاريخ متاحاً لغيرك.`,
-                  "إذا كنتِ ما زلتِ تريدين الحجز، تواصلي مع المصوّرة أو أرسلي طلباً جديداً إن كان التاريخ متاحاً.",
-                ],
-                template: "deposit_timeout_client",
-              });
-              await notifyPhotographer(b.photographer_id, {
-                title: "انتهت مهلة العربون",
-                body: `${b.client_name} لم ترسل العربون خلال 48 ساعة لحجز ${arDate(b.event_date)}، فأُلغي الطلب وصار التاريخ متاحاً.`,
-                link: `/dashboard/bookings/${b.id}`,
-                template: "deposit_timeout_photographer",
-                bookingId: b.id,
-              });
             }
+            // لا إلغاء تلقائي بسبب العربون منذ 2026-11-04 (لا يوجد auto_cancel_kind آخر)
             out.cancel_notices++;
           } catch (e) { console.error("[deadlines] cancel notice failed", e); out.errors++; }
         }
@@ -138,13 +122,17 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
 
         // 3ب) تذكير العروس بالعربون
         const { data: unpaid } = await admin.from("bookings")
-          .select("id, photographer_id, event_date, deposit_amount, approved_at, reminders_sent")
-          .eq("needs_approval", true).not("approved_at", "is", null).is("deleted_at", null)
+          .select("id, photographer_id, event_date, deposit_amount, approved_at, needs_approval, phone_verified_at, reminders_sent")
+          // معتمَدة بموافقة المصوّرة، أو عرض سعر قبلته (needs_approval=false) — كلاهما يحجز اليوم حتى التأكيد أو الإلغاء.
+          // الحجز اليدوي تديره المصوّرة بنفسها خارج المنصة فلا تذكيرات له.
+          .not("phone_verified_at", "is", null).is("deleted_at", null)
+          .or("verified_via.is.null,verified_via.neq.manual")
           .eq("status", "pending_deposit").is("deposit_sent_at", null).is("deposit_proof_url", null)
           .gt("deposit_amount", 0)
           .limit(200);
         for (const b of (unpaid ?? []) as any[]) {
-          const left = new Date(b.approved_at).getTime() + 48 * H - Date.now();
+          if (b.needs_approval && !b.approved_at) continue; // ما زال بانتظار الموافقة
+          const left = new Date(b.approved_at ?? b.phone_verified_at).getTime() + 48 * H - Date.now();
           const sent: string[] = b.reminders_sent ?? [];
           // بعد 48 ساعة: سؤال واحد للمصوّرة + تذكير أخير للعروس، بدون إلغاء
           if (left <= 0) {
