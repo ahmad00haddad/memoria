@@ -352,11 +352,8 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
             const { data: prof } = await supabaseAdmin
               .from("profiles").select("display_name").eq("id", s.photographer_id).maybeSingle();
 
-            // تعطيل الملف الشخصي تلقائياً
-            await supabaseAdmin
-              .from("profiles")
-              .update({ is_published: false, updated_at: new Date().toISOString() })
-              .eq("id", s.photographer_id);
+            // لا نُلغي نشر الملف عند الانتهاء: الظهور العام يعتمد أصلاً على is_subscription_active (RLS + البحث + بيانات الصفحة)،
+            // وإلغاء النشر كان يبقى بعد التجديد فتختفي المصوّرة وهي دافعة.
 
             await supabaseAdmin
               .from("subscriptions")
