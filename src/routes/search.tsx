@@ -384,7 +384,7 @@ function SearchPage() {
               <button
                 type="button"
                 onClick={() => { hapticVibrate("light"); setVerifiedOnly((v) => !v); }}
-                className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
+                className={`elastic-press min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
                   verifiedOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"
                 }`}
               >
@@ -394,7 +394,7 @@ function SearchPage() {
               <button
                 type="button"
                 onClick={() => { hapticVibrate("light"); setMinRating((r) => (r === 4.5 ? 0 : 4.5)); }}
-                className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
+                className={`elastic-press min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${
                   minRating === 4.5 ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"
                 }`}
               >
@@ -405,7 +405,7 @@ function SearchPage() {
                 <button
                   type="button"
                   onClick={() => { hapticVibrate("light"); setFavsOnly((v) => !v); }}
-                  className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${favsOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
+                  className={`elastic-press min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${favsOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
                 >
                   <Heart className="h-3.5 w-3.5" />{tr("مفضّلتي ({0})", [favs.length])}</button>
               )}
@@ -413,18 +413,20 @@ function SearchPage() {
               <button
                 type="button"
                 onClick={() => setCity("")}
-                className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors touch-card ${!city ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
+                className={`elastic-press relative min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors touch-card ${!city ? "text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
               >
-                {tr("كل المدن")}
+                {!city && <motion.span layoutId="city-pill" transition={{ type: "spring", stiffness: 520, damping: 24 }} className="absolute inset-0 rounded-full bg-foreground" />}
+                <span className="relative">{tr("كل المدن")}</span>
               </button>
               {(citiesQ.data ?? []).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setCity(c)}
-                  className={`min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors touch-card ${city === c ? "bg-foreground text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
+                  className={`elastic-press relative min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors touch-card ${city === c ? "text-background font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
                 >
-                  {tx(c)}
+                  {city === c && <motion.span layoutId="city-pill" transition={{ type: "spring", stiffness: 520, damping: 24 }} className="absolute inset-0 rounded-full bg-foreground" />}
+                  <span className="relative">{tx(c)}</span>
                 </button>
               ))}
             </div>
@@ -479,16 +481,17 @@ function SearchPage() {
                       key={r}
                       type="button"
                       onClick={() => setMinRating(r)}
-                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${minRating === r ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                      className={`elastic-press relative inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${minRating === r ? "text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
-                      {r === 0 ? tr("الكل") : (<><Star className="h-3 w-3 fill-gold text-gold" />{tx(r)}+</>)}
+                      {minRating === r && <motion.span layoutId="rating-pill" transition={{ type: "spring", stiffness: 520, damping: 24 }} className="absolute -inset-px rounded-sm bg-charcoal" />}
+                      <span className="relative inline-flex items-center gap-1">{r === 0 ? tr("الكل") : (<><Star className="h-3 w-3 fill-gold text-gold" />{tx(r)}+</>)}</span>
                     </button>
                   ))}
                   <span className="mx-2 h-4 w-px bg-border" />
                   <button
                     type="button"
                     onClick={() => setVerifiedOnly((v) => !v)}
-                    className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${verifiedOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                    className={`elastic-press inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${verifiedOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                   >
                     <BadgeCheck className="h-3 w-3" />{" "}{tr("موثّقة فقط")}
                   </button>
@@ -497,7 +500,7 @@ function SearchPage() {
                       key={v}
                       type="button"
                       onClick={() => setTeamFilter((x) => (x === v ? "" : v))}
-                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${teamFilter === v ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                      className={`elastic-press inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${teamFilter === v ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
                       {label}
                     </button>
@@ -506,7 +509,7 @@ function SearchPage() {
                     <button
                       type="button"
                       onClick={() => setFavsOnly((v) => !v)}
-                      className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${favsOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                      className={`elastic-press inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${favsOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
                       <Heart className="h-3 w-3" />{" "}{tr("مفضّلتي ({0})", [favs.length])}</button>
                   )}
