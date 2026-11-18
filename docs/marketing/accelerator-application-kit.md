@@ -32,6 +32,23 @@ Memoria is an Arabic-first platform for Jordanian photographers. A photographer 
 | FastTrack JordanTech | Closed 30 Jun 2026, needs a university link and prototype | Weak | Skip. |
 | Sanad ElevateHER | Women-led startups | No | Skip. |
 
+## 5b. More openings found (search 2026-11-18, verify on the official page before applying)
+| Program | What it gives | Window | Fit / note |
+|---|---|---|---|
+| Zain Al Mubadara 2026, ideas track | Up to 20K JOD, training, mentoring | Closes 31 Dec 2026 | Unregistered projects OK. StartupsJo milestones already mention applying; confirm the application is in. |
+| Web Summit Qatar ALPHA 2027 (qatar.websummit.com/startups) | Stand + pitch in front of investors, Doha 31 Jan–3 Feb 2027 | Open, no deadline published | Pre-investment / under USD 1M: fits. Has a package fee. |
+| Invest Qatar "Road to Web Summit Qatar 2027" | 10–15 startups prepared for WSQ | Announced 2026-11-10 | Check eligibility for non-Qatari startups. |
+| Saudi Makes Future 2027 competition | Pitch in Riyadh, Nov 2027 | Apply by 10 Dec (year to confirm) | Weak fit (manufacturing focus); check. |
+| South Summit Madrid 2027 | Global startup competition | Closes 31 Jan 2027 | Any country. Long shot without traction. |
+| AI Builders Cup Amman | Pitch competition | Opens Jan 2027 | Needs an AI angle. |
+| MIT EF Arab Startup Competition | Ideas / Startups tracks, prizes | Historically closes ~10 Dec | Check mitefarab.org for a 2026-27 edition. |
+| Oasis500 | 30K–100K pre-seed + 6-month program | Rolling "Apply Now" on oasis500.com | Fits. Send the deck there. |
+| Founder Institute Jordan | Pre-seed training program | Rolling | Training; paid. |
+| AHLI FINTECH | Incubation up to USD 80K | Rolling | Only if a fintech angle (deposits/payments) is pitched. |
+| CPF Center of Excellence (The Core) | Incubation | Page says registration open | Deep-tech focus; weak fit. |
+| Queen Rania Center for Entrepreneurship national competition | Training + prizes | Check qrce.org | Fits early stage. |
+| ISSF | Fund of funds, no direct applications | — | Reach via its funds (Endeavor Catalyst, STV AI fund, BECO). |
+
 ## 6. To do before the next window (Jan-Mar is the usual season)
 1. Get ~10 real paying photographers (the single thing that moves every application from weak to strong).
 2. Real numbers: signups, bookings, subscription revenue, from prod, not tests.
