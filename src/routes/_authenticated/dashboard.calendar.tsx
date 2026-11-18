@@ -1,3 +1,4 @@
+import { SwitchTrack } from "@/components/ui/switch-track";
 import { friendlyError } from "@/lib/friendlyErrors";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { g } from "@/hooks/use-gender";
@@ -368,9 +369,9 @@ function CalendarPage() {
                     aria-checked={autoSync}
                     aria-label={t("المزامنة التلقائية")}
                     onClick={() => toggleAutoSync(!autoSync)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoSync ? "bg-gold" : "bg-secondary"}`}
+                    className="inline-flex shrink-0 rounded-full"
                   >
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoSync ? "translate-x-6" : "translate-x-1"}`} />
+                    <SwitchTrack on={autoSync} className={autoSync ? "bg-gold" : "bg-secondary"} thumbClassName="bg-white shadow" />
                   </button>
                 </label>
                 <button onClick={disconnectGoogle} className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline">{t("إلغاء الربط وفتح الأيام المستوردة")}</button>

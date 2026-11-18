@@ -1,3 +1,4 @@
+import { SwitchTrack } from "@/components/ui/switch-track";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAutosave, AutosaveChip } from "@/hooks/use-autosave";
 import { getCached, setCached, fetchPage, cacheKey } from "@/lib/page-cache";
@@ -318,9 +319,7 @@ function ProfilePage() {
               onClick={togglePublish}
               className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm transition-colors ${p.is_published ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300" : "border-border"}`}
             >
-              <span className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${p.is_published ? "bg-emerald-500" : "bg-secondary ring-1 ring-border"}`}>
-                <motion.span layout transition={{ type: "spring", stiffness: 600, damping: 35 }} className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow ${p.is_published ? "start-[18px]" : "start-0.5"}`} />
-              </span>
+              <SwitchTrack on={!!p.is_published} size="sm" className={p.is_published ? "bg-emerald-500" : "bg-secondary ring-1 ring-border"} thumbClassName="bg-white shadow" />
               {p.is_published ? tr("منشور للعرائس") : tr("غير منشور")}
             </button>
           </div>

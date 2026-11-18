@@ -1,3 +1,4 @@
+import { SwitchTrack } from "@/components/ui/switch-track";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useAutosave, AutosaveChip } from "@/hooks/use-autosave";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -453,8 +454,8 @@ function Toggle({ label, hint, on, set }: { label: string; hint?: string; on: bo
         {hint && <span className="block text-[11px] text-gold">{hint}</span>}
       </span>
       <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={() => set(!on)}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition ${on ? "bg-gold" : "bg-muted"}`}>
-        <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-all ${on ? "start-[22px]" : "start-0.5"}`} />
+        className="inline-flex shrink-0 rounded-full">
+        <SwitchTrack on={on} className={on ? "bg-gold" : "bg-muted"} thumbClassName="bg-background shadow" />
       </button>
     </div>
   );
