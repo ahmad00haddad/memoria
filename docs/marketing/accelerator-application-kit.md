@@ -35,7 +35,7 @@ Memoria is an Arabic-first platform for Jordanian photographers. A photographer 
 ## 5b. More openings found (search 2026-11-18, verify on the official page before applying)
 | Program | What it gives | Window | Fit / note |
 |---|---|---|---|
-| Zain Al Mubadara 2026, ideas track | Up to 20K JOD, training, mentoring | Closes 31 Dec 2026 | Unregistered projects OK. StartupsJo milestones already mention applying; confirm the application is in. |
+| Zain Al Mubadara 2026, ideas track | Up to 20K JOD, training, mentoring | Closes 31 Dec 2026 | Worked on in session 2026-10-22 (form answers); likely submitted. Do not reapply; check for a reply. |
 | Web Summit Qatar ALPHA 2027 (qatar.websummit.com/startups) | Stand + pitch in front of investors, Doha 31 Jan–3 Feb 2027 | Open, no deadline published | Pre-investment / under USD 1M: fits. Has a package fee. |
 | Invest Qatar "Road to Web Summit Qatar 2027" | 10–15 startups prepared for WSQ | Announced 2026-11-10 | Check eligibility for non-Qatari startups. |
 | Saudi Makes Future 2027 competition | Pitch in Riyadh, Nov 2027 | Apply by 10 Dec (year to confirm) | Weak fit (manufacturing focus); check. |
