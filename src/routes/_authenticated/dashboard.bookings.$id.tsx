@@ -690,7 +690,7 @@ function BookingDetail() {
               role="tab"
               aria-selected={tab === t.key}
               onClick={() => { setTab(t.key); hapticVibrate("light"); }}
-              className={`relative inline-flex shrink-0 items-center gap-2 px-4 py-3 text-sm transition-colors ${tab === t.key ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`elastic-press relative inline-flex shrink-0 items-center gap-2 px-4 py-3 text-sm transition-colors ${tab === t.key ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
               {tx(t.icon)}
               {tx(t.label)}
@@ -698,7 +698,7 @@ function BookingDetail() {
                 <span className="grid h-5 min-w-5 place-items-center rounded-full bg-gold px-1.5 text-[10px] font-bold text-charcoal tabular-nums">{tx(t.badge)}</span>
               )}
               {tab === t.key && (
-                <motion.span layoutId="booking-tab-indicator" className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-gold" transition={{ type: "spring", stiffness: 500, damping: 40 }} />
+                <motion.span layoutId="booking-tab-indicator" className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-gold" transition={{ type: "spring", stiffness: 520, damping: 22 }} />
               )}
             </button>
           ))}

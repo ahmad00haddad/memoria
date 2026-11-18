@@ -166,8 +166,9 @@ function SettingsPage() {
             <div role="tablist" className="sticky top-12 z-20 -mx-4 flex gap-2 bg-background/95 px-4 py-2 backdrop-blur sm:static sm:mx-0 sm:px-0 sm:bg-transparent">
               {([["page", tr("صفحتي")], ["work", tr("عملي")]] as const).map(([k, label]) => (
                 <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
-                  className={`min-h-10 flex-1 rounded-full border px-4 text-sm transition-colors sm:flex-none ${tab === k ? "border-gold bg-gold/10 text-foreground" : "border-border text-muted-foreground"}`}>
-                  {label}
+                  className={`elastic-press relative min-h-10 flex-1 rounded-full border px-4 text-sm transition-colors sm:flex-none ${tab === k ? "border-transparent text-foreground" : "border-border text-muted-foreground"}`}>
+                  {tab === k && <motion.span layoutId="settings-tab-pill" transition={{ type: "spring", stiffness: 520, damping: 24 }} className="absolute -inset-px rounded-full border border-gold bg-gold/10" />}
+                  <span className="relative">{label}</span>
                 </button>
               ))}
             </div>
