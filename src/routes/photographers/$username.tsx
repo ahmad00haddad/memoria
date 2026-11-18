@@ -388,7 +388,7 @@ function PhotographerPage() {
                   type="button"
                   key={i}
                   onClick={() => setLightboxIdx(i)}
-                  className={`block ${galleryCell(ps.gallery_layout, i)} bg-secondary rounded-sm overflow-hidden cursor-zoom-in`}
+                  className={`elastic-press block ${galleryCell(ps.gallery_layout, i)} bg-secondary rounded-sm overflow-hidden cursor-zoom-in`}
                   {...motionProps}
                 >
                   {tx(img)}
@@ -1343,13 +1343,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
                 return (
                   <button key={r.id} type="button" role="radio" aria-checked={on}
                     onClick={() => { onSelectPackage(r.id); setPkgListOpen(false); }}
-                    className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-start text-sm transition-colors ${on ? "bg-gold/5" : "hover:bg-secondary"}`}>
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border ${on ? "border-gold bg-gold" : "border-border"}`}>{on && <span className="h-1.5 w-1.5 rounded-full bg-background" />}</span>
+                    className={`elastic-press relative flex w-full items-center justify-between gap-3 px-3 py-2.5 text-start text-sm transition-colors ${on ? "" : "hover:bg-secondary"}`}>
+                    {on && <motion.span layoutId="pkg-pill" transition={{ type: "spring", stiffness: 520, damping: 24 }} className="absolute inset-0 bg-gold/10" />}
+                    <span className="relative flex min-w-0 items-center gap-2">
+                      <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border ${on ? "elastic-dot border-gold bg-gold" : "border-border"}`}>{on && <span className="h-1.5 w-1.5 rounded-full bg-background" />}</span>
                       <span className="truncate">{tx(r.label)}</span>
                       {!fits && <span className="shrink-0 text-[11px] text-destructive">{tr("لا يتّسع وقتها في هذا اليوم")}</span>}
                     </span>
-                    <span className="shrink-0 tabular-nums">{Number(r.price).toLocaleString(locale("ar-JO"))} <span className="text-xs text-muted-foreground">{tr("د.أ")}</span></span>
+                    <span className="relative shrink-0 tabular-nums">{Number(r.price).toLocaleString(locale("ar-JO"))} <span className="text-xs text-muted-foreground">{tr("د.أ")}</span></span>
                   </button>
                 );
               })}
@@ -1460,7 +1461,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
                 <span>{tr("{0} د.أ", [(Number(x.rule.price) * x.qty).toLocaleString(locale("ar-JO"))])}</span>
               </div>
             ))}
-            <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">{tr("المجموع")}</span><span className="font-semibold">{tr("{0} د.أ", [total.toLocaleString(locale("ar-JO"))])}</span></div>
+            <div className="flex justify-between border-t border-border pt-1.5 mt-1"><span className="font-semibold">{tr("المجموع")}</span><span key={total} className="elastic-bump font-semibold">{tr("{0} د.أ", [total.toLocaleString(locale("ar-JO"))])}</span></div>
             <div className="flex justify-between text-gold"><span>{tr("العربون المطلوب")} <Term k="deposit" /></span><span className="font-semibold">{tr("{0} د.أ", [deposit.toLocaleString(locale("ar-JO"))])}</span></div>
           </motion.div>
         )}

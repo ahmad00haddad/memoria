@@ -714,6 +714,7 @@ function SearchPage() {
 
 const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; idx: number; compareList: SearchResultItem[]; setCompareList: React.Dispatch<React.SetStateAction<SearchResultItem[]>> }>(function BentoPhotographerCard({ p, idx, compareList, setCompareList }, ref) {
   const [isFav, setIsFav] = useState(false);
+  const [burst, setBurst] = useState(0);
 
   useEffect(() => {
     try {
@@ -725,6 +726,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
   const toggleFav = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isFav) setBurst((n) => n + 1);
     try {
       const favs = JSON.parse(localStorage.getItem("memoria_favs") || "[]");
       let newFavs;
@@ -780,15 +782,15 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
                 return [...prev, p];
               });
             }}
-            className={`absolute top-3 end-[3.75rem] z-20 h-10 px-3 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center transition shadow-sm text-xs font-medium ${compareList.find(c => c.username === p.username) ? 'bg-gold text-charcoal' : 'hover:bg-background/80 text-foreground'}`}
+            className={`elastic-press absolute top-3 end-[3.75rem] z-20 h-10 px-3 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center transition shadow-sm text-xs font-medium ${compareList.find(c => c.username === p.username) ? 'bg-gold text-charcoal' : 'hover:bg-background/80 text-foreground'}`}
           >
-            <BarChart2 className="w-3 h-3 me-1" /> {compareList.find(c => c.username === p.username) ? tr("مقارنة") : tr("قارني")}
+            <span key={String(!!compareList.find(c => c.username === p.username))} className="elastic-bump inline-flex items-center"><BarChart2 className="w-3 h-3 me-1" /> {compareList.find(c => c.username === p.username) ? tr("مقارنة") : tr("قارني")}</span>
           </button>
           
           <button
             onClick={toggleFav}
             aria-label={isFav ? tr("إزالة من المفضّلة") : tr("إضافة للمفضّلة")}
-            className="absolute top-3 end-3 z-20 h-10 w-10 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-background/80 transition shadow-sm"
+            className="elastic-press absolute top-3 end-3 z-20 h-10 w-10 bg-background/50 backdrop-blur-md rounded-full flex items-center justify-center hover:bg-background/80 transition shadow-sm"
           >
             <motion.div
               initial={false}
@@ -797,6 +799,11 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
             >
               <Heart className={`h-4 w-4 ${isFav ? "fill-gold text-gold" : "text-foreground"}`} />
             </motion.div>
+            {burst > 0 && (
+              <span key={burst} className="fav-burst" aria-hidden>
+                {[0, 60, 120, 180, 240, 300].map((a) => <i key={a} style={{ "--a": `${a}deg` } as React.CSSProperties} />)}
+              </span>
+            )}
           </button>
           
           {p.cover_url ? (

@@ -203,7 +203,7 @@ export function CompareMode({
             ))}
           </div>
           <span className="text-sm font-medium ps-2">
-            {t("{0}/3 للمقارنة", [compareList.length])}</span>
+            <span key={compareList.length} className="elastic-bump">{t("{0}/3 للمقارنة", [compareList.length])}</span></span>
         </div>
         
         <div className="flex items-center gap-2 ps-2">

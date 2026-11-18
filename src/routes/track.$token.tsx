@@ -442,7 +442,7 @@ function TrackingPage() {
                         <motion.div
                           initial={{ scaleX: 0 }}
                           animate={{ scaleX: 1 }}
-                          transition={{ delay: 0.1 + i * 0.08, duration: 0.4 }}
+                          transition={{ delay: 0.1 + i * 0.08, type: "spring", stiffness: 260, damping: 13 }}
                           className={`h-1 w-full origin-right rounded-full ${st.done ? "bg-gold" : current ? "bg-gold/40" : "bg-ivory/15 dark:bg-border"}`}
                         />
                         <span className={`text-[10px] leading-tight ${current ? "text-gold font-medium" : st.done ? "text-ivory/80 dark:text-foreground" : "text-ivory/40 dark:text-muted-foreground"}`}>{tx(st.label)}</span>
@@ -963,7 +963,7 @@ function ClientGallery({ token }: { token: string }) {
       ) : (
         <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {data.photos.map((p: any, idx: number) => (
-            <div key={p.id} className="relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightboxIdx(idx)} style={{ touchAction: 'manipulation' }}>
+            <div key={p.id} className="elastic-press relative group aspect-square bg-secondary rounded-sm overflow-hidden cursor-pointer" onClick={() => setLightboxIdx(idx)} style={{ touchAction: 'manipulation' }}>
               {/* Fix #3: استخدام thumbnail_url المضغوط في الشبكة — أداء أسرع بكثير */}
               {(p.thumbnail_url || p.url) && (
                 <img
