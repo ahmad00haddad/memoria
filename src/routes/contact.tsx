@@ -65,15 +65,16 @@ function ContactPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container-editorial py-16">
+      <main className="container-editorial py-8 sm:py-16">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("تواصلي معنا")}</div>
-        <h1 className="font-serif text-4xl sm:text-5xl mb-4">{t("نحن هنا للمساعدة")}</h1>
-        <p className="text-muted-foreground mb-10 max-w-2xl">
+        <h1 className="font-serif text-4xl sm:text-5xl mb-6 sm:mb-4">{t("نحن هنا للمساعدة")}</h1>
+        <p className="hidden sm:block text-muted-foreground mb-10 max-w-2xl">
           {t("سواء كنتِ عروساً تبحثين عن مصوّرة، أو مصوّرة تريدين الانضمام، أو لديكِ ملاحظة على المنصّة — يسعدنا سماع منكِ.")}
         </p>
 
-        <div className="grid gap-10 lg:grid-cols-2">
-          <div className="space-y-6">
+        <div className="grid gap-8 sm:gap-10 lg:grid-cols-2">
+          {/* على الهاتف: النموذج أولاً، ثم البريد وساعات الرد فقط */}
+          <div className="space-y-4 sm:space-y-6 max-sm:order-2">
             <Item icon={Mail} label={t("البريد الإلكتروني")}>
               <a href="mailto:ahmad000haddad@gmail.com" className="hover:text-gold">
                 ahmad000haddad@gmail.com
@@ -82,10 +83,10 @@ function ContactPage() {
             <Item icon={Clock} label={t("ساعات الرد")}>
               {t("السبت – الخميس · 9 صباحاً – 8 مساءً (بتوقيت عمّان). نردّ عادة خلال 24 ساعة.")}
             </Item>
-            <Item icon={MapPin} label={t("المقرّ")}>
+            <Item icon={MapPin} label={t("المقرّ")} className="hidden sm:flex">
               {t("عمّان، المملكة الأردنية الهاشمية")}
             </Item>
-            <Item icon={MessageCircle} label={t("نوع الاستفسارات")}>
+            <Item icon={MessageCircle} label={t("نوع الاستفسارات")} className="hidden sm:flex">
               {t("مشاكل الحجز · الاشتراكات · إبلاغ عن مصوّرة · اقتراحات لتحسين المنصّة")}
             </Item>
           </div>
@@ -105,7 +106,7 @@ function ContactPage() {
               </button>
             </div>
           ) : (
-            <form onSubmit={submit} className="rounded-2xl border border-border/60 bg-card p-6 space-y-4">
+            <form onSubmit={submit} className="rounded-2xl border border-border/60 bg-card p-4 sm:p-6 space-y-4">
               <h2 className="font-serif text-2xl">{t("أرسلي رسالة")}</h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field name="name" label={t("الاسم")} required />
@@ -118,7 +119,7 @@ function ContactPage() {
                   id="contact-message"
                   name="message"
                   required
-                  rows={5}
+                  rows={4}
                   className="w-full rounded-md border border-border/60 bg-background px-3 py-2 text-sm resize-none"
                   placeholder={t("اكتبي رسالتك هنا...")}
                 />
@@ -142,9 +143,9 @@ function ContactPage() {
   );
 }
 
-function Item({ icon: Icon, label, children }: { icon: typeof Mail; label: string; children: React.ReactNode }) {
+function Item({ icon: Icon, label, children, className = "flex" }: { icon: typeof Mail; label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className="flex gap-4">
+    <div className={`gap-4 ${className}`}>
       <div className="shrink-0 grid h-10 w-10 place-items-center rounded-md bg-secondary">
         <Icon className="h-4 w-4 text-gold" />
       </div>
