@@ -210,7 +210,8 @@ export function RevealWords({ lines, delay = 0.15, step = 0.09 }: { lines: strin
   return (
     <>
       {lines.map((line, li) => (
-        <span key={li}>
+        // a line with no Arabic (a Latin name) keeps its own LTR word order; inline-block words would otherwise flip in RTL
+        <span key={li} dir={/[؀-ۿ]/.test(tx(line)) ? undefined : "ltr"}>
           {li > 0 && <br className="hidden sm:block" />}
           {line.split(" ").map((w, wi, arr) => {
             const i = n++;

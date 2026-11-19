@@ -626,7 +626,8 @@ function PhotographerPage() {
                 <RiseIn key={p.id} index={idx} className={`h-full shrink-0 snap-center sm:w-auto ${all.length > 1 ? "w-[85%]" : "w-full"}`}>
                 <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant border-border`}>
                   <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "photo_video" ? tr("صور + فيديو") : p.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")}</div>
-                  <h3 className="font-serif text-2xl mb-1">{tx(p.label)}</h3>
+                  {/* word joiners keep a range like "3–4" on one line */}
+                  <h3 className="font-serif text-2xl mb-1">{tx(p.label).replace(/(\d)\s*([–-])\s*(\d)/g, "$1⁠$2⁠$3")}</h3>
                   {p.subtitle && <p className="text-sm text-muted-foreground">{tx(p.subtitle)}</p>}
                   <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString(locale("ar-JO"))} <span className="text-sm">{tr("د.أ")}</span></div>
                   <PackageFacts d={p} compact gender={profile.gender} className="mb-4 border-y border-border/60 py-3" />

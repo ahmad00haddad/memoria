@@ -26,12 +26,22 @@
 /* English body face. @font-face only: the browser fetches it on English pages alone. */
 @import "@fontsource-variable/jost";
 
+/* Amiri mis-mirrors brackets in RTL ("(نص)" renders ")نص)"); this face covers
+   only the brackets, from Cormorant, and goes first in every Amiri stack. */
+@font-face {
+  font-family: "Amiri Brackets";
+  src: url("../node_modules/@fontsource-variable/cormorant-garamond/files/cormorant-garamond-latin-wght-normal.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+  unicode-range: U+0028-0029, U+005B, U+005D, U+007B, U+007D;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-serif: "Cormorant Garamond Variable", "Amiri", "Playfair Display Variable", serif;
   --font-sans: "Cairo Variable", system-ui, sans-serif;
-  --font-script: "Aref Ruqaa", "Amiri", serif;
+  --font-script: "Amiri Brackets", "Aref Ruqaa", "Amiri", serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -162,7 +172,7 @@
     font-family: "Cairo Variable", system-ui, sans-serif;
   }
   [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] .font-serif {
-    font-family: "Amiri", "Cormorant Garamond Variable", serif;
+    font-family: "Amiri Brackets", "Amiri", "Cormorant Garamond Variable", serif;
     font-weight: 700;
     letter-spacing: 0;
     line-height: 1.25;

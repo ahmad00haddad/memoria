@@ -198,7 +198,7 @@ export function paletteVars(s: PageSettings, mode: "light" | "dark"): Record<str
 export function fontVars(s: PageSettings): Record<string, string> {
   const f = FONTS[s.font];
   return {
-    "--pf-ar-display": `${f.arD}, "Amiri", serif`,
+    "--pf-ar-display": `"Amiri Brackets", ${f.arD}, "Amiri", serif`,
     "--pf-ar-display-w": String(f.arDw),
     "--pf-ar-body": `${f.arB}, "Cairo Variable", system-ui, sans-serif`,
     "--pf-en-display": `${f.enD}, "Cormorant Garamond Variable", serif`,
