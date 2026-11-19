@@ -1,3 +1,4 @@
+import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BadgeCheck, Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check, Play, ExternalLink } from "lucide-react";
@@ -1757,7 +1758,9 @@ function labelHours(label: string): number {
 }
 
 function StickyBookBar({ name, onBook }: { name: string; onBook: () => void }) {
-  const [hidden, setHidden] = useState(false);
+  const [inBook, setHidden] = useState(false);
+  const scrollHidden = useHideOnScroll();
+  const hidden = inBook || scrollHidden;
   useEffect(() => {
     const el = document.getElementById("book");
     if (!el || typeof IntersectionObserver === "undefined") return;
