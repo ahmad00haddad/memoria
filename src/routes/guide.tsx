@@ -11,6 +11,8 @@ import { Footer } from "@/components/site/Footer";
 import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { motion } from "framer-motion";
 import { t, tx } from "@/i18n";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 export const Route = createFileRoute("/guide")({
   head: () => ({
@@ -142,6 +144,9 @@ function StepCard({ step, index, accent }: { step: Step; index: number; accent: 
 }
 
 function GuidePage() {
+  // على الهاتف: رحلة واحدة ظاهرة (تبويبان) والمقارنة مطوية. الشاشات الكبيرة تعرض كل شيء.
+  const [journey, setJourney] = useState<"bride" | "photographer">("bride");
+  const [showCompare, setShowCompare] = useState(false);
   return (
     <div className="min-h-screen bg-background" dir={dirOf(getLang())}>
       {/* الشريط العلوي المشترك — كان مفقوداً في هذه الصفحة فيتعذّر الرجوع */}
@@ -183,8 +188,26 @@ function GuidePage() {
         </div>
       </header>
 
+      {/* تبويب الرحلتين — للهاتف فقط */}
+      <div className="sm:hidden sticky top-14 z-20 bg-background/95 backdrop-blur border-b px-4 py-3">
+        <div className="grid grid-cols-2 rounded-full border border-border p-1" role="tablist">
+          {([["bride", t("رحلة العروس")], ["photographer", t("رحلة المصوّرة")]] as const).map(([k, label]) => (
+            <button
+              key={k}
+              type="button"
+              role="tab"
+              aria-selected={journey === k}
+              onClick={() => setJourney(k)}
+              className={`rounded-full py-2 text-sm transition ${journey === k ? "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal" : "text-muted-foreground"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Client journey */}
-      <section className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+      <section className={`mx-auto max-w-6xl px-4 py-12 sm:py-16 ${journey === "bride" ? "" : "hidden sm:block"}`}>
         <div className="mb-8 flex items-center gap-3">
           <div className="rounded-xl bg-primary/10 p-2.5">
             <Search className="h-6 w-6 text-primary" />
@@ -200,7 +223,7 @@ function GuidePage() {
       </section>
 
       {/* Photographer journey */}
-      <section className="border-t bg-muted/30">
+      <section className={`border-t bg-muted/30 ${journey === "photographer" ? "" : "hidden sm:block"}`}>
         <div className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
           <div className="mb-8 flex items-center gap-3">
             <div className="rounded-xl bg-accent/20 p-2.5">
@@ -232,6 +255,18 @@ function GuidePage() {
           </p>
         </div>
 
+        <div className="sm:hidden flex justify-center">
+          <button
+            type="button"
+            onClick={() => setShowCompare((v) => !v)}
+            aria-expanded={showCompare}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2.5 text-sm text-foreground hover:bg-secondary"
+          >
+            {showCompare ? t("إخفاء المقارنة") : t("عرض المقارنة")}
+            <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${showCompare ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+        <div className={`${showCompare ? "mt-6" : "hidden"} sm:block sm:mt-0`}>
         <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
           {/* Header row */}
           <div className="grid grid-cols-3 border-b bg-muted/40 text-sm font-semibold text-foreground">
@@ -320,6 +355,7 @@ function GuidePage() {
               <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{tx(card.body)}</p>
             </div>
           ))}
+        </div>
         </div>
       </section>
 

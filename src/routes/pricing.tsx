@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { DrawFrame, EASE_OUT } from "@/components/site/Reveal";
 import { t, tx } from "@/i18n";
 import { useState } from "react";
+import { mobileHidden, MobileMoreButton } from "@/components/site/MobileMore";
 import { PRICES, BASIC_LIMITS, PRO_PHOTOS, type Period } from "@/lib/plans";
 
 export const Route = createFileRoute("/pricing")({
@@ -89,9 +90,10 @@ function PricingPage() {
           </div>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
+        {/* على الهاتف: البطاقات تتمرّر أفقياً بالسحب بدل أن تتكدّس، وPro أولاً */}
+        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pt-4 pb-2 [scrollbar-width:none] md:mx-auto md:grid md:max-w-5xl md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pt-0 md:pb-0">
           {/* Free trial card */}
-          <div className="rounded-sm border border-border bg-card p-8 shadow-soft">
+          <div className="w-[85%] shrink-0 snap-center md:w-auto rounded-sm border border-border bg-card p-6 sm:p-8 shadow-soft">
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">{t("للبداية")}</div>
             <h3 className="font-serif text-2xl mb-1">{t("تجربة مجانية")}</h3>
             <div className="text-4xl font-serif my-4">
@@ -107,22 +109,14 @@ function PricingPage() {
           </div>
 
           {/* Basic */}
-          <div className="rounded-sm border border-border bg-card p-8 shadow-soft">
+          <div className="w-[85%] shrink-0 snap-center md:w-auto rounded-sm border border-border bg-card p-6 sm:p-8 shadow-soft">
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">{t("للبداية الجدية")}</div>
             <h3 className="font-serif text-2xl mb-1">Basic</h3>
             <div className="text-4xl font-serif my-4">
               {yearly ? PRICES.basic.yearly : PRICES.basic.monthly} <span className="text-xl font-sans">{t("د.أ")}</span> <span className="text-sm text-muted-foreground">{per}</span>
             </div>
             {yearly && <p className="-mt-2 mb-4 text-xs text-muted-foreground">{t("نفس سعر الشهري × ١٢ — بلا أي توفير")}</p>}
-            <FeatureList items={BASIC_FEATURES} />
-            <ul className="mb-6 -mt-3 space-y-2">
-              {BASIC_MISSING.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground/80">
-                  <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <span>{tx(f)}</span>
-                </li>
-              ))}
-            </ul>
+            <FeatureList items={BASIC_FEATURES} extra={BASIC_MISSING} />
             <Link
               to={authLoading || isPhotographer ? "/dashboard/subscription" : "/photographers/join"}
               className="block text-center w-full border border-foreground/70 text-foreground py-3 rounded-sm hover:bg-secondary transition-colors"
@@ -132,7 +126,7 @@ function PricingPage() {
           </div>
 
           {/* Pro */}
-          <div className="relative rounded-sm border-2 border-transparent bg-card p-8 shadow-elegant">
+          <div className="relative order-first md:order-none w-[85%] shrink-0 snap-center md:w-auto rounded-sm border-2 border-transparent bg-card p-6 sm:p-8 shadow-elegant">
             {/* the gold frame draws itself, then the badge settles onto it */}
             <DrawFrame duration={1.6} />
             <motion.div
@@ -183,15 +177,28 @@ function PricingPage() {
   );
 }
 
-function FeatureList({ items }: { items: string[] }) {
+// على الهاتف: أول ٤ مزايا ظاهرة والباقي خلف «عرض الكل». extra = ما ينقص الباقة (مشطوب).
+function FeatureList({ items, extra = [] }: { items: string[]; extra?: string[] }) {
+  const [open, setOpen] = useState(false);
+  const LIMIT = 4;
+  const total = items.length + extra.length;
   return (
-    <ul className="mb-6 space-y-2">
-      {items.map((f) => (
-        <li key={f} className="flex items-start gap-2 text-sm">
-          <Check className="h-4 w-4 text-gold mt-0.5 flex-shrink-0" />
-          <span>{tx(f)}</span>
-        </li>
-      ))}
-    </ul>
+    <div className="mb-6">
+      <ul className="space-y-2">
+        {items.map((f, i) => (
+          <li key={f} className={`items-start gap-2 text-sm ${mobileHidden(i, LIMIT, open) ? "hidden sm:flex" : "flex"}`}>
+            <Check className="h-4 w-4 text-gold mt-0.5 flex-shrink-0" />
+            <span>{tx(f)}</span>
+          </li>
+        ))}
+        {extra.map((f, j) => (
+          <li key={f} className={`items-start gap-2 text-sm text-muted-foreground/80 ${mobileHidden(items.length + j, LIMIT, open) ? "hidden sm:flex" : "flex"}`}>
+            <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>{tx(f)}</span>
+          </li>
+        ))}
+      </ul>
+      <MobileMoreButton total={total} limit={LIMIT} open={open} onToggle={() => setOpen((v) => !v)} className="mt-3 !justify-start" />
+    </div>
   );
 }

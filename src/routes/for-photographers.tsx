@@ -5,6 +5,8 @@ import { RevealWords, RiseIn } from "@/components/site/Reveal";
 import { Calendar, DollarSign, FileSignature, MessageCircle, ListChecks, BarChart3, Bell, Share2, Camera, Image as ImageIcon, Lock, Smartphone, Globe, Sparkles, ArrowLeft, Wallet, ShieldCheck, Users } from "lucide-react";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { t, tx } from "@/i18n";
+import { useState } from "react";
+import { mobileHidden, MobileMoreButton } from "@/components/site/MobileMore";
 
 export const Route = createFileRoute("/for-photographers")({
   head: () => ({
@@ -40,6 +42,7 @@ const FEATURES = [
 
 function ForPhotographersPage() {
   const { authed, isPhotographer } = useAuthState();
+  const [showAll, setShowAll] = useState(false);
   
   return (
     <div className="min-h-screen bg-background">
@@ -77,7 +80,7 @@ function ForPhotographersPage() {
             {FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
-                <RiseIn key={f.title} index={i}>
+                <RiseIn key={f.title} index={i} className={mobileHidden(i, 4, showAll)}>
                 <div className="group h-full rounded-sm border border-border bg-card p-6 hover:border-gold/40 hover:shadow-elegant transition">
                   <div className="grid h-11 w-11 place-items-center rounded-sm bg-gold/10 text-gold mb-4 transition-colors duration-500 group-hover:bg-gold group-hover:text-charcoal">
                     <Icon className="h-5 w-5" />
@@ -89,6 +92,7 @@ function ForPhotographersPage() {
               );
             })}
           </div>
+          <MobileMoreButton total={FEATURES.length} limit={4} open={showAll} onToggle={() => setShowAll((v) => !v)} className="mt-6" />
         </section>
 
         <section className="bg-secondary/40 py-16">

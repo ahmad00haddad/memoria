@@ -4363,5 +4363,13 @@
  "تابعي باسم": "Continue as",
  "ليس حسابك؟": "Not you?",
  "حساب Google آخر": "Another Google account",
- "أنشئي حسابك بواسطة Google": "Sign up with Google"
+ "أنشئي حسابك بواسطة Google": "Sign up with Google",
+ "عرض الكل ({0})": "Show all ({0})",
+ "عرض أقل": "Show less",
+ "عرض المقارنة": "Show comparison",
+ "إخفاء المقارنة": "Hide comparison",
+ "نطاق السعر": "Price range",
+ "{0}+ د.أ": "{0}+ JOD",
+ "السعر:": "Price:",
+ "ترتيب": "Sort"
 }
