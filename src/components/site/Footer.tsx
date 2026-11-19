@@ -37,7 +37,8 @@ export function Footer() {
   // داخل أدوات العمل على الهاتف لا نعرض تذييل التسويق: يضيف شاشة تمرير كاملة بلا فائدة
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const nav = useNavigate();
-  const inApp = /^\/(dashboard|admin|notifications|onboarding)/.test(pathname);
+  // وكذلك صفحات الدخول والتسجيل: نموذج واحد مركّز، والتذييل يشتت
+  const inApp = /^\/(dashboard|admin|notifications|onboarding|login|forgot-password|reset-password|recover|photographers\/join)/.test(pathname);
 
   return (
     <footer className={`relative mt-12 sm:mt-24 bg-background ${inApp ? "hidden sm:block" : ""}`}>

@@ -71,24 +71,25 @@ export function SeoLanding(props: {
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <article className="container-editorial max-w-3xl py-12 sm:py-20">
-          <h1 className="font-serif text-3xl sm:text-5xl leading-tight mb-5">{tx(props.h1)}</h1>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-6">{tx(props.intro)}</p>
+        <article className="container-editorial max-w-3xl py-8 sm:py-20">
+          <h1 className="font-serif text-3xl sm:text-5xl leading-tight mb-4 sm:mb-5">{tx(props.h1)}</h1>
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-5 sm:mb-6">{tx(props.intro)}</p>
           {props.paragraphs.map((p, i) => (
-            <p key={i} className="leading-loose mb-5">{tx(p)}</p>
+            <p key={i} className="leading-relaxed sm:leading-loose mb-4 sm:mb-5">{tx(p)}</p>
           ))}
-          <h2 className="font-serif text-2xl mt-10 mb-3">{t("كيف يتم الحجز على Memoria")}</h2>
-          <p className="leading-loose mb-5">{t("{0} للتفاصيل الكاملة اقرئي", [HOW_BOOKING])}{" "}<Link to="/guide" className="text-gold underline">{t("دليل الحجز")}</Link>.</p>
+          <h2 className="font-serif text-xl sm:text-2xl mt-8 sm:mt-10 mb-2 sm:mb-3">{t("كيف يتم الحجز على Memoria")}</h2>
+          <p className="leading-relaxed sm:leading-loose mb-5">{t("{0} للتفاصيل الكاملة اقرئي", [HOW_BOOKING])}{" "}<Link to="/guide" className="text-gold underline">{t("دليل الحجز")}</Link>.</p>
 
-          <h2 className="font-serif text-2xl mt-10 mb-4">{props.cityLabel ? t("مصوّرات في {0}", [props.cityLabel]) : t("مصوّرات منشورة")}</h2>
+          <h2 className="font-serif text-xl sm:text-2xl mt-8 sm:mt-10 mb-3 sm:mb-4">{props.cityLabel ? t("مصوّرات في {0}", [props.cityLabel]) : t("مصوّرات منشورة")}</h2>
           {q.isLoading ? (
             <p className="text-sm text-muted-foreground">{t("جارٍ التحميل…")}</p>
           ) : list.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("لا توجد ملفات منشورة هنا حالياً. يمكنك تصفّح كل المصوّرات من صفحة البحث.")}</p>
           ) : (
             <ul className="grid gap-3 sm:grid-cols-2">
-              {list.map((p) => (
-                <li key={p.username}>
+              {list.map((p, i) => (
+                // على الهاتف: أول ٣ مصوّرات فقط، والزر تحتها يفتح الكل
+                <li key={p.username} className={i >= 3 ? "hidden sm:block" : ""}>
                   <Link to="/photographers/$username" params={{ username: p.username }} className="block rounded-sm border border-border bg-card p-4 hover:border-gold/40 transition">
                     <div className="font-serif text-lg">{tx(p.display_name)}</div>
                     <div className="text-xs text-muted-foreground mt-1">{[p.city, p.tagline].filter(Boolean).join(" · ")}</div>
@@ -101,7 +102,7 @@ export function SeoLanding(props: {
             {props.cityLabel ? t("كل المصوّرات في {0}", [props.cityLabel]) : t("ابحثي عن مصوّرة")}
           </a>
 
-          <h2 className="font-serif text-2xl mt-12 mb-4">{t("أسئلة شائعة")}</h2>
+          <h2 className="font-serif text-xl sm:text-2xl mt-8 sm:mt-12 mb-3 sm:mb-4">{t("أسئلة شائعة")}</h2>
           <div className="space-y-3">
             {props.faqs.map((f) => (
               <details key={f.q} className="rounded-sm border border-border bg-card p-4">
@@ -111,7 +112,7 @@ export function SeoLanding(props: {
             ))}
           </div>
 
-          <h2 className="font-serif text-xl mt-12 mb-3">{tx(props.linksTitle)}</h2>
+          <h2 className="font-serif text-xl mt-8 sm:mt-12 mb-3">{tx(props.linksTitle)}</h2>
           <ul className="flex flex-wrap gap-2">
             {props.links.map((l) => (
               <li key={l.to}>

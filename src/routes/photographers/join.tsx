@@ -177,7 +177,7 @@ function JoinPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container-editorial py-16 max-w-lg">
+      <div className="container-editorial py-6 sm:py-16 max-w-lg">
         {confirmSent ? (
           <div className="bg-card border border-border rounded-2xl p-6 shadow-soft text-center">
             <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("تحقّقي من بريدك")}</div>
@@ -207,9 +207,9 @@ function JoinPage() {
             <AnimatePresence initial={false}>{err && <motion.p key="join-error" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden mt-3 text-sm text-destructive">{friendlyError(err)}</motion.p>}</AnimatePresence>
           </div>
         ) : (<>
-        <div className="text-center mb-8">
+        <div className="text-center mb-5 sm:mb-8">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("بوابة المصوّرات")}</div>
-          <h1 className="font-serif text-4xl">{tr("انضمي إلى ميموريا")}</h1>
+          <h1 className="font-serif text-3xl sm:text-4xl">{tr("انضمي إلى ميموريا")}</h1>
           <p className="text-sm text-muted-foreground mt-2">{tr("حسابكِ خلال دقيقة، وملفكِ جاهز خلال 5 دقائق — ١٤ يوماً مجاناً بدون بطاقة.")}</p>
         </div>
         <div className="mb-4 space-y-3">
@@ -227,7 +227,7 @@ function JoinPage() {
           animate={shake ? { x: [0, -8, 8, -6, 6, 0] } : undefined}
           transition={{ duration: 0.35 }}
           onSubmit={submit}
-          className="space-y-4 bg-card border border-border rounded-2xl p-6 shadow-soft"
+          className="space-y-4 bg-card border border-border rounded-2xl p-4 sm:p-6 shadow-soft"
         >
           {refCode && (
             <div className="text-xs bg-gold/10 border border-gold/30 px-3 py-2 rounded-sm text-gold">

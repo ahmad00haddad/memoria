@@ -21,12 +21,12 @@ function RefundPolicyPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container-editorial py-12 max-w-3xl">
+      <main className="container-editorial py-8 sm:py-12 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("سياسة الإلغاء والاسترداد")}</div>
-        <h1 className="font-serif text-4xl mb-4">{tr("سياسة الإلغاء والاسترداد")}</h1>
-        <p className="text-sm text-muted-foreground mb-8">{tr("آخر تحديث: {0}", [new Date("2026-10-31").toLocaleDateString(locale("ar-JO"))])}</p>
+        <h1 className="font-serif text-3xl sm:text-4xl mb-3 sm:mb-4">{tr("سياسة الإلغاء والاسترداد")}</h1>
+        <p className="text-sm text-muted-foreground mb-6 sm:mb-8">{tr("آخر تحديث: {0}", [new Date("2026-10-31").toLocaleDateString(locale("ar-JO"))])}</p>
 
-        <section className="space-y-6 leading-loose">
+        <section className="space-y-5 sm:space-y-6 leading-relaxed sm:leading-loose">
           <Block t={tr("1. مبدأ عام")}>
             {tr("ميموريا منصّة تنظيمية لإدارة الحجوزات.")}{" "}<strong>{tr("المنصّة لا تستلم أموال الحجز ولا تحتفظ بها")}</strong>{tr("؛ العربون يُحوَّل مباشرة من العميلة إلى حساب المصوّرة (CliQ أو تحويل بنكي)، والعقد يُبرم مباشرة بينهما.")}
           </Block>
@@ -55,7 +55,7 @@ function RefundPolicyPage() {
 function Block({ t, children }: { t: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="font-serif text-xl mb-2">{tx(t)}</h2>
+      <h2 className="font-serif text-lg sm:text-xl mb-1.5 sm:mb-2">{tx(t)}</h2>
       <div className="text-muted-foreground">{children}</div>
     </div>
   );

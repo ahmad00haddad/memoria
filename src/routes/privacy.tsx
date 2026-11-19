@@ -18,12 +18,12 @@ function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container-editorial py-12 max-w-3xl">
+      <main className="container-editorial py-8 sm:py-12 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("سياسة الخصوصية")}</div>
-        <h1 className="font-serif text-4xl mb-4">{tr("خصوصيتكِ أمانة")}</h1>
-        <p className="text-sm text-muted-foreground mb-8">{tr("آخر تحديث: {0}", [new Date("2026-10-27").toLocaleDateString(locale("ar-JO"))])}</p>
+        <h1 className="font-serif text-3xl sm:text-4xl mb-3 sm:mb-4">{tr("خصوصيتكِ أمانة")}</h1>
+        <p className="text-sm text-muted-foreground mb-6 sm:mb-8">{tr("آخر تحديث: {0}", [new Date("2026-10-27").toLocaleDateString(locale("ar-JO"))])}</p>
 
-        <section className="prose prose-sm dark:prose-invert max-w-none space-y-6 leading-loose">
+        <section className="prose prose-sm dark:prose-invert max-w-none space-y-5 sm:space-y-6 leading-relaxed sm:leading-loose">
           <Block t={tr("1. البيانات التي نجمعها")}>
             {tr("عند إرسال طلب حجز نجمع: الاسم، رقم الهاتف، البريد الإلكتروني، تاريخ المناسبة، موقعها، تفاصيل الباقة، وملاحظاتكِ. عند رفع إثبات الدفع نخزّن الصورة في تخزين آمن مرتبط بحجزكِ فقط.")}
           </Block>
@@ -61,7 +61,7 @@ function PrivacyPage() {
 function Block({ t, children }: { t: string; children: React.ReactNode }) {
   return (
     <div>
-      <h2 className="font-serif text-xl mb-2">{tx(t)}</h2>
+      <h2 className="font-serif text-lg sm:text-xl mb-1.5 sm:mb-2">{tx(t)}</h2>
       <p className="text-muted-foreground">{children}</p>
     </div>
   );
