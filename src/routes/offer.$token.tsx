@@ -47,7 +47,7 @@ function OfferPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12 max-w-xl mx-auto">
+      <section className="container-editorial py-6 sm:py-12 max-w-xl mx-auto">
         {!offer ? (
           <div className="text-center">
             <h1 className="font-serif text-3xl mb-2">{t("العرض غير موجود")}</h1>

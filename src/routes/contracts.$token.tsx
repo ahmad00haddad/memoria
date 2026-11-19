@@ -109,7 +109,7 @@ function SignPage() {
         }
       `}</style>
       <Header />
-      <section className="container-editorial py-12 max-w-3xl">
+      <section className="container-editorial py-6 sm:py-12 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{t("عقد تصوير")}</div>
         <h1 className="font-serif text-4xl mb-2 flex items-center gap-3"><ScrollText className="h-7 w-7 text-gold" /> {tx(photographer?.display_name)}</h1>
         <div className="mb-6 flex flex-wrap gap-2 text-xs">

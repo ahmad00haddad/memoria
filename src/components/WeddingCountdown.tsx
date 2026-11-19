@@ -46,7 +46,7 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
   const done = steps.filter((x) => x.done).length;
 
   return (
-    <section aria-label={tr("العدّ التنازلي ليوم العرس")} className="mb-8 overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/10 to-transparent p-6 text-center sm:p-8">
+    <section aria-label={tr("العدّ التنازلي ليوم العرس")} className="mb-6 sm:mb-8 overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-b from-gold/10 to-transparent p-5 text-center sm:p-8">
       <div className="text-xs tracking-[0.3em] text-gold">{isToday ? tr("اليوم يومكِ") : tr("العدّ التنازلي ليومكِ")}</div>
 
       {isToday ? (
@@ -80,7 +80,7 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
       </p>
 
       {/* قائمة التجهيز */}
-      <div className="mx-auto mt-6 max-w-sm text-start">
+      <div className="mx-auto mt-5 sm:mt-6 max-w-sm text-start">
         <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
           <span>{tr("جاهزية يومكِ")}</span>
           <span className="tabular-nums">{tx(done)}/{tx(steps.length)}</span>
@@ -95,7 +95,7 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
         </div>
         <ul className="space-y-1.5">
           {steps.map((st) => (
-            <li key={st.label}>
+            <li key={st.label} className={st.done ? "hidden sm:block" : ""}>
               <button
                 type="button"
                 disabled={st.done || !st.target}

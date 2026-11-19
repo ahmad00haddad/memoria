@@ -29,7 +29,7 @@ function AskPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial max-w-xl py-12">
+      <section className="container-editorial max-w-xl py-6 sm:py-12">
         {!q ? (
           <p className="text-center text-muted-foreground">{t("الرابط غير صالح.")}</p>
         ) : (

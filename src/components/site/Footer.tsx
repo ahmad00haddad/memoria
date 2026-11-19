@@ -38,7 +38,7 @@ export function Footer() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const nav = useNavigate();
   // وكذلك صفحات الدخول والتسجيل: نموذج واحد مركّز، والتذييل يشتت
-  const inApp = /^\/(dashboard|admin|notifications|onboarding|login|forgot-password|reset-password|recover|photographers\/join)/.test(pathname);
+  const inApp = /^\/(dashboard|admin|notifications|onboarding|login|forgot-password|reset-password|recover|photographers\/join|track\/|contracts\/|review\/|offer\/|ask\/)/.test(pathname);
 
   return (
     <footer className={`relative mt-12 sm:mt-24 bg-background ${inApp ? "hidden sm:block" : ""}`}>

@@ -92,7 +92,7 @@ function ReviewPage() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <section className="container-editorial py-16 max-w-xl text-center">
+        <section className="container-editorial py-6 sm:py-16 max-w-xl text-center">
           <h1 className="font-serif text-3xl mb-3">{tr("لا يمكن التقييم بعد")}</h1>
           <p className="text-muted-foreground">{tr("يمكنك تقييم تجربتك بعد تأكيد استلام الصور.")}</p>
         </section>
@@ -104,17 +104,17 @@ function ReviewPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-16 max-w-xl">
+      <section className="container-editorial py-6 sm:py-16 max-w-xl">
         <h1 className="font-serif text-4xl mb-6 text-center">{tr("قيّمي تجربتك")}</h1>
         {done || (booking as any).has_review ? (
-          <div className="rounded-sm border border-border bg-card p-8 text-center">
+          <div className="rounded-sm border border-border bg-card p-5 sm:p-8 text-center">
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 15 }} className="mx-auto mb-3 grid h-16 w-16 place-items-center rounded-full bg-gold/15 text-3xl text-gold">✓</motion.div>
             <p className="font-serif text-2xl">{tr("شكراً لكِ")}</p>
             <p className="mt-1 text-sm text-muted-foreground">{tr("رأيك يساعد عرائس أخريات على اختيار مصوّرتهن.")}</p>
             <Link to="/" className="text-gold underline text-sm mt-4 inline-block">{tr("العودة للرئيسية")}</Link>
           </div>
         ) : (
-          <div className="rounded-sm border border-border bg-card p-8 space-y-5">
+          <div className="rounded-sm border border-border bg-card p-5 sm:p-8 space-y-5">
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr("اسمك")} maxLength={120}
               className="w-full border border-border rounded-sm px-3 py-2 bg-background" />
             <div className="flex flex-col items-center gap-2">

@@ -377,7 +377,7 @@ function TrackingPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-10 max-w-4xl">
+      <section className="container-editorial py-5 sm:py-10 max-w-4xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{t("تتبع الحجز")}</div>
         <h1 className="font-serif text-3xl mb-1">
           {new Date().getHours() < 12 ? t("صباح الخير") : t("مساء الخير")}{t("، {0}", [b.client_name])}
@@ -414,10 +414,10 @@ function TrackingPage() {
             return { title: t("اكتمل حجزك"), body: t("شكراً لثقتك. رأيك يساعد عرائس أخريات."), cta: t("قيّمي المصوّرة"), target: "review-step" };
           })();
           return (
-            <div className="mb-8 overflow-hidden rounded-2xl bg-charcoal text-ivory grain-overlay dark:bg-card dark:text-foreground dark:ring-1 dark:ring-gold/30">
-              <div className="relative z-10 p-6 sm:p-8">
+            <div className="mb-6 sm:mb-8 overflow-hidden rounded-2xl bg-charcoal text-ivory grain-overlay dark:bg-card dark:text-foreground dark:ring-1 dark:ring-gold/30">
+              <div className="relative z-10 p-5 sm:p-8">
                 <div className="mb-2 text-xs tracking-wide text-gold">{t("أنتِ هنا")}</div>
-                <h2 className="font-serif text-3xl leading-tight text-balance">{tx(here.title)}</h2>
+                <h2 className="font-serif text-2xl sm:text-3xl leading-tight text-balance">{tx(here.title)}</h2>
                 <p className="mt-2 max-w-lg text-sm text-ivory/70 dark:text-muted-foreground">{tx(here.body)}</p>
                 {here.cta && here.target && (
                   <button
@@ -434,7 +434,7 @@ function TrackingPage() {
                 )}
 
                 {/* خط المراحل: المنجز ذهبي، والحالي ينبض */}
-                <ol className={`mt-8 grid gap-1 ${stages.length > 7 ? "grid-cols-8" : "grid-cols-7"}`} aria-label={t("مراحل الحجز")}>
+                <ol className={`mt-6 sm:mt-8 grid gap-1 ${stages.length > 7 ? "grid-cols-8" : "grid-cols-7"}`} aria-label={t("مراحل الحجز")}>
                   {stages.map((st, i) => {
                     const current = !allDone && i === currentIdx;
                     return (
@@ -445,7 +445,7 @@ function TrackingPage() {
                           transition={{ delay: 0.1 + i * 0.08, type: "spring", stiffness: 260, damping: 13 }}
                           className={`h-1 w-full origin-right rounded-full ${st.done ? "bg-gold" : current ? "bg-gold/40" : "bg-ivory/15 dark:bg-border"}`}
                         />
-                        <span className={`text-[10px] leading-tight ${current ? "text-gold font-medium" : st.done ? "text-ivory/80 dark:text-foreground" : "text-ivory/40 dark:text-muted-foreground"}`}>{tx(st.label)}</span>
+                        <span className={`text-[10px] leading-tight ${current ? "" : "hidden sm:inline"} ${current ? "text-gold font-medium" : st.done ? "text-ivory/80 dark:text-foreground" : "text-ivory/40 dark:text-muted-foreground"}`}>{tx(st.label)}</span>
                       </li>
                     );
                   })}
@@ -495,7 +495,7 @@ function TrackingPage() {
                 <ImageIcon className="h-5 w-5 text-[var(--gold)]" />
                 <h2 className="font-serif text-lg font-bold">{t("لمحة من صورك!")}</h2>
               </div>
-              <div className="relative h-64 w-full">
+              <div className="relative h-48 sm:h-64 w-full">
                 <img 
                   src={b.sneak_peek_url} 
                   className={`w-full h-full object-cover transition-all duration-700 ${(b.final_paid_at || remainingDue <= 0) ? '' : 'blur-xl scale-110 opacity-70 grayscale'}`}
@@ -712,7 +712,8 @@ function TrackingPage() {
           </div>
         )}
 
-        {/* Notes */}
+        {/* Notes — على الهاتف مطوية خلف عنوانها */}
+        <MobileCollapse label={t("ملاحظاتي")}>
         <div className="rounded-sm border border-border bg-card p-5 mb-6">
           <h2 className="font-serif text-lg mb-3 inline-flex items-center gap-2"><MessageSquare className="h-4 w-4" />{" "}{t("ملاحظاتي")}</h2>
           {b.client_notes && (
@@ -726,6 +727,7 @@ function TrackingPage() {
             {t("إرسال ملاحظة")}
           </button>
         </div>
+        </MobileCollapse>
 
         {b.contract?.sign_token && b.status !== "cancelled" && (
           <a id="contract-step" href={`/contracts/${b.contract.sign_token}`} className={`scroll-mt-24 mb-6 flex items-center justify-between gap-3 rounded-2xl border p-5 text-sm ${b.contract.status === "signed" ? "border-border bg-card" : "border-gold bg-gold/10"}`}>
@@ -752,7 +754,7 @@ function TrackingPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-8">{t("هذا الرابط خاص بكِ — احفظيه للعودة لاحقاً ولا تشاركيه حفاظاً على خصوصية صورك.")}</p>
+        <p className="text-center text-xs text-muted-foreground mt-6 sm:mt-8">{t("هذا الرابط خاص بكِ — احفظيه للعودة لاحقاً ولا تشاركيه حفاظاً على خصوصية صورك.")}</p>
 
         <ClientGallery token={token} />
         <ClientChat token={token} clientName={b.client_name} />
@@ -828,6 +830,21 @@ function TrackingPage() {
       )}
 
       <Footer />
+    </div>
+  );
+}
+
+// على الهاتف: عنوان قابل للنقر يفتح المحتوى. على الشاشات الكبيرة الغلاف يختفي (display: contents).
+function MobileCollapse({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="sm:contents">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open}
+        className="sm:hidden mb-6 flex w-full items-center justify-between rounded-sm border border-border bg-card px-5 py-3.5 text-sm">
+        <span className="font-serif text-lg">{label}</span>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`${open ? "block" : "hidden"} sm:contents`}>{children}</div>
     </div>
   );
 }
