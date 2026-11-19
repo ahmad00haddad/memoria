@@ -35,12 +35,12 @@ export function MobileBottomNav() {
     const active = it.exact ? pathname === it.to : pathname.startsWith(it.to);
     const Icon = it.icon;
     return (
-      <li key={it.to} className="grid place-items-center">
+      <li key={it.to} className="flex-none">
         <Link
           to={it.to as any}
           aria-label={tx(it.label)}
           title={tx(it.label)}
-          className={`elastic-press relative grid h-14 w-14 place-items-center rounded-full transition-colors duration-300 ${active ? "text-charcoal" : "text-ivory/70 hover:text-ivory"}`}
+          className={`elastic-press relative flex h-12 items-center justify-center gap-1.5 rounded-full transition-colors duration-300 ${active ? "px-3.5 text-charcoal" : "w-12 text-ivory/70 hover:text-ivory"}`}
         >
           {active && (
             <motion.span
@@ -49,7 +49,17 @@ export function MobileBottomNav() {
               transition={{ type: "spring", stiffness: 520, damping: 22, mass: 0.9 }}
             />
           )}
-          <Icon key={String(active)} className={`relative h-[22px] w-[22px] ${active ? "elastic-bump" : ""}`} strokeWidth={1.75} />
+          <Icon key={String(active)} className={`relative h-[22px] w-[22px] shrink-0 ${active ? "elastic-bump" : ""}`} strokeWidth={1.75} />
+          {active && (
+            <motion.span
+              initial={{ opacity: 0, x: 6 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.25, delay: 0.08 }}
+              className="relative whitespace-nowrap text-[13px] font-medium"
+            >
+              {tx(it.label)}
+            </motion.span>
+          )}
         </Link>
       </li>
     );
@@ -58,14 +68,14 @@ export function MobileBottomNav() {
   return (
     <>
       <nav className="vt-bottom-nav md:hidden fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 pointer-events-none">
-        <ul className="pointer-events-auto grid w-full max-w-sm grid-cols-5 items-center gap-1 rounded-full border border-white/10 bg-charcoal/95 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
+        <ul className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-charcoal/95 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
           {left.map(tab)}
-          <li className="grid place-items-center">
+          <li className="flex-none">
             <button
               type="button"
               onClick={() => setOpen(true)}
               aria-label={t("إجراء سريع")}
-              className="grid h-14 w-14 place-items-center rounded-full bg-gold text-charcoal shadow-lg elastic-press"
+              className="grid h-12 w-12 place-items-center rounded-full bg-gold text-charcoal shadow-lg elastic-press"
             >
               <Plus className="h-6 w-6" />
             </button>
