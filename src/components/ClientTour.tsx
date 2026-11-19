@@ -124,7 +124,11 @@ export function ClientTour() {
   useEffect(() => {
     const on = (e: Event) => setGateOpen(!!(e as CustomEvent).detail);
     window.addEventListener("memoria-role-gate", on);
-    return () => window.removeEventListener("memoria-role-gate", on);
+    window.addEventListener("memoria-tour-hide", on);
+    return () => {
+      window.removeEventListener("memoria-role-gate", on);
+      window.removeEventListener("memoria-tour-hide", on);
+    };
   }, []);
 
   // Smart launch logic

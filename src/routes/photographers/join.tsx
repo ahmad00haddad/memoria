@@ -236,7 +236,7 @@ function JoinPage() {
           )}
           <Field label={tr("الاسم الكامل / اسم الاستوديو")} value={form.display_name} onChange={upd("display_name")} required />
           <div>
-            <Field label={tr("اسم المستخدم (بالإنجليزية)")} value={form.username} onChange={(v) => { setUsernameTouched(true); if (/[^a-zA-Z0-9_\s]/.test(v)) toast.error(tr("اسم المستخدم بالأحرف الإنجليزية فقط، مثال: sara_photo"), { id: "username-latin" }); upd("username")(v.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "")); }} required placeholder={tr("مثال: studio_amman")} ltr />
+            <Field label={tr("اسم المستخدم (بالإنجليزية)")} value={form.username} onChange={(v) => { setUsernameTouched(true); if (/[^a-zA-Z0-9_\s]/.test(v)) toast.error(tr("اسم المستخدم بالأحرف الإنجليزية فقط، مثال: sara_photo"), { id: "username-latin" }); upd("username")(v.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "")); }} required placeholder="studio_amman" ltr />
             <div className="mt-1 flex items-center justify-between text-xs">
               <span className="text-muted-foreground" dir="ltr">{form.username ? `memoria/photographers/${form.username}` : ""}</span>
               <span className={uState === "free" ? "text-emerald-600" : uState === "taken" || uState === "invalid" ? "text-destructive" : "text-muted-foreground"}>
@@ -309,7 +309,7 @@ function Field({ label, type = "text", value, onChange, required, placeholder, l
           type="button" 
           aria-label={show ? tr("إخفاء كلمة المرور") : tr("إظهار كلمة المرور")}
           onClick={() => setShow(!show)}
-          className="absolute end-3 top-8 text-muted-foreground hover:text-foreground"
+          className="absolute end-0 top-[31px] grid h-10 w-10 place-items-center text-muted-foreground hover:text-foreground"
         >
           <motion.div initial={false} animate={{ scaleY: [1, 0, 1] }} transition={{ duration: 0.2 }} key={show ? "open" : "closed"}>
              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

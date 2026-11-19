@@ -326,6 +326,12 @@ function PhotographerPage() {
     return () => { window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: false })); };
   }, [loadFailed]);
 
+  // no client tour over the "failed to load" message
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: loadFailed }));
+    return () => { window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: false })); };
+  }, [loadFailed]);
+
   if (loading) return seo ? <SeoPreview seo={seo} /> : <FallbackPage>{tr("جاري التحميل…")}</FallbackPage>;
   if (loadFailed) return (
     <FallbackPage>

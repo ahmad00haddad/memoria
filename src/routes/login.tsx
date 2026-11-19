@@ -276,7 +276,7 @@ function Field({ label, name, type, autoComplete, required }: { label: string; n
         <button
           type="button"
           onClick={() => setShow(!show)}
-          className="absolute end-3 top-[32px] text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute end-0 top-[31px] grid h-10 w-10 place-items-center text-muted-foreground hover:text-foreground transition-colors"
           aria-label={show ? t("إخفاء كلمة المرور") : t("إظهار كلمة المرور")}
           tabIndex={-1}
         >
