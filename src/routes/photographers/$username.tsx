@@ -27,7 +27,7 @@ import { useIntro } from "@/lib/intro";
 import { PackageFacts, hasFacts, type PackageDisclosure } from "@/components/PackageFacts";
 import { CountTo, DrawFrame, DrawIcon, EASE_DRAW, EASE_OUT, RevealWords, RiseIn } from "@/components/site/Reveal";
 import { MapPin } from "lucide-react";
-import { Zap, CircleCheck } from "lucide-react";
+import { Zap, CircleCheck, ChevronDown } from "lucide-react";
 import { parseFeatures, emphasizeNumbers } from "@/lib/packageFeatures";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { normalizePhone, isEmail, PHONE_HINT, EMAIL_HINT, sessionMinutes } from "@/lib/validation";
@@ -186,6 +186,9 @@ function PhotographerPage() {
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [showAllPkgs, setShowAllPkgs] = useState(false);
+  // على الهاتف: النبذة والتقييمات مختصرة حتى تضغط العروس «المزيد»
+  const [bioOpen, setBioOpen] = useState(false);
+  const [moreReviews, setMoreReviews] = useState(false);
   const fetchDeposit = useServerFn(getPublicDepositInfo);
   const fetchProfileData = useServerFn(getPhotographerProfileData);
 
@@ -444,7 +447,7 @@ function PhotographerPage() {
       {/* HERO — Editorial Magazine layout */}
       <section className="relative bg-charcoal text-ivory grain-overlay overflow-hidden pt-14 sm:pt-0">
         {/* Top meta strip: ISSUE / DATE / FEATURE — like a magazine masthead */}
-        <div className="container-editorial pt-8 pb-4 border-b border-ivory/10 flex flex-wrap items-center gap-x-8 gap-y-2 text-[11px] uppercase tracking-[0.35em] opacity-70">
+        <div className="container-editorial pt-8 pb-4 border-b border-ivory/10 hidden sm:flex flex-wrap items-center gap-x-8 gap-y-2 text-[11px] uppercase tracking-[0.35em] opacity-70">
           <span>{tr("Memoria · العدد ٠١")}</span>
           <span className="hidden sm:inline">{new Date().toLocaleDateString(locale("ar-JO"), { year: "numeric", month: "long" })}</span>
           <span className="ms-auto inline-flex items-center gap-2">
@@ -456,7 +459,7 @@ function PhotographerPage() {
           </span>
         </div>
 
-        <div className="container-editorial grid gap-10 lg:grid-cols-12 items-stretch py-12 lg:py-16 relative">
+        <div className="container-editorial grid gap-6 sm:gap-10 lg:grid-cols-12 items-stretch py-5 sm:py-12 lg:py-16 relative">
           {/* LEFT — typography column (cols 1..5) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -523,9 +526,14 @@ function PhotographerPage() {
                 )}
               </div>
               {profile.bio && (
-                <p className="max-w-md text-base sm:text-lg leading-[1.8] opacity-85 whitespace-pre-line mb-8">
-                  {tx(profile.bio)}
-                </p>
+                <div className="mb-8">
+                  <p className={`max-w-md text-base sm:text-lg leading-[1.8] opacity-85 whitespace-pre-line ${bioOpen ? "" : "line-clamp-3 sm:line-clamp-none"}`}>
+                    {tx(profile.bio)}
+                  </p>
+                  {!bioOpen && (profile.bio.length > 140 || profile.bio.split("\n").length > 3) && (
+                    <button type="button" onClick={() => setBioOpen(true)} className="sm:hidden mt-1 text-sm text-gold underline underline-offset-4">{tr("المزيد")}</button>
+                  )}
+                </div>
               )}
               <div className="flex gap-3 flex-wrap">
                 <motion.button
@@ -559,7 +567,7 @@ function PhotographerPage() {
             initial={{ opacity: 0, scale: 1.04 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            className="order-1 lg:order-2 lg:col-span-7 relative min-h-[420px] lg:min-h-[640px] rounded-sm overflow-hidden bg-gradient-royal"
+            className="order-1 lg:order-2 lg:col-span-7 relative min-h-[280px] sm:min-h-[420px] lg:min-h-[640px] rounded-sm overflow-hidden bg-gradient-royal"
           >
             {(profile.cover_url || profile.avatar_url) && (
               <ProgressiveImage
@@ -572,7 +580,7 @@ function PhotographerPage() {
             <div className="absolute inset-0 bg-gradient-to-tr from-charcoal/40 via-transparent to-transparent" />
 
             {/* Floating editorial caption */}
-            <div className="absolute bottom-4 end-4 sm:bottom-6 sm:end-6 max-w-[260px]">
+            <div className="hidden sm:block absolute bottom-4 end-4 sm:bottom-6 sm:end-6 max-w-[260px]">
               <div className="bg-ivory/95 text-charcoal backdrop-blur-sm border border-border rounded-sm p-4 shadow-elegant">
                 <div className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-2">
                   {tr("مختارة من المعرض")}
@@ -594,7 +602,7 @@ function PhotographerPage() {
       {ps.section_order === "gallery_first" && gallerySection}
 
       {/* PACKAGES */}
-      <section id="packages" className="container-editorial py-16">
+      <section id="packages" className="container-editorial py-10 sm:py-16">
         {/* TRUST BADGES — placed above packages so it informs the booking decision */}
         {ps.show_trust_badges && <TrustBadges
           profile={profile}
@@ -603,20 +611,18 @@ function PhotographerPage() {
           responseHours={responseHours}
           deliveryDays={deliveryDays}
         />}
-        <div className="text-center mb-10">
+        <div className="text-center mb-6 sm:mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("الباقات")}</div>
           <h2 className="font-serif text-3xl sm:text-4xl">{tr("بطاقة الأسعار")}</h2>
         </div>
         {pricing.length === 0 ? (
           <p className="text-center text-muted-foreground">{tr("لم تُحدَّد الباقات بعد.")}</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 relative">
-            {pricing.filter((p) => p.package !== "addon").map((p, idx) => {
-              // على الهاتف نعرض أول ٣ باقات فقط حتى تضغط «عرض كل الباقات»
-              const collapsed = !showAllPkgs && idx >= 3;
+          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 relative">
+            {pricing.filter((p) => p.package !== "addon").map((p, idx, all) => {
               const features = parseFeatures(p.description);
               return (
-                <RiseIn key={p.id} index={idx} className={`h-full ${collapsed ? "hidden sm:block" : ""}`}>
+                <RiseIn key={p.id} index={idx} className={`h-full shrink-0 snap-center sm:w-auto ${all.length > 1 ? "w-[85%]" : "w-full"}`}>
                 <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant border-border`}>
                   <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "photo_video" ? tr("صور + فيديو") : p.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")}</div>
                   <h3 className="font-serif text-2xl mb-1">{tx(p.label)}</h3>
@@ -624,16 +630,16 @@ function PhotographerPage() {
                   <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString(locale("ar-JO"))} <span className="text-sm">{tr("د.أ")}</span></div>
                   <PackageFacts d={p} compact gender={profile.gender} className="mb-4 border-y border-border/60 py-3" />
                   {features.length > 0 && (
-                    <ul className="mb-6 space-y-2.5 border-t border-border pt-4 text-sm text-muted-foreground">
+                    <PackageFeatureList count={features.length}>
                       {features.map((ft, i) => (
-                        <li key={i} className={`flex items-start gap-2.5 leading-relaxed ${ft.kind === "exclusive" ? "text-foreground font-medium" : ""}`}>
+                        <li key={i} data-i={i} className={`items-start gap-2.5 leading-relaxed ${i >= 3 ? "pkg-more" : "flex"} ${ft.kind === "exclusive" ? "text-foreground font-medium" : ""}`}>
                           {ft.kind === "exclusive" ? <Star className="mt-0.5 h-4 w-4 shrink-0 fill-gold text-gold" aria-label={tr("ميزة حصرية")} />
                             : ft.kind === "fast" ? <Zap className="mt-0.5 h-4 w-4 shrink-0 text-gold" aria-label={tr("تسليم سريع")} />
                             : <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold/70" aria-hidden />}
                           <span>{emphasizeNumbers(ft.text)}</span>
                         </li>
                       ))}
-                    </ul>
+                    </PackageFeatureList>
                   )}
                   <button onClick={() => pickPackage(p.id)} className={`elastic-press mt-auto w-full py-2 rounded-sm text-sm bg-charcoal text-ivory hover:opacity-90`}>{p.cta_label?.trim() || tr("احجزي هذه الباقة")}</button>
                   {pickedPackageId === p.id && <DrawFrame key={`pick-${p.id}`} duration={1.2} />}
@@ -644,19 +650,12 @@ function PhotographerPage() {
           </div>
         )}
 
-        {!showAllPkgs && pricing.filter((p) => p.package !== "addon").length > 3 && (
-          <button
-            type="button"
-            onClick={() => setShowAllPkgs(true)}
-            className="sm:hidden mt-4 w-full min-h-12 rounded-full border border-border text-sm hover:bg-secondary"
-          >{tr("عرض كل الباقات ({0})", [pricing.filter((p) => p.package !== "addon").length])}</button>
-        )}
       </section>
 
       {ps.section_order === "packages_first" && gallerySection}
 
       {/* BOOKING + DEPOSIT */}
-      <section id="book" className="bg-secondary/40 py-16">
+      <section id="book" className="bg-secondary/40 py-10 sm:py-16">
         <div className="container-editorial grid gap-8 lg:grid-cols-[1.2fr_1fr]">
           {acceptsBookings || profile.is_demo ? (
             <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} bookedSlots={bookedSlots} multiPerDay={multiPerDay} pickedPackageId={pickedPackageId} />
@@ -667,17 +666,21 @@ function PhotographerPage() {
               <Link to="/search" className="inline-block bg-charcoal text-ivory px-5 py-2 rounded-sm text-sm">{tr("ابحثي عن مصوّرة متاحة")}</Link>
             </div>
           )}
-          <DepositCard profile={profile} cliqAlias={deposit.cliq_alias} bankInfo={deposit.bank_info} />
+          <MobileCollapse label={tr("معلومات العربون")}>
+            <DepositCard profile={profile} cliqAlias={deposit.cliq_alias} bankInfo={deposit.bank_info} />
+          </MobileCollapse>
         </div>
       </section>
 
       {/* NOTES */}
       {ps.show_booking_notes && profile.booking_notes && (
-        <section className="container-editorial py-12">
+        <section className="container-editorial py-8 sm:py-12">
+          <MobileCollapse label={tr("ملاحظات مهمة")}>
           <div className="rounded-sm border border-border bg-card p-6 max-w-2xl mx-auto">
             <h3 className="font-serif text-xl mb-3">{tr("ملاحظات مهمة")}</h3>
             <div className="text-sm text-muted-foreground leading-loose whitespace-pre-line">{tx(profile.booking_notes)}</div>
           </div>
+          </MobileCollapse>
         </section>
       )}
 
@@ -691,8 +694,8 @@ function PhotographerPage() {
             </span>
           </div>
           <div className="grid sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
-            {reviews.slice(0, 6).map((r) => (
-              <div key={r.id} className="rounded-sm border border-border bg-card p-4">
+            {reviews.slice(0, 6).map((r, ri) => (
+              <div key={r.id} className={`rounded-sm border border-border bg-card p-4 ${!moreReviews && ri >= 2 ? "hidden sm:block" : ""}`}>
                 <div className="flex items-center justify-between">
                   <div className="font-medium text-sm">{tx(r.client_name)}</div>
                   <div className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-gold text-gold" : "text-muted-foreground/40"}`} />)}</div>
@@ -707,6 +710,11 @@ function PhotographerPage() {
               </div>
             ))}
           </div>
+          {!moreReviews && Math.min(reviews.length, 6) > 2 && (
+            <div className="sm:hidden mt-3 flex justify-center">
+              <button type="button" onClick={() => setMoreReviews(true)} className="rounded-full border border-border px-5 py-2.5 text-sm hover:bg-secondary">{tr("عرض المزيد ({0})", [Math.min(reviews.length, 6)])}</button>
+            </div>
+          )}
         </section>
       )}
 
@@ -789,9 +797,9 @@ function TrustBadges({ profile, completedCount, unavailCount, responseHours, del
       : { icon: Clock, label: tr("تواريخ مشغولة"), value: String(unavailCount) },
   ];
   return (
-    <div className="mb-10 grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] sm:mx-0 sm:mb-10 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-3 sm:overflow-visible sm:px-0">
       {items.map((it) => (
-        <div key={it.label} className="rounded-sm border border-border bg-card p-4 flex items-center gap-3">
+        <div key={it.label} className="shrink-0 sm:shrink rounded-sm border border-border bg-card p-3 sm:p-4 flex items-center gap-3">
           <div className="h-9 w-9 grid place-items-center rounded-sm bg-secondary text-gold shrink-0">
             <it.icon className="h-4 w-4" />
           </div>
@@ -1560,6 +1568,43 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
             {daySlots.map((s, i) => <li key={i}>{tr("• من {0} إلى {1}", [s.start_time?.slice(0,5), s.end_time?.slice(0,5)])}</li>)}
           </ul>
         </div>
+      )}
+    </div>
+  );
+}
+
+// على الهاتف: عنوان قابل للنقر يفتح المحتوى. على الشاشات الكبيرة الغلاف يختفي (display: contents) فيبقى التخطيط كما هو.
+function MobileCollapse({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="sm:contents">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="sm:hidden flex w-full items-center justify-between rounded-sm border border-border bg-card px-4 py-3.5 text-sm"
+      >
+        <span>{label}</span>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`${open ? "mt-3 block" : "hidden"} sm:contents`}>{children}</div>
+    </div>
+  );
+}
+
+// مزايا الباقة: على الهاتف أول ٣ والباقي خلف «عرض الكل». العناصر الإضافية تحمل الصنف pkg-more.
+function PackageFeatureList({ count, children }: { count: number; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mb-6 border-t border-border pt-4">
+      <ul className={`space-y-2.5 text-sm text-muted-foreground sm:[&_.pkg-more]:flex ${open ? "[&_.pkg-more]:flex" : "[&_.pkg-more]:hidden"}`}>
+        {children}
+      </ul>
+      {count > 3 && (
+        <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="sm:hidden mt-3 inline-flex items-center gap-1 text-xs text-gold">
+          {open ? tr("عرض أقل") : tr("عرض الكل ({0})", [count])}
+          <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        </button>
       )}
     </div>
   );
