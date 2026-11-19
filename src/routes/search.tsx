@@ -781,8 +781,8 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
           whileHover={{ scale: 1.015, y: -3 }}
           whileTap={{ scale: 0.985 }}
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
-          // على الهاتف 4:5 حتى لا يأخذ الكرت شاشة كاملة؛ 3:4 من الشاشات المتوسطة فما فوق
-          className="relative overflow-hidden sm:rounded-sm cursor-pointer group bg-gradient-royal border-b sm:border-0 border-border/5 aspect-[4/5] sm:aspect-[3/4]"
+          // على الهاتف مربّع حتى تظهر ثلاث مصوّرات تقريباً في الشاشة؛ 3:4 من الشاشات المتوسطة فما فوق
+          className="relative overflow-hidden sm:rounded-sm cursor-pointer group bg-gradient-royal border-b sm:border-0 border-border/5 aspect-square sm:aspect-[3/4]"
         >
           <button
             onClick={(e) => {
