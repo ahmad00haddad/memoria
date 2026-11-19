@@ -41,7 +41,7 @@ export function MobileTabBar() {
       to={to as any}
       aria-label={label}
       title={label}
-      className={`elastic-press relative grid h-14 w-14 place-items-center rounded-full transition-colors duration-300 ${active ? "text-charcoal" : "text-ivory/70 hover:text-ivory"}`}
+      className={`elastic-press relative flex h-14 items-center justify-center gap-1.5 rounded-full transition-colors duration-300 ${active ? "px-4 text-charcoal" : "w-14 text-ivory/70 hover:text-ivory"}`}
     >
       {active && (
         <motion.span
@@ -50,7 +50,17 @@ export function MobileTabBar() {
           transition={{ type: "spring", stiffness: 520, damping: 22, mass: 0.9 }}
         />
       )}
-      <Icon key={String(active)} className={`relative h-[22px] w-[22px] ${active ? "elastic-bump" : ""}`} strokeWidth={1.75} />
+      <Icon key={String(active)} className={`relative h-[22px] w-[22px] shrink-0 ${active ? "elastic-bump" : ""}`} strokeWidth={1.75} />
+      {active && (
+        <motion.span
+          initial={{ opacity: 0, x: 6 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.25, delay: 0.08 }}
+          className="relative whitespace-nowrap text-[13px] font-medium"
+        >
+          {label}
+        </motion.span>
+      )}
     </Link>
   );
 
