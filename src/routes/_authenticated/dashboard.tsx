@@ -99,7 +99,7 @@ function DashboardLayout() {
 
   return (
     <>
-      <div className="app-shell pb-20 md:pb-0">
+      <div className="app-shell pb-28 md:pb-0">
         <OfflineBanner />
         <SubscriptionGuard />
         <Outlet />

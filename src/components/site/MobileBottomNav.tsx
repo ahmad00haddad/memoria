@@ -35,13 +35,14 @@ export function MobileBottomNav() {
     const active = it.exact ? pathname === it.to : pathname.startsWith(it.to);
     const Icon = it.icon;
     return (
-      <li key={it.to}>
+      <li key={it.to} className="grid place-items-center">
         <Link
           to={it.to as any}
-          className={`elastic-press relative flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${active ? "text-gold" : "text-muted-foreground hover:text-foreground"}`}
+          aria-label={tx(it.label)}
+          title={tx(it.label)}
+          className={`elastic-press grid h-14 w-14 place-items-center rounded-full transition-colors duration-300 ${active ? "bg-ivory text-charcoal shadow-md" : "text-ivory/70 hover:text-ivory"}`}
         >
-          <Icon key={String(active)} className={`h-5 w-5 ${active ? "elastic-bump" : ""}`} />
-          <span>{tx(it.label)}</span>
+          <Icon key={String(active)} className={`h-[22px] w-[22px] ${active ? "elastic-bump" : ""}`} strokeWidth={1.75} />
         </Link>
       </li>
     );
@@ -49,15 +50,15 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <nav className="vt-bottom-nav md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[env(safe-area-inset-bottom)]">
-        <ul className="grid grid-cols-5 items-center">
+      <nav className="vt-bottom-nav md:hidden fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 pointer-events-none">
+        <ul className="pointer-events-auto grid w-full max-w-sm grid-cols-5 items-center gap-1 rounded-full border border-white/10 bg-charcoal/95 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
           {left.map(tab)}
           <li className="grid place-items-center">
             <button
               type="button"
               onClick={() => setOpen(true)}
               aria-label={t("إجراء سريع")}
-              className="-mt-5 grid h-14 w-14 place-items-center rounded-full bg-charcoal text-ivory shadow-lg ring-4 ring-background elastic-press dark:bg-gold dark:text-charcoal"
+              className="grid h-14 w-14 place-items-center rounded-full bg-gold text-charcoal shadow-lg elastic-press"
             >
               <Plus className="h-6 w-6" />
             </button>
