@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
@@ -49,16 +50,29 @@ const photographerQ = [
 ];
 
 function FaqPage() {
+  // على الهاتف: مجموعة واحدة ظاهرة (للعميلات أو للمصوّرات) بدل القائمتين معاً. الأسئلة كلها تبقى في الصفحة لمحرّكات البحث.
+  const [group, setGroup] = useState<"c" | "p">("c");
+  const tabs = [["c", t("للعميلات")], ["p", t("للمصوّرات")]] as const;
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container-editorial py-16 max-w-3xl">
+      <main className="container-editorial py-8 sm:py-16 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("الأسئلة الشائعة")}</div>
-        <h1 className="font-serif text-4xl sm:text-5xl mb-4"><RevealWords lines={[t("إجابات سريعة وواضحة")]} /></h1>
-        <p className="text-muted-foreground mb-10">{t("إن لم تجدي إجابة لسؤالك هنا،")}{" "}<Link to="/contact" className="text-gold underline">{t("تواصلي معنا")}</Link>.</p>
+        <h1 className="font-serif text-4xl sm:text-5xl mb-3 sm:mb-4"><RevealWords lines={[t("إجابات سريعة وواضحة")]} /></h1>
+        <p className="text-muted-foreground mb-6 sm:mb-10">{t("إن لم تجدي إجابة لسؤالك هنا،")}{" "}<Link to="/contact" className="text-gold underline">{t("تواصلي معنا")}</Link>.</p>
 
-        <h2 className="font-serif text-2xl mb-4">{t("للعميلات")}</h2>
-        <Accordion type="single" collapsible className="mb-10">
+        <div role="tablist" className="sm:hidden sticky top-12 z-20 -mx-5 mb-4 flex gap-2 bg-background/95 px-5 py-2 backdrop-blur">
+          {tabs.map(([k, label]) => (
+            <button key={k} type="button" role="tab" aria-selected={group === k} onClick={() => setGroup(k)}
+              className={`min-h-10 flex-1 rounded-full border px-4 text-sm transition-colors ${group === k ? "border-gold bg-gold/10 text-foreground" : "border-border text-muted-foreground"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <div className={group === "c" ? "" : "hidden sm:block"}>
+        <h2 className="hidden sm:block font-serif text-2xl mb-4">{t("للعميلات")}</h2>
+        <Accordion type="single" collapsible className="sm:mb-10">
           {clientQ.map((q, i) => (
             <RiseIn key={i} cols={1}><AccordionItem value={`c-${i}`}>
               <AccordionTrigger className="text-start">{tx(q.q)}</AccordionTrigger>
@@ -66,8 +80,10 @@ function FaqPage() {
             </AccordionItem></RiseIn>
           ))}
         </Accordion>
+        </div>
 
-        <h2 className="font-serif text-2xl mb-4">{t("للمصوّرات")}</h2>
+        <div className={group === "p" ? "" : "hidden sm:block"}>
+        <h2 className="hidden sm:block font-serif text-2xl mb-4">{t("للمصوّرات")}</h2>
         <Accordion type="single" collapsible>
           {photographerQ.map((q, i) => (
             <RiseIn key={i} cols={1}><AccordionItem value={`p-${i}`}>
@@ -76,6 +92,7 @@ function FaqPage() {
             </AccordionItem></RiseIn>
           ))}
         </Accordion>
+        </div>
       </main>
       <Footer />
     </div>
