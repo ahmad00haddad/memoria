@@ -23,14 +23,14 @@ function AboutPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container-editorial py-16 max-w-3xl">
+      <main className="container-editorial py-8 sm:py-16 max-w-3xl">
         <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{t("من نحن")}</div>
-        <h1 className="font-serif text-4xl sm:text-5xl mb-6"><RevealWords lines={[t("ذاكرة يومكِ، تُحفظ بأمان.")]} /></h1>
-        <p className="text-lg text-muted-foreground leading-loose mb-12">
+        <h1 className="font-serif text-4xl sm:text-5xl mb-4 sm:mb-6"><RevealWords lines={[t("ذاكرة يومكِ، تُحفظ بأمان.")]} /></h1>
+        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed sm:leading-loose mb-8 sm:mb-12">
           {t("ميموريا منصّة أردنية متخصّصة، أُسّست لتنظيم رحلة حجز مصوّرات الأعراس من البحث حتى التسليم — بعيداً عن فوضى الرسائل، الأسعار الغامضة، والمواعيد المتداخلة.")}
         </p>
 
-        <section className="space-y-10">
+        <section className="space-y-7 sm:space-y-10">
           <Block icon={Heart} title={t("لماذا بدأنا")}>
             {t("لأن حجز مصوّرة عرس في الأردن كان يعتمد على واتساب، توصيات متفرّقة، وأسعار غير واضحة. أردنا أن نمنح العروس أداة موثوقة تُريها الخيارات الحقيقية، التوفّر الفعلي، والسياسات بوضوح — وأن نمنح المصوّرة لوحة عمل احترافية تختصر يومها.")}
           </Block>
@@ -44,13 +44,13 @@ function AboutPage() {
           </Block>
         </section>
 
-        <section className="mt-16 rounded-2xl border border-border/60 bg-card p-8">
-          <h2 className="font-serif text-2xl mb-6">{t("الكيان والتواصل")}</h2>
+        <section className="mt-10 sm:mt-16 rounded-2xl border border-border/60 bg-card p-5 sm:p-8">
+          <h2 className="font-serif text-2xl mb-4 sm:mb-6">{t("الكيان والتواصل")}</h2>
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-3"><MapPin className="h-4 w-4 mt-1 text-gold" /><span>{t("عمّان، المملكة الأردنية الهاشمية")}</span></li>
             <li className="flex items-start gap-3"><Mail className="h-4 w-4 mt-1 text-gold" /><a href="mailto:ahmad000haddad@gmail.com" className="hover:text-gold">ahmad000haddad@gmail.com</a></li>
           </ul>
-          <div className="mt-6 flex gap-3">
+          <div className="mt-5 sm:mt-6 flex gap-3">
             <Link to="/contact" className="text-sm rounded-md border border-border/60 px-4 py-2 hover:bg-secondary">{t("تواصلي معنا")}</Link>
             <Link to="/for-photographers" className="text-sm rounded-md bg-primary text-primary-foreground px-4 py-2 hover:opacity-90">{t("للمصوّرات")}</Link>
           </div>
@@ -66,8 +66,8 @@ function Block({ icon: Icon, title, children }: { icon: typeof Heart; title: str
     <RiseIn className="flex gap-4" cols={1}>
       <div className="shrink-0 grid h-10 w-10 place-items-center rounded-md bg-secondary"><Icon className="h-4 w-4 text-gold" /></div>
       <div>
-        <h3 className="font-serif text-xl mb-2">{tx(title)}</h3>
-        <p className="text-muted-foreground leading-loose">{children}</p>
+        <h3 className="font-serif text-xl mb-1.5 sm:mb-2">{tx(title)}</h3>
+        <p className="text-muted-foreground leading-relaxed sm:leading-loose">{children}</p>
       </div>
     </RiseIn>
   );
