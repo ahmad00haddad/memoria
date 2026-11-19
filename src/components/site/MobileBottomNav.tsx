@@ -40,9 +40,16 @@ export function MobileBottomNav() {
           to={it.to as any}
           aria-label={tx(it.label)}
           title={tx(it.label)}
-          className={`elastic-press grid h-14 w-14 place-items-center rounded-full transition-colors duration-300 ${active ? "bg-ivory text-charcoal shadow-md" : "text-ivory/70 hover:text-ivory"}`}
+          className={`elastic-press relative grid h-14 w-14 place-items-center rounded-full transition-colors duration-300 ${active ? "text-charcoal" : "text-ivory/70 hover:text-ivory"}`}
         >
-          <Icon key={String(active)} className={`h-[22px] w-[22px] ${active ? "elastic-bump" : ""}`} strokeWidth={1.75} />
+          {active && (
+            <motion.span
+              layoutId="mobile-nav-active"
+              className="absolute inset-0 rounded-full bg-ivory shadow-md"
+              transition={{ type: "spring", stiffness: 520, damping: 22, mass: 0.9 }}
+            />
+          )}
+          <Icon key={String(active)} className={`relative h-[22px] w-[22px] ${active ? "elastic-bump" : ""}`} strokeWidth={1.75} />
         </Link>
       </li>
     );
