@@ -83,6 +83,8 @@ function SubscriptionPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [showAllPays, setShowAllPays] = useState(false);
+  // على الهاتف: آخر ٣ دفعات فقط حتى تضغط «عرض الكل»
+  const [moreHist, setMoreHist] = useState(false);
   const [sub, setSub] = useState<Sub | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [payEarly, setPayEarly] = useState(false);
@@ -210,7 +212,7 @@ function SubscriptionPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12 max-w-4xl">
+      <section className="container-editorial py-6 sm:py-12 max-w-4xl">
         <div className="mb-8">
           <BackToDashboard />
           <div className="text-xs uppercase tracking-[0.3em] text-gold mt-2 mb-1">{t("الاشتراك")}</div>
@@ -245,7 +247,8 @@ function SubscriptionPage() {
                 </button>
               ))}
             </div>
-            <div className="grid sm:grid-cols-2 gap-3 mb-8" role="radiogroup" aria-label={t("الباقة")}>
+            {/* على الهاتف: الباقتان تتمرّران أفقياً بالسحب، ويظهر طرف الثانية */}
+            <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pt-3 pb-2 mb-6 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pt-0 sm:pb-0 sm:mb-8" role="radiogroup" aria-label={t("الباقة")}>
               {(["basic", "pro"] as Tier[]).map((k) => {
                 const active = tier === k;
                 const price = priceFor(k, period, sub?.legacy_price_until);
@@ -257,7 +260,7 @@ function SubscriptionPage() {
                     role="radio"
                     aria-checked={active}
                     onClick={() => setTier(k)}
-                    className={`relative rounded-sm border p-4 text-start transition ${active ? "border-gold bg-gold/5 ring-1 ring-gold" : "border-border bg-card hover:border-foreground/30"}`}
+                    className={`relative w-[85%] shrink-0 snap-center sm:w-auto rounded-sm border p-4 text-start transition ${active ? "border-gold bg-gold/5 ring-1 ring-gold" : "border-border bg-card hover:border-foreground/30"}`}
                   >
                     {k === "pro" && (
                       <span className="absolute -top-2.5 end-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-charcoal">
@@ -343,8 +346,8 @@ function SubscriptionPage() {
               <p className="text-sm text-muted-foreground">{t("لا دفعات مكتملة بعد.")}</p>
             )}
             <div className="rounded-sm border border-border bg-card overflow-hidden empty:hidden">
-              {payments.filter((p) => showAllPays || p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p))).map((p) => (
-                <div key={p.id} className="flex items-center justify-between p-4 border-b border-border last:border-0">
+              {payments.filter((p) => showAllPays || p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p))).map((p, pi) => (
+                <div key={p.id} className={`items-center justify-between p-4 border-b border-border last:border-0 ${!moreHist && pi >= 3 ? "hidden sm:flex" : "flex"}`}>
                   <div>
                     <div className="text-sm">
                       {t("{0} د.أ ·", [p.amount])}{" "}{METHOD_LABEL[p.method] ?? p.method}
@@ -358,6 +361,11 @@ function SubscriptionPage() {
                 </div>
               ))}
             </div>
+            {!moreHist && payments.filter((p) => showAllPays || p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p))).length > 3 && (
+              <button type="button" onClick={() => setMoreHist(true)} className="sm:hidden mt-2 me-4 min-h-10 text-xs text-gold">
+                {t("عرض الكل ({0})", [payments.filter((p) => showAllPays || p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p))).length])}
+              </button>
+            )}
             {/* المحاولات غير المكتملة/المرفوضة مخفية افتراضياً: لا وسوم حمراء تقلق المصوّرة */}
             {payments.some((p) => !(p.status === "approved" || (p.status === "pending" && !isOpenCheckout(p)))) && (
               <button type="button" onClick={() => setShowAllPays((v) => !v)} className="mt-2 min-h-10 text-xs text-muted-foreground hover:text-foreground">

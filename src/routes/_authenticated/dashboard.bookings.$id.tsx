@@ -8,7 +8,7 @@ import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus, Star, Info, MoreHorizontal, ArrowLeft, ArrowRight, MessageSquare, ListChecks, LayoutGrid, Lightbulb, X } from "lucide-react";
+import { CheckCircle2, XCircle, ScrollText, Copy, Clock, Lock, EyeOff, Eye, BadgeDollarSign, Camera, Image as ImageIcon, Edit3, Send, Upload, Trash2, ImagePlus, Star, Info, MoreHorizontal, ArrowLeft, ArrowRight, MessageSquare, ListChecks, LayoutGrid, Lightbulb, X, ChevronDown } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { ensureGallery, addGalleryPhoto, deleteGalleryPhoto, updateGallery, getGalleryForPhotographer } from "@/lib/gallery.functions";
 import { buildClientWhatsAppMessage } from "@/components/dashboard/ManualBookingSheet";
@@ -545,7 +545,7 @@ function BookingDetail() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial pt-8 pb-16 max-w-4xl">
+      <section className="container-editorial pt-4 sm:pt-8 pb-16 max-w-4xl">
         <Link to="/dashboard/bookings" className="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-gold transition-colors group">
           <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />{" "}{tr("الحجوزات")}
         </Link>
@@ -716,7 +716,7 @@ function BookingDetail() {
             {tab === "overview" && (
               <div className="grid gap-6 lg:grid-cols-5">
                 <div className="space-y-6 lg:col-span-3">
-                  <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm">
+                  <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 space-y-3 text-sm">
                     <h2 className="font-serif text-xl mb-1">{tr("العميلة والمكان")}</h2>
                     <Row k={tr("الهاتف")} v={b.client_phone && (
                       <span className="inline-flex flex-wrap items-center gap-2"><span dir="ltr">{tx(b.client_phone)}</span><CopyButton value={b.client_phone} iconOnly label={tr("نسخ الرقم")} className="px-2" />
@@ -761,13 +761,17 @@ function BookingDetail() {
                     <p className="text-xs text-muted-foreground">{tr("صور القاعة النسائية وصور الأطفال لا تُنشر أبداً.")}</p>
                   </div>
 
-                  <BookingExtrasPanel booking={b} onChange={load} />
+                  <MobileCollapse label={tr("الإضافات")}>
+                    <BookingExtrasPanel booking={b} onChange={load} />
+                  </MobileCollapse>
 
-                  <ContractCard contract={contract} templates={templates} busy={actionLoading === "contract"} onGenerate={generateContract} isBasic={isBasic} />
+                  <MobileCollapse label={tr("العقد")}>
+                    <ContractCard contract={contract} templates={templates} busy={actionLoading === "contract"} onGenerate={generateContract} isBasic={isBasic} />
+                  </MobileCollapse>
                 </div>
 
                 <div className="space-y-6 lg:col-span-2">
-                  <div className="rounded-2xl border border-border bg-card p-6 space-y-3 text-sm">
+                  <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 space-y-3 text-sm">
                     <h2 className="font-serif text-xl mb-1">{tr("المبالغ")}</h2>
                     <Row k={tr("السعر الأساسي")} v={tr("{0} د.أ", [b.base_price ?? 0])} />
                     {Number(b.travel_fee) > 0 && <Row k={tr("رسوم التنقّل")} v={tr("{0} د.أ", [b.travel_fee])} />}
@@ -803,6 +807,7 @@ function BookingDetail() {
                   )}
 
                   {(proofUrl || (b.status === "pending_deposit" && b.deposit_sent_at)) && (
+                    <MobileCollapse label={tr("إثبات العربون")} disabled={b.status === "pending_deposit"}>
                     <div className="rounded-2xl border border-border bg-card p-6 text-sm">
                       <h2 className="font-serif text-xl mb-1">{tr("إثبات العربون")}</h2>
                       {b.status === "pending_deposit" && (
@@ -826,6 +831,7 @@ function BookingDetail() {
                         <p className="rounded-xl bg-amber-50 p-3 text-amber-900 dark:bg-amber-950/20 dark:text-amber-300">{g(tr("أشارت العميلة إلى التحويل بدون إيصال. تحقّقي من حسابك قبل التأكيد."), tr("أشارت العميلة إلى التحويل بدون إيصال. تحقّق من حسابك قبل التأكيد."))}</p>
                       )}
                     </div>
+                    </MobileCollapse>
                   )}
 
                   <DeliveryCountdown b={b} />
@@ -975,6 +981,27 @@ function BookingDetail() {
         </DialogContent>
       </Dialog>
       <Footer />
+    </div>
+  );
+}
+
+// على الهاتف: عنوان قابل للنقر يفتح المحتوى. على الشاشات الكبيرة الغلاف يختفي (display: contents) فيبقى التخطيط كما هو.
+// disabled: يبقى مفتوحاً دائماً (مثلاً إثبات عربون ينتظر قراراً)
+function MobileCollapse({ label, disabled, children }: { label: string; disabled?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  if (disabled) return <>{children}</>;
+  return (
+    <div className="sm:contents">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="sm:hidden flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3.5 text-sm"
+      >
+        <span className="font-serif text-lg">{label}</span>
+        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`${open ? "mt-3 block" : "hidden"} sm:contents`}>{children}</div>
     </div>
   );
 }

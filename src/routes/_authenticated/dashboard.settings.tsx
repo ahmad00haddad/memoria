@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Eye, Lock, RotateCcw, Check, Languages, Palette, Type, LayoutGrid, ListOrdered, Megaphone, Wand2, Smartphone, X, Info, CalendarDays, Wallet, Users } from "lucide-react";
+import { Eye, Lock, RotateCcw, Check, ChevronDown, Languages, Palette, Type, LayoutGrid, ListOrdered, Megaphone, Wand2, Smartphone, X, Info, CalendarDays, Wallet, Users } from "lucide-react";
 import { Header } from "@/components/site/Header";
 import { BackToDashboard } from "@/components/site/BackToDashboard";
 import { Footer } from "@/components/site/Footer";
@@ -144,12 +144,12 @@ function SettingsPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-10 pb-32">
+      <section className="container-editorial py-6 sm:py-10 pb-32">
         <BackToDashboard />
-        <div className="mt-2 mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="mt-2 mb-5 sm:mb-8 flex flex-wrap items-end justify-between gap-4">
           <div className="min-w-0">
             <h1 className="font-serif text-4xl">{tr("إعدادات صفحتك")}</h1>
-            <p className="text-sm text-muted-foreground mt-2 max-w-xl">
+            <p className="hidden sm:block text-sm text-muted-foreground mt-2 max-w-xl">
               {g(tr("كل تغيير يظهر فوراً في المعاينة ولا يُنشر حتى تضغطي حفظ. الألوان مضبوطة لتبقى النصوص واضحة دائماً."), tr("كل تغيير يظهر فوراً في المعاينة ولا يُنشر حتى تضغط حفظ. الألوان مضبوطة لتبقى النصوص واضحة دائماً."))}
             </p>
           </div>
@@ -410,15 +410,20 @@ function AccentDot({ color, label, on, onPick }: { color?: string; label: string
   );
 }
 
+// على الهاتف: كل قسم مطوي بعنوانه وينفتح بالنقر. على الشاشات الكبيرة مفتوح دائماً.
 function Block({ icon, title, hint, children }: { icon: React.ReactNode; title: string; hint?: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2">
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center gap-2 text-start sm:pointer-events-none">
         <span className="grid h-8 w-8 place-items-center rounded-lg bg-secondary text-gold [&_svg]:h-4 [&_svg]:w-4">{icon}</span>
-        <h2 className="font-serif text-xl">{title}</h2>
+        <h2 className="font-serif text-xl flex-1">{title}</h2>
+        <ChevronDown className={`sm:hidden h-4 w-4 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`${open ? "block" : "hidden"} sm:block`}>
+        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+        <div className="mt-4">{children}</div>
       </div>
-      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
-      <div className="mt-4">{children}</div>
     </div>
   );
 }

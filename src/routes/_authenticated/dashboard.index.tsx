@@ -751,8 +751,11 @@ function Dashboard() {
           <>
             <TodayFocus items={todayItems} whatsNew={whatsNewParts.length ? whatsNewParts.join(" · ") : null} />
 
-            {profile?.is_published && <PushOptIn />}
-            <div data-tour="notify"><NotifyChannelsCard promptOnly /></div>
+            {/* على الهاتف: بطاقة تنبيه واحدة فقط في كل مرة (الأولى الظاهرة)، والثانية تظهر بعد التعامل معها */}
+            <div className="max-sm:[&>:not(:empty)~:not(:empty)]:hidden">
+              {profile?.is_published && <PushOptIn />}
+              <div data-tour="notify"><NotifyChannelsCard promptOnly /></div>
+            </div>
 
             {!hasAnyStats && profile?.is_published && profile?.username && (
               <div className="mb-10 rounded-2xl border border-gold/30 bg-gold/5 p-5 text-sm leading-relaxed flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -825,9 +828,10 @@ function Dashboard() {
             )}
 
             {delivery && (
-              <div className="mb-4 rounded-2xl border border-border bg-card p-4 text-sm">
+              <div className="mb-4 rounded-2xl border border-border bg-card px-4 py-3 sm:p-4 text-sm">
                 <strong className="block">{tr("معدّل تسليمك: ~{0} يوماً", [delivery.days])}</strong>
-                <span className="text-muted-foreground">
+                {/* الشرح للشاشات الكبيرة فقط؛ الهاتف يكتفي بالرقم */}
+                <span className="hidden sm:inline text-muted-foreground">
                   {delivery.n >= 3
                     ? g(tr("يظهر للعرائس على صفحتكِ (من آخر {0} تسليمات). كل ما سلّمتِ أسرع، تحسّن الرقم.", [delivery.n]), tr("يظهر للعرائس على صفحتك (من آخر {0} تسليمات). كل ما سلّمت أسرع، تحسّن الرقم.", [delivery.n]))
                     : g(tr("محسوب من {0} تسليم. يظهر للعرائس على صفحتكِ بعد 3 تسليمات.", [delivery.n]), tr("محسوب من {0} تسليم. يظهر للعرائس على صفحتك بعد 3 تسليمات.", [delivery.n]))}

@@ -284,7 +284,7 @@ function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12 pb-32 max-w-6xl">
+      <section className="container-editorial py-6 sm:py-12 pb-32 max-w-6xl">
         <BackToDashboard />
         <div className="flex items-center justify-between mt-2 mb-8 flex-wrap gap-4">
           <h1 className="font-serif text-4xl">{tr("ملفي")}</h1>
@@ -641,7 +641,7 @@ function CompletionRing({ value }: { value: number }) {
 function Card({ id, title, done, open, onToggle, children }: { id: string; title: string; done?: boolean; open: boolean; onToggle: (id: string) => void; children: React.ReactNode }) {
   return (
     <div id={id} className="scroll-mt-24 rounded-2xl border border-border bg-card">
-      <button type="button" onClick={() => onToggle(id)} aria-expanded={open} className="flex w-full items-center gap-3 p-6 text-start">
+      <button type="button" onClick={() => onToggle(id)} aria-expanded={open} className="flex w-full items-center gap-3 p-4 sm:p-6 text-start">
         <h2 className="font-serif text-xl flex-1">{tx(title)}</h2>
         <AnimatePresence>
           {done && (
@@ -661,7 +661,7 @@ function Card({ id, title, done, open, onToggle, children }: { id: string; title
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="space-y-4 px-6 pb-6">{children}</div>
+            <div className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>

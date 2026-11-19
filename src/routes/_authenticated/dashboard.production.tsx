@@ -291,7 +291,7 @@ function ProductionBoard() {
   if (loading) return (
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12">
+      <section className="container-editorial py-6 sm:py-12">
         <BackToDashboard />
         <h1 className="font-serif text-4xl mt-2 mb-6">{tr("متابعة الإنتاج")}</h1>
         <div className="hidden lg:grid gap-4 lg:grid-cols-3 xl:grid-cols-6 mb-8">
@@ -329,7 +329,7 @@ function ProductionBoard() {
     <PullToRefresh onRefresh={async () => { if (uid) await load(uid); }}>
     <div className="min-h-screen bg-background">
       <Header />
-      <section className="container-editorial py-12">
+      <section className="container-editorial py-6 sm:py-12">
         <BackToDashboard />
         <div className="mt-2 mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
