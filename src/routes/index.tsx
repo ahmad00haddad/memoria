@@ -133,6 +133,8 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
 function Landing() {
   const [featured, setFeatured] = useState<any[]>([]);
   const [featuredStatus, setFeaturedStatus] = useState<"loading" | "ok" | "error">("loading");
+  // على الهاتف: تقييم واحد ظاهر والباقي خلف زر
+  const [moreReviews, setMoreReviews] = useState(false);
   const [featuredReload, setFeaturedReload] = useState(0);
   // آراء العرائس: تقييمات منشورة حقيقية فقط؛ القسم يختفي إن لم توجد
   const [realReviews, setRealReviews] = useState<{ client_name: string; comment: string }[]>([]);
@@ -286,7 +288,7 @@ function Landing() {
       {/* Hero — invitation-card composition: arch-framed portrait, calligraphic accent */}
       <section className="relative overflow-hidden grain-overlay">
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[70%] bg-[radial-gradient(60%_60%_at_70%_20%,color-mix(in_oklab,var(--gold)_14%,transparent),transparent_70%)]" />
-        <div className="container-editorial relative pt-10 lg:pt-16 pb-24 lg:pb-32">
+        <div className="container-editorial relative pt-10 lg:pt-16 pb-16 sm:pb-24 lg:pb-32">
           <motion.div
             variants={fadeUp}
             initial="hidden"
@@ -398,7 +400,7 @@ function Landing() {
             </motion.div>
 
             <motion.div
-              className="group/hero order-2 lg:col-span-5 relative mx-auto w-full max-w-[300px] sm:max-w-[420px] lg:max-w-none"
+              className="group/hero order-2 lg:col-span-5 relative mx-auto w-full max-w-[220px] sm:max-w-[420px] lg:max-w-none"
               variants={scaleIn}
               initial="hidden"
               animate="visible"
@@ -477,22 +479,35 @@ function Landing() {
       {(!visitorRole || visitorRole === "guest" || isPhotographer) && (
         <ScrollReveal delay={0.05}>
         <motion.section
-          className="container-editorial py-20"
+          className="container-editorial py-12 sm:py-20"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={viewportOnce}
         >
-          <div className="grid gap-10 lg:grid-cols-12 items-end mb-10">
+          <div className="grid gap-10 lg:grid-cols-12 items-end mb-6 sm:mb-10">
             <div className="lg:col-span-5">
               <div className="eyebrow mb-3">{tr("ابدأ من هنا")}</div>
               <h2 className="font-serif text-4xl sm:text-5xl">{tr("من أنت؟")}</h2>
             </div>
-            <p className="lg:col-span-6 lg:col-start-7 text-muted-foreground leading-loose max-w-md">
+            <p className="hidden sm:block lg:col-span-6 lg:col-start-7 text-muted-foreground leading-loose max-w-md">
               {tr("العروس والمصوّرة تتابعان الحجز من المكان نفسه، من تصفّح المعرض حتى استلام الصور.")}
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-12">
+          {/* على الهاتف: زرّان صغيران بدل البطاقتين الكبيرتين */}
+          <div className="grid grid-cols-2 gap-3 sm:hidden">
+            <Link to="/search" className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-4">
+              <span className="text-[11px] text-muted-foreground">{tr("للعملاء")}</span>
+              <span className="font-serif text-lg leading-snug">{tr("العروس وأهل الزفاف")}</span>
+              <span className="mt-auto pt-2 inline-flex items-center gap-1 text-xs text-gold">{tr("ابحثي عن مصوّرة")} <ArrowLeft className="h-3.5 w-3.5" /></span>
+            </Link>
+            <Link to={!authLoading && !isPhotographer ? "/photographers/join" : "/dashboard"} className="flex flex-col gap-1 rounded-2xl bg-charcoal p-4 text-ivory">
+              <span className="text-[11px] text-ivory/60">{tr("للمصوّرين")}</span>
+              <span className="font-serif text-lg leading-snug">{!authLoading && !isPhotographer ? tr("مصوّرة محترفة") : tr("حسابك جاهز")}</span>
+              <span className="mt-auto pt-2 inline-flex items-center gap-1 text-xs text-gold">{!authLoading && !isPhotographer ? tr("انضمي إلى المنصة") : tr("افتحي لوحة التحكم")} <ArrowLeft className="h-3.5 w-3.5" /></span>
+            </Link>
+          </div>
+          <div className="hidden sm:grid gap-6 md:grid-cols-12">
             <div className="md:col-span-5">
               <RoleCard
                 index={tr("٠١")}
@@ -532,18 +547,18 @@ function Landing() {
       <ScrollReveal delay={0.1}>
       <motion.section
         id="how"
-        className="container-editorial py-20 lg:py-28"
+        className="container-editorial py-12 sm:py-20 lg:py-28"
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
         viewport={viewportOnce}
       >
-        <div className="grid gap-12 lg:grid-cols-12">
+        <div className="grid gap-6 sm:gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-28">
               <div className="eyebrow mb-3">{tr("سير العمل")}</div>
-              <h2 className="font-serif text-4xl sm:text-5xl mb-4">{tr("كيف يمشي الحجز")}<br /><span className="font-script text-gold"><Calligraphy delay={0.2}><Shimmer delay={2.2}>{tr("خطوة بخطوة")}</Shimmer></Calligraphy></span></h2>
-              <p className="text-muted-foreground leading-loose max-w-xs">{tr("التفاصيل التي كانت تضيع بين رسائل الواتساب تُكتب الآن في الحجز نفسه.")}</p>
+              <h2 className="font-serif text-4xl sm:text-5xl sm:mb-4">{tr("كيف يمشي الحجز")}<br /><span className="font-script text-gold"><Calligraphy delay={0.2}><Shimmer delay={2.2}>{tr("خطوة بخطوة")}</Shimmer></Calligraphy></span></h2>
+              <p className="hidden sm:block text-muted-foreground leading-loose max-w-xs">{tr("التفاصيل التي كانت تضيع بين رسائل الواتساب تُكتب الآن في الحجز نفسه.")}</p>
             </div>
           </div>
           <ol className="lg:col-span-7 lg:col-start-6">
@@ -552,6 +567,7 @@ function Landing() {
             <Feature n="03" icon={Receipt} title={tr("سعر فوري")} desc={tr("السعر يُحسب أمامكِ مع الإضافات وأجرة المسافة بالكيلومتر.")} />
             <Feature last n="04" icon={ShieldCheck} title={tr("إيصال العربون")} desc={tr("تحوّل العروس العربون للمصوّرة مباشرة وترفع الإيصال، والمصوّرة تؤكّد الاستلام.")} />
           </ol>
+          <Link to="/guide" className="sm:hidden -mt-2 inline-flex items-center gap-1.5 justify-self-start text-sm text-gold">{tr("التفاصيل خطوة بخطوة")} <ArrowLeft className="h-4 w-4" /></Link>
         </div>
       </motion.section>
       </ScrollReveal>
@@ -560,7 +576,7 @@ function Landing() {
       {(visitorRole !== "photographer" && !isPhotographer) && realReviews.length > 0 && (
         <ScrollReveal delay={0.1}>
         <motion.section
-          className="relative bg-charcoal text-ivory py-20 lg:py-28 overflow-hidden grain-overlay"
+          className="relative bg-charcoal text-ivory py-12 sm:py-20 lg:py-28 overflow-hidden grain-overlay"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
@@ -569,7 +585,7 @@ function Landing() {
           <SettleIn className="pointer-events-none absolute -top-10 start-6 origin-top-right font-serif text-[16rem] leading-none text-gold/10 select-none">”</SettleIn>
           <div className="container-editorial relative">
             <div className="eyebrow mb-3">{tr("من حجوزات مكتملة")}</div>
-            <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-14">{tr("آراء العرائس")}</h2>
+            <h2 className="font-serif text-4xl sm:text-5xl text-ivory mb-8 sm:mb-14">{tr("آراء العرائس")}</h2>
             <div className="grid gap-12 lg:grid-cols-12">
               <motion.figure variants={fadeUp} className="lg:col-span-7">
                 <PhraseQuote
@@ -579,8 +595,15 @@ function Landing() {
                 <SignedName name={realReviews[0].client_name} />
               </motion.figure>
               {realReviews.length > 1 && (
-                <div className="lg:col-span-4 lg:col-start-9 space-y-10 lg:pt-24">
-                  {realReviews.slice(1).map((r, i) => <Quote key={i} name={r.client_name} text={r.comment} />)}
+                <div className="lg:col-span-4 lg:col-start-9">
+                  <div className={`${moreReviews ? "" : "hidden"} sm:block space-y-10 lg:pt-24`}>
+                    {realReviews.slice(1).map((r, i) => <Quote key={i} name={r.client_name} text={r.comment} />)}
+                  </div>
+                  {!moreReviews && (
+                    <button type="button" onClick={() => setMoreReviews(true)} className="sm:hidden -mt-4 rounded-full border border-ivory/25 px-5 py-2.5 text-sm text-ivory/90">
+                      {tr("عرض المزيد ({0})", [realReviews.length - 1])}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -592,13 +615,13 @@ function Landing() {
       {(featuredStatus !== "ok" || featured.length > 0) && (visitorRole !== "photographer" && !isPhotographer) && (
         <ScrollReveal delay={0.1}>
         <motion.section
-          className="container-editorial py-20 lg:py-28"
+          className="container-editorial py-12 sm:py-20 lg:py-28"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
           viewport={viewportOnce}
         >
-          <div className="flex items-end justify-between gap-6 mb-12 flex-wrap">
+          <div className="flex items-end justify-between gap-6 mb-8 sm:mb-12 flex-wrap">
             <div>
               <div className="eyebrow mb-3">{tr("مختارات ميموريا")}</div>
               <h2 className="font-serif text-4xl sm:text-5xl">{tr("مصوّرات اخترناهنّ لكِ")}</h2>
@@ -609,9 +632,9 @@ function Landing() {
             </Link>
           </div>
           {featuredStatus === "loading" && (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className={i % 2 ? "lg:mt-16" : ""}>
+                <div key={i} className={`w-[70%] shrink-0 snap-start sm:w-auto ${i % 2 ? "lg:mt-16" : ""}`}>
                   <div className="aspect-[3/4] animate-pulse bg-muted rounded-t-full" />
                   <div className="pt-4 space-y-2">
                     <div className="h-4 w-2/3 animate-pulse rounded-sm bg-muted" />
@@ -637,9 +660,9 @@ function Landing() {
           )}
 
           {featuredStatus === "ok" && (
-          <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0 sm:gap-x-6 sm:gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
             {featured.map((p, i) => (
-              <motion.div key={p.username} variants={fadeUp} className={i % 2 ? "lg:mt-16" : ""}>
+              <motion.div key={p.username} variants={fadeUp} className={`w-[70%] shrink-0 snap-start sm:w-auto ${i % 2 ? "lg:mt-16" : ""}`}>
                 <Link to="/photographers/$username" params={{ username: p.username }} className="group block">
                   <div className="aspect-[3/4] bg-gradient-royal overflow-hidden rounded-t-full">
                     {p.cover_url && <RiseImg src={p.cover_url} alt={tx(p.display_name)} loading="lazy" delay={i * 0.12} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />}
@@ -725,12 +748,12 @@ function RoleCard({ index, title, desc, cta, href, highlight }: { index: string;
 
 function Feature({ n, icon: Icon, title, desc, last }: { n: string; icon: typeof Calendar; title: string; desc: string; last?: boolean }) {
   return (
-    <motion.li variants={fadeUp} className="group relative grid grid-cols-[auto_1fr_auto] items-start gap-6 py-8">
+    <motion.li variants={fadeUp} className="group relative grid grid-cols-[auto_1fr_auto] items-center sm:items-start gap-4 sm:gap-6 py-4 sm:py-8">
       {/* row rules draw in from the reading start as each row arrives */}
       <DrawRule className="absolute inset-x-0 top-0 h-px bg-border" duration={1.3} />
       {last && <DrawRule className="absolute inset-x-0 bottom-0 h-px bg-border" duration={1.3} delay={0.25} />}
       <motion.span
-        className="font-serif text-4xl text-gold/70 tabular-nums leading-none pt-1 transition-colors group-hover:text-gold"
+        className="font-serif text-2xl sm:text-4xl text-gold/70 tabular-nums leading-none sm:pt-1 transition-colors group-hover:text-gold"
         dir="ltr"
         initial={{ opacity: 0.15 }}
         whileInView={{ opacity: 1 }}
@@ -740,10 +763,11 @@ function Feature({ n, icon: Icon, title, desc, last }: { n: string; icon: typeof
         {tx(n)}
       </motion.span>
       <div>
-        <h3 className="font-serif text-2xl mb-2">{tx(title)}</h3>
-        <p className="text-muted-foreground leading-loose max-w-md">{tx(desc)}</p>
+        <h3 className="font-serif text-xl sm:text-2xl sm:mb-2">{tx(title)}</h3>
+        {/* الوصف للشاشات الكبيرة فقط؛ الهاتف يكتفي بالعنوان ورابط الدليل */}
+        <p className="hidden sm:block text-muted-foreground leading-loose max-w-md">{tx(desc)}</p>
       </div>
-      <span className="mt-2"><DrawIcon delay={0.35}><Icon className="h-5 w-5 text-muted-foreground/50 transition-colors group-hover:text-gold" strokeWidth={1.25} /></DrawIcon></span>
+      <span className="sm:mt-2"><DrawIcon delay={0.35}><Icon className="h-5 w-5 text-muted-foreground/50 transition-colors group-hover:text-gold" strokeWidth={1.25} /></DrawIcon></span>
     </motion.li>
   );
 }
