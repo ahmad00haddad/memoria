@@ -10,6 +10,8 @@ import { tx, locale } from "@/i18n";
 
 export const EASE_DRAW = [0.65, 0, 0.35, 1] as const;
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+/** easeOut with a barely visible overshoot */
+const EASE_SETTLE = [0.3, 1.25, 0.5, 1] as const;
 
 /** true once the element has been at least `amount` visible (or after mount when `onMount`). */
 export function useSeen<T extends Element>(amount = 0.6, onMount = false) {
@@ -138,7 +140,8 @@ export function CountTo({ from = 0, to, delay = 0, duration = 1.6, onMount = fal
     if (!on) return;
     if (!intro || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) { setVal(to); return; }
     const k = 10 ** decimals;
-    const c = animate(from, to, { duration, delay, ease: EASE_OUT, onUpdate: (v) => setVal(Math.round(v * k) / k) });
+    // whole counts overshoot slightly then settle; decimals (ratings) keep the plain ease so 4.9 never reads 5.0
+    const c = animate(from, to, { duration, delay, ease: decimals === 0 && to >= 20 ? EASE_SETTLE : EASE_OUT, onUpdate: (v) => setVal(Math.max(0, Math.round(v * k) / k)) });
     return () => c.stop();
   }, [on, from, to, delay, duration, decimals, intro]);
   return <span ref={ref} className="tabular-nums">{fmt.format(val)}</span>;

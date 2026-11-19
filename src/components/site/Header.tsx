@@ -163,7 +163,7 @@ export function Header() {
       }`}
     >
       <div className="container-editorial flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group">
+        <Link to="/" className="elastic-press-soft flex items-center gap-2 group">
           <img src="/favicon.svg" alt="" width={36} height={36} className="h-9 w-9 transition-transform duration-700 ease-out group-hover:rotate-[25deg] group-hover:scale-105" />
           <div className="leading-tight">
             <div className="font-serif text-lg tracking-wide">Memoria <span className="text-muted-foreground text-sm">{t("ميموريا")}</span></div>
