@@ -35,7 +35,8 @@ export function useCountUp(target: number, duration = 1100): number {
       const t = Math.max(0, Math.min(1, (now - startTime) / duration));
       // easeOutBack: passes the target slightly, then settles on it (elastic feel)
       const c1 = 1.2, c3 = c1 + 1;
-      const eased = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+      // max(0, …) drops the -2e-16 float error at t=0 that would print "-0"
+      const eased = Math.max(0, 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2));
       const v = from + (target - from) * eased;
       setValue(v);
       lastRef.current = v;
