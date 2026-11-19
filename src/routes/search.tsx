@@ -248,9 +248,25 @@ function SearchPage() {
                   autoCorrect="off"
                   autoComplete="off"
                   spellCheck={false}
-                  className="w-full sm:rounded-sm rounded-full sm:border border-transparent sm:border-input bg-secondary/50 sm:bg-background ps-9 pe-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+                  className="w-full sm:rounded-sm rounded-full sm:border border-transparent sm:border-input bg-secondary/50 sm:bg-background ps-9 pe-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
                   aria-label={tr("كلمات مفتاحية للبحث")}
                 />
+                <AnimatePresence>
+                  {q && (
+                    <motion.button
+                      type="button"
+                      onClick={() => setQ("")}
+                      aria-label={tr("مسح البحث")}
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 24, opacity: { duration: 0.15 } }}
+                      className="absolute top-1/2 end-2 -mt-3 grid h-6 w-6 place-items-center rounded-full text-muted-foreground hover:bg-secondary"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
               
               {/* Mobile filter drawer trigger inside search row */}
@@ -549,6 +565,7 @@ function SearchPage() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 30, opacity: { duration: 0.18 } }}
                   type="button"
                   onClick={() => { hapticVibrate("light"); c.clear(); }}
                   className="inline-flex items-center gap-1 rounded-full border border-gold/40 bg-gold/5 px-3 py-1 text-xs text-foreground hover:border-gold"
@@ -769,6 +786,8 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
         delay: Math.min((idx % 9) * 0.07, 0.5),
         duration: 0.7,
         ease,
+        // the rise settles on a soft spring
+        y: { type: "spring", stiffness: 140, damping: 20, delay: Math.min((idx % 9) * 0.07, 0.5) },
         layout: { type: "spring", stiffness: 260, damping: 30 },
       }}
     >

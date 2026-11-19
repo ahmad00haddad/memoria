@@ -29,7 +29,12 @@ export function ScrollReveal({
       whileInView="visible"
       viewport={{ once: true, margin: "-80px" }}
       variants={variants}
-      transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
+      transition={{
+        duration: 0.85, delay, ease: [0.22, 1, 0.36, 1],
+        // position settles on a calm spring (a hair of overshoot); opacity keeps the ease
+        y: { type: "spring", stiffness: 110, damping: 19, delay },
+        x: { type: "spring", stiffness: 110, damping: 19, delay },
+      }}
     >
       {children}
     </motion.div>

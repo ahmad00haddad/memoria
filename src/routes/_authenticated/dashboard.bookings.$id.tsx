@@ -558,10 +558,10 @@ function BookingDetail() {
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span
                   key={b.status}
-                  initial={{ rotateX: 90, opacity: 0 }}
-                  animate={{ rotateX: 0, opacity: 1 }}
-                  exit={{ rotateX: -90, opacity: 0 }}
-                  transition={{ duration: 0.25 }}
+                  initial={{ scale: 0.92, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  transition={{ opacity: { duration: 0.2 }, scale: { type: "spring", stiffness: 420, damping: 22 } }}
                   className={`rounded-full px-3 py-1 text-xs font-medium ${statusTone[b.status] ?? "bg-secondary"}`}
                 >
                   {b.needs_approval && !b.approved_at && b.status === "pending_deposit" ? tr("بانتظار موافقتك") : statusLabels[b.status] ?? b.status}
@@ -707,10 +707,10 @@ function BookingDetail() {
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={tab}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ opacity: { duration: 0.2 }, y: { type: "spring", stiffness: 380, damping: 26 } }}
             className="pt-8"
           >
             {tab === "overview" && (

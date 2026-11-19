@@ -22,6 +22,7 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
   onToggle: (date: string, blockedId?: string) => void;
   onOpenBooking: (b: Booking) => void;
 }) {
+  const [ticked, setTicked] = useState<string | null>(null);
   const [cursor, setCursor] = useState(() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); return d; });
   const [dir, setDir] = useState(0);
   const todayKey = ymd(new Date());
@@ -98,13 +99,13 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
                 <button
                   key={key}
                   disabled={past && !bks.length}
-                  onClick={() => (bks.length ? onOpenBooking(bks[0]) : onToggle(key, blk?.id))}
+                  onClick={() => { if (bks.length) onOpenBooking(bks[0]); else { setTicked(key); onToggle(key, blk?.id); } }}
                   title={bks.length ? bks.map((b) => b.client_name).join(t("،")) : blk ? t("محجوب{0} · {1} لفتحه", [blk.reason ? ` — ${blk.reason}` : "", g("انقري", "انقر")]) : g(t("انقري لحجب هذا اليوم"), t("انقر لحجب هذا اليوم"))}
                   className={`group relative flex aspect-square sm:aspect-auto sm:h-14 flex-col items-center justify-center rounded-xl text-sm tabular-nums transition-colors
                     ${bks.length ? "bg-gold/15 text-foreground hover:bg-gold/25" : blk ? "bg-secondary text-muted-foreground" : past ? "text-muted-foreground/40" : "hover:bg-secondary"}
                     ${isToday ? "ring-2 ring-gold/60" : ""}`}
                 >
-                  <span className={blk && !bks.length ? "line-through decoration-muted-foreground/60" : ""}>{d.getDate()}</span>
+                  <span key={ticked === key ? `t-${!!blk}` : "n"} className={`inline-block ${ticked === key ? "day-tick" : ""} ${blk && !bks.length ? "line-through decoration-muted-foreground/60" : ""}`}>{d.getDate()}</span>
                   {bks.length > 0 && (
                     <span className="absolute bottom-1.5 flex gap-0.5">
                       {bks.slice(0, 3).map((_, j) => (

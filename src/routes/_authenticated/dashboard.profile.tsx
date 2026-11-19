@@ -709,12 +709,13 @@ function ImgPicker({ label, url, onPick, aspect = "aspect-square", hint }: any) 
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  useEffect(() => setLoaded(false), [url]);
   return (
     <div>
       <div className="text-sm mb-2">{tx(label)}</div>
       <button
         onClick={() => ref.current?.click()}
-        className={`group relative w-full ${aspect} bg-secondary rounded-xl overflow-hidden border border-border grid place-items-center hover:border-gold/50 transition-colors`}
+        className={`group relative w-full ${aspect} bg-secondary rounded-xl overflow-hidden border border-border grid place-items-center hover:border-gold/50 transition-colors ${url && loaded ? "img-settle" : ""}`}
       >
         {url ? (
           <img src={url} onLoad={() => setLoaded(true)} className={`w-full h-full object-cover transition-all duration-700 ${loaded ? "blur-0" : "blur-md"}`} alt="" />

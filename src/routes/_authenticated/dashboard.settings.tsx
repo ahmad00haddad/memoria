@@ -414,7 +414,7 @@ function AccentDot({ color, label, on, onPick }: { color?: string; label: string
 function Block({ icon, title, hint, children }: { icon: React.ReactNode; title: string; hint?: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+    <div className="rise-in rounded-2xl border border-border bg-card p-4 sm:p-5">
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center gap-2 text-start sm:pointer-events-none">
         <span className="grid h-8 w-8 place-items-center rounded-lg bg-secondary text-gold [&_svg]:h-4 [&_svg]:w-4">{icon}</span>
         <h2 className="font-serif text-xl flex-1">{title}</h2>

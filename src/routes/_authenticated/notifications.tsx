@@ -141,7 +141,7 @@ function NotificationsPage() {
                           onClick={() => open(n)}
                           className={`group flex w-full items-start gap-3 p-4 text-start transition-colors hover:bg-secondary/50 ${n.link ? "cursor-pointer" : "cursor-default"}`}
                         >
-                          <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full transition-colors duration-500 ${n.is_read ? "bg-transparent" : "bg-gold"}`} aria-label={n.is_read ? undefined : tr("غير مقروء")} />
+                          <span className={`dot-read mt-1.5 h-2 w-2 shrink-0 rounded-full bg-gold ${n.is_read ? "scale-0 opacity-0" : ""}`} aria-label={n.is_read ? undefined : tr("غير مقروء")} />
                           <span className="min-w-0 flex-1">
                             <span className={`block ${n.is_read ? "font-normal" : "font-semibold"}`}>{tx(n.title)}</span>
                             {n.body && <span className="mt-1 block text-sm text-muted-foreground">{tx(n.body)}</span>}

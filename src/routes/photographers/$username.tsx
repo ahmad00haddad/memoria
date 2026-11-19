@@ -320,6 +320,12 @@ function PhotographerPage() {
   const { scrollYProgress } = useScroll();
   const progressX = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.3 });
 
+  // no client tour over the "failed to load" message
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: loadFailed }));
+    return () => { window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: false })); };
+  }, [loadFailed]);
+
   if (loading) return seo ? <SeoPreview seo={seo} /> : <FallbackPage>{tr("جاري التحميل…")}</FallbackPage>;
   if (loadFailed) return (
     <FallbackPage>
@@ -624,7 +630,7 @@ function PhotographerPage() {
               const features = parseFeatures(p.description);
               return (
                 <RiseIn key={p.id} index={idx} className={`h-full shrink-0 snap-center sm:w-auto ${all.length > 1 ? "w-[85%]" : "w-full"}`}>
-                <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant border-border`}>
+                <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant border-border ${pickedPackageId === p.id ? "pkg-picked" : ""}`}>
                   <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "photo_video" ? tr("صور + فيديو") : p.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")}</div>
                   {/* word joiners keep a range like "3–4" on one line */}
                   <h3 className="font-serif text-2xl mb-1">{tx(p.label).replace(/(\d)\s*([–-])\s*(\d)/g, "$1⁠$2⁠$3")}</h3>
