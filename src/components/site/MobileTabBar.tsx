@@ -35,101 +35,42 @@ export function MobileTabBar() {
   // المصوّرة المسجّلة: نفس شريط اللوحة في كل مكان (لا شريطين مختلفين)
   if (authed && isPhotographer) return <MobileBottomNav />;
 
+  const tab = (to: string, label: string, Icon: typeof Home, active: boolean) => (
+    <Link
+      key={to}
+      to={to as any}
+      aria-label={label}
+      title={label}
+      className={`elastic-press relative grid h-14 w-14 place-items-center rounded-full transition-colors duration-300 ${active ? "text-charcoal" : "text-ivory/70 hover:text-ivory"}`}
+    >
+      {active && (
+        <motion.span
+          layoutId="visitor-nav-active"
+          className="absolute inset-0 rounded-full bg-ivory shadow-md"
+          transition={{ type: "spring", stiffness: 520, damping: 22, mass: 0.9 }}
+        />
+      )}
+      <Icon key={String(active)} className={`relative h-[22px] w-[22px] ${active ? "elastic-bump" : ""}`} strokeWidth={1.75} />
+    </Link>
+  );
+
+  const showClient = visitorRole === "client" || (!visitorRole && !isPhotographer);
+  const showPhotog = !showClient && (visitorRole === "photographer" || isPhotographer);
+
   return (
-    <div className="sm:hidden fixed bottom-0 end-0 start-0 z-50 bg-background/95 backdrop-blur-md border-t border-border pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around h-16">
-        
-        {/* رابط الرئيسية (موجود دائماً) */}
-        <Link
-          to="/"
-          className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-            isActive("/") ? "text-gold" : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Home className="h-5 w-5" />
-          <span className="text-[11px] font-medium">{tr("الرئيسية")}</span>
-        </Link>
-
-        {/* الروابط الديناميكية حسب الدور */}
-        {(visitorRole === "client" || (!visitorRole && !isPhotographer)) ? (
-          <>
-            <Link
-              to="/search"
-              className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-                isActive("/search") ? "text-gold" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Search className="h-5 w-5" />
-              <span className="text-[11px] font-medium">{tr("البحث")}</span>
-            </Link>
-            <Link
-              to="/guide"
-              className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-                isActive("/guide") ? "text-gold" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <HelpCircle className="h-5 w-5" />
-              <span className="text-[11px] font-medium">{tr("كيف يعمل")}</span>
-            </Link>
-          </>
-        ) : (visitorRole === "photographer" || isPhotographer) ? (
-          <>
-            <Link
-              to="/for-photographers"
-              className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-                isActive("/for-photographers") ? "text-gold" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Briefcase className="h-5 w-5" />
-              <span className="text-[11px] font-medium">{tr("المميزات")}</span>
-            </Link>
-            {!authed && (
-              <Link
-                to="/pricing"
-                className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-                  isActive("/pricing") ? "text-gold" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Tag className="h-5 w-5" />
-                <span className="text-[11px] font-medium">{tr("الأسعار")}</span>
-              </Link>
-            )}
-          </>
-        ) : null}
-
-        {/* رابط التسجيل / لوحة التحكم */}
-        {authed ? (
-          <Link
-            to="/dashboard"
-            className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-              isActive("/dashboard") && !isActive("/dashboard/profile") ? "text-gold" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <LayoutDashboard className="h-5 w-5" />
-            <span className="text-[11px] font-medium">{tr("لوحتي")}</span>
-          </Link>
-        ) : (visitorRole === "photographer") ? (
-          <Link
-            to="/photographers/join"
-            className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-              isActive("/photographers/join") ? "text-gold" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <PlusCircle className="h-5 w-5" />
-            <span className="text-[11px] font-medium">{tr("انضمي")}</span>
-          </Link>
-        ) : (
-          <Link
-            to="/login"
-            className={`elastic-press flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
-              isActive("/login") ? "text-gold" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <User className="h-5 w-5" />
-            <span className="text-[11px] font-medium">{tr("للمصوّرات")}</span>
-          </Link>
-        )}
+    <nav className="vt-bottom-nav sm:hidden fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 pointer-events-none">
+      <div className="pointer-events-auto flex items-center justify-around gap-1 rounded-full border border-white/10 bg-charcoal/95 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
+        {tab("/", tr("الرئيسية"), Home, isActive("/"))}
+        {showClient && tab("/search", tr("البحث"), Search, isActive("/search"))}
+        {showClient && tab("/guide", tr("كيف يعمل"), HelpCircle, isActive("/guide"))}
+        {showPhotog && tab("/for-photographers", tr("المميزات"), Briefcase, isActive("/for-photographers"))}
+        {showPhotog && !authed && tab("/pricing", tr("الأسعار"), Tag, isActive("/pricing"))}
+        {authed
+          ? tab("/dashboard", tr("لوحتي"), LayoutDashboard, isActive("/dashboard") && !isActive("/dashboard/profile"))
+          : visitorRole === "photographer"
+            ? tab("/photographers/join", tr("انضمي"), PlusCircle, isActive("/photographers/join"))
+            : tab("/login", tr("للمصوّرات"), User, isActive("/login"))}
       </div>
-    </div>
+    </nav>
   );
 }

@@ -205,7 +205,7 @@ function SearchPage() {
       await queryClient.invalidateQueries({ queryKey: ["search"] });
       hapticVibrate("success");
     }}>
-      <div className="min-h-screen bg-background sm:pb-0 pb-20">
+      <div className="min-h-screen bg-background sm:pb-0 pb-28">
         <div className="hidden sm:block">
           <Header />
         </div>

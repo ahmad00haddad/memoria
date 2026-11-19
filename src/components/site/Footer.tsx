@@ -111,7 +111,7 @@ export function Footer() {
         </div>
       </div>
       {/* مساحة للشريط السفلي الثابت على الهاتف كي لا يغطي آخر سطر */}
-      <div aria-hidden className="h-[calc(4.5rem+env(safe-area-inset-bottom))] sm:hidden" />
+      <div aria-hidden className="h-[calc(6rem+env(safe-area-inset-bottom))] sm:hidden" />
     </footer>
   );
 }
