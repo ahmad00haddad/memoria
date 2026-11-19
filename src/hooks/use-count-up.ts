@@ -32,7 +32,9 @@ export function useCountUp(target: number, duration = 1100): number {
     let raf = 0;
     const tick = (now: number) => {
       const t = Math.min(1, (now - startTime) / duration);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      // easeOutBack: passes the target slightly, then settles on it (elastic feel)
+      const c1 = 1.2, c3 = c1 + 1;
+      const eased = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
       const v = from + (target - from) * eased;
       setValue(v);
       lastRef.current = v;

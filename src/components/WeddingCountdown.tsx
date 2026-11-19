@@ -67,7 +67,7 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
           ].map((u) => (
             <div key={u.l} className="w-[4.5rem] rounded-xl bg-background/70 py-3 ring-1 ring-border sm:w-24">
               <div className="font-serif text-3xl tabular-nums sm:text-4xl" aria-live={u.l === "يوم" ? "polite" : "off"}>
-                {u.v.toLocaleString(locale("ar-JO"))}
+                <span key={u.v} className="elastic-bump">{u.v.toLocaleString(locale("ar-JO"))}</span>
               </div>
               <div className="mt-1 text-xs text-muted-foreground">{tx(u.l)}</div>
             </div>

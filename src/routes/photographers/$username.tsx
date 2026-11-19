@@ -1132,7 +1132,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     const bookingRef = success.token.slice(0, 8).toUpperCase();
     return (
       <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
-        <div className="mb-3 flex justify-center"><DrawIcon duration={1.1}><CheckCircle2 className="h-14 w-14 text-emerald-600" /></DrawIcon></div>
+        <div className="mb-3 flex justify-center">
+          <span className="relative inline-block">
+            <DrawIcon duration={1.1}><CheckCircle2 className="h-14 w-14 text-emerald-600" /></DrawIcon>
+            <span className="success-burst" aria-hidden>
+              {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((a) => <i key={a} style={{ "--a": `${a}deg` } as React.CSSProperties} />)}
+            </span>
+          </span>
+        </div>
         <h2 className="font-serif text-3xl mb-2">{success.verify ? tr("بقيت خطوة واحدة!") : tr("تم إرسال طلبك!")}</h2>
         <p className="text-muted-foreground mb-5">
           {success.verify ? tr("أكّدي طلبك ليصل إلى") + profile.display_name + "." : tr("تم إخطار {0} وسيتم التواصل معكِ قريبًا.", [profile.display_name])}
@@ -1254,8 +1261,15 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
         <div className="flex items-center gap-2 mb-2">
           {[1, 2, 3].map((n) => (
             <div key={n} className="flex-1 flex items-center gap-2">
-              <div className={`h-7 w-7 grid place-items-center rounded-full text-xs font-semibold border transition-colors duration-500 ${step >= n ? "bg-charcoal text-ivory border-charcoal" : "bg-background text-muted-foreground border-border"}`}>{tx(n)}</div>
-              <div className={`h-1 flex-1 rounded-full transition-colors duration-700 ${step > n ? "bg-charcoal" : step === n ? "bg-gold/60" : "bg-border"}`} />
+              <div key={`${n}-${step >= n}`} className={`h-7 w-7 grid place-items-center rounded-full text-xs font-semibold border transition-colors duration-500 ${step >= n ? "elastic-dot bg-charcoal text-ivory border-charcoal" : "bg-background text-muted-foreground border-border"}`}>{tx(n)}</div>
+              <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-border">
+                <motion.div
+                  className={`absolute inset-0 rounded-full ltr:origin-left rtl:origin-right ${step > n ? "bg-charcoal" : "bg-gold/60"}`}
+                  initial={false}
+                  animate={{ scaleX: step > n ? 1 : step === n ? 0.5 : 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 14 }}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -1394,10 +1408,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <button type="button" onClick={() => setAddonQty({ ...addonQty, [a.id]: Math.max(0, qty - 1) })}
-                                className="w-7 h-7 grid place-items-center border border-border rounded-sm hover:bg-secondary">−</button>
-                        <span className="w-6 text-center">{tx(qty)}</span>
+                                className="elastic-press w-7 h-7 grid place-items-center border border-border rounded-sm hover:bg-secondary">−</button>
+                        <span className="w-6 text-center"><span key={qty} className="elastic-bump">{tx(qty)}</span></span>
                         <button type="button" onClick={() => setAddonQty({ ...addonQty, [a.id]: qty + 1 })}
-                                className="w-7 h-7 grid place-items-center border border-border rounded-sm hover:bg-secondary">+</button>
+                                className="elastic-press w-7 h-7 grid place-items-center border border-border rounded-sm hover:bg-secondary">+</button>
                       </div>
                     </div>
                     {a.description && <div className="text-xs text-muted-foreground mt-1 whitespace-pre-line">{tx(a.description)}</div>}

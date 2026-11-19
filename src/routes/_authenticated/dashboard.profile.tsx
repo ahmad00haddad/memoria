@@ -378,7 +378,7 @@ function ProfilePage() {
                     setDragOver(false);
                     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) onPortfolio(e.dataTransfer.files);
                   }}
-                  className={`aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground group active:scale-95 ${dragOver ? "border-gold bg-gold/10 scale-105" : "border-border hover:bg-secondary"}`}
+                  className={`aspect-square border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 text-muted-foreground group active:scale-95 ${dragOver ? "jelly-wobble border-gold bg-gold/10 scale-105" : "border-border hover:bg-secondary"}`}
                 >
                   {portfolioUploading ? (
                     <span className="h-5 w-5 animate-spin rounded-full border-2 border-gold/30 border-t-gold" />

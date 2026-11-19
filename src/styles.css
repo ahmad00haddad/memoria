@@ -463,6 +463,29 @@ button[data-selected-single="true"] { animation: elastic-day 0.5s cubic-bezier(0
   0% { opacity: 1; transform: rotate(var(--a)) translateY(-6px) scale(1); }
   100% { opacity: 0; transform: rotate(var(--a)) translateY(-20px) scale(0.3); }
 }
+/* Big cards: a softer press */
+.elastic-press-soft { transition: scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.elastic-press-soft:active { scale: 0.98; transition-duration: 0.1s; }
+/* Gold burst around the "request sent" check */
+.success-burst { position: absolute; inset: 0; pointer-events: none; }
+.success-burst i { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 9999px; background: var(--gold); opacity: 0; animation: success-burst 0.9s ease-out 0.55s; }
+.success-burst i:nth-child(even) { width: 4px; height: 4px; margin: -2px; animation-delay: 0.65s; }
+@keyframes success-burst {
+  0% { opacity: 1; transform: rotate(var(--a)) translateY(-20px) scale(1); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(-62px) scale(0.3); }
+}
+/* Upload zones wobble like jelly when a file is dragged over */
+.jelly-wobble { animation: jelly-wobble 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes jelly-wobble {
+  0% { scale: 1; } 25% { scale: 1.04 0.96; } 50% { scale: 0.98 1.03; } 75% { scale: 1.01 0.99; } 100% { scale: 1.01; }
+}
+/* Slider thumbs stretch while dragged */
+.jelly-thumb { transition: scale 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease; }
+.jelly-thumb:active { scale: 1.35 0.8; transition-duration: 0.12s, 0.2s; }
+/* Text fields: the focus ring pops out slightly, then settles */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), textarea, select {
+  transition: box-shadow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
 /* Icon swap: springs in with a twist (re-keyed on change) */
 .elastic-pop { animation: elastic-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
 @keyframes elastic-pop {
@@ -475,7 +498,9 @@ button[data-selected-single="true"] { animation: elastic-day 0.5s cubic-bezier(0
   button:active .elastic-thumb { scale: none; }
   .elastic-press, .elastic-press:active { transition: none; scale: none; }
   .elastic-pop, .elastic-bump, .elastic-dot, button[data-selected-single="true"] { animation: none; }
-  .fav-burst { display: none; }
+  .fav-burst, .success-burst { display: none; }
+  .jelly-wobble { animation: none; }
+  .elastic-press-soft, .elastic-press-soft:active, .jelly-thumb, .jelly-thumb:active { transition: none; scale: none; }
   .elastic-track[data-landed] .elastic-thumb { animation: none; }
 }
 

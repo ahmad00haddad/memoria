@@ -247,7 +247,7 @@ export function UploadZone({
         onDragLeave={handleDragLeave}
         className={`
           border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-all
-          ${isDragging ? "border-gold bg-gold/5 scale-[1.01]" : "border-border hover:border-gold/50 hover:bg-secondary/30"}
+          ${isDragging ? "jelly-wobble border-gold bg-gold/5 scale-[1.01]" : "border-border hover:border-gold/50 hover:bg-secondary/30"}
           ${status === "uploading" ? "pointer-events-none opacity-70" : ""}
           ${status === "error" ? "border-destructive/50 bg-destructive/5" : ""}
           ${status === "success" ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/20" : ""}

@@ -21,6 +21,7 @@ import {
 } from "@/lib/search.functions";
 import { Drawer } from "vaul";
 import { CompareMode } from "@/components/search/CompareMode";
+import { PriceRange } from "@/components/search/PriceRange";
 import { typoCorrect } from "@/lib/searchUtils";
 import { playSound } from "@/lib/sounds";
 import { BarChart2 } from "lucide-react";
@@ -300,6 +301,7 @@ function SearchPage() {
                               className="w-1/2 rounded-sm border border-input bg-background px-3 py-2.5 text-sm"
                             />
                           </div>
+                          <PriceRange min={minPrice} max={maxPrice} onChange={(a, b) => { setMinPrice(a); setMaxPrice(b); }} />
                         </div>
                         <div className="space-y-2">
                           <label htmlFor="search-sort-m" className="text-xs text-muted-foreground">{tr("الترتيب")}</label>
@@ -433,18 +435,22 @@ function SearchPage() {
           </div>
 
           <div className="hidden sm:flex flex-wrap items-center gap-3 mt-3">
-            <label htmlFor="search-sort" className="text-xs text-muted-foreground">{tr("ترتيب:")}</label>
-            <select
-              id="search-sort"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SearchSort)}
-              className="rounded-sm border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gold/60"
-            >
-              <option value="featured">{tr("المقترحة أولاً")}</option>
-              <option value="rating">{tr("الأعلى تقييماً")}</option>
-              <option value="price_asc">{tr("السعر: الأقل أولاً")}</option>
-              <option value="price_desc">{tr("السعر: الأعلى أولاً")}</option>
-            </select>
+            <span className="text-xs text-muted-foreground">{tr("ترتيب:")}</span>
+            <div role="radiogroup" aria-label={tr("ترتيب")} className="inline-flex items-center gap-1 rounded-full bg-secondary/60 p-1">
+              {([["featured", tr("المقترحة أولاً")], ["rating", tr("الأعلى تقييماً")], ["price_asc", tr("السعر: الأقل أولاً")], ["price_desc", tr("السعر: الأعلى أولاً")]] as const).map(([v, label]) => (
+                <button
+                  key={v}
+                  type="button"
+                  role="radio"
+                  aria-checked={sort === v}
+                  onClick={() => setSort(v)}
+                  className={`elastic-press relative rounded-full px-3 py-1 text-xs whitespace-nowrap transition-colors ${sort === v ? "text-background font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {sort === v && <motion.span layoutId="sort-pill" transition={{ type: "spring", stiffness: 520, damping: 24 }} className="absolute inset-0 rounded-full bg-foreground" />}
+                  <span className="relative">{label}</span>
+                </button>
+              ))}
+            </div>
             {hasFilters && (
               <button
                 type="button"
@@ -474,6 +480,10 @@ function SearchPage() {
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 className="overflow-hidden"
               >
+                <div className="mt-3 pt-3 border-t border-border flex items-center gap-3">
+                  <span className="shrink-0 text-xs text-muted-foreground">{tr("السعر:")}</span>
+                  <div className="w-full max-w-sm"><PriceRange min={minPrice} max={maxPrice} onChange={(a, b) => { setMinPrice(a); setMaxPrice(b); }} /></div>
+                </div>
                 <div className="mt-3 pt-3 border-t border-border flex flex-wrap items-center gap-2">
                   <label className="text-xs text-muted-foreground">{tr("الحد الأدنى للتقييم:")}</label>
                   {[0, 3, 4, 4.5].map((r) => (
@@ -748,6 +758,7 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
     <motion.div
       ref={ref}
       layout="position"
+      className="elastic-press-soft"
       initial={{ opacity: 0, y: 40, scale: 0.96, filter: "blur(8px)" }}
       whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
       exit={{ opacity: 0, scale: 0.92, filter: "blur(6px)", transition: { duration: 0.3, ease } }}
