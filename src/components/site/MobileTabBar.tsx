@@ -1,3 +1,4 @@
+import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Search, LayoutDashboard, User, HelpCircle, Briefcase, Tag, PlusCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,6 +9,7 @@ import { t as tr, tx } from "@/i18n";
 import { MobileBottomNav } from "@/components/site/MobileBottomNav";
 
 export function MobileTabBar() {
+  const navHidden = useHideOnScroll();
   const { authed, isPhotographer } = useAuthState();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
@@ -68,7 +70,7 @@ export function MobileTabBar() {
   const showPhotog = !showClient && (visitorRole === "photographer" || isPhotographer);
 
   return (
-    <nav className="vt-bottom-nav sm:hidden fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 pointer-events-none">
+    <nav className={`vt-bottom-nav sm:hidden fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4 pointer-events-none transition-transform duration-300 ease-out ${navHidden ? "translate-y-[calc(100%+2rem)]" : "translate-y-0"}`}>
       <div className="pointer-events-auto flex items-center justify-around gap-1 rounded-full border border-white/10 bg-charcoal/95 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
         {tab("/", tr("الرئيسية"), Home, isActive("/"))}
         {showClient && tab("/search", tr("البحث"), Search, isActive("/search"))}

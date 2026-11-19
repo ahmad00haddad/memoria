@@ -1,3 +1,4 @@
+import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
@@ -28,6 +29,7 @@ const right: NavItem[] = [
 ];
 
 export function MobileBottomNav() {
+  const navHidden = useHideOnScroll();
   const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
 
@@ -67,7 +69,7 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <nav className="vt-bottom-nav md:hidden fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 pointer-events-none">
+      <nav className={`vt-bottom-nav md:hidden fixed inset-x-0 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 pointer-events-none transition-transform duration-300 ease-out ${navHidden ? "translate-y-[calc(100%+2rem)]" : "translate-y-0"}`}>
         <ul className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-charcoal/95 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-md">
           {left.map(tab)}
           <li className="flex-none">
