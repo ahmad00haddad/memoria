@@ -151,7 +151,7 @@ export function Header() {
         )}
         <Link to="/notifications" aria-label={t("الإشعارات")} className="relative grid h-10 w-10 place-items-center text-muted-foreground">
           <Bell className="h-5 w-5" />
-          {unreadNotifs > 0 && <span className="absolute end-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] text-white">{unreadNotifs > 9 ? "9+" : unreadNotifs}</span>}
+          {unreadNotifs > 0 && <span key={unreadNotifs} className="elastic-dot absolute end-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] text-white">{unreadNotifs > 9 ? "9+" : unreadNotifs}</span>}
         </Link>
       </div>
     )}
@@ -234,7 +234,7 @@ export function Header() {
               <Link to="/dashboard" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors" aria-label={t("الرسائل")}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 {unreadMsgs > 0 && (
-                  <span className="absolute -top-1 -end-1 bg-blue-600 text-white text-[11px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{tx(unreadMsgs)}</span>
+                  <span key={unreadMsgs} className="elastic-dot absolute -top-1 -end-1 bg-blue-600 text-white text-[11px] min-w-[18px] h-[18px] grid place-items-center rounded-full px-1">{tx(unreadMsgs)}</span>
                 )}
               </Link>
               <Link to="/notifications" className="relative px-2 py-2 rounded-sm hover:bg-secondary transition-colors group" aria-label={t("إشعارات")}>
@@ -354,7 +354,7 @@ function NavLink({
           className="absolute bottom-0 end-0 start-0 h-px bg-gold origin-right"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.9, delay: 0.3, ease: [0.65, 0, 0.35, 1] }}
+          transition={{ type: "spring", stiffness: 160, damping: 11, delay: 0.3 }}
         />
       )}
       <motion.span

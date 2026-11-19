@@ -630,10 +630,10 @@ function CompletionRing({ value }: { value: number }) {
           strokeDasharray={c}
           initial={{ strokeDashoffset: c }}
           animate={{ strokeDashoffset: c * (1 - value / 100) }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
+          transition={{ type: "spring", stiffness: 90, damping: 11 }}
         />
       </svg>
-      <span className="absolute text-xs font-bold tabular-nums">{tr("{0}٪", [value])}</span>
+      <span key={value} className="elastic-bump absolute text-xs font-bold tabular-nums">{tr("{0}٪", [value])}</span>
     </div>
   );
 }

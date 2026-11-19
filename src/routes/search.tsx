@@ -258,7 +258,7 @@ function SearchPage() {
                 <Drawer.Root open={drawerOpen} onOpenChange={setDrawerOpen}>
                   <Drawer.Trigger asChild>
                     <button type="button" aria-label={tr("الفلاتر")} className="relative flex items-center justify-center w-10 h-10 rounded-full bg-secondary/50 text-foreground touch-card">
-                      {drawerFilterCount > 0 && <span className="absolute -top-1 -end-1 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-bold text-charcoal">{tx(drawerFilterCount)}</span>}
+                      {drawerFilterCount > 0 && <span key={drawerFilterCount} className="elastic-dot absolute -top-1 -end-1 grid h-4 min-w-4 place-items-center rounded-full bg-gold px-1 text-[9px] font-bold text-charcoal">{tx(drawerFilterCount)}</span>}
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
                     </button>
                   </Drawer.Trigger>
@@ -409,7 +409,7 @@ function SearchPage() {
                   onClick={() => { hapticVibrate("light"); setFavsOnly((v) => !v); }}
                   className={`elastic-press min-h-10 px-4 py-2 rounded-full text-[13px] whitespace-nowrap transition-colors flex items-center gap-1 touch-card ${favsOnly ? "bg-charcoal text-ivory font-medium" : "bg-secondary/50 text-foreground border border-border"}`}
                 >
-                  <Heart className="h-3.5 w-3.5" />{tr("مفضّلتي ({0})", [favs.length])}</button>
+                  <Heart className="h-3.5 w-3.5" /><span key={favs.length} className="elastic-bump">{tr("مفضّلتي ({0})", [favs.length])}</span></button>
               )}
               <div className="w-px h-5 bg-border mx-1" />
               <button
@@ -521,7 +521,7 @@ function SearchPage() {
                       onClick={() => setFavsOnly((v) => !v)}
                       className={`elastic-press inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${favsOnly ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
-                      <Heart className="h-3 w-3" />{" "}{tr("مفضّلتي ({0})", [favs.length])}</button>
+                      <Heart className="h-3 w-3" />{" "}<span key={favs.length} className="elastic-bump">{tr("مفضّلتي ({0})", [favs.length])}</span></button>
                   )}
                 </div>
               </motion.div>
@@ -703,9 +703,11 @@ function SearchPage() {
       <AnimatePresence>
         {showScroll && (
           <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 24, scale: 0.6 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 420, damping: 16 }}
+            whileTap={{ scale: 0.85 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label={tr("العودة للأعلى")}
             className="fixed bottom-24 sm:bottom-8 start-4 sm:start-8 z-50 h-12 w-12 rounded-full bg-background/80 backdrop-blur-md border border-border shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center justify-center text-foreground hover:bg-background transition-colors"

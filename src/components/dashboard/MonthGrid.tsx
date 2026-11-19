@@ -63,8 +63,8 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
           {!isCurrentMonth && (
             <button onClick={() => { const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0); setDir(d < cursor ? -1 : 1); setCursor(d); }} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">{t("اليوم")}</button>
           )}
-          <button onClick={() => shift(-1)} aria-label={t("الشهر السابق")} className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary"><ChevronRight className="h-4 w-4" /></button>
-          <button onClick={() => shift(1)} aria-label={t("الشهر التالي")} className="grid h-8 w-8 place-items-center rounded-full hover:bg-secondary"><ChevronLeft className="h-4 w-4" /></button>
+          <button onClick={() => shift(-1)} aria-label={t("الشهر السابق")} className="elastic-press grid h-8 w-8 place-items-center rounded-full hover:bg-secondary"><ChevronRight className="h-4 w-4" /></button>
+          <button onClick={() => shift(1)} aria-label={t("الشهر التالي")} className="elastic-press grid h-8 w-8 place-items-center rounded-full hover:bg-secondary"><ChevronLeft className="h-4 w-4" /></button>
         </div>
       </div>
 
@@ -80,7 +80,7 @@ export function MonthGrid({ bookings, blocked, onToggle, onOpenBooking }: {
             initial={{ x: dir > 0 ? "-30%" : "30%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: dir > 0 ? "30%" : "-30%", opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ x: { type: "spring", stiffness: 320, damping: 22 }, opacity: { duration: 0.2 } }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.2}

@@ -632,3 +632,29 @@ html[data-pfont][lang="en"] :is(h1, h2, h3, .font-serif) { font-family: var(--pf
   .app-shell a:active, .app-shell button:not(:disabled):active, .vt-bottom-nav a:active, .vt-bottom-nav button:active { transform: scale(0.97); transition: transform 80ms ease-out; }
   .app-shell { overscroll-behavior-y: contain; }
 }
+
+/* Checkboxes and radios pop when they turn on */
+input[type="checkbox"]:checked:focus, input[type="radio"]:checked:focus { animation: check-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes check-pop { 0% { scale: 0.6; } 60% { scale: 1.2; } 100% { scale: 1; } }
+/* Footer links: the underline stretches in from the reading start, with a bounce */
+@media (hover: hover) {
+  footer li a { background: linear-gradient(currentColor, currentColor) no-repeat; background-size: 0% 1px; background-position: right bottom 0.3rem; transition: background-size 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease; }
+  html[dir="ltr"] footer li a { background-position: left bottom 0.3rem; }
+  footer li a:hover { background-size: 100% 1px; }
+}
+/* Day picker: weeks slide in with a little overshoot when the month changes */
+.rdp-weeks_after_enter { animation: cal-in-next 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.rdp-weeks_before_enter { animation: cal-in-prev 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.rdp-weeks_after_exit, .rdp-weeks_before_exit, .rdp-caption_after_exit, .rdp-caption_before_exit { animation: cal-out 0.2s ease forwards; }
+.rdp-caption_after_enter, .rdp-caption_before_enter { animation: cal-fade 0.3s ease both; }
+@keyframes cal-in-next { from { translate: calc(var(--cal-dir, 1) * 40%) 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+@keyframes cal-in-prev { from { translate: calc(var(--cal-dir, 1) * -40%) 0; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+@keyframes cal-out { to { opacity: 0; } }
+@keyframes cal-fade { from { opacity: 0; } to { opacity: 1; } }
+.rdp-root[dir="rtl"], [dir="rtl"] .rdp-root { --cal-dir: -1; }
+@media (prefers-reduced-motion: reduce) {
+  input[type="checkbox"]:checked:focus, input[type="radio"]:checked:focus { animation: none; }
+  footer li a { transition: none; }
+  .rdp-weeks_after_enter, .rdp-weeks_before_enter, .rdp-caption_after_enter, .rdp-caption_before_enter { animation: none; }
+  .rdp-weeks_after_exit, .rdp-weeks_before_exit, .rdp-caption_after_exit, .rdp-caption_before_exit { animation: cal-out 0.01s forwards; }
+}

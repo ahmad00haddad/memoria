@@ -68,12 +68,13 @@ export function AutosaveChip({ status, retry }: { status: AutosaveStatus; retry:
     <AnimatePresence>
       {show && (
         <motion.div
-          initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, y: -12, scale: 0.8 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 500, damping: 18 }}
           className="pointer-events-none fixed inset-x-0 top-[calc(3.5rem+env(safe-area-inset-top))] z-50 flex justify-center sm:top-20"
         >
-          <div role="status" className={`pointer-events-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs shadow-lg ${status === "error" ? "bg-destructive text-white" : "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal"}`}>
+          <div key={status} role="status" className={`elastic-bump pointer-events-auto inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs shadow-lg ${status === "error" ? "bg-destructive text-white" : "bg-charcoal text-ivory dark:bg-gold dark:text-charcoal"}`}>
             {status === "saving" && <><Loader2 className="h-3.5 w-3.5 animate-spin" />{t("يُحفظ…")}</>}
-            {status === "saved" && <><Check className="h-3.5 w-3.5" />{t("حُفظ")}</>}
+            {status === "saved" && <><Check className="elastic-pop h-3.5 w-3.5" />{t("حُفظ")}</>}
             {status === "error" && <><AlertCircle className="h-3.5 w-3.5" />{t("تعذّر الحفظ")}<button type="button" onClick={retry} className="ms-1 underline">{t("إعادة")}</button></>}
           </div>
         </motion.div>

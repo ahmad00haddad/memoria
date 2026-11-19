@@ -476,7 +476,8 @@ function TextField({ label, placeholder, value, max, onChange, className = "" }:
     <div className={className}>
       <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
         <span>{label}</span>
-        <span className="tabular-nums">{value.length}/{max}</span>
+        {/* near the limit the counter turns gold, then red, and bumps on every key */}
+        <span key={max - value.length <= 10 ? value.length : "far"} className={`tabular-nums transition-colors ${max - value.length <= 10 ? "elastic-bump font-medium " + (value.length >= max ? "text-destructive" : "text-gold") : ""}`}>{value.length}/{max}</span>
       </div>
       <input value={value} maxLength={max} placeholder={placeholder} onChange={(e) => onChange(e.target.value.replace(/[\r\n]/g, ""))}
         className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-gold/60 focus:outline-none" />
