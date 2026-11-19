@@ -31,7 +31,8 @@ export function useCountUp(target: number, duration = 1100): number {
     const startTime = performance.now();
     let raf = 0;
     const tick = (now: number) => {
-      const t = Math.min(1, (now - startTime) / duration);
+      // rAF time can be a little before startTime; clamp so the curve never starts below the origin
+      const t = Math.max(0, Math.min(1, (now - startTime) / duration));
       // easeOutBack: passes the target slightly, then settles on it (elastic feel)
       const c1 = 1.2, c3 = c1 + 1;
       const eased = 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
