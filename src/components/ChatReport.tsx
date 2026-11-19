@@ -22,7 +22,7 @@ export function ChatReport({ send, label }: { send: (details: string) => Promise
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
-          <div role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} className="relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl">
+          <div role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} className="elastic-modal relative w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-2xl">
             <button onClick={() => setOpen(false)} aria-label={tr("إغلاق")} className="absolute end-3 top-3 text-muted-foreground"><X className="h-5 w-5" /></button>
             {done ? (
               <div className="py-4 text-center">

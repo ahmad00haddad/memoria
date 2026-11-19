@@ -40,7 +40,7 @@ export function ReportProfile({ photographerId }: { photographerId: string }) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
           <div role="dialog" aria-modal="true" aria-labelledby="report-title" onClick={(e) => e.stopPropagation()}
-            className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-background p-6 shadow-2xl">
+            className="elastic-modal relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-border bg-background p-6 shadow-2xl">
             <button onClick={() => setOpen(false)} aria-label={tr("إغلاق")} className="absolute end-3 top-3 text-muted-foreground"><X className="h-5 w-5" /></button>
             {done ? (
               <div className="py-6 text-center">
