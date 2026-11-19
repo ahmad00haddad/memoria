@@ -42,15 +42,15 @@ function BlogIndex() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container-editorial max-w-3xl py-12 sm:py-20">
+      <main className="container-editorial max-w-3xl py-8 sm:py-20">
         <h1 className="font-serif text-3xl sm:text-5xl mb-3">{t("المدوّنة")}</h1>
-        <p className="text-muted-foreground mb-10 leading-relaxed">{tx(DESC)}</p>
-        <ul className="space-y-5">
+        <p className="text-muted-foreground mb-6 sm:mb-10 leading-relaxed">{tx(DESC)}</p>
+        <ul className="space-y-3 sm:space-y-5">
           {BLOG_POSTS.map((p) => (
             <li key={p.slug}>
-              <Link to="/blog/$slug" params={{ slug: p.slug }} className="block rounded-sm border border-border bg-card p-5 hover:border-gold/40 transition">
-                <h2 className="font-serif text-xl mb-2">{tx(p.title)}</h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">{tx(p.excerpt)}</p>
+              <Link to="/blog/$slug" params={{ slug: p.slug }} className="block rounded-sm border border-border bg-card p-4 sm:p-5 hover:border-gold/40 transition">
+                <h2 className="font-serif text-lg sm:text-xl mb-1.5 sm:mb-2">{tx(p.title)}</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 sm:line-clamp-none">{tx(p.excerpt)}</p>
               </Link>
             </li>
           ))}

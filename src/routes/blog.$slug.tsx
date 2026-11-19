@@ -69,7 +69,7 @@ function BlogPostPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <main>
-        <article className="container-editorial max-w-3xl py-12 sm:py-20">
+        <article className="container-editorial max-w-3xl py-8 sm:py-20">
           <nav className="text-xs text-muted-foreground mb-4">
             <a href="/blog" className="hover:text-gold">{tr("المدوّنة")}</a>
           </nav>
@@ -79,12 +79,12 @@ function BlogPostPage() {
           </time>
           {post.sections.map((s) => (
             <section key={s.h}>
-              <h2 className="font-serif text-2xl mt-10 mb-3">{tx(s.h)}</h2>
+              <h2 className="font-serif text-xl sm:text-2xl mt-7 sm:mt-10 mb-2 sm:mb-3">{tx(s.h)}</h2>
               {s.p.map((t, i) => (
-                <p key={i} className="leading-loose mb-4">{tx(t)}</p>
+                <p key={i} className="leading-relaxed sm:leading-loose mb-3 sm:mb-4">{tx(t)}</p>
               ))}
               {s.list && (
-                <ul className="list-disc ps-6 space-y-1 mb-4 leading-loose">
+                <ul className="list-disc ps-6 space-y-1 mb-4 leading-relaxed sm:leading-loose">
                   {s.list.map((li) => (
                     <li key={li}>{tx(li)}</li>
                   ))}
@@ -93,12 +93,12 @@ function BlogPostPage() {
             </section>
           ))}
 
-          <div className="mt-12 rounded-sm border border-gold/30 bg-gold/5 p-6 text-center">
+          <div className="mt-8 sm:mt-12 rounded-sm border border-gold/30 bg-gold/5 p-5 sm:p-6 text-center">
             <p className="font-serif text-xl mb-3">{tr("جاهزة للبحث عن مصوّرتك؟")}</p>
             <Link to="/search" className="inline-block bg-charcoal text-ivory px-6 py-3 rounded-sm hover:opacity-90">{tr("تصفّحي المصوّرات")}</Link>
           </div>
 
-          <h2 className="font-serif text-xl mt-12 mb-4">{tr("مقالات ذات صلة")}</h2>
+          <h2 className="font-serif text-xl mt-8 sm:mt-12 mb-3 sm:mb-4">{tr("مقالات ذات صلة")}</h2>
           <ul className="space-y-3">
             {related.map((r) => (
               <li key={r.slug}>
