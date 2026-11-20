@@ -1,4 +1,5 @@
 import { arCount } from "@/lib/ar-count";
+import { jordanToday } from "@/lib/validation";
 import { useEffect, useState } from "react";
 import { g } from "@/hooks/use-gender";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -44,7 +45,7 @@ export function SubscriptionGuard() {
         supabase.from("bookings").select("id", { count: "exact", head: true })
           .eq("photographer_id", uid).is("deleted_at", null)
           .in("status", ["confirmed", "pending_deposit"])
-          .gte("event_date", new Date().toISOString().slice(0, 10)),
+          .gte("event_date", jordanToday()),
       ]);
       if (!sub) return;
       const trial = sub.status === "trial";

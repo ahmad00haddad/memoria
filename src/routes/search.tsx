@@ -1,4 +1,5 @@
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
+import { jordanToday } from "@/lib/validation";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { forwardRef, useEffect, useMemo, useState } from "react";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
@@ -87,7 +88,7 @@ function SearchPage() {
       const sp = new URLSearchParams(window.location.search);
       const c = sp.get("city"); const d = sp.get("date");
       if (c) setCity(c);
-      if (d && d >= new Date().toISOString().slice(0, 10)) setDate(d);
+      if (d && d >= jordanToday()) setDate(d);
     } catch { /* ignore */ }
     try {
       setFavs(JSON.parse(localStorage.getItem("memoria_favs") || "[]"));
@@ -290,7 +291,7 @@ function SearchPage() {
                             id="search-date"
                             type="date"
                             value={date}
-                            min={new Date().toISOString().slice(0, 10)}
+                            min={jordanToday()}
                             onChange={(e) => setDate(e.target.value)}
                             className={`w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm ${date ? "" : "text-muted-foreground"}`}
                           />
@@ -388,7 +389,7 @@ function SearchPage() {
               <input
                 type="date"
                 value={date}
-                min={new Date().toISOString().slice(0, 10)}
+                min={jordanToday()}
                 onChange={(e) => setDate(e.target.value)}
                 className="w-full rounded-sm border border-input bg-background px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
                 aria-label={tr("تاريخ المناسبة")}
@@ -580,7 +581,7 @@ function SearchPage() {
             <span>{tr("آخر بحث:")}</span>
             <button
               type="button"
-              onClick={() => { if (lastSearch.city) setCity(lastSearch.city); if (lastSearch.maxPrice) setMaxPrice(lastSearch.maxPrice); if (lastSearch.date && lastSearch.date >= new Date().toISOString().slice(0, 10)) setDate(lastSearch.date); }}
+              onClick={() => { if (lastSearch.city) setCity(lastSearch.city); if (lastSearch.maxPrice) setMaxPrice(lastSearch.maxPrice); if (lastSearch.date && lastSearch.date >= jordanToday()) setDate(lastSearch.date); }}
               className="rounded-full border border-dashed border-border px-3 py-1 hover:border-gold/50 hover:text-foreground"
             >
               {[lastSearch.city, lastSearch.maxPrice && tr("حتى {0} د.أ", [lastSearch.maxPrice]), lastSearch.date && new Date(lastSearch.date).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "short" })].filter(Boolean).join(" · ")}
@@ -625,7 +626,7 @@ function SearchPage() {
                   <div className="flex flex-wrap items-center justify-center gap-2">
                     {date && [-1, 1].map((n) => {
                       const d = new Date(Date.parse(date) + n * 86400000).toISOString().slice(0, 10);
-                      if (d < new Date().toISOString().slice(0, 10)) return null;
+                      if (d < jordanToday()) return null;
                       return (
                         <button key={n} onClick={() => setDate(d)} className="text-xs border border-gold/40 bg-card px-3 py-1.5 rounded-sm hover:bg-secondary">
                           {tr(n < 0 ? "يوم قبل: {0}" : "يوم بعد: {0}", [new Date(d).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })])}

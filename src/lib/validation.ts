@@ -53,3 +53,8 @@ export function nextDay(date: string): string {
 export function isTrackToken(s: unknown): s is string {
   return typeof s === "string" && /^[A-Za-z0-9_-]{16,64}$/.test(s);
 }
+
+/** «اليوم» بتوقيت الأردن (UTC+3 طوال السنة) بصيغة YYYY-MM-DD — بدل toISOString() التي تعطي يوم UTC. */
+export function jordanToday(): string {
+  return new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+}

@@ -1,4 +1,5 @@
 import { getTourState, saveTourState } from "@/components/ClientTour";
+import { jordanToday } from "@/lib/validation";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useIntro } from "@/lib/intro";
 import { useServerFn } from "@tanstack/react-start";
@@ -236,7 +237,7 @@ function Landing() {
     try {
       const ls = JSON.parse(localStorage.getItem("memoria_last_search") || "null");
       if (ls && (ls.city || ls.date)) {
-        const date = ls.date && ls.date >= new Date().toISOString().slice(0, 10) ? ls.date : undefined;
+        const date = ls.date && ls.date >= jordanToday() ? ls.date : undefined;
         const label = [ls.city, date && new Date(date).toLocaleDateString(locale("ar-JO"), { day: "numeric", month: "long" })].filter(Boolean).join(" · ");
         if (label) setResume({ label, city: ls.city || undefined, date });
       }
@@ -344,7 +345,7 @@ function Landing() {
                     <span className="relative flex-1">
                       {/* حقل التاريخ يعرض mm/dd/yyyy بلغة المتصفح؛ نخفيه بنص عربي حتى تختار العروس */}
                       {!heroDate && <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center text-sm text-muted-foreground">{tr("اختاري اليوم")}</span>}
-                      <input type="date" value={heroDate} min={new Date().toISOString().slice(0, 10)} onChange={(e) => setHeroDate(e.target.value)} aria-label={tr("تاريخ العرس")} className={`w-full bg-transparent text-sm outline-none ${heroDate ? "" : "text-transparent"}`} />
+                      <input type="date" value={heroDate} min={jordanToday()} onChange={(e) => setHeroDate(e.target.value)} aria-label={tr("تاريخ العرس")} className={`w-full bg-transparent text-sm outline-none ${heroDate ? "" : "text-transparent"}`} />
                     </span>
                   </label>
                   <button type="submit" className="group inline-flex items-center justify-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm text-ivory transition-all hover:gap-3 active:scale-[0.98] dark:bg-gold dark:text-charcoal">
