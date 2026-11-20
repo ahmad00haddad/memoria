@@ -31,6 +31,9 @@ export const askPhotographer = createServerFn({ method: "POST" })
     const admin = supabaseAdmin as any;
     const { data: prof } = await admin.from("profiles").select("id, is_published, deleted_at").eq("id", data.photographer_id).maybeSingle();
     if (!prof || !prof.is_published || prof.deleted_at) throw new Error(tr("الصفحة غير موجودة"));
+    // صفحة اشتراكها منتهٍ مخفية عن العامة (get_public_profile_data/البحث)؛ لا تستقبل أسئلة كما لا تستقبل حجوزات
+    const { data: subActive } = await admin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
+    if (!subActive) throw new Error(tr("الصفحة غير موجودة"));
     const ab = await import("@/lib/abuse.server");
     if (!(await ab.allow(`ip:${ab.clientIp()}`, "ask_ip", 6, 3600))) throw new Error(tr("أسئلة كثيرة خلال وقت قصير. انتظري قليلاً."));
     if (!(await ab.allow(`ask:${data.photographer_id}`, "ask_pid", 30, 3600))) throw new Error(tr("أسئلة كثيرة خلال وقت قصير. انتظري قليلاً."));
