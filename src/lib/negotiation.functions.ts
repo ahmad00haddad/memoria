@@ -133,11 +133,13 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
     }
 
     // فحص التوفّر دون حجز الموعد
-    const { data: busy } = await admin.rpc("is_photographer_busy", { _pid: data.photographer_id, _date: data.event_date });
+    const { data: busy, error: busyErr } = await admin.rpc("is_photographer_busy", { _pid: data.photographer_id, _date: data.event_date });
+    if (busyErr) throw new Error(tr("تعذّر التحقق من التاريخ. حاولي مرة أخرى."));
     if (busy === true) throw new Error(tr("هذا اليوم غير متاح، يرجى اختيار يوم آخر"));
-    const { data: conflict } = await admin.rpc("has_booking_conflict", {
+    const { data: conflict, error: conflictErr } = await admin.rpc("has_booking_conflict", {
       _pid: data.photographer_id, _date: data.event_date, _start: data.start_time, _end: data.end_time, _exclude: null,
     });
+    if (conflictErr) throw new Error(tr("تعذّر التحقق من التاريخ. حاولي مرة أخرى."));
     if (conflict === true) throw new Error(tr("هذا الوقت محجوز، يرجى اختيار وقت آخر"));
 
     const { data: row, error } = await admin.from("price_offers").insert({
