@@ -9,13 +9,40 @@ type SendArgs = {
   template: string;
   related_booking_id?: string | null;
   related_user_id?: string | null;
+  /** إيميل للعروس عن مصوّر/ة بعينه (بدون حجز، مثل عروض الأسعار): يُكتب النص بجنسه. */
+  about_photographer_id?: string | null;
 };
+
+// إيميل العروس يتحدث عن المصوّر بجنسه؛ إيميل المصوّر يخاطبه بجنسه
+async function genderizeEmail(args: SendArgs): Promise<SendArgs> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const g = await import("@/lib/gender.server");
+    let pid = args.about_photographer_id ?? null;
+    if (!pid && args.related_booking_id) {
+      const { data: b } = await supabaseAdmin.from("bookings").select("photographer_id, client_email").eq("id", args.related_booking_id).maybeSingle();
+      if (b && String((b as any).client_email ?? "").toLowerCase() === args.to.toLowerCase()) pid = (b as any).photographer_id;
+    }
+    if (pid) {
+      return { ...args, subject: await g.aboutPhotographer(pid, args.subject), html: await g.aboutPhotographer(pid, args.html) };
+    }
+    if (args.related_user_id) {
+      // المستلم صاحب الحساب نفسه (المصوّر/ة) ← يُخاطَب بجنسه
+      const { data: u } = await supabaseAdmin.auth.admin.getUserById(args.related_user_id);
+      if (u?.user?.email && u.user.email.toLowerCase() === args.to.toLowerCase()) {
+        return { ...args, subject: await g.toPhotographer(args.related_user_id, args.subject), html: await g.toPhotographer(args.related_user_id, args.html) };
+      }
+    }
+  } catch (e) { console.error("[email] genderize failed", e); }
+  return args;
+}
 
 // ✅ إصلاح: يقرأ من env بدلاً من hardcoded — يجب ضبط EMAIL_FROM في Cloudflare/Supabase
 const FROM = process.env.EMAIL_FROM;
 
-export async function sendEmail(args: SendArgs): Promise<{ ok: boolean; id?: string; error?: string; skipped?: boolean }> {
+export async function sendEmail(argsIn: SendArgs): Promise<{ ok: boolean; id?: string; error?: string; skipped?: boolean }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const args = await genderizeEmail(argsIn);
   const apiKey = process.env.RESEND_API_KEY;
 
   // No API key or no FROM address → log as skipped, never throw (booking flow must keep working).

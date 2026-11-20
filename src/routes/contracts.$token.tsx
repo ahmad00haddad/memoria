@@ -1,4 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { usePhotographerSubject } from "@/hooks/use-photographer-subject";
 import { motion, AnimatePresence } from "framer-motion";
 import { hapticVibrate } from "@/lib/utils";
 import { PageLoader } from "@/components/ui/loading";
@@ -33,6 +34,7 @@ function SignPage() {
   const fetchFn = useServerFn(getContractByToken);
   const signFn = useServerFn(signContract);
   const [data, setData] = useState<any>(null);
+  usePhotographerSubject(data?.photographer?.gender);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [signature, setSignature] = useState("");

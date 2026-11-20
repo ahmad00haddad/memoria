@@ -1,6 +1,7 @@
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getCookie, getRequest } from "@tanstack/react-start/server";
 import en from "./en.json";
+import { secondToMale, thirdToMale, thirdToMaleEn } from "@/lib/gender-text";
 
 /**
  * Site language (Arabic source, English translation).
@@ -55,9 +56,29 @@ function fill(s: string, args?: unknown[]) {
   return s.replace(/\{(\d+)\}/g, (m, i) => (i < args.length ? String(args[i] ?? "") : m));
 }
 
+// مَن تخاطبه الواجهة الآن: لوحة المصوّر/ة تضبطها من جنس الحساب (المتصفح فقط؛ الخادم يبقى مؤنّثاً).
+// النصوص مكتوبة بالمؤنّث، وعند «male» تُحوَّل تلقائياً بقاموس gender-text — لا حاجة لـ g() لكل نص.
+let addressee: "female" | "male" = "female";
+export function setAddresseeGender(g: string | null | undefined) {
+  if (typeof window === "undefined") return;
+  addressee = g === "male" ? "male" : "female";
+}
+// مَن تتحدث عنه الواجهة بضمير الغائب في صفحات العروس: المصوّر/ة صاحب/ة الصفحة.
+let subject: "female" | "male" = "female";
+export function setSubjectGender(g: string | null | undefined) {
+  if (typeof window === "undefined") return;
+  subject = g === "male" ? "male" : "female";
+}
+// رسائل جاهزة تُرسل للعروس من لوحة المصوّر (واتساب) تبقى بمخاطبة المؤنّث
+const toBride = (ar: string) => ar.startsWith("مرحباً {0}");
+
 /** Translate Arabic source text; {0}, {1}… are filled from args. */
 export function t(ar: string, args?: unknown[]): string {
-  if (getLang() === "ar") return fill(ar, args);
+  if (getLang() === "ar") {
+    let src = addressee === "male" && !toBride(ar) ? secondToMale(ar) : ar;
+    if (subject === "male") src = thirdToMale(src);
+    return fill(src, args);
+  }
   const key = norm(ar);
   const hit = dict[key];
   if (hit === undefined) return fill(ar, args);
@@ -65,7 +86,7 @@ export function t(ar: string, args?: unknown[]): string {
   const lead = ar.match(/^\s*/)![0] ? " " : "";
   const trail = ar.match(/\s*$/)![0] ? " " : "";
   // Arabic values passed in (a city, a status) get translated too when we know them
-  return lead + fill(hit, args?.map(tx)) + trail;
+  return lead + fill(subject === "male" ? thirdToMaleEn(hit) : hit, args?.map(tx)) + trail;
 }
 
 /** Translate a value rendered from data defined elsewhere; non-strings pass through. */

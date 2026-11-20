@@ -201,7 +201,7 @@ export function Header() {
                 className="hidden md:inline-flex text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-sm hover:bg-secondary transition-colors"
                 title={t("تغيير الدور")}
               >
-                {t("📷 أنا مصوّرة")}
+                {t("📷 أنا مصوّر/ة")}
               </button>
             </>
           ) : visitorRole === "photographer" ? (
@@ -309,7 +309,7 @@ export function Header() {
                     }}
                     className="px-3 py-2.5 rounded-sm text-muted-foreground hover:bg-secondary text-start"
                   >
-                    {visitorRole === "client" ? t("📷 أنا مصوّرة — غيّري الدور") : t("🌸 أنا عروس — غيّري الدور")}
+                    {visitorRole === "client" ? t("📷 أنا مصوّر/ة — غيّري الدور") : t("🌸 أنا عروس — غيّري الدور")}
                   </button>
                 )}
                 <div className="my-2 h-px bg-border" />

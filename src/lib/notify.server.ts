@@ -21,8 +21,16 @@ type PhotographerMsg = {
   inApp?: boolean;
 };
 
-export async function notifyPhotographer(photographerId: string, msg: PhotographerMsg) {
+export async function notifyPhotographer(photographerId: string, msgIn: PhotographerMsg) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // تُكتب بالمؤنّث؛ تُخاطب المصوّر بجنسه
+  const { toPhotographer } = await import("@/lib/gender.server");
+  const msg: PhotographerMsg = {
+    ...msgIn,
+    title: await toPhotographer(photographerId, msgIn.title),
+    body: await toPhotographer(photographerId, msgIn.body),
+    emailLines: msgIn.emailLines ? await Promise.all(msgIn.emailLines.map((l) => toPhotographer(photographerId, l))) : undefined,
+  };
   const url = `${appBase()}${msg.link}`;
 
   if (msg.inApp !== false) {
@@ -80,12 +88,22 @@ type BrideMsg = {
   ctaUrl?: string;
 };
 
-export async function notifyBride(bookingId: string, msg: BrideMsg) {
+export async function notifyBride(bookingId: string, msgIn: BrideMsg) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: b } = await supabaseAdmin.from("bookings")
-    .select("id, client_email, client_phone, client_user_id, client_tracking_token")
+    .select("id, photographer_id, client_email, client_phone, client_user_id, client_tracking_token")
     .eq("id", bookingId).maybeSingle();
   if (!b) return;
+  // تُكتب بالمؤنّث؛ تتحدث عن المصوّر بجنسه
+  const { aboutPhotographer } = await import("@/lib/gender.server");
+  const pid = (b as any).photographer_id as string;
+  const msg: BrideMsg = {
+    ...msgIn,
+    subject: await aboutPhotographer(pid, msgIn.subject),
+    title: await aboutPhotographer(pid, msgIn.title),
+    lines: await Promise.all(msgIn.lines.map((l) => aboutPhotographer(pid, l))),
+    ctaLabel: msgIn.ctaLabel ? await aboutPhotographer(pid, msgIn.ctaLabel) : undefined,
+  };
   const trackUrl = b.client_tracking_token ? `${appBase()}/track/${b.client_tracking_token}` : appBase();
   const ctaUrl = msg.ctaUrl ?? trackUrl;
 

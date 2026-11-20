@@ -59,7 +59,7 @@ export function LivePhonePreview({ p }: { p: any }) {
           <h2 className="display-serif text-4xl leading-none mb-3">{p.display_name || tr("اسم المصورة")}</h2>
 
           <div className="flex flex-wrap gap-1.5 mb-3">
-            {p.verification_status === "verified" && isPro && <VerifiedBadge />}
+            {p.verification_status === "verified" && isPro && <VerifiedBadge gender={g("female", "male")} />}
             {p.is_featured && (
               <span className="inline-flex items-center gap-1 text-[9px] bg-gold/15 text-gold px-2 py-1 rounded-full border border-gold/30">
                 <Star className="h-2.5 w-2.5 fill-gold" />{" "}{tr("اختيار المحرّر")}

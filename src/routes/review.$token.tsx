@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { usePhotographerSubject } from "@/hooks/use-photographer-subject";
 import { hapticVibrate } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { PageLoader } from "@/components/ui/loading";
@@ -37,6 +38,7 @@ function ReviewPage() {
     queryFn: () => fetchBooking({ data: { token } }),
     staleTime: 30_000,
   });
+  usePhotographerSubject((booking as any)?.photographer?.gender);
 
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);

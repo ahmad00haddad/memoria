@@ -1,5 +1,6 @@
 import { Fragment, createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { setAddresseeGender } from "@/i18n";
 
 // صيغة مخاطبة المصوّر/ة في لوحة التحكم. المنصّة موجّهة للمصوّرات، فالافتراضي مؤنّث،
 // ويُحفظ اختيار «مصوّر» في user_metadata.gender للحساب نفسه (لا يحتاج عموداً في القاعدة).
@@ -33,10 +34,19 @@ export function GenderProvider({ children }: { children: ReactNode }) {
   const [gender, setG] = useState<Gender>(current);
   // يتغيّر فقط إذا اختلفت القيمة المحفوظة في الحساب عن المخزّنة محلياً، فيُعاد رسم الشجرة مرة واحدة.
   const [epoch, setEpoch] = useState(0);
+  // كل نصوص t() داخل اللوحة تُخاطب صاحب الحساب بجنسه (تحويل تلقائي من gender-text)
+  setAddresseeGender(gender);
+  useEffect(() => () => setAddresseeGender("female"), []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const saved: Gender = session?.user.user_metadata?.gender === "male" ? "male" : "female";
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      // المصدر: user_metadata.gender، وإن غاب فـ profiles.gender (نفس ما تراه العروس)
+      let meta = session?.user.user_metadata?.gender as string | undefined;
+      if (!meta && session) {
+        const { data: p } = await (supabase as any).from("profiles").select("gender").eq("id", session.user.id).maybeSingle();
+        meta = p?.gender ?? undefined;
+      }
+      const saved: Gender = meta === "male" ? "male" : "female";
       try { localStorage.setItem(LS_KEY, saved); } catch { /* ignore */ }
       if (saved !== current) {
         current = saved;

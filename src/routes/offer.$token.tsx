@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { usePhotographerSubject } from "@/hooks/use-photographer-subject";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Clock, XCircle, Hourglass } from "lucide-react";
@@ -27,6 +28,7 @@ function OfferPage() {
   const { token } = useParams({ from: "/offer/$token" });
   const get = useServerFn(getOfferByToken);
   const [offer, setOffer] = useState<any | null | undefined>(undefined);
+  usePhotographerSubject(offer?.photographer_gender);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

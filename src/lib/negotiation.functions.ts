@@ -201,7 +201,7 @@ export const getOfferByToken = createServerFn({ method: "GET" })
     const admin: any = supabaseAdmin;
     const { data: o } = await admin.from("price_offers").select("*").eq("token", data.token).maybeSingle();
     if (!o) return null;
-    const { data: prof } = await admin.from("profiles").select("display_name, username").eq("id", o.photographer_id).maybeSingle();
+    const { data: prof } = await admin.from("profiles").select("display_name, username, gender").eq("id", o.photographer_id).maybeSingle();
     let trackingToken: string | null = null;
     if (o.status === "accepted" && o.booking_id) {
       const { data: b } = await admin.from("bookings").select("client_tracking_token").eq("id", o.booking_id).maybeSingle();
@@ -216,6 +216,7 @@ export const getOfferByToken = createServerFn({ method: "GET" })
       event_date: o.event_date as string,
       photographer_name: (prof?.display_name || prof?.username || "") as string,
       photographer_username: (prof?.username ?? null) as string | null,
+      photographer_gender: ((prof as any)?.gender ?? null) as string | null,
       photographer_note: (o.photographer_note ?? null) as string | null,
       tracking_token: trackingToken,
     };
@@ -270,7 +271,7 @@ export const respondToOffer = createServerFn({ method: "POST" })
       try {
         const { sendEmail, tplOfferEmail } = await loadEmail();
         const t = tplOfferEmail({ title, subject, body, label, url });
-        await sendEmail({ to: o.client_email, subject: t.subject, html: t.html, template: "price_offer_client", related_user_id: userId });
+        await sendEmail({ to: o.client_email, subject: t.subject, html: t.html, template: "price_offer_client", related_user_id: userId, about_photographer_id: userId });
       } catch (e) { console.error("[offer] client email failed", e); }
     };
 

@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { usePhotographerSubject } from "@/hooks/use-photographer-subject";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Header } from "@/components/site/Header";
@@ -17,6 +18,7 @@ function AskPage() {
   const { token } = useParams({ from: "/ask/$token" });
   const get = useServerFn(getQuestionByToken);
   const [q, setQ] = useState<any>(undefined);
+  usePhotographerSubject(q?.photographer?.gender);
   useEffect(() => {
     const load = () => get({ data: { token } }).then(setQ).catch(() => setQ(null));
     load();

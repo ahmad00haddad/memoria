@@ -266,6 +266,11 @@ export async function sendWhatsAppNotification(
     messageBody = buildDefaultMessage(category, vars);
   }
 
+  // الرسالة للعروس تتحدث عن المصوّر/ة بجنسه
+  try {
+    const { aboutPhotographer } = await import("@/lib/gender.server");
+    messageBody = await aboutPhotographer(photographerId, messageBody);
+  } catch { /* ignore */ }
   // محاولة الإرسال الفعلي
   const res = await sendWhatsAppText(to, messageBody);
 

@@ -61,7 +61,7 @@ export const getQuestionByToken = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: q } = await (supabaseAdmin as any).from("photographer_questions")
-      .select("question, answer, answered_at, created_at, asker_name, photographer:profiles!photographer_questions_photographer_id_fkey(display_name, username)")
+      .select("question, answer, answered_at, created_at, asker_name, photographer:profiles!photographer_questions_photographer_id_fkey(display_name, username, gender)")
       .eq("token", data.token).maybeSingle();
     return q ?? null;
   });
@@ -104,7 +104,7 @@ export const answerQuestion = createServerFn({ method: "POST" })
           lines: [`مرحباً ${q.asker_name}،`, "ردّت المصوّرة على سؤالكِ قبل الحجز. اقرئي الرد من الرابط أدناه."],
           cta: { label: "قراءة الرد", url: `${BASE()}/ask/${q.token}` },
         });
-        await sendEmail({ to: q.asker_email, subject: m.subject, html: m.html, template: "question_answered" });
+        await sendEmail({ to: q.asker_email, subject: m.subject, html: m.html, template: "question_answered", about_photographer_id: userId });
       } catch (e) { console.error("[ask] email failed", e); }
     }
     return { ok: true };

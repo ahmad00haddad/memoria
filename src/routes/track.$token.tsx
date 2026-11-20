@@ -1,4 +1,5 @@
 import { createFileRoute, useParams } from "@tanstack/react-router";
+import { usePhotographerSubject } from "@/hooks/use-photographer-subject";
 import { jordanToday } from "@/lib/validation";
 import { PageLoader } from "@/components/ui/loading";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -89,6 +90,7 @@ function TrackingPage() {
   const cancelFn = useServerFn(clientCancelBooking);
 
   const [b, setB] = useState<Booking | null>(null);
+  usePhotographerSubject((b as any)?.photographer?.gender);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   // طلب ينتظر موافقة المصوّرة: لا تفاصيل دفع ولا عربون قبل الموافقة
