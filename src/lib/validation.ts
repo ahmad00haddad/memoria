@@ -48,3 +48,8 @@ export function nextDay(date: string): string {
   d.setUTCDate(d.getUTCDate() + 1);
   return d.toISOString().slice(0, 10);
 }
+
+/** رمز رابط المتابعة/المعرض: 16-64 حرفاً من [A-Za-z0-9_-] فقط (يرفض أي حقن أو مسافات). */
+export function isTrackToken(s: unknown): s is string {
+  return typeof s === "string" && /^[A-Za-z0-9_-]{16,64}$/.test(s);
+}

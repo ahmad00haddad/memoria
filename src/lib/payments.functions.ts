@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { isTrackToken } from "@/lib/validation";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { t } from "@/i18n";
 
@@ -327,8 +328,7 @@ export const processDepositRefund = createServerFn({ method: "POST" })
 // ============================================================================
 export const reconcilePaymentStatus = createServerFn({ method: "POST" })
   .inputValidator((d: { token: string }) => {
-    const TOKEN_RE_LOCAL = /^[A-Za-z0-9_-]{16,64}$/;
-    if (!d || typeof d.token !== "string" || !TOKEN_RE_LOCAL.test(d.token)) {
+    if (!d || !isTrackToken(d.token)) {
       throw new Error("invalid token");
     }
     return d;
