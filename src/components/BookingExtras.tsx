@@ -211,7 +211,7 @@ export function BookingExtrasPanel({ booking: b, onChange }: { booking: any; onC
                 ["discount", tr("تخفيض")],
                 ["reschedule", tr("نقل الموعد")],
                 ["substitute", tr("مصوّرة بديلة")],
-              ] as [AddKind, string][]).filter(([k]) => !moveOnly || k === "reschedule").map(([k, label]) => (
+              ] as [AddKind, string][]).filter(([k]) => (!moveOnly || k === "reschedule") && !(k === "reschedule" && b.status === "completed")).map(([k, label]) => (
                 <button key={k} type="button" onClick={() => pickKind(k)}
                   className={`rounded-full border px-3 py-1 text-xs ${kind === k ? "border-gold bg-gold/10" : "border-border"}`}>{tx(label)}</button>
               ))}
