@@ -7,7 +7,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 import { t as tr } from "@/i18n";
 
 // "اسألي سؤالاً قبل الحجز": بدون كشف الأرقام. بعد الإرسال تحصل العروس على رابط خاص لقراءة الرد.
-export function AskPhotographer({ photographerId, name }: { photographerId: string; name: string }) {
+export function AskPhotographer({ photographerId, name, gender }: { photographerId: string; name: string; gender?: string | null }) {
   const ask = useServerFn(askPhotographer);
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ name: "", email: "", question: "" });
@@ -26,7 +26,7 @@ export function AskPhotographer({ photographerId, name }: { photographerId: stri
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="h-12 px-5 inline-flex items-center gap-2 rounded-full border border-border text-sm hover:bg-secondary">
-        <MessageCircle className="h-5 w-5" />{tr("اسأليها قبل الحجز")}
+        <MessageCircle className="h-5 w-5" />{gender === "male" ? tr("اسأليه قبل الحجز") : tr("اسأليها قبل الحجز")}
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>

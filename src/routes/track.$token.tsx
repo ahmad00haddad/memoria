@@ -92,6 +92,8 @@ function TrackingPage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   // طلب ينتظر موافقة المصوّرة: لا تفاصيل دفع ولا عربون قبل الموافقة
+  // صيغة الحديث عن المصوّر/ة (profiles.gender، الافتراضي مؤنّث)
+  const PM = b?.photographer?.gender === "male";
   const awaitingApproval = !!b?.needs_approval && !b?.approved_at && (b?.status === "pending_deposit" || b?.status === "quote");
   // نسخت بيانات الدفع ولم ترفع الإيصال بعد → تذكير ظاهر + تأكيد قبل مغادرة الصفحة
   const [payTouched, setPayTouched] = useState(false);
@@ -103,7 +105,7 @@ function TrackingPage() {
   }, [payTouched, b?.deposit_sent_at]);
   const hoursLeft = (iso?: string | null) => iso ? Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 3600_000)) : null;
   // قواعد واضحة من البداية: العربون بين العروس والمصوّرة، والمنصّة لا تستلمه ولا تُرجعه
-  const todayYmd = new Date().toLocaleDateString("en-CA");
+  const todayYmd = jordanToday();
   const depositPaid = !!(b?.deposit_sent_at || b?.deposit_confirmed_at) && Number(b?.deposit_amount || 0) > 0;
   const canCancel = !!b && ["quote", "pending_deposit", "confirmed"].includes(b.status) && b.event_date >= todayYmd;
   const remainingDue = b ? Math.max(0, Number(b.total_price || 0) - Number(b.deposit_amount || 0)) : 0;
@@ -112,15 +114,15 @@ function TrackingPage() {
   const refundLine = () => {
     const dep = Number(b?.deposit_amount || 0);
     const pol = b?.photographer?.deposit_refund_policy;
-    if (pol === "full") return t("سياسة المصوّرة: إذا ألغيتِ بعد دفع العربون، تُرجع لكِ العربون كاملاً ({0} د.أ).", [dep]);
+    if (pol === "full") return t(PM ? "سياسة المصوّر: إذا ألغيتِ بعد دفع العربون، يُرجع لكِ العربون كاملاً ({0} د.أ)." : "سياسة المصوّرة: إذا ألغيتِ بعد دفع العربون، تُرجع لكِ العربون كاملاً ({0} د.أ).", [dep]);
     if (pol === "partial") {
       const pct = Number(b?.photographer?.deposit_refund_percent || 0);
-      return t("سياسة المصوّرة: إذا ألغيتِ بعد دفع العربون، تُرجع لكِ {0}% منه ({1} د.أ).", [pct, Math.round(dep * pct) / 100]);
+      return t(PM ? "سياسة المصوّر: إذا ألغيتِ بعد دفع العربون، يُرجع لكِ {0}% منه ({1} د.أ)." : "سياسة المصوّرة: إذا ألغيتِ بعد دفع العربون، تُرجع لكِ {0}% منه ({1} د.أ).", [pct, Math.round(dep * pct) / 100]);
     }
-    return t("سياسة المصوّرة: العربون لا يُرجَع إذا ألغيتِ بعد دفعه.");
+    return t(PM ? "سياسة المصوّر: العربون لا يُرجَع إذا ألغيتِ بعد دفعه." : "سياسة المصوّرة: العربون لا يُرجَع إذا ألغيتِ بعد دفعه.");
   };
-  const platformNote = t("العربون يُحوَّل مباشرة للمصوّرة، والمنصّة لا تستلمه ولا تُرجعه. أي استرجاع أو مسامحة يتم بينكِ وبين المصوّرة، والقرار لها.");
-  const postponeNote = t("التأجيل غير متاح من المنصّة: تغيير الموعد يعني إلغاء الحجز، إلا إذا وافقت المصوّرة على نقل العربون لموعد جديد بعد تواصلكما.");
+  const platformNote = t(PM ? "العربون يُحوَّل مباشرة للمصوّر، والمنصّة لا تستلمه ولا تُرجعه. أي استرجاع أو مسامحة يتم بينكِ وبين المصوّر، والقرار له." : "العربون يُحوَّل مباشرة للمصوّرة، والمنصّة لا تستلمه ولا تُرجعه. أي استرجاع أو مسامحة يتم بينكِ وبين المصوّرة، والقرار لها.");
+  const postponeNote = t(PM ? "التأجيل غير متاح من المنصّة: تغيير الموعد يعني إلغاء الحجز، إلا إذا وافق المصوّر على نقل العربون لموعد جديد بعد تواصلكما." : "التأجيل غير متاح من المنصّة: تغيير الموعد يعني إلغاء الحجز، إلا إذا وافقت المصوّرة على نقل العربون لموعد جديد بعد تواصلكما.");
 
   const [reference, setReference] = useState("");
   const [pickedFile, setPickedFile] = useState<File | null>(null);
@@ -213,7 +215,7 @@ function TrackingPage() {
       <Header />
       <div className="container-editorial py-24 text-center">
         <h1 className="font-serif text-3xl mb-2 text-destructive">{t("تم حذف هذا الحجز")}</h1>
-        <p className="text-muted-foreground">{t("لا يمكن الوصول إلى تفاصيل هذا الحجز لأنه تم حذفه من قبل المصوّرة.")}</p>
+        <p className="text-muted-foreground">{t(PM ? "لا يمكن الوصول إلى تفاصيل هذا الحجز لأنه تم حذفه من قبل المصوّر." : "لا يمكن الوصول إلى تفاصيل هذا الحجز لأنه تم حذفه من قبل المصوّرة.")}</p>
       </div>
       <Footer />
     </div>
@@ -299,7 +301,7 @@ function TrackingPage() {
       // The RPC drops _reference, so it also goes in the note the photographer sees
       await sendDeposit({ data: { token, terms_accepted: true, proof_path: path, reference: reference.trim(),
           note: t("رقم العملية: {0} اسم المحوِّل: {1}", [reference.trim(), note.trim()]) } });
-      toast.success(t("وصل إيصالكِ. تتأكّد المصوّرة من وصول المبلغ لحسابها ثم تثبّت حجزكِ، ويصلكِ إشعار."), { id: "upload-receipt" });
+      toast.success(t(PM ? "وصل إيصالكِ. يتأكّد المصوّر من وصول المبلغ لحسابه ثم يثبّت حجزكِ، ويصلكِ إشعار." : "وصل إيصالكِ. تتأكّد المصوّرة من وصول المبلغ لحسابها ثم تثبّت حجزكِ، ويصلكِ إشعار."), { id: "upload-receipt" });
       setReference(""); setNote(""); setPickedFile(null);
       if (fileRef.current) fileRef.current.value = "";
       load();
@@ -314,7 +316,7 @@ function TrackingPage() {
     if (!newNote.trim()) return;
     try {
       await addNote({ data: { token, note: newNote.trim() } });
-      toast.success(t("وصلت ملاحظتكِ للمصوّرة"));
+      toast.success(t(PM ? "وصلت ملاحظتكِ للمصوّر" : "وصلت ملاحظتكِ للمصوّرة"));
       setNewNote("");
       load();
     } catch (e: any) { toast.error(e.message); }
@@ -364,7 +366,7 @@ function TrackingPage() {
   })();
   const stages = [
     { key: "request", label: t("طلب الحجز"), done: true, icon: <CheckCircle2 className="h-5 w-5" /> },
-    { key: "approval", label: t("موافقة المصوّرة"), done: !awaitingApproval, icon: <CheckCircle2 className="h-5 w-5" /> },
+    { key: "approval", label: t(PM ? "موافقة المصوّر" : "موافقة المصوّرة"), done: !awaitingApproval, icon: <CheckCircle2 className="h-5 w-5" /> },
     { key: "deposit", label: t("إرسال العربون"), done: !!b.deposit_sent_at, icon: <Upload className="h-5 w-5" /> },
     { key: "confirmed", label: t("تأكيد الحجز"), done: !!b.deposit_confirmed_at || ["confirmed","completed"].includes(b.status), icon: <CheckCircle2 className="h-5 w-5" /> },
     { key: "shoot", label: t("يوم التصوير"), done: b.production_stage !== "awaiting" || !!b.delivered_at || b.status === "completed", icon: <Camera className="h-5 w-5" /> },
@@ -405,14 +407,14 @@ function TrackingPage() {
           const allDone = stages.every((x) => x.done);
           const daysToEvent = b.event_date ? Math.ceil((new Date(b.event_date).getTime() - Date.now()) / 86400000) : null;
           const here = (() => {
-            if (awaitingApproval) return { title: t("بانتظار موافقة {0}", [ph.display_name]), body: t("التاريخ محجوز لكِ. المصوّرة تردّ خلال {0} ساعة كحد أقصى، ويصلك إشعار فور ردّها. لا تحوّلي أي مبلغ قبل موافقتها.", [hoursLeft(b.approval_due_at) ?? 24]), cta: null, target: null };
-            if (!b.deposit_sent_at) return { title: t("الخطوة التالية: إرسال العربون"), body: hoursLeft(b.deposit_due_at) ? t("المصوّرة وافقت ✓ حوّلي {0} د.أ خلال {1} ساعة، ثم ارفعي صورة الإيصال هنا.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO")), hoursLeft(b.deposit_due_at)]) : t("حوّلي {0} د.أ لتثبيت موعدك، ثم ارفعي الإيصال.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))]), cta: t("إرسال العربون"), target: "deposit-step" };
-            if (!(b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status))) return { title: t("وصل إيصالك — بانتظار تأكيد المصوّرة"), body: t("تصلك رسالة فور التأكيد. عادةً خلال ساعات."), cta: null, target: null };
-            if (!b.delivered_at && b.status !== "completed" && daysToEvent !== null && daysToEvent >= 0) return { title: daysToEvent === 0 ? t("اليوم يومك 🤍") : t("باقي {0} {1} على يومك", [daysToEvent, daysToEvent === 1 ? "يوم" : "يوماً"]), body: t("حجزك مؤكَّد. أضيفي الموعد لتقويمك، واكتبي للمصوّرة أي تفاصيل تهمّك."), cta: null, target: null };
-            if (!b.delivered_at && b.status !== "completed") return { title: t("صورك قيد التحرير"), body: t("تعمل المصوّرة على اختيار صورك وتحريرها. ستصلك رسالة عند جاهزيتها."), cta: null, target: null };
+            if (awaitingApproval) return { title: t("بانتظار موافقة {0}", [ph.display_name]), body: t(PM ? "التاريخ محجوز لكِ. المصوّر يردّ خلال {0} ساعة كحد أقصى، ويصلك إشعار فور ردّه. لا تحوّلي أي مبلغ قبل موافقته." : "التاريخ محجوز لكِ. المصوّرة تردّ خلال {0} ساعة كحد أقصى، ويصلك إشعار فور ردّها. لا تحوّلي أي مبلغ قبل موافقتها.", [hoursLeft(b.approval_due_at) ?? 24]), cta: null, target: null };
+            if (!b.deposit_sent_at) return { title: t("الخطوة التالية: إرسال العربون"), body: hoursLeft(b.deposit_due_at) ? t(PM ? "المصوّر وافق ✓ حوّلي {0} د.أ خلال {1} ساعة، ثم ارفعي صورة الإيصال هنا." : "المصوّرة وافقت ✓ حوّلي {0} د.أ خلال {1} ساعة، ثم ارفعي صورة الإيصال هنا.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO")), hoursLeft(b.deposit_due_at)]) : t("حوّلي {0} د.أ لتثبيت موعدك، ثم ارفعي الإيصال.", [Number(b.deposit_amount).toLocaleString(locale("ar-JO"))]), cta: t("إرسال العربون"), target: "deposit-step" };
+            if (!(b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status))) return { title: t(PM ? "وصل إيصالك — بانتظار تأكيد المصوّر" : "وصل إيصالك — بانتظار تأكيد المصوّرة"), body: t("تصلك رسالة فور التأكيد. عادةً خلال ساعات."), cta: null, target: null };
+            if (!b.delivered_at && b.status !== "completed" && daysToEvent !== null && daysToEvent >= 0) return { title: daysToEvent === 0 ? t("اليوم يومك 🤍") : t("باقي {0} {1} على يومك", [daysToEvent, daysToEvent === 1 ? "يوم" : "يوماً"]), body: t(PM ? "حجزك مؤكَّد. أضيفي الموعد لتقويمك، واكتبي للمصوّر أي تفاصيل تهمّك." : "حجزك مؤكَّد. أضيفي الموعد لتقويمك، واكتبي للمصوّرة أي تفاصيل تهمّك."), cta: null, target: null };
+            if (!b.delivered_at && b.status !== "completed") return { title: t("صورك قيد التحرير"), body: t(PM ? "يعمل المصوّر على اختيار صورك وتحريرها. ستصلك رسالة عند جاهزيتها." : "تعمل المصوّرة على اختيار صورك وتحريرها. ستصلك رسالة عند جاهزيتها."), cta: null, target: null };
             if (!b.client_received_at) return { title: t("صورك جاهزة"), body: t("حمّلي صورك ثم أكّدي الاستلام."), cta: b.delivery_link ? t("تحميل الصور") : null, target: b.delivery_link ? "delivery-link" : null };
             if (b.has_review) return { title: t("اكتمل حجزك"), body: t("شكراً لثقتك ولتقييمك."), cta: null, target: null };
-            return { title: t("اكتمل حجزك"), body: t("شكراً لثقتك. رأيك يساعد عرائس أخريات."), cta: t("قيّمي المصوّرة"), target: "review-step" };
+            return { title: t("اكتمل حجزك"), body: t("شكراً لثقتك. رأيك يساعد عرائس أخريات."), cta: t(PM ? "قيّمي المصوّر" : "قيّمي المصوّرة"), target: "review-step" };
           })();
           return (
             <div className="mb-6 sm:mb-8 overflow-hidden rounded-2xl bg-charcoal text-ivory grain-overlay dark:bg-card dark:text-foreground dark:ring-1 dark:ring-gold/30">
@@ -462,11 +464,11 @@ function TrackingPage() {
             startTime={b.start_time}
             photographerName={ph.display_name}
             steps={[
-              { label: t("موافقة المصوّرة على الطلب"), done: !awaitingApproval },
+              { label: t(PM ? "موافقة المصوّر على الطلب" : "موافقة المصوّرة على الطلب"), done: !awaitingApproval },
               { label: t("إرسال العربون"), done: !!b.deposit_sent_at, target: "deposit-step" },
-              { label: t("تأكيد المصوّرة للحجز"), done: !!b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status) },
+              { label: t(PM ? "تأكيد المصوّر للحجز" : "تأكيد المصوّرة للحجز"), done: !!b.deposit_confirmed_at || ["confirmed", "completed"].includes(b.status) },
               ...(b.contract?.sign_token ? [{ label: t("توقيع العقد"), done: b.contract.status === "signed", target: "contract-step" }] : []),
-              { label: t("إخبار المصوّرة بتفاصيل يومكِ"), done: !!b.event_day_info || !!b.client_notes, target: ["confirmed", "completed"].includes(b.status) ? "eventday-step" : "chat-step" },
+              { label: t(PM ? "إخبار المصوّر بتفاصيل يومكِ" : "إخبار المصوّرة بتفاصيل يومكِ"), done: !!b.event_day_info || !!b.client_notes, target: ["confirmed", "completed"].includes(b.status) ? "eventday-step" : "chat-step" },
             ]}
           />
         )}
@@ -475,7 +477,7 @@ function TrackingPage() {
         {b.delivery_link && (
           <div id="delivery-link" className="scroll-mt-24 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 mb-6 dark:bg-emerald-500/10 dark:border-emerald-500/20">
             <h2 className="font-serif text-lg mb-1">{t("صورك جاهزة للتحميل")}</h2>
-            <p className="text-sm text-muted-foreground mb-3">{t("أرسلت لكِ المصوّرة رابط تحميل الصور بجودتها الكاملة.")}</p>
+            <p className="text-sm text-muted-foreground mb-3">{t(PM ? "أرسل لكِ المصوّر رابط تحميل الصور بجودتها الكاملة." : "أرسلت لكِ المصوّرة رابط تحميل الصور بجودتها الكاملة.")}</p>
             <a
               href={b.delivery_link}
               target="_blank"
@@ -564,7 +566,7 @@ function TrackingPage() {
             <div className="border-t border-border pt-3 mt-3">
               <div className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">{t("باقتكِ كما طلبتِها — {0}", [b.package_snapshot.label])}</div>
               <PackageFacts d={b.package_snapshot} compact gender={b.package_snapshot.gender} />
-              <p className="mt-2 text-[11px] text-muted-foreground">{t("محفوظة من لحظة طلبكِ ولا تتغيّر بتعديل المصوّرة لباقاتها.")}</p>
+              <p className="mt-2 text-[11px] text-muted-foreground">{t(PM ? "محفوظة من لحظة طلبكِ ولا تتغيّر بتعديل المصوّر لباقاته." : "محفوظة من لحظة طلبكِ ولا تتغيّر بتعديل المصوّرة لباقاتها.")}</p>
             </div>
           )}
           </div>
@@ -600,8 +602,8 @@ function TrackingPage() {
             <div className="mb-3 rounded-sm border border-border bg-background/60 p-3 text-xs leading-relaxed text-muted-foreground">
               <div className="mb-1 font-medium text-foreground">{t("قبل التحويل، اطمئني بدقيقة:")}</div>
               <ul className="list-disc space-y-0.5 ps-4">
-                <li>{t("الاسم على الحساب يطابق اسم المصوّرة.")}</li>
-                <li>{t("شاهدي أعمالها على إنستغرام وتأكّدي أن أسلوبها يعجبكِ.")}</li>
+                <li>{t(PM ? "الاسم على الحساب يطابق اسم المصوّر." : "الاسم على الحساب يطابق اسم المصوّرة.")}</li>
+                <li>{t(PM ? "شاهدي أعماله على إنستغرام وتأكّدي أن أسلوبه يعجبكِ." : "شاهدي أعمالها على إنستغرام وتأكّدي أن أسلوبها يعجبكِ.")}</li>
                 <li>{t("اسألي عنها أو اقرئي تقييماتها إن وُجدت.")}</li>
               </ul>
               <p className="mt-1">{t("تشكّين بشيء؟ أبلغينا من أسفل صفحتها ونراجع فوراً.")}</p>
@@ -609,7 +611,7 @@ function TrackingPage() {
 
             <div className="mb-3" onClickCapture={() => setPayTouched(true)}><PaymentMethodsView methods={payMethods} amount={Number(b.deposit_amount) || undefined} reference={String(token).slice(0, 8).toUpperCase()} /></div>
             {payTouched && (
-              <div className="mb-3 rounded-sm border border-gold bg-gold/10 p-3 text-sm font-medium">{t("حوّلتِ؟ لا تنسي رفع صورة الإيصال هنا 👇 حتى تثبّت المصوّرة حجزكِ بسرعة.")}</div>
+              <div className="mb-3 rounded-sm border border-gold bg-gold/10 p-3 text-sm font-medium">{t(PM ? "حوّلتِ؟ لا تنسي رفع صورة الإيصال هنا 👇 حتى يثبّت المصوّر حجزكِ بسرعة." : "حوّلتِ؟ لا تنسي رفع صورة الإيصال هنا 👇 حتى تثبّت المصوّرة حجزكِ بسرعة.")}</div>
             )}
 
             <div className="grid gap-3">
@@ -659,7 +661,7 @@ function TrackingPage() {
         {showBalanceDue && (
           <div className="rounded-2xl border border-gold/40 bg-gold/5 p-5 mb-6 text-sm">
             <div className="font-serif text-lg mb-1">{t("باقي المبلغ: {0} د.أ", [remainingDue.toLocaleString(locale("ar-JO"))])} <Term k="balance" /></div>
-            <p className="text-muted-foreground mb-3">{t("حوّلي باقي المبلغ للمصوّرة بنفس طريقة العربون، حتى تحفظي حقّها وحقّكِ وتستلمي صورك. بعض المصوّرات يسلّمن الصور بعد وصول المبلغ فقط.")}</p>
+            <p className="text-muted-foreground mb-3">{t(PM ? "حوّلي باقي المبلغ للمصوّر بنفس طريقة العربون، حتى تحفظي حقّه وحقّكِ وتستلمي صورك. بعض المصوّرين يسلّمون الصور بعد وصول المبلغ فقط." : "حوّلي باقي المبلغ للمصوّرة بنفس طريقة العربون، حتى تحفظي حقّها وحقّكِ وتستلمي صورك. بعض المصوّرات يسلّمن الصور بعد وصول المبلغ فقط.")}</p>
             <PaymentMethodsView methods={payMethods} amount={remainingDue || undefined} reference={String(token).slice(0, 8).toUpperCase()} />
           </div>
         )}
@@ -676,10 +678,10 @@ function TrackingPage() {
             {Number(b.refund_amount || 0) > 0 && (
               <div>
                 {b.refund_status === "refunded"
-                  ? t("سجّلت المصوّرة إرجاع {0} د.أ لكِ.", [b.refund_amount])
+                  ? t(PM ? "سجّل المصوّر إرجاع {0} د.أ لكِ." : "سجّلت المصوّرة إرجاع {0} د.أ لكِ.", [b.refund_amount])
                   : b.deposit_confirmed_at
-                    ? t("على المصوّرة إرجاع {0} د.أ لكِ مباشرة، فالعربون وصل لحسابها ولا يمرّ عبر المنصّة. إذا تأخّر الإرجاع، راسليها من هذه الصفحة أو تواصلي معنا.", [b.refund_amount])
-                    : t("المصوّرة لم تؤكّد وصول العربون لحسابها. إن كان التحويل ({0} د.أ) قد وصلها فعليها إرجاعه لكِ مباشرة؛ احتفظي بإيصال التحويل وراسليها من هذه الصفحة أو تواصلي معنا.", [b.refund_amount])}
+                    ? t(PM ? "على المصوّر إرجاع {0} د.أ لكِ مباشرة، فالعربون وصل لحسابه ولا يمرّ عبر المنصّة. إذا تأخّر الإرجاع، راسليه من هذه الصفحة أو تواصلي معنا." : "على المصوّرة إرجاع {0} د.أ لكِ مباشرة، فالعربون وصل لحسابها ولا يمرّ عبر المنصّة. إذا تأخّر الإرجاع، راسليها من هذه الصفحة أو تواصلي معنا.", [b.refund_amount])
+                    : t(PM ? "المصوّر لم يؤكّد وصول العربون لحسابه. إن كان التحويل ({0} د.أ) قد وصله فعليه إرجاعه لكِ مباشرة؛ احتفظي بإيصال التحويل وراسليه من هذه الصفحة أو تواصلي معنا." : "المصوّرة لم تؤكّد وصول العربون لحسابها. إن كان التحويل ({0} د.أ) قد وصلها فعليها إرجاعه لكِ مباشرة؛ احتفظي بإيصال التحويل وراسليها من هذه الصفحة أو تواصلي معنا.", [b.refund_amount])}
               </div>
             )}
           </div>
@@ -736,7 +738,7 @@ function TrackingPage() {
           <a id="contract-step" href={`/contracts/${b.contract.sign_token}`} className={`scroll-mt-24 mb-6 flex items-center justify-between gap-3 rounded-2xl border p-5 text-sm ${b.contract.status === "signed" ? "border-border bg-card" : "border-gold bg-gold/10"}`}>
             <div>
               <div className="font-semibold">{b.contract.status === "signed" ? t("✅ عقد التصوير موقَّع") : t("✍️ وقّعي عقد التصوير")}</div>
-              <div className="text-xs text-muted-foreground mt-1">{b.contract.status === "signed" ? t("اضغطي لعرض العقد.") : t("اقرئي شروط الحجز ووقّعي العقد إلكترونياً — يحمي حقّكِ وحقّ المصوّرة.")}</div>
+              <div className="text-xs text-muted-foreground mt-1">{b.contract.status === "signed" ? t("اضغطي لعرض العقد.") : t(PM ? "اقرئي شروط الحجز ووقّعي العقد إلكترونياً — يحمي حقّكِ وحقّ المصوّر." : "اقرئي شروط الحجز ووقّعي العقد إلكترونياً — يحمي حقّكِ وحقّ المصوّرة.")}</div>
             </div>
             <span className="shrink-0 text-gold">←</span>
           </a>
@@ -753,14 +755,14 @@ function TrackingPage() {
               if (ok) window.open(`https://wa.me/${ph.whatsapp.replace(/[^0-9]/g,'')}`, "_blank");
             }}>{tx(ph.whatsapp)}</button></div>}
             {ph.phone && <div>{t("هاتف: {0}", [ph.phone])}</div>}
-            {!ph.whatsapp && !ph.phone && b.status !== "cancelled" && <div className="text-muted-foreground">{t("يظهر رقم المصوّرة هنا بعد موافقتها على طلبكِ. حتى ذلك الحين راسليها من هذه الصفحة.")}</div>}
+            {!ph.whatsapp && !ph.phone && b.status !== "cancelled" && <div className="text-muted-foreground">{t(PM ? "يظهر رقم المصوّر هنا بعد موافقته على طلبكِ. حتى ذلك الحين راسليه من هذه الصفحة." : "يظهر رقم المصوّرة هنا بعد موافقتها على طلبكِ. حتى ذلك الحين راسليها من هذه الصفحة.")}</div>}
           </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6 sm:mt-8">{t("هذا الرابط خاص بكِ — احفظيه للعودة لاحقاً ولا تشاركيه حفاظاً على خصوصية صورك.")}</p>
 
         <ClientGallery token={token} />
-        <ClientChat token={token} clientName={b.client_name} />
+        <ClientChat token={token} clientName={b.client_name} PM={PM} />
       </section>
 
       {/* ✅ Dialog إلغاء الطلب — بديل window.prompt يعمل في PWA وكل المتصفحات */}
@@ -1064,7 +1066,7 @@ function ClientGallery({ token }: { token: string }) {
   );
 }
 
-function ClientChat({ token, clientName }: { token: string; clientName: string }) {
+function ClientChat({ token, clientName, PM = false }: { token: string; clientName: string; PM?: boolean }) {
   const fetchM = useServerFn(getMessagesByToken);
   const sendM = useServerFn(sendMessageByToken);
   const reportFn = useServerFn(reportChatByToken);
@@ -1092,7 +1094,7 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
 
   return (
     <div className="mt-8 rounded-sm border border-border bg-card p-5">
-      <h2 id="chat-step" className="scroll-mt-24 font-serif text-xl mb-4 flex items-center gap-2"><MessageSquare className="h-5 w-5 text-gold" />{" "}{t("المحادثة مع المصوّرة")}</h2>
+      <h2 id="chat-step" className="scroll-mt-24 font-serif text-xl mb-4 flex items-center gap-2"><MessageSquare className="h-5 w-5 text-gold" />{" "}{t(PM ? "المحادثة مع المصوّر" : "المحادثة مع المصوّرة")}</h2>
       <div className="space-y-2 max-h-96 overflow-y-auto mb-4">
         {msgs.length === 0 && <p className="text-sm text-muted-foreground">{t("ابدئي المحادثة بإرسال رسالة.")}</p>}
         {msgs.map((m) => {
@@ -1100,7 +1102,7 @@ function ClientChat({ token, clientName }: { token: string; clientName: string }
           return (
             <div key={m.id} className={`p-3 rounded-sm ${mine ? "bg-charcoal text-ivory ms-8" : "bg-secondary me-8"}`}>
               <div className="text-[10px] opacity-70 mb-1 flex items-center gap-1.5">
-                <span>{mine ? clientName : (m.sender_name || t("المصوّرة"))} · {new Date(m.created_at).toLocaleString(locale("ar-JO"))}</span>
+                <span>{mine ? clientName : (m.sender_name || (PM ? t("المصوّر") : t("المصوّرة")))} · {new Date(m.created_at).toLocaleString(locale("ar-JO"))}</span>
                 {mine && (
                   <span className={m.read_at ? "text-blue-400" : "text-ivory/50"} title={m.read_at ? t("مقروءة") : t("مرسلة")}>✓✓</span>
                 )}

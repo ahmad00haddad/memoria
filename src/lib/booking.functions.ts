@@ -274,11 +274,18 @@ export const getBookingByToken = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!row) return null;
     const { data: vr } = await (supabaseAdmin as any).from("bookings")
-      .select("id, phone_verified_at, verify_code_wa, verify_code_email, verified_via, client_email, refund_policy_agreed, refund_percent_agreed, deposit_terms_accepted_at")
+      .select("id, photographer_id, phone_verified_at, verify_code_wa, verify_code_email, verified_via, client_email, refund_policy_agreed, refund_percent_agreed, deposit_terms_accepted_at")
       .eq("client_tracking_token", data.token).maybeSingle();
     const v: any = vr ?? {};
+    // صيغة الحديث عن المصوّر/ة في صفحة العروس
+    let photographerGender: string | null = null;
+    if (v.photographer_id) {
+      const { data: pg } = await supabaseAdmin.from("profiles").select("gender").eq("id", v.photographer_id).maybeSingle();
+      photographerGender = (pg as any)?.gender ?? null;
+    }
     // السياسة التي وافقت عليها العروس (لقطة) هي المعروضة والمطبَّقة، لا السياسة الحالية للمصوّرة
     const rowOut: any = { ...(row as any) };
+    if (rowOut.photographer) rowOut.photographer = { ...rowOut.photographer, gender: photographerGender };
     if (v.deposit_terms_accepted_at && v.refund_policy_agreed && rowOut.photographer) {
       rowOut.photographer = {
         ...rowOut.photographer,

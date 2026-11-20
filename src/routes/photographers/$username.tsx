@@ -54,6 +54,9 @@ function galleryCell(layout: PageSettings["gallery_layout"], i: number) {
   return "aspect-square";
 }
 
+// صيغة الحديث عن المصوّر/ة لعروس: profiles.gender (الافتراضي مؤنّث)
+const pg = (gender: string | null | undefined, female: string, male: string) => (gender === "male" ? male : female);
+
 export const Route = createFileRoute("/photographers/$username")({
   component: PhotographerPage,
   loader: async ({ params }) => {
@@ -329,7 +332,7 @@ function PhotographerPage() {
   if (loading) return seo ? <SeoPreview seo={seo} /> : <FallbackPage>{tr("جاري التحميل…")}</FallbackPage>;
   if (loadFailed) return (
     <FallbackPage>
-      {tr("تعذّر تحميل صفحة المصوّرة. تحقّقي من الاتصال وحاولي مجدداً.")}{" "}
+      {pg(profile?.gender, tr("تعذّر تحميل صفحة المصوّرة. تحقّقي من الاتصال وحاولي مجدداً."), tr("تعذّر تحميل صفحة المصوّر. تحقّقي من الاتصال وحاولي مجدداً."))}{" "}
       <button onClick={() => setReloadKey((k) => k + 1)} className="underline text-gold">{tr("إعادة المحاولة")}</button>
     </FallbackPage>
   );
@@ -462,7 +465,7 @@ function PhotographerPage() {
               <span aria-hidden className="absolute inset-0 rounded-full bg-gold opacity-60 animate-ping opacity-0 [animation-duration:1.6s] [animation-iteration-count:2] [animation-delay:0.8s]" />
               <span className="relative h-1.5 w-1.5 rounded-full bg-gold" />
             </span>
-            {tr("ملف المصوّرة")}
+            {pg(profile?.gender, tr("ملف المصوّرة"), tr("ملف المصوّر"))}
           </span>
         </div>
 
@@ -508,7 +511,7 @@ function PhotographerPage() {
                 <RevealWords lines={[profile.display_name]} delay={0.35} step={0.14} />
               </h1>
               <div className="flex flex-wrap items-center gap-2 mb-6">
-                {profile.verification_status === "verified" && <VerifiedBadge />}
+                {profile.verification_status === "verified" && <VerifiedBadge gender={profile.gender} />}
                 {profile.team_gender && (
                   <span className="inline-flex items-center text-[11px] tracking-wide bg-secondary text-foreground px-3 py-1.5 rounded-full border border-border">
                     {profile.team_gender === "female" ? tr("فريق نسائي بالكامل") : profile.team_gender === "male" ? tr("فريق رجالي") : tr("فريق مختلط")}
@@ -522,7 +525,7 @@ function PhotographerPage() {
                 {/* ⚡ سرعة الرد الحقيقية (وسيط آخر 180 يوماً، من 3 طلبات فأكثر) */}
                 {responseHours != null && (
                   <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.25em] bg-emerald-500/15 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-500/30" title={tr("الوقت المعتاد لرد المصوّرة على طلبات الحجز")}>
-                    <span className="text-emerald-400">⚡</span>{" "}{responseHours < 1 ? tr("تردّ خلال أقل من ساعة") : tr("تردّ خلال ~{0} ساعة", [Math.round(responseHours)])}
+                    <span className="text-emerald-400">⚡</span>{" "}{responseHours < 1 ? pg(profile?.gender, tr("تردّ خلال أقل من ساعة"), tr("يردّ خلال أقل من ساعة")) : pg(profile?.gender, tr("تردّ خلال ~{0} ساعة", [Math.round(responseHours)]), tr("يردّ خلال ~{0} ساعة", [Math.round(responseHours)]))}
                   </span>
                 )}
                 {/* 📦 معدّل التسليم الحقيقي من تسليماتها (وسيط آخر سنة، من 3 تسليمات فأكثر) */}
@@ -670,7 +673,7 @@ function PhotographerPage() {
           ) : (
             <div className="rounded-sm border border-border bg-card p-8 text-center">
               <h2 className="font-serif text-2xl mb-2">{tr("الحجز غير متاح حالياً")}</h2>
-              <p className="text-sm text-muted-foreground leading-loose mb-5">{tr("هذه المصوّرة لا تستقبل طلبات حجز جديدة عبر ميموريا في الوقت الحالي.")}</p>
+              <p className="text-sm text-muted-foreground leading-loose mb-5">{pg(profile?.gender, tr("هذه المصوّرة لا تستقبل طلبات حجز جديدة عبر ميموريا في الوقت الحالي."), tr("هذا المصوّر لا يستقبل طلبات حجز جديدة عبر ميموريا في الوقت الحالي."))}</p>
               <Link to="/search" className="inline-block bg-charcoal text-ivory px-5 py-2 rounded-sm text-sm">{tr("ابحثي عن مصوّرة متاحة")}</Link>
             </div>
           )}
@@ -728,10 +731,10 @@ function PhotographerPage() {
 
       {/* CONTACT FOOTER */}
       <section className="container-editorial pb-8 sm:pb-16 text-center">
-        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{profile.instagram ? tr("تابعيها وشاركي صفحتها") : tr("شاركي صفحتها")}</div>
-        <p className="mb-4 text-xs text-muted-foreground">{tr("عندكِ سؤال قبل الحجز؟ اسأليها من هنا، ورقمكِ لا يظهر لها.")}</p>
+        <div className="text-xs uppercase tracking-[0.3em] text-gold mb-1">{profile.instagram ? pg(profile?.gender, tr("تابعيها وشاركي صفحتها"), tr("تابعيه وشاركي صفحته")) : pg(profile?.gender, tr("شاركي صفحتها"), tr("شاركي صفحته"))}</div>
+        <p className="mb-4 text-xs text-muted-foreground">{pg(profile?.gender, tr("عندكِ سؤال قبل الحجز؟ اسأليها من هنا، ورقمكِ لا يظهر لها."), tr("عندكِ سؤال قبل الحجز؟ اسأليه من هنا، ورقمكِ لا يظهر له."))}</p>
         <div className="flex flex-wrap justify-center gap-3">
-          <AskPhotographer photographerId={profile.id} name={profile.display_name} />
+          <AskPhotographer photographerId={profile.id} name={profile.display_name} gender={profile.gender} />
           {profile.instagram && (
             <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noreferrer" aria-label={tr("إنستغرام")} className="h-12 px-5 inline-flex items-center gap-2 rounded-full border border-border text-sm hover:bg-secondary"><Instagram className="h-5 w-5" />{tr("إنستغرام")}</a>
           )}
@@ -797,11 +800,11 @@ function TrustBadges({ profile, completedCount, unavailCount, responseHours, del
   const items = [
     deliveryDays != null
       ? { icon: CalendarCheck, label: tr("التسليم الفعلي عادةً"), value: tr("~{0} يوماً", [deliveryDays]) }
-      : { icon: CalendarCheck, label: tr("عضوة منذ"), value: joinedLabel },
+      : { icon: CalendarCheck, label: pg(profile?.gender, tr("عضوة منذ"), tr("عضو منذ")), value: joinedLabel },
     { icon: Award, label: tr("حجوزات مكتملة"), value: completedCount > 0 ? String(completedCount) : tr("جديدة") },
     { icon: Shield, label: tr("العربون"), value: depositLabel },
     responseHours != null
-      ? { icon: Clock, label: tr("تردّ عادةً خلال"), value: responseHours < 1 ? tr("أقل من ساعة") : tr("{0} ساعة", [Math.round(responseHours)]) }
+      ? { icon: Clock, label: pg(profile?.gender, tr("تردّ عادةً خلال"), tr("يردّ عادةً خلال")), value: responseHours < 1 ? tr("أقل من ساعة") : tr("{0} ساعة", [Math.round(responseHours)]) }
       : { icon: Clock, label: tr("تواريخ مشغولة"), value: String(unavailCount) },
   ];
   return (
@@ -1134,8 +1137,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     return (
       <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
         <div className="mb-3 flex justify-center"><CheckCircle2 className="h-14 w-14 text-emerald-600" /></div>
-        <h2 className="font-serif text-2xl mb-2">{tr("تم إرسال عرضكِ للمصوّرة")}</h2>
-        <p className="text-muted-foreground mb-5">{tr("تم إرسال عرضكِ للمصوّرة. لن يُحجز الموعد إلا بعد موافقتها، وسنراسلكِ على بريدكِ وواتساب.")}</p>
+        <h2 className="font-serif text-2xl mb-2">{pg(profile?.gender, tr("تم إرسال عرضكِ للمصوّرة"), tr("تم إرسال عرضكِ للمصوّر"))}</h2>
+        <p className="text-muted-foreground mb-5">{pg(profile?.gender, tr("تم إرسال عرضكِ للمصوّرة. لن يُحجز الموعد إلا بعد موافقتها، وسنراسلكِ على بريدكِ وواتساب."), tr("تم إرسال عرضكِ للمصوّر. لن يُحجز الموعد إلا بعد موافقته، وسنراسلكِ على بريدكِ وواتساب."))}</p>
         <Link to="/offer/$token" params={{ token: offerSent }} className="block bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90">{tr("متابعة حالة العرض")}</Link>
         <button onClick={() => { setOfferSent(null); setOfferOpen(false); setOfferPrice(""); }} className="mt-4 text-xs text-muted-foreground underline underline-offset-2">{tr("رجوع للنموذج")}</button>
       </div>
@@ -1334,7 +1337,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
                 {/* Idea 5: Busy Month Hint */}
                 {monthFree.left >= 7 && monthFree.free > 0 && monthFree.free <= 5 && (
                   <div className="text-amber-700 bg-amber-50 p-1.5 rounded-sm border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/50">
-                    {tr("بقي {0} أيام متاحة فقط عندها في هذا الشهر.", [monthFree.free])}
+                    {pg(profile?.gender, tr("بقي {0} أيام متاحة فقط عندها في هذا الشهر.", [monthFree.free]), tr("بقي {0} أيام متاحة فقط عنده في هذا الشهر.", [monthFree.free]))}
                   </div>
                 )}
               </div>
@@ -1342,14 +1345,14 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           </Popover>
           {daysUntil !== null && daysUntil < 7 && !isBlocked && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-sm p-2">
-              💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{tr("ننصحكِ بإرسال الطلب الآن. يصل للمصوّرة إشعار فوراً، ورقمها يظهر لكِ في صفحة المتابعة بعد موافقتها.")}
+              💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{pg(profile?.gender, tr("ننصحكِ بإرسال الطلب الآن. يصل للمصوّرة إشعار فوراً، ورقمها يظهر لكِ في صفحة المتابعة بعد موافقتها."), tr("ننصحكِ بإرسال الطلب الآن. يصل للمصوّر إشعار فوراً، ورقمه يظهر لكِ في صفحة المتابعة بعد موافقته."))}
             </motion.div>
           )}
           {multiPerDay && daySlots.length > 0 && !isBlocked && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} role="note" className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-sm p-2.5 leading-relaxed">
-              <strong>{tr("يوجد حجز آخر لدى المصوّرة في هذا اليوم")}</strong>
+              <strong>{pg(profile?.gender, tr("يوجد حجز آخر لدى المصوّرة في هذا اليوم"), tr("يوجد حجز آخر لدى المصوّر في هذا اليوم"))}</strong>
               {" "}({daySlots.map((x) => `${x.start_time.slice(0, 5)}–${x.end_time.slice(0, 5)}`).join("، ")}).{" "}
-              {tr("المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد موافقتها على الطلب.")}
+              {pg(profile?.gender, tr("المصوّرة تستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معها والتأكد من وقتها وتفرّغها قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمها في صفحة متابعة الحجز بعد موافقتها على الطلب."), tr("المصوّر يستقبل أكثر من حجز في اليوم نفسه، لكن يرجى التواصل معه والتأكد من وقته وتفرّغه قبل دفع العربون أو أي خطوة أخرى. ستجدين رقمه في صفحة متابعة الحجز بعد موافقته على الطلب."))}
             </motion.div>
           )}
         </div>
@@ -1449,7 +1452,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-1">
             {[
               { v: "no_publish", t: tr("بإذني فقط"), d: tr("لا تُنشر أي صورة قبل موافقتكِ عليها") },
-              { v: "public", t: tr("مسموح النشر"), d: tr("يحق للمصوّرة نشر لقطات مختارة للترويج") },
+              { v: "public", t: tr("مسموح النشر"), d: pg(profile?.gender, tr("يحق للمصوّرة نشر لقطات مختارة للترويج"), tr("يحق للمصوّر نشر لقطات مختارة للترويج")) },
               { v: "private_only", t: tr("خصوصية تامة"), d: profile.team_gender === "female" ? tr("فريق نسائي فقط — لا مشاركة مع أي طرف ثالث") : tr("لا نشر ولا مشاركة مع أي طرف ثالث") },
             ].map((o) => (
               <button key={o.v} type="button" onClick={() => setF({ ...f, privacy_level: o.v as any })}
@@ -1499,10 +1502,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           <div className="sm:col-span-2 rounded-sm border border-border p-3">
             <div className="mb-2 text-sm font-medium">{tr("ما يشمله طلبكِ — {0}", [selected.label])}</div>
             <PackageFacts d={selected} compact gender={profile.gender} />
-            <p className="mt-2 text-[11px] text-muted-foreground">{tr("نحفظ هذه التفاصيل مع حجزكِ كما هي الآن، حتى لو عدّلت المصوّرة باقتها لاحقاً.")}</p>
+            <p className="mt-2 text-[11px] text-muted-foreground">{pg(profile?.gender, tr("نحفظ هذه التفاصيل مع حجزكِ كما هي الآن، حتى لو عدّلت المصوّرة باقتها لاحقاً."), tr("نحفظ هذه التفاصيل مع حجزكِ كما هي الآن، حتى لو عدّل المصوّر باقته لاحقاً."))}</p>
           </div>
         )}
-        {selected && <BookingJourney deposit={deposit} remaining={Math.max(0, total - deposit)} />}
+        {selected && <BookingJourney deposit={deposit} remaining={Math.max(0, total - deposit)} gender={profile.gender} />}
         <label className="sm:col-span-2 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed cursor-pointer">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-gold" />
           <span>
@@ -1565,7 +1568,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
       {step === 3 && (new Date().getHours() >= 0 && new Date().getHours() <= 7) && (
         <div className="mt-4 text-xs text-indigo-800 bg-indigo-50 border border-indigo-200 p-2.5 rounded-sm flex items-start gap-2">
           <span className="text-base leading-none mt-0.5">🌙</span>
-          <span>{tr("المصوّرة قد تكون نائمة الآن، سيصلها إشعارك فور استيقاظها.")}</span>
+          <span>{pg(profile?.gender, tr("المصوّرة قد تكون نائمة الآن، سيصلها إشعارك فور استيقاظها."), tr("المصوّر قد يكون نائماً الآن، سيصله إشعارك فور استيقاظه."))}</span>
         </div>
       )}
       
@@ -1653,7 +1656,7 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
             <div className="text-[11px] uppercase tracking-[0.2em] text-ivory/60 mb-1 flex items-center justify-between">
               <span>CliQ Alias</span>
               <span className="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">
-                {copied ? tr("تم النسخ بنجاح") : tr("الدفع لحساب المصوّرة مباشرة")}
+                {copied ? tr("تم النسخ بنجاح") : pg(profile?.gender, tr("الدفع لحساب المصوّرة مباشرة"), tr("الدفع لحساب المصوّر مباشرة"))}
               </span>
             </div>
             <div className="flex items-center justify-between gap-2">
