@@ -97,11 +97,15 @@ export const updateProductionStage = createServerFn({ method: "POST" })
     {
       // الملكية متحقَّق منها أعلاه — الكتابة عبر service-role (أعمدة المرحلة محمية من الطلبات المباشرة)
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: forced, error: adminErr } = await supabaseAdmin
+      // لا نكتب فوق تغيير حصل بالأثناء (إلغاء من العروس، أو نقل مرحلة من تبويب آخر)
+      let q = supabaseAdmin
         .from("bookings")
         .update(patch)
         .eq("id", data.booking_id)
         .eq("photographer_id", userId)
+        .eq("status", bk.status);
+      q = bk.production_stage ? q.eq("production_stage", bk.production_stage) : q.is("production_stage", null);
+      const { data: forced, error: adminErr } = await q
         .select("production_stage")
         .maybeSingle();
       if (adminErr) throw new Error(adminErr.message);
@@ -269,7 +273,9 @@ export const markFinalPaymentReceived = createServerFn({ method: "POST" })
         updated_at: now,
       })
       .eq("id", data.booking_id)
-      .eq("photographer_id", userId);
+      .eq("photographer_id", userId)
+      .in("status", ["confirmed", "completed"])
+      .is("final_paid_at", null);
     if (updateErr) throw new Error(updateErr.message);
 
     // تسجيل في audit_logs
@@ -323,7 +329,8 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
     const ALLOWED: Record<string, string[]> = {
       quote: ["pending_deposit"],
       pending_deposit: ["quote"],
-      confirmed: ["completed"],
+      // «مكتمل» يأتي فقط من مرحلة «تم التسليم» (فيها شرط الصور وتاريخ التصوير)؛ لا إغلاق بلا تسليم
+      confirmed: [],
     };
     if (bk.status !== data.status && !(ALLOWED[bk.status] ?? []).includes(data.status)) {
       throw new Error(t("لا يمكن نقل الحجز إلى هذه الحالة من حالته الحالية."));
@@ -336,7 +343,8 @@ export const updateBookingStatus = createServerFn({ method: "POST" })
       .from("bookings")
       .update({ status: data.status as any, updated_at: now })
       .eq("id", data.booking_id)
-      .eq("photographer_id", userId);
+      .eq("photographer_id", userId)
+      .eq("status", bk.status); // تغيّرت الحالة بالأثناء (مثلاً ألغت العروس) ← لا نكتب فوقها
     if (updateErr) throw new Error(updateErr.message);
 
     // تسجيل في audit_logs

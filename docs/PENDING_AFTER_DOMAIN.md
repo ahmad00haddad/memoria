@@ -175,6 +175,14 @@ group by 1,2 order by 3 desc;
 
 ---
 
+## 10. أشياء لقيناها بتدقيق المنطق (2026-11-20) وتنتظر الدومين
+
+| المشكلة | ليش تنتظر الدومين | الحل بعد الدومين | الكود |
+|---|---|---|---|
+| **العروس عالقة:** ما بتقدر تلغي حجز بعد ما بعتت العربون، ولا توافق على أي ملحق (حتى نقل الموعد)، لأن رمز الأمان (step-up) بينبعت بالإيميل وبيفشل | الإيميل sandbox | يرجع يشتغل لحاله بعد توثيق Resend. تأكّد من الخطوة 3 بالقسم 2-د | `src/lib/stepup.server.ts`، `cancellation.functions.ts` (`clientCancelBooking`)، `extras.functions.ts` (`respondAddendum`) |
+| **تزوير توقيع العقد:** المصوّرة عندها رابط التوقيع `/contracts/<sign_token>`، فبتقدر توقّع باسم العروس من الصفحة العامة. `signContract` ما بيطلب أي رمز، والحماية الوحيدة إيميل نسخة للعروس (وما بيوصل هلأ) | الحل الصحيح رمز على إيميل العروس | ضيف غرض `contract` لـ `StepPurpose` بـ `stepup.server.ts` (+ نص بـ `PURPOSE_TEXT`)، وبـ `signContract` استدعي `consumeStepUpCode(bookingId, "contract", data.code)` لما `stepUpApplies(bk)`. وبالواجهة `contracts.$token.tsx` استعمل `StepUpBox` قبل زر التوقيع | `src/lib/contracts.functions.ts` (`signContract`) |
+| **تقييم ذاتي:** المصوّرة بتعرف رابط التقييم `/review/<tracking_token>` فبتقدر تقيّم حالها | أولوية منخفضة (قرار أحمد)، والحل الجذري كلمة سر الرابط (القسم 6) | القسم 6 | `src/lib/booking.functions.ts` (`submitReview…`) |
+
 ## 9. قائمة تحقق سريعة
 
 - [ ] اسم البزنس ثابت
@@ -187,4 +195,5 @@ group by 1,2 order by 3 desc;
 - [ ] إيميل الدعم `support@الدومين`
 - [ ] منع `auto` verify (اختياري)
 - [ ] كلمة سر رابط المتابعة (القسم 6)
+- [ ] رمز إيميل لتوقيع العقد + تجربة الإلغاء والملاحق (القسم 10)
 - [ ] SEO (القسم 8): redirect 301 من workers.dev، Search Console + sitemap، Bing، og:image للمدن والمقالات

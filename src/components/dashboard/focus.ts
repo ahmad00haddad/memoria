@@ -135,10 +135,14 @@ export function computeFocusItems(bookings: FocusBooking[], sub: any): FocusItem
     const depositSince = b.approved_at ?? (!b.needs_approval ? b.phone_verified_at : null);
     if (b.status === "pending_deposit" && !b.deposit_proof_url && !b.deposit_sent_at && depositSince
       && now - new Date(depositSince).getTime() > 2 * DAY) {
+      // موعد المناسبة مرّ ولم يُدفع شيء: لا معنى لانتظار العربون، الطلب معلّق فقط
+      const eventPassed = !!b.event_date && daysFromToday(b.event_date) < 0;
       items.push({
-        id: `deposit-wait-${b.id}`, tone: "soon", priority: 65,
-        title: t("عربون {0} لم يصل", [name]),
-        detail: g(t("وافقتِ {0} — أكّدي وصوله من البنك أو ألغي الطلب ليُفتح التاريخ", [ageLabel(depositSince)]), t("وافقتَ {0} — أكّد وصوله من البنك أو ألغِ الطلب ليُفتح التاريخ", [ageLabel(depositSince)])),
+        id: `deposit-wait-${b.id}`, tone: "soon", priority: eventPassed ? 40 : 65,
+        title: eventPassed ? t("طلب {0} معلّق وموعده مرّ", [name]) : t("عربون {0} لم يصل", [name]),
+        detail: eventPassed
+          ? g(t("لم يصل عربون ومرّ تاريخ المناسبة — ألغي الطلب ليُغلق"), t("لم يصل عربون ومرّ تاريخ المناسبة — ألغِ الطلب ليُغلق"))
+          : g(t("وافقتِ {0} — أكّدي وصوله من البنك أو ألغي الطلب ليُفتح التاريخ", [ageLabel(depositSince)]), t("وافقتَ {0} — أكّد وصوله من البنك أو ألغِ الطلب ليُفتح التاريخ", [ageLabel(depositSince)])),
         cta: g(t("افتحي الطلب"), t("افتح الطلب")), ...link,
       });
       continue;

@@ -419,7 +419,7 @@ export const clientMarkDepositSent = createServerFn({ method: "POST" })
       _note: (data.note ?? null) as any,
     });
     if (error) {
-      if (error.message.includes("EXPIRED_BOOKING")) throw new Error(tr("انتهت مهلة الحجز وحُجز الموعد لعميلة أخرى. تواصلي مع المصوّرة لاختيار موعد جديد."));
+      if (error.message.includes("EVENT_PASSED")) throw new Error(tr("موعد هذا الحجز مرّ. تواصلي مع المصوّرة مباشرة."));
       if (error.message.includes("BOOKING_NOT_VERIFIED")) throw new Error(tr("أكّدي طلب الحجز أولاً (عبر واتساب أو رمز الإيميل) قبل إرسال العربون."));
       if (error.message.includes("BOOKING_NOT_APPROVED")) throw new Error(tr("لا تحوّلي العربون قبل موافقة المصوّرة على طلبك."));
       if (error.message.includes("BOOKING_NOT_AWAITING_DEPOSIT")) throw new Error(tr("هذا الحجز لم يعد بانتظار العربون."));
@@ -648,8 +648,12 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
     if (!bk.deposit_confirmed_at) patch.deposit_confirmed_at = new Date().toISOString();
     // الملكية متحقَّق منها أعلاه؛ status/deposit_confirmed_at محميان من الطلبات المباشرة فالكتابة عبر service-role
     const { supabaseAdmin: adminW } = await import("@/integrations/supabase/client.server");
-    const { error: uerr } = await adminW.from("bookings").update(patch).eq("id", data.booking_id).eq("photographer_id", userId);
+    const { data: done, error: uerr } = await adminW.from("bookings").update(patch)
+      .eq("id", data.booking_id).eq("photographer_id", userId)
+      .in("status", ["pending_deposit", "quote"]) // ألغت العروس بالأثناء ← لا نعيد إحياء الحجز
+      .select("id").maybeSingle();
     if (uerr) throw new Error(uerr.message);
+    if (!done) throw new Error(tr("تغيّرت حالة الحجز قبل التأكيد (ربما أُلغي). حدّثي الصفحة."));
     // سجلّ تدقيق (عبر service-role لتجاوز RLS على audit_logs).
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

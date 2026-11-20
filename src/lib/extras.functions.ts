@@ -130,7 +130,10 @@ export const addAddendum = createServerFn({ method: "POST" })
     const bk = await ownBooking(context, data.booking_id);
     // نقل الموعد وحده مسموح قبل العربون، بشرط أن المصوّرة وافقت على الطلب (بدل إلغاء وطلب جديد)
     const approvedPending = bk.status === "pending_deposit" && !((bk as any).needs_approval && !(bk as any).approved_at);
-    const statusOk = bk.status === "confirmed" || bk.status === "completed" || (data.kind === "reschedule" && approvedPending);
+    // نقل الموعد لحجز لم يُصوَّر بعد فقط (المكتمل انتهى تصويره)
+    const statusOk = data.kind === "reschedule"
+      ? bk.status === "confirmed" || approvedPending
+      : bk.status === "confirmed" || bk.status === "completed";
     if (!statusOk) throw new Error(tr("الملحق متاح بعد تأكيد الحجز"));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (data.kind === "reschedule") {
@@ -237,6 +240,7 @@ export const respondAddendum = createServerFn({ method: "POST" })
       .select("amount, kind, new_event_date, new_start_time, new_end_time").eq("id", data.id).eq("booking_id", bk.id).eq("status", "pending").maybeSingle();
     if (!pending) throw new Error(tr("هذا الملحق لم يعد بانتظار ردّكِ"));
     // نقل الموعد: نتأكد أن التاريخ الجديد ما زال فاضياً عند المصوّرة قبل أي شيء
+    if (pending.kind === "reschedule" && bk.status === "completed") throw new Error(tr("هذا الحجز اكتمل، فلا يمكن نقل موعده."));
     if (pending.kind === "reschedule" && pending.new_event_date) {
       const todayJo = new Date(Date.now() + 3 * 3600000).toISOString().slice(0, 10);
       if (String(pending.new_event_date) < todayJo) throw new Error(tr("التاريخ المقترح صار في الماضي. اطلبي من المصوّرة موعداً جديداً."));
