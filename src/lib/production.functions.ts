@@ -28,7 +28,7 @@ export const updateProductionStage = createServerFn({ method: "POST" })
     // التحقق من الملكية قبل التحديث
     const { data: bk, error: fetchErr } = await supabase
       .from("bookings")
-      .select("id, photographer_id, status, production_stage, editing_started_at, client_email, client_name, client_phone, event_date, client_tracking_token, client_user_id")
+      .select("id, photographer_id, status, production_stage, editing_started_at, client_email, client_name, client_phone, event_date, client_tracking_token, client_user_id, client_received_at")
       .eq("id", data.booking_id)
       .maybeSingle();
     if (fetchErr) throw new Error(fetchErr.message);
@@ -86,6 +86,8 @@ export const updateProductionStage = createServerFn({ method: "POST" })
         patch.editing_completed_at = null;
       }
       if (bk.production_stage === "delivered") {
+        // العروس أكّدت استلام صورها: الحجز مغلق نهائياً ولا يرجع «قيد العمل»
+        if ((bk as any).client_received_at) throw new Error(t("العروس أكّدت استلام صورها، فلا يمكن إرجاع الحجز لمرحلة سابقة."));
         patch.delivered_at = null;
         patch.editing_completed_at = null;
         patch.status = "confirmed";
