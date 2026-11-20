@@ -66,7 +66,7 @@ export const getCalendarMonthData = createServerFn({ method: "POST" })
 
     // أيام التسليم القادمة (لتمييزها بلون مختلف)
     const deliveryDueSoon = (bookings ?? [])
-      .filter((b: any) => b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "completed")
+      .filter((b: any) => b.delivery_due_at && b.production_stage !== "delivered" && b.status !== "completed" && b.status !== "cancelled")
       .map((b: any) => ({
         date: String(b.delivery_due_at).slice(0, 10),
         booking_id: b.id,
