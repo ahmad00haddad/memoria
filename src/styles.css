@@ -363,6 +363,8 @@
    ═══════════════════════════════════ */
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+/* Short horizontal chip strips: a swipe on them only scrolls sideways (no page jump up/down) */
+.h-scroll-strip { touch-action: pan-x; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
 .pb-safe-4 { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
 .chat-input-row { padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }

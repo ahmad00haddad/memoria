@@ -686,7 +686,7 @@ function BookingDetail() {
         </AnimatePresence>
 
         {/* ── التبويبات ── */}
-        <div role="tablist" aria-label={tr("أقسام الحجز")} className="sticky top-12 z-20 -mx-4 mt-6 flex gap-1 overflow-x-auto scrollbar-none border-b border-border bg-background/95 px-4 backdrop-blur sm:static sm:mx-0 sm:mt-8 sm:px-0 sm:bg-transparent sm:backdrop-blur-none">
+        <div role="tablist" aria-label={tr("أقسام الحجز")} className="sticky top-12 z-20 -mx-4 mt-6 flex gap-1 overflow-x-auto scrollbar-none h-scroll-strip border-b border-border bg-background/95 px-4 backdrop-blur sm:static sm:mx-0 sm:mt-8 sm:px-0 sm:bg-transparent sm:backdrop-blur-none">
           {TABS.map((t) => (
             <button
               key={t.key}

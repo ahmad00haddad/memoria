@@ -380,7 +380,7 @@ function ProductionBoard() {
             )}
 
             {/* Mobile stage selector */}
-            <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto scrollbar-none">
+            <div className="lg:hidden mb-4 -mx-4 px-4 overflow-x-auto scrollbar-none h-scroll-strip">
               <div className="flex gap-2 min-w-max pb-2">
                 {STAGES.map((s) => {
                   const count = byStage(s.key).length;

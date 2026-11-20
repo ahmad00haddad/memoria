@@ -808,7 +808,7 @@ function TrustBadges({ profile, completedCount, unavailCount, responseHours, del
       : { icon: Clock, label: tr("تواريخ مشغولة"), value: String(unavailCount) },
   ];
   return (
-    <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] sm:mx-0 sm:mb-10 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-3 sm:overflow-visible sm:px-0">
+    <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] h-scroll-strip sm:mx-0 sm:mb-10 sm:grid sm:grid-cols-2 md:grid-cols-4 sm:gap-3 sm:overflow-visible sm:px-0">
       {items.map((it) => (
         <div key={it.label} className="shrink-0 sm:shrink rounded-sm border border-border bg-card p-3 sm:p-4 flex items-center gap-3">
           <div className="h-9 w-9 grid place-items-center rounded-sm bg-secondary text-gold shrink-0">

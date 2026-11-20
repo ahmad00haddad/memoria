@@ -273,7 +273,7 @@ function BookingsList() {
         </div>
 
         {/* Filters with counts */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs -mx-4 px-4">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none h-scroll-strip text-xs -mx-4 px-4">
           {FILTERS.map((f) => {
             const active = filter === f.value;
             const n = counts[f.value];
