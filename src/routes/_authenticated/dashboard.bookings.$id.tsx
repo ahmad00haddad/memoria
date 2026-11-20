@@ -351,7 +351,9 @@ function BookingDetail() {
     try {
       const res: any = await cancelFn({ data: { booking_id: id, reason: cancelReason.trim() } });
       if (Number(res?.refund_amount) > 0) {
-        toast.success(tr("أُلغي الحجز. أرجعي العربون للعروس مباشرة: {0} د.أ", [res.refund_amount]));
+        toast.success(b.status === "confirmed"
+          ? tr("أُلغي الحجز. أرجعي العربون للعروس مباشرة: {0} د.أ", [res.refund_amount])
+          : tr("أُلغي الحجز. إن كان العربون ({0} د.أ) وصلكِ فأرجعيه للعروس.", [res.refund_amount]));
       } else {
         toast.success(tr("أُلغي الحجز"));
       }
@@ -481,7 +483,8 @@ function BookingDetail() {
       return { title: g(tr("العربون وصل — راجعيه وأكّدي"), tr("العربون وصل — راجعه وأكّد")), detail: g(tr("تأكّدي من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال", [b.deposit_amount]), tr("تأكّد من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمد على صورة الإيصال", [b.deposit_amount])), cta: tr("تأكيد العربون"), icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
     }
     if (b.status === "quote" || b.status === "pending_deposit") {
-      const depositLeft = Math.max(0, Math.ceil((new Date(b.approved_at || b.created_at).getTime() + 48 * 3600_000 - Date.now()) / 3600_000));
+      // حدّ أعلى 48: ساعة الجهاز قد تتأخر قليلاً عن الخادم فتظهر «49 ساعة» بعد الموافقة مباشرة
+      const depositLeft = Math.min(48, Math.max(0, Math.ceil((new Date(b.approved_at || b.created_at).getTime() + 48 * 3600_000 - Date.now()) / 3600_000)));
       return { title: tr("بانتظار العربون من العميلة"), detail: depositLeft > 0 ? tr("باقي {0} ساعة من المهلة المتّفق عليها للتحويل", [depositLeft]) : g(tr("مرّت المهلة: افحصي حسابكِ، أو راسليها، أو ألغي لتفتحي التاريخ"), tr("مرّت المهلة: افحص حسابك، أو راسلها، أو ألغِ لتفتح التاريخ")), cta: tr("ذكّريها بواتساب"), icon: <MessageSquare className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 لتثبيت موعدك بتاريخ {1} يرجى إرسال العربون ({2} د.أ) ورفع الإثبات من هنا: {3}", [b.client_name, new Date(b.event_date).toLocaleDateString(locale("ar-JO")), b.deposit_amount, trackUrl])) };
     }
     if (stage !== "delivered" && eventIn !== null && eventIn >= 0) {
@@ -953,7 +956,11 @@ function BookingDetail() {
           <DialogHeader>
             <DialogTitle>{tr("إلغاء حجز {0}", [b.client_name])}</DialogTitle>
             <DialogDescription>
-              {(b.status === "confirmed" || (b.deposit_sent_at && Number(b.deposit_amount || 0) > 0)) ? tr("بما أن الإلغاء منكِ، عليكِ إرجاع العربون كاملاً للعروس مباشرة.") : tr("ستصل للعميلة رسالة بالإلغاء.")}
+              {Number(b.deposit_amount || 0) <= 0 || (b.status !== "confirmed" && !b.deposit_sent_at)
+                ? tr("ستصل للعميلة رسالة بالإلغاء.")
+                : b.status === "confirmed"
+                  ? tr("بما أن الإلغاء منكِ، عليكِ إرجاع العربون كاملاً للعروس مباشرة.")
+                  : tr("العروس رفعت إيصال عربون لم تؤكّدي وصوله. إن كان وصلكِ فعليكِ إرجاعه كاملاً؛ إن لم يصل فلا شيء عليكِ.")}
             </DialogDescription>
           </DialogHeader>
           <label htmlFor="cancel-reason" className="text-sm">{tr("السبب")}{" "}<span className="text-muted-foreground">{tr("(إلزامي — يصل للعروس)")}</span></label>

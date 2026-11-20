@@ -101,7 +101,7 @@ function TrackingPage() {
     window.addEventListener("beforeunload", h);
     return () => window.removeEventListener("beforeunload", h);
   }, [payTouched, b?.deposit_sent_at]);
-  const hoursLeft = (iso?: string | null) => iso ? Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 3600_000)) : null;
+  const hoursLeft = (iso?: string | null) => iso ? Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 3600_000)) : null;
   // قواعد واضحة من البداية: العربون بين العروس والمصوّرة، والمنصّة لا تستلمه ولا تُرجعه
   const todayYmd = new Date().toLocaleDateString("en-CA");
   const depositPaid = !!(b?.deposit_sent_at || b?.deposit_confirmed_at) && Number(b?.deposit_amount || 0) > 0;
