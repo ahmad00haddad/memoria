@@ -1,4 +1,5 @@
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
+import { usePhotographerSubject } from "@/hooks/use-photographer-subject";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BadgeCheck, Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check, Play, ExternalLink } from "lucide-react";
@@ -169,12 +170,14 @@ type Pricing = {
   label: string; price: number;
   per_photo_price: number | null; description: string | null;
   subtitle?: string | null; cta_label?: string | null;
+  allow_negotiation?: boolean | null;
 } & PackageDisclosure;
 
 function PhotographerPage() {
   const { username } = Route.useParams();
   const { seo } = Route.useLoaderData() as { seo: any };
   const [profile, setProfile] = useState<Profile | null>(null);
+  usePhotographerSubject(profile?.gender);
   const [pricing, setPricing] = useState<Pricing[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [unavail, setUnavail] = useState<string[]>([]);
@@ -1085,14 +1088,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     if (!selected) return;
     const listed = Number(selected.price);
     const price = Number(offerPrice);
-    const minPrice = Math.ceil(listed * 0.5);
     if (!f.client_name.trim() || !f.client_phone || !f.client_email || !f.event_date || !f.start_time || !f.end_time) {
       return toast.error(tr("املئي الاسم والهاتف والإيميل والتاريخ ووقت البداية والنهاية أولاً"));
     }
     if (!normalizePhone(f.client_phone)) return toast.error(PHONE_HINT);
     if (!isEmail(f.client_email)) return toast.error(EMAIL_HINT);
-    if (!Number.isFinite(price) || price < minPrice || price >= listed) {
-      return toast.error(tr("اقترحي سعراً بين {0} و{1} د.أ", [minPrice.toLocaleString(locale("ar-JO")), (listed - 1).toLocaleString(locale("ar-JO"))]));
+    if (!Number.isFinite(price) || price <= 0 || price >= listed) {
+      return toast.error(tr("اقترحي سعراً أقل من السعر المعلن ({0} د.أ)", [listed.toLocaleString(locale("ar-JO"))]));
     }
     if (sessionMinutes(f.start_time, f.end_time) <= 0) return toast.error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
     if (isBlocked) return toast.error(tr("هذا اليوم غير متاح، الرجاء اختيار يوم آخر"));
@@ -1542,7 +1544,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
         )}
       </div>
       
-      {selected && selected.package !== "addon" && profile.is_pro !== false && (
+      {selected && selected.package !== "addon" && profile.is_pro !== false && selected.allow_negotiation === true && (
         <div className="mt-4 border-t border-border pt-4">
           {!offerOpen ? (
             <button type="button" onClick={() => setOfferOpen(true)} className="w-full text-sm text-muted-foreground border border-dashed border-border rounded-sm py-2.5 hover:bg-secondary">
@@ -1551,7 +1553,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           ) : (
             <div className="rounded-sm border border-border bg-secondary/40 p-4 space-y-3 text-sm">
               <div className="font-medium">{tr("اقترحي سعراً")}</div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{tr("السعر المعلن لباقة «{0}»: {1} د.أ. أقل سعر يمكن اقتراحه: {2} د.أ. نستخدم الاسم والهاتف والإيميل والتاريخ والوقت التي ملأتِها. لن يُحجز الموعد إلا بعد موافقة المصوّرة.", [selected.label, Number(selected.price).toLocaleString(locale("ar-JO")), Math.ceil(Number(selected.price) * 0.5).toLocaleString(locale("ar-JO"))])}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{tr("السعر المعلن لباقة «{0}»: {1} د.أ. نستخدم الاسم والهاتف والإيميل والتاريخ والوقت التي ملأتِها. لن يُحجز الموعد إلا بعد موافقة المصوّرة.", [selected.label, Number(selected.price).toLocaleString(locale("ar-JO"))])}</p>
               <Field label={tr("السعر المقترح (د.أ)")} type="number" v={offerPrice} on={setOfferPrice} />
               <div className="flex gap-2">
                 <button type="button" onClick={sendOffer} disabled={offerSending} className="flex-1 bg-charcoal text-ivory py-2.5 rounded-sm disabled:opacity-60 inline-flex items-center justify-center gap-2">

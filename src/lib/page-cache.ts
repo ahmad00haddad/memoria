@@ -64,12 +64,14 @@ const fetchers: Record<string, (uid: string) => Promise<any>> = {
     return { ...(data ?? {}), ...(priv ?? {}), payment_methods: parseMethods((priv as any)?.payment_methods) };
   },
   pricing: async (uid) => {
-    const [{ data, error }, { data: prof }] = await Promise.all([
+    const [{ data, error }, { data: prof }, { data: floors }] = await Promise.all([
       supabase.from("pricing_rules").select("*").eq("photographer_id", uid).order("price"),
       supabase.from("profiles").select("deposit_percent,fixed_deposit").eq("id", uid).maybeSingle(),
+      (supabase as any).from("pricing_rule_floors").select("rule_id,min_offer_price").eq("photographer_id", uid),
     ]);
     if (error) throw error;
-    return { rules: data ?? [], prof };
+    const floorBy = new Map<string, number>(((floors ?? []) as any[]).map((f) => [f.rule_id, Number(f.min_offer_price)]));
+    return { rules: (data ?? []).map((r: any) => ({ ...r, min_offer_price: floorBy.get(r.id) ?? null })), prof };
   },
   production: async (uid) => {
     const { data, error } = await supabase.from("bookings")

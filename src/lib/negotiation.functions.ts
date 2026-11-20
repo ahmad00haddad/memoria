@@ -111,7 +111,7 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
     if (tier !== "pro") throw new Error(tr("هذه المصوّرة لا تستقبل عروض أسعار — احجزي بسعر الباقة مباشرة."));
 
     const { data: rule } = await admin
-      .from("pricing_rules").select("id, photographer_id, label, price, service, package")
+      .from("pricing_rules").select("id, photographer_id, label, price, service, package, allow_negotiation")
       .eq("id", data.rule_id).maybeSingle();
     if (!rule || rule.photographer_id !== data.photographer_id || rule.package === "addon") throw new Error(tr("باقة غير صالحة"));
     // باقة مخفية لا تُعرض ولا يُفاوَض عليها (نفس قاعدة submitBookingRequest)
@@ -121,8 +121,12 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
     const listed = Number(rule.price);
     if (!(listed > 0)) throw new Error(tr("باقة غير صالحة"));
     if (data.offered_price >= listed) throw new Error(tr("السعر المقترح يجب أن يكون أقل من السعر المعلن"));
-    if (data.offered_price < listed * 0.5) {
-      throw new Error(tr("أقل سعر يمكن اقتراحه هو {0} د.أ (نصف السعر المعلن)", [Math.ceil(listed * 0.5)]));
+    if (!(rule as any).allow_negotiation) throw new Error(tr("هذه الباقة لا تقبل التفاوض على السعر — احجزي بسعرها المعلن."));
+    // أقل سعر اختياري تحدده المصوّرة؛ لا نكشف رقمه للعروس أبداً
+    const { data: floorRow } = await admin.from("pricing_rule_floors").select("min_offer_price").eq("rule_id", rule.id).maybeSingle();
+    const floor = Number((floorRow as any)?.min_offer_price ?? 0);
+    if (floor > 0 && data.offered_price < floor) {
+      throw new Error(tr("هذا السعر أقل مما تقبله المصوّرة لهذه الباقة، جرّبي سعراً أعلى."));
     }
 
     const { count } = await admin.from("price_offers").select("id", { count: "exact", head: true })

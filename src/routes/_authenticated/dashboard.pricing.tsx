@@ -32,6 +32,8 @@ type Rule = {
   shooter?: "me" | "me_team" | "team" | null; overtime_fee?: number | string | null; excludes?: string | null;
   unedited_included?: boolean | null; revision_rounds?: number | string | null;
   is_visible?: boolean | null;
+  // التفاوض: مغلق افتراضياً؛ أقل سعر اختياري ولا يراه أحد غيرك
+  allow_negotiation?: boolean | null; min_offer_price?: number | string | null;
 };
 
 const numOrNull = (v: unknown) => (v === null || v === undefined || String(v).trim() === "" || Number.isNaN(Number(v)) ? null : Number(v));
@@ -62,7 +64,7 @@ function PricingMgr() {
   // «قصيرة» = أُضيفت الآن (لا تتغيّر حين يحفظها الحفظ التلقائي فتأخذ id، فلا يقفز النموذج أثناء الكتابة)
   const [newKeys, setNewKeys] = useState<Set<string>>(new Set());
   const isShort = (k: string) => newKeys.has(k) && !fullKeys.has(k);
-  const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "", subtitle: r.subtitle ?? "", cta_label: r.cta_label ?? "" })));
+  const snapshot = (rs: Rule[]) => JSON.stringify(rs.map(({ _key, ...r }) => ({ ...r, price: Number(r.price) || 0, per_photo_price: Number(r.per_photo_price) || 0, description: r.description ?? "", subtitle: r.subtitle ?? "", cta_label: r.cta_label ?? "", allow_negotiation: !!r.allow_negotiation, min_offer_price: r.allow_negotiation ? (Number(r.min_offer_price) || 0) : 0 })));
   const withKeys = (rs: Rule[]) => rs.map((r) => ({ ...r, _key: r.id ?? Math.random().toString(36).slice(2) }));
 
   const dirtyRef = useRef(false);
@@ -163,7 +165,7 @@ function PricingMgr() {
     setSaving(true);
     try {
       for (const r of toWrite) {
-        const { _key, id: _id, ...clean } = r as any;
+        const { _key, id: _id, min_offer_price: _floor, ...clean } = r as any;
         const payload: any = {
           ...clean,
           label: r.label.trim(),
@@ -181,14 +183,26 @@ function PricingMgr() {
           unedited_included: !!r.unedited_included,
           revision_rounds: numOrNull(r.revision_rounds),
           is_visible: r.is_visible !== false,
+          allow_negotiation: r.package !== "addon" && !!r.allow_negotiation,
         };
+        let ruleId = r.id;
         if (r.id) {
           const { error } = await supabase.from("pricing_rules").update(payload).eq("id", r.id);
           if (error) throw error;
         } else {
           const { data, error } = await supabase.from("pricing_rules").insert(payload).select("id").single();
           if (error) throw error;
-          newIds.set(r._key!, (data as any).id);
+          ruleId = (data as any).id;
+          newIds.set(r._key!, ruleId!);
+        }
+        // أقل سعر للتفاوض (جدول خاص): يُحفظ فقط إن كان التفاوض مفعّلاً وأُدخل رقم؛ وإلا يُحذف
+        const floor = Number(_floor);
+        if (payload.allow_negotiation && floor > 0) {
+          const { error } = await (supabase as any).from("pricing_rule_floors").upsert({ rule_id: ruleId, photographer_id: uid, min_offer_price: floor });
+          if (error) throw error;
+        } else {
+          const { error } = await (supabase as any).from("pricing_rule_floors").delete().eq("rule_id", ruleId);
+          if (error) throw error;
         }
       }
     } catch (e: any) {
@@ -390,6 +404,20 @@ function PricingMgr() {
                   {t("ظاهرة للعرائس")}
                   {r.is_visible === false && <span className="text-xs text-muted-foreground">{t("— مخفية، محفوظة عندكِ فقط")}</span>}
                 </label>
+              )}
+              {r.package !== "addon" && !isShort(k) && (
+                <div className="mb-4">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" checked={!!r.allow_negotiation} onChange={(e) => upd(i, "allow_negotiation", e.target.checked)} className="h-4 w-4" />
+                    {t("السماح للعرائس باقتراح سعر أقل لهذه الباقة")}
+                  </label>
+                  {r.allow_negotiation && (
+                    <div className="mt-2 ps-6">
+                      <label className="block text-xs text-muted-foreground mb-1">{t("أقل سعر تقبلينه (د.أ)")}{" "}<span className="text-muted-foreground/70">{t("— اختياري، لا تراه العروس. بدونه يُقبل أي سعر أقل من المعلن لتقرّري أنتِ.")}</span></label>
+                      <input type="number" min="0" inputMode="decimal" placeholder={t("اختياري")} value={r.min_offer_price ?? ""} onChange={(e) => upd(i, "min_offer_price", e.target.value)} className="w-40 bg-transparent font-serif text-2xl tabular-nums border-b border-border pb-1 outline-none focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/50" />
+                    </div>
+                  )}
+                </div>
               )}
               {r.package !== "addon" && <DisclosureFields r={r} set={(f, v) => upd(i, f, v)} />}
 
