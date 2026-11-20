@@ -478,7 +478,12 @@ export const listBookingsAdmin = createServerFn({ method: "GET" })
 
 export const adminCancelBooking = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { booking_id: string; reason: string }) => d)
+  .inputValidator((d: { booking_id: string; reason: string }) => {
+    if (!d || typeof d.booking_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.booking_id)) throw new Error("invalid booking_id");
+    const reason = typeof d.reason === "string" ? d.reason.trim() : "";
+    if (reason.length < 3) throw new Error("reason required");
+    return { booking_id: d.booking_id, reason };
+  })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await ensureAdmin(supabase, userId);
@@ -503,8 +508,10 @@ export const adminCancelBooking = createServerFn({ method: "POST" })
         .select("deposit_refund_policy, deposit_refund_percent")
         .eq("id", booking.photographer_id)
         .single();
-      const policy = photographer?.deposit_refund_policy ?? "none";
-      const percent = photographer?.deposit_refund_percent ?? 0;
+      // السياسة التي وافقت عليها العروس لحظة العربون (نفس client_cancel_booking)، وإلا السياسة الحالية
+      const agreed = (booking as any).deposit_terms_accepted_at && (booking as any).refund_policy_agreed;
+      const policy = agreed ? (booking as any).refund_policy_agreed : (photographer?.deposit_refund_policy ?? "none");
+      const percent = agreed ? Number((booking as any).refund_percent_agreed ?? 0) : (photographer?.deposit_refund_percent ?? 0);
       if (policy === "full") {
         refund = booking.deposit_amount;
       } else if (policy === "partial") {
@@ -536,6 +543,20 @@ export const adminCancelBooking = createServerFn({ method: "POST" })
       entity_id: data.booking_id,
       after_data: { status: "cancelled", reason: data.reason, refund_amount: refund }
     });
+    // العروس تعرف بالإلغاء (كل إلغاء آخر يُبلغها)
+    try {
+      const { notifyBride } = await import("@/lib/notify.server");
+      await notifyBride(data.booking_id, {
+        subject: "بخصوص حجزكِ",
+        title: "أُلغي الحجز من إدارة ميموريا",
+        lines: [
+          `أُلغي حجزكِ بتاريخ ${booking.event_date}.`,
+          `السبب: ${data.reason}`,
+          ...(refund > 0 ? [`المبلغ المستحق لكِ: ${refund} د.أ، تُرجعه المصوّرة مباشرة.`] : []),
+        ],
+        template: "booking_cancelled_admin",
+      });
+    } catch (e) { console.error("[admin] cancel notify failed", e); }
     return { ok: true };
   });
 

@@ -98,8 +98,15 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
     const { data: subActive } = await admin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
     if (!subActive) throw new Error(tr("نعتذر، لا يمكن إرسال العرض لأن اشتراك المصورة غير نشط حالياً."));
     // صفحة غير منشورة أو محذوفة لا تستقبل عروضاً
-    const { data: pubProf } = await admin.from("profiles").select("is_published, deleted_at").eq("id", data.photographer_id).maybeSingle();
+    const { data: pubProf } = await admin.from("profiles").select("is_published, deleted_at, min_session_minutes").eq("id", data.photographer_id).maybeSingle();
     if (!pubProf || !pubProf.is_published || pubProf.deleted_at) throw new Error(tr("الصفحة غير موجودة"));
+    // الحد الأدنى لمدة الجلسة يسري على العروض كما على الحجز المباشر
+    {
+      const minMinutes = Number(pubProf.min_session_minutes ?? 0);
+      if (minMinutes > 0 && sessionMinutes(data.start_time, data.end_time) < minMinutes) {
+        throw new Error(tr("الحد الأدنى لمدة الجلسة لدى هذه المصوّرة هو {0} ساعة", [Math.round(minMinutes / 60 * 10) / 10]));
+      }
+    }
     const { data: tier } = await admin.rpc("photographer_tier", { _pid: data.photographer_id });
     if (tier !== "pro") throw new Error(tr("هذه المصوّرة لا تستقبل عروض أسعار — احجزي بسعر الباقة مباشرة."));
 
@@ -107,6 +114,9 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
       .from("pricing_rules").select("id, photographer_id, label, price, service, package")
       .eq("id", data.rule_id).maybeSingle();
     if (!rule || rule.photographer_id !== data.photographer_id || rule.package === "addon") throw new Error(tr("باقة غير صالحة"));
+    // باقة مخفية لا تُعرض ولا يُفاوَض عليها (نفس قاعدة submitBookingRequest)
+    const { data: visIds } = await admin.rpc("visible_pricing_ids", { _pid: data.photographer_id });
+    if (!((visIds ?? []) as string[]).includes(rule.id)) throw new Error(tr("هذه الباقة غير متاحة حالياً، اختاري باقة أخرى"));
 
     const listed = Number(rule.price);
     if (!(listed > 0)) throw new Error(tr("باقة غير صالحة"));
@@ -240,6 +250,8 @@ export const respondToOffer = createServerFn({ method: "POST" })
     if (!o || o.photographer_id !== userId) throw new Error(tr("العرض غير موجود"));
     if (o.status !== "pending") throw new Error(tr("تم الرد على هذا العرض مسبقاً"));
     if (new Date(o.expires_at).getTime() < Date.now()) throw new Error(tr("انتهت صلاحية هذا العرض"));
+    const todayJo = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+    if (data.action === "accept" && String(o.event_date) < todayJo) throw new Error(tr("تاريخ هذا العرض مرّ، لا يمكن قبوله"));
 
     const { data: prof } = await admin.from("profiles")
       .select("id, display_name, username, fixed_deposit, deposit_percent, gender").eq("id", userId).maybeSingle();

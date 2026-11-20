@@ -110,7 +110,11 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     const visible = new Set<string>((visIds ?? []) as string[]);
     if (data.items.some((it) => !visible.has(it.rule_id))) throw new Error(tr("هذه الباقة غير متاحة حالياً، اختاري باقة أخرى"));
 
-    const mainItem = data.items.find((i) => (ruleMap.get(i.rule_id) as any)!.package !== "addon");
+    // باقة أساسية واحدة بكمية 1، وكل باقة/إضافة مرة واحدة (الكمية للإضافات فقط)
+    if (new Set(data.items.map((i) => i.rule_id)).size !== data.items.length) throw new Error(tr("باقة غير صالحة"));
+    const mains = data.items.filter((i) => (ruleMap.get(i.rule_id) as any)!.package !== "addon");
+    if (mains.length > 1 || (mains[0] && mains[0].qty !== 1)) throw new Error(tr("اختاري باقة أساسية واحدة"));
+    const mainItem = mains[0];
     if (!mainItem) throw new Error(tr("يجب اختيار باقة أساسية"));
     const mainRule: any = ruleMap.get(mainItem.rule_id);
 

@@ -269,8 +269,12 @@ export const ensureGallery = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const { data: bk } = await supabase.from("bookings").select("id,photographer_id,client_name").eq("id", data.booking_id).maybeSingle();
+    const { data: bk } = await supabase.from("bookings").select("id,photographer_id,client_name,status,deleted_at").eq("id", data.booking_id).maybeSingle();
     if (!bk || bk.photographer_id !== userId) throw new Error("forbidden");
+    // معرض تسليم لحجز مؤكّد/مكتمل فقط (الملغى لا يُعرض للعروس أصلاً)
+    if ((bk as any).deleted_at || (bk.status !== "confirmed" && bk.status !== "completed")) {
+      throw new Error(t("معرض التسليم متاح بعد تأكيد الحجز فقط."));
+    }
     const { data: existing } = await supabase.from("delivery_galleries").select("*").eq("booking_id", data.booking_id).maybeSingle();
     if (existing) return existing;
     const { data: created, error } = await supabase.from("delivery_galleries").insert({
@@ -284,6 +288,9 @@ export const updateGallery = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { gallery_id: string; title?: string; allow_downloads?: boolean; expires_at?: string | null }) => {
     if (!isUuid(d?.gallery_id)) throw new Error("invalid gallery_id");
+    if (d.expires_at != null && (typeof d.expires_at !== "string" || Number.isNaN(Date.parse(d.expires_at)))) {
+      throw new Error("invalid expires_at");
+    }
     return d;
   })
   .handler(async ({ data, context }) => {

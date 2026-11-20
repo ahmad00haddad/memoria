@@ -326,12 +326,6 @@ function PhotographerPage() {
     return () => { window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: false })); };
   }, [loadFailed]);
 
-  // no client tour over the "failed to load" message
-  useEffect(() => {
-    window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: loadFailed }));
-    return () => { window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: false })); };
-  }, [loadFailed]);
-
   if (loading) return seo ? <SeoPreview seo={seo} /> : <FallbackPage>{tr("جاري التحميل…")}</FallbackPage>;
   if (loadFailed) return (
     <FallbackPage>
@@ -951,7 +945,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const pkgHours = (pkg: Pricing) => {
     if (pkg.package === "full_day") return 13;
     if (pkg.package !== "hourly") return 0;
-    return labelHours(pkg.label);
+    return pkg.hours ? Number(pkg.hours) : labelHours(pkg.label); // نفس مصدر الساعات في onSelectPackage
   };
   const packageFits = (pkg: Pricing) => {
     const need = pkgHours(pkg) * 60;
