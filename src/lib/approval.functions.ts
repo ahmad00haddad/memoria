@@ -36,8 +36,10 @@ export const approveBookingRequest = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { userId } = context as any;
     const { b, supabaseAdmin } = await loadOwnPending(userId, data.booking_id);
-    if (new Date(b.phone_verified_at).getTime() + 24 * 3600_000 < Date.now()) {
-      throw new Error(tr("انتهت مهلة الرد (24 ساعة) وأُلغي الطلب تلقائياً"));
+    const { data: hrs } = await (supabaseAdmin as any).rpc("approval_window_hours", { _pid: b.photographer_id });
+    const windowHours = [24, 48, 72].includes(Number(hrs)) ? Number(hrs) : 24;
+    if (new Date(b.phone_verified_at).getTime() + windowHours * 3600_000 < Date.now()) {
+      throw new Error(tr("انتهت مهلة الرد ({0} ساعة) وأُلغي الطلب تلقائياً", [windowHours]));
     }
     const now = new Date().toISOString();
     const { data: upd, error } = await supabaseAdmin.from("bookings")

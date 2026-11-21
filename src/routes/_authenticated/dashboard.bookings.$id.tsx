@@ -104,6 +104,7 @@ function BookingDetail() {
   const confirm = useConfirm();
   const [uid, setUid] = useState("");
   const [b, setB] = useState<any>(null);
+  const [approvalHours, setApprovalHours] = useState(24);
   const [proofUrl, setProofUrl] = useState<string | null>(null);
   const [proofOpen, setProofOpen] = useState(false);
   const [msgs, setMsgs] = useState<any[]>([]);
@@ -156,6 +157,11 @@ function BookingDetail() {
       supabase.from("contracts").select("id, status, sign_token, signed_at, client_name").eq("booking_id", id).maybeSingle(),
       supabase.from("contract_templates").select("*").order("created_at", { ascending: false }),
     ]);
+    try {
+      const { data: ps } = await (supabase as any).from("profiles").select("page_settings").eq("id", session.user.id).maybeSingle();
+      const h = Number(ps?.page_settings?.approval_hours);
+      setApprovalHours([24, 48, 72].includes(h) ? h : 24);
+    } catch { /* ignore */ }
     setB(bk); setMsgs(m ?? []); setContract(ct); setTemplates(tpl ?? []);
     if (bk) {
       try { localStorage.setItem("memoria:last-booking", JSON.stringify({ id: bk.id, name: bk.client_name })); } catch { /* ignore */ }
@@ -476,7 +482,7 @@ function BookingDetail() {
       if (!b.phone_verified_at) {
         return { title: tr("بانتظار تأكيد العروس لطلبها"), detail: tr("يصلك إشعار فور تأكيدها"), cta: tr("تحديث"), icon: <Clock className="h-4 w-4" />, run: load };
       }
-      const left = Math.max(0, Math.ceil((new Date(b.phone_verified_at).getTime() + 24 * 3600_000 - Date.now()) / 3600_000));
+      const left = Math.max(0, Math.ceil((new Date(b.phone_verified_at).getTime() + approvalHours * 3600_000 - Date.now()) / 3600_000));
       return { title: tr("طلب جديد بانتظار موافقتك"), detail: tr("باقي {0} ساعة — بعدها يُلغى تلقائياً ويُفتح التاريخ", [left]), cta: tr("موافقة"), icon: <CheckCircle2 className="h-4 w-4" />, run: doApprove, busy: actionLoading === "approve", secondary: { label: tr("رفض"), run: () => setRejectOpen(true) } };
     }
     if (b.status === "pending_deposit" && (b.deposit_proof_url || b.deposit_sent_at)) {
@@ -498,7 +504,7 @@ function BookingDetail() {
       return { title: tr("سُلّمت الصور — الدفعة النهائية لم تصل"), detail: tr("المتبقي {0} د.أ", [Number(b.total_price) - Number(b.deposit_amount || 0)]), cta: g(tr("سجّلي استلام الدفعة"), tr("سجّل استلام الدفعة")), icon: <BadgeDollarSign className="h-4 w-4" />, run: markFinalPaid, busy: actionLoading === "final" };
     }
     return { title: tr("اكتمل الحجز"), detail: tr("رأي العميلة يساعد العرائس الأخريات على اختيارك"), cta: g(tr("اطلبي تقييماً"), tr("اطلب تقييماً")), icon: <Star className="h-4 w-4" />, run: () => openWhatsApp(tr("مرحباً {0} 🤍 أتمنى أن تكون الصور قد نالت إعجابك! يسعدني سماع رأيك هنا: {1}/review/{2} شكراً لكِ!", [b.client_name, origin, b.client_tracking_token])) };
-  }, [b, actionLoading, trackUrl]);
+  }, [b, actionLoading, trackUrl, approvalHours]);
 
   // ── تلميحات سياقية مرتبطة بهذا الحجز ──
   const hints = useMemo(() => {

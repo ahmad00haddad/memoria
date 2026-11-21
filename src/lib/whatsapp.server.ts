@@ -99,13 +99,14 @@ type TemplateVars = {
   tracking_url?: string;
   venue?: string;
   refund_note?: string;
+  approval_hours?: string;
 };
 
 function buildDefaultMessage(category: NotificationCategory, vars: TemplateVars): string {
   const {
     client_name, photographer_name, event_date,
     deposit_amount, total_price, service,
-    tracking_url, venue, refund_note,
+    tracking_url, venue, refund_note, approval_hours,
   } = vars;
 
   switch (category) {
@@ -121,7 +122,7 @@ function buildDefaultMessage(category: NotificationCategory, vars: TemplateVars)
         `يمكنك متابعة حالة حجزك في أي وقت من الرابط التالي:`,
         tracking_url ? tracking_url : null,
         ``,
-        `المصوّرة ستراجع طلبك خلال 24 ساعة، وبعد موافقتها تظهر لكِ تفاصيل دفع العربون. ✨`,
+        `المصوّرة ستراجع طلبك خلال ${approval_hours || 24} ساعة، وبعد موافقتها تظهر لكِ تفاصيل دفع العربون. ✨`,
       ].filter(Boolean).join("\n");
 
     case "confirmed":

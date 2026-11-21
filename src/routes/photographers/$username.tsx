@@ -935,6 +935,13 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const mainPackages = pricing.filter((p) => p.package !== "addon");
   const addonPackages = pricing.filter((p) => p.package === "addon");
   const selected = pricing.find((p) => p.id === f.package_id);
+  // إعدادات المصوّرة: مهلة ردّها، أقل مهلة قبل المناسبة، والفاصل بين حجزين
+  const bookingCtl = sanitizePageSettings(profile.page_settings);
+  const apprH = bookingCtl.approval_hours;
+  const noticeDays = bookingCtl.min_notice_days;
+  const bufferMin = bookingCtl.buffer_minutes;
+  const minDateObj = (() => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + noticeDays); return d; })();
+  const tooSoon = !!f.event_date && noticeDays > 0 && new Date(`${f.event_date}T00:00:00`).getTime() < minDateObj.getTime();
   const selectedAddons = addonPackages
     .map((a) => ({ rule: a, qty: addonQty[a.id] || 0 }))
     .filter((x) => x.qty > 0);
@@ -944,7 +951,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const hasConflict = !!(f.event_date && f.start_time && f.end_time) && daySlots.some((s) => {
     const a1 = toMin(f.start_time), a2 = a1 + sessionMinutes(f.start_time, f.end_time);
     const b1 = toMin(s.start_time), b2 = b1 + sessionMinutes(s.start_time, s.end_time);
-    return a1 < b2 && b1 < a2;
+    return a1 < b2 + bufferMin && b1 < a2 + bufferMin;
   });
 
   // هل يتّسع وقت الباقة في اليوم المختار؟ (نوافذ فارغة بين 08:00 و 24:00)
@@ -1035,6 +1042,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     }
     if (isBlocked) return toast.error(tr("هذا اليوم غير متاح، الرجاء اختيار يوم آخر"));
     if (hasConflict) return toast.error(tr("هذا الوقت محجوز، اختاري وقتاً مختلفاً"));
+    if (tooSoon) return toast.error(tr("هذه الصفحة تستقبل الطلبات قبل المناسبة بـ {0} أيام على الأقل", [noticeDays]));
     setSubmitting(true);
     hapticVibrate("light");
     try {
@@ -1099,6 +1107,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     if (sessionMinutes(f.start_time, f.end_time) <= 0) return toast.error(tr("وقت الانتهاء يجب أن يكون بعد وقت البداية"));
     if (isBlocked) return toast.error(tr("هذا اليوم غير متاح، الرجاء اختيار يوم آخر"));
     if (hasConflict) return toast.error(tr("هذا الوقت محجوز، اختاري وقتاً مختلفاً"));
+    if (tooSoon) return toast.error(tr("هذه الصفحة تستقبل الطلبات قبل المناسبة بـ {0} أيام على الأقل", [noticeDays]));
     setOfferSending(true);
     try {
       const res = await offerFn({
@@ -1201,7 +1210,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           </div>
           <div className="rounded-sm border border-border bg-secondary/40 p-3">
             <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{tr("الرد المتوقّع")}</div>
-            <div className="font-serif text-lg mt-1">{tr("خلال 24 ساعة")}</div>
+            <div className="font-serif text-lg mt-1">{tr("خلال {0} ساعة", [apprH])}</div>
           </div>
         </div>
         <div className="bg-gold/5 border border-gold/30 rounded-sm p-4 mb-5 text-start">
@@ -1209,8 +1218,8 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           {profile.is_demo
             ? <p className="text-sm">{tr("هذا حساب تجريبي، لذلك لا يوجد تحويل للعربون. يمكنك فتح صفحة تتبع الحجز لترى كيف تبدو.")}</p>
             : <p className="text-sm">{profile.gender === "male"
-                ? tr("انتظري موافقة المصوّر خلال 24 ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقته؛ بعدها تظهر لكِ طرق دفع العربون ({0} د.أ) في صفحة المتابعة.", [deposit.toLocaleString(locale("ar-JO"))])
-                : tr("انتظري موافقة المصوّرة خلال 24 ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقتها؛ بعدها تظهر لكِ طرق دفع العربون ({0} د.أ) في صفحة المتابعة.", [deposit.toLocaleString(locale("ar-JO"))])}</p>}
+                ? tr("انتظري موافقة المصوّر خلال {0} ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقته؛ بعدها تظهر لكِ طرق دفع العربون ({1} د.أ) في صفحة المتابعة.", [apprH, deposit.toLocaleString(locale("ar-JO"))])
+                : tr("انتظري موافقة المصوّرة خلال {0} ساعة — يصلكِ إشعار. لا تحوّلي أي مبلغ قبل موافقتها؛ بعدها تظهر لكِ طرق دفع العربون ({1} د.أ) في صفحة المتابعة.", [apprH, deposit.toLocaleString(locale("ar-JO"))])}</p>}
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <button onClick={() => navigate({ to: trackUrl })}
@@ -1226,7 +1235,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   }
 
   const stepValid: Record<1 | 2 | 3, boolean> = {
-    1: !!f.event_date && !!selected && !isBlocked && !hasConflict,
+    1: !!f.event_date && !!selected && !isBlocked && !hasConflict && !tooSoon,
     2: true,
     3: !!f.client_name.trim() && !!normalizePhone(f.client_phone) && isEmail(f.client_email) && consent,
   };
@@ -1324,7 +1333,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
                   const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
                   setF({ ...f, event_date: iso });
                 }}
-                disabled={[{ before: new Date() }, ...blockedDateObjs]}
+                disabled={[{ before: minDateObj }, ...blockedDateObjs]}
                 modifiers={{ blocked: blockedDateObjs }}
                 modifiersClassNames={{ blocked: "line-through text-destructive/60 bg-destructive/5" }}
                 locale={ar}
@@ -1345,6 +1354,9 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
               </div>
             </PopoverContent>
           </Popover>
+          {noticeDays > 0 && (
+            <div className="mt-2 text-xs text-muted-foreground">{tr("هذه الصفحة تستقبل الطلبات قبل المناسبة بـ {0} أيام على الأقل", [noticeDays])}</div>
+          )}
           {daysUntil !== null && daysUntil < 7 && !isBlocked && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-sm p-2">
               💡 <strong>{tr("تاريخ قريب!")}</strong>{" "}{pg(profile?.gender, tr("ننصحكِ بإرسال الطلب الآن. يصل للمصوّرة إشعار فوراً، ورقمها يظهر لكِ في صفحة المتابعة بعد موافقتها."), tr("ننصحكِ بإرسال الطلب الآن. يصل للمصوّر إشعار فوراً، ورقمه يظهر لكِ في صفحة المتابعة بعد موافقته."))}
@@ -1507,7 +1519,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
             <p className="mt-2 text-[11px] text-muted-foreground">{pg(profile?.gender, tr("نحفظ هذه التفاصيل مع حجزكِ كما هي الآن، حتى لو عدّلت المصوّرة باقتها لاحقاً."), tr("نحفظ هذه التفاصيل مع حجزكِ كما هي الآن، حتى لو عدّل المصوّر باقته لاحقاً."))}</p>
           </div>
         )}
-        {selected && <BookingJourney deposit={deposit} remaining={Math.max(0, total - deposit)} gender={profile.gender} />}
+        {selected && <BookingJourney deposit={deposit} remaining={Math.max(0, total - deposit)} gender={profile.gender} approvalHours={apprH} />}
         <label className="sm:col-span-2 flex items-start gap-2 text-xs text-muted-foreground leading-relaxed cursor-pointer">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 h-4 w-4 accent-gold" />
           <span>

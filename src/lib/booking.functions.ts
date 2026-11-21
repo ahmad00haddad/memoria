@@ -135,12 +135,22 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     // Photographer's deposit configuration
     const { data: profile, error: profErr } = await (supabaseAdmin as any)
       .from("profiles")
-      .select("id, display_name, username, fixed_deposit, deposit_percent, min_session_minutes, gender, is_published, deleted_at")
+      .select("id, display_name, username, fixed_deposit, deposit_percent, min_session_minutes, gender, is_published, deleted_at, page_settings")
       .eq("id", data.photographer_id)
       .single();
     if (profErr || !profile) throw new Error(tr("المصوّرة غير موجودة"));
     // صفحة غير منشورة أو محذوفة لا تستقبل حجوزات حتى لو وصل أحدٌ لمعرّفها
     if (!profile.is_published || profile.deleted_at) throw new Error(tr("الصفحة غير موجودة"));
+
+    // أقل مهلة قبل المناسبة التي حدّدتها المصوّرة (بتوقيت الأردن)
+    {
+      const { sanitizePageSettings } = await import("@/lib/page-settings");
+      const nd = sanitizePageSettings((profile as any).page_settings).min_notice_days;
+      if (nd > 0) {
+        const minDay = new Date(Date.now() + 3 * 3600_000 + nd * 86400_000).toISOString().slice(0, 10);
+        if (data.event_date < minDay) throw new Error(tr("هذه الصفحة تستقبل الطلبات قبل المناسبة بـ {0} أيام على الأقل", [nd]));
+      }
+    }
 
     // احترام الحد الأدنى لمدة الجلسة الذي حدّدته المصوّرة
     const bookedMinutes = sessionMinutes(data.start_time, data.end_time);

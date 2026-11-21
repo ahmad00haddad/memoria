@@ -176,7 +176,7 @@ export function tplNewBookingForPhotographer(args: {
 
 export function tplBookingReceivedForClient(args: {
   client_name: string; photographer_name: string; event_date: string;
-  total: number; deposit: number; track_token: string;
+  total: number; deposit: number; track_token: string; approval_hours?: number;
 }) {
   return {
     subject: `تم استلام طلب حجزك مع ${args.photographer_name}`,
@@ -185,7 +185,7 @@ export function tplBookingReceivedForClient(args: {
       <p>استلمنا طلب حجزك مع <strong>${escapeHtml(args.photographer_name)}</strong> بتاريخ <strong>${escapeHtml(args.event_date)}</strong>.</p>
       <p>المبلغ الإجمالي: <strong>${args.total.toFixed(2)} د.أ</strong><br>
       العربون المطلوب لتثبيت الحجز: <strong style="color:#a07a32;">${args.deposit.toFixed(2)} د.أ</strong></p>
-      <p>التاريخ محجوز لكِ الآن. المصوّرة ستراجع طلبك خلال <strong>24 ساعة</strong>، وبعد موافقتها تظهر لكِ تفاصيل دفع العربون في صفحة المتابعة. لا تحوّلي أي مبلغ قبل موافقتها.</p>`,
+      <p>التاريخ محجوز لكِ الآن. المصوّرة ستراجع طلبك خلال <strong>${args.approval_hours ?? 24} ساعة</strong>، وبعد موافقتها تظهر لكِ تفاصيل دفع العربون في صفحة المتابعة. لا تحوّلي أي مبلغ قبل موافقتها.</p>`,
       { label: "متابعة الحجز", url: `${appBase()}/track/${args.track_token}` }),
   };
 }

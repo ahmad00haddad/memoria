@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { g, useGender } from "@/hooks/use-gender";
 import { t as tr, tx } from "@/i18n";
 import {
-  ACCENTS, ANNOUNCE_MAX, DEFAULT_PAGE_SETTINGS, FONTS, GALLERY_COUNTS, HERO_TONES, LAYOUTS, MODES, QUOTE_MAX, RADII, THEMES,
+  ACCENTS, ANNOUNCE_MAX, APPROVAL_HOURS, BUFFER_MINUTES, NOTICE_DAYS, DEFAULT_PAGE_SETTINGS, FONTS, GALLERY_COUNTS, HERO_TONES, LAYOUTS, MODES, QUOTE_MAX, RADII, THEMES,
   paletteVars, resolveMode, sanitizePageSettings, suggestFromImage, type PageSettings,
 } from "@/lib/page-settings";
 import { savePageSettings } from "@/lib/page-settings.functions";
@@ -278,6 +278,23 @@ function SettingsPage() {
                 <Note>{g(tr("تنبيه: تنسيق أكثر من حجز في اليوم نفسه مسؤوليتكِ أنتِ. سيظهر للعروس أن لديكِ حجزاً آخر في ذلك اليوم، وسنطلب منها التواصل معكِ والتأكد من وقتكِ قبل دفع العربون."), tr("تنبيه: تنسيق أكثر من حجز في اليوم نفسه مسؤوليتك أنت. سيظهر للعروس أن لديك حجزاً آخر في ذلك اليوم، وسنطلب منها التواصل معك والتأكد من وقتك قبل دفع العربون."))}</Note>
               )}
             </Block>
+
+            <Block icon={<CalendarDays />} title={tr("مهلة ردّك على الطلب")} hint={g(tr("بعد هذه المهلة يُلغى الطلب تلقائياً ويُفتح التاريخ من جديد. تظهر المدة للعروس عند الطلب."), tr("بعد هذه المهلة يُلغى الطلب تلقائياً ويُفتح التاريخ من جديد. تظهر المدة للعروس عند الطلب."))}>
+              <Choices value={String(s.approval_hours)} onChange={(v) => set("approval_hours", Number(v) as PageSettings["approval_hours"])}
+                options={APPROVAL_HOURS.map((h) => ({ value: String(h), label: tr("{0} ساعة", [h]) }))} />
+            </Block>
+
+            <Block icon={<CalendarDays />} title={tr("أقل مهلة قبل المناسبة")} hint={g(tr("لا تستقبلين طلباً لمناسبة أقرب من هذه المدة. «بلا حد» يقبل أي تاريخ متاح."), tr("لا تستقبل طلباً لمناسبة أقرب من هذه المدة. «بلا حد» يقبل أي تاريخ متاح."))}>
+              <Choices value={String(s.min_notice_days)} onChange={(v) => set("min_notice_days", Number(v) as PageSettings["min_notice_days"])}
+                options={NOTICE_DAYS.map((d) => ({ value: String(d), label: d === 0 ? tr("بلا حد") : d === 7 ? tr("أسبوع") : d === 14 ? tr("أسبوعان") : tr("{0} أيام", [d]) }))} />
+            </Block>
+
+            {s.bookings_per_day === "multi" && (
+              <Block icon={<CalendarDays />} title={tr("فاصل بين الحجوزات في اليوم")} hint={g(tr("وقت راحة وتنقّل تتركينه بين حجزين في نفس اليوم؛ لا تُقبل طلبات تلتصق بحجز آخر."), tr("وقت راحة وتنقّل تتركه بين حجزين في نفس اليوم؛ لا تُقبل طلبات تلتصق بحجز آخر."))}>
+                <Choices value={String(s.buffer_minutes)} onChange={(v) => set("buffer_minutes", Number(v) as PageSettings["buffer_minutes"])}
+                  options={BUFFER_MINUTES.map((m) => ({ value: String(m), label: m === 0 ? tr("بلا فاصل") : tr("{0} دقيقة", [m]) }))} />
+              </Block>
+            )}
 
             <div data-tour="policy"><Block icon={<Wallet />} title={tr("العربون إذا ألغت العروس")} hint={tr("تظهر للعروس قبل أن تحوّل العربون، وتوافق عليها. العربون يُحوَّل لك مباشرة، والمنصّة لا تستلمه ولا تُرجعه.")}>
               <Choices value={biz.policy} onChange={(v) => setBiz((x) => ({ ...x, policy: v }))}

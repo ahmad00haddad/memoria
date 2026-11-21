@@ -98,8 +98,17 @@ export const submitPriceOffer = createServerFn({ method: "POST" })
     const { data: subActive } = await admin.rpc("is_subscription_active", { _photographer_id: data.photographer_id });
     if (!subActive) throw new Error(tr("نعتذر، لا يمكن إرسال العرض لأن اشتراك المصورة غير نشط حالياً."));
     // صفحة غير منشورة أو محذوفة لا تستقبل عروضاً
-    const { data: pubProf } = await admin.from("profiles").select("is_published, deleted_at, min_session_minutes").eq("id", data.photographer_id).maybeSingle();
+    const { data: pubProf } = await admin.from("profiles").select("is_published, deleted_at, min_session_minutes, page_settings").eq("id", data.photographer_id).maybeSingle();
     if (!pubProf || !pubProf.is_published || pubProf.deleted_at) throw new Error(tr("الصفحة غير موجودة"));
+    // أقل مهلة قبل المناسبة (إعداد المصوّرة) تسري على العروض أيضاً
+    {
+      const { sanitizePageSettings } = await import("@/lib/page-settings");
+      const nd = sanitizePageSettings((pubProf as any).page_settings).min_notice_days;
+      if (nd > 0) {
+        const minDay = new Date(Date.now() + 3 * 3600_000 + nd * 86400_000).toISOString().slice(0, 10);
+        if (data.event_date < minDay) throw new Error(tr("هذه الصفحة تستقبل الطلبات قبل المناسبة بـ {0} أيام على الأقل", [nd]));
+      }
+    }
     // الحد الأدنى لمدة الجلسة يسري على العروض كما على الحجز المباشر
     {
       const minMinutes = Number(pubProf.min_session_minutes ?? 0);

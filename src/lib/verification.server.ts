@@ -102,12 +102,15 @@ async function notifyNewBooking(bookingId: string, via: string, offerAccepted = 
   const total = Number(b.total_price ?? 0);
   const deposit = Number(b.deposit_amount ?? 0);
 
+  const { data: hrsRaw } = await (supabaseAdmin as any).rpc("approval_window_hours", { _pid: b.photographer_id });
+  const approvalHours = [24, 48, 72].includes(Number(hrsRaw)) ? Number(hrsRaw) : 24;
+
   const { notifyPhotographer } = await import("@/lib/notify.server");
   await notifyPhotographer(b.photographer_id, {
     title: offerAccepted ? "العروس وافقت على عرضكِ — بانتظار العربون" : "طلب حجز جديد بانتظار موافقتك",
     body: offerAccepted
       ? `${b.client_name} — ${summaryLabel} بتاريخ ${b.event_date} (${total} د.أ). الحجز محجوز لكِ بانتظار تحويل العربون.`
-      : `${b.client_name} تطلب ${summaryLabel} بتاريخ ${b.event_date} (${total} د.أ). عندك 24 ساعة توافقي أو ترفضي، وبعدها يُلغى الطلب تلقائياً.`,
+      : `${b.client_name} تطلب ${summaryLabel} بتاريخ ${b.event_date} (${total} د.أ). عندك ${approvalHours} ساعة توافقي أو ترفضي، وبعدها يُلغى الطلب تلقائياً.`,
     link: `/dashboard/bookings/${b.id}`,
     template: "new_booking_photographer",
     bookingId: b.id,
@@ -127,6 +130,7 @@ async function notifyNewBooking(bookingId: string, via: string, offerAccepted = 
         service: main?.label,
         tracking_url: trackingUrl,
         venue: b.venue_address ?? undefined,
+        approval_hours: String(approvalHours),
       });
     } catch (e) { console.error("[verify] welcome WhatsApp failed", e); }
   }
@@ -140,6 +144,7 @@ async function notifyNewBooking(bookingId: string, via: string, offerAccepted = 
         event_date: String(b.event_date),
         total, deposit,
         track_token: b.client_tracking_token!,
+        approval_hours: approvalHours,
       });
       await sendEmail({
         to: b.client_email, subject: t2.subject, html: t2.html,

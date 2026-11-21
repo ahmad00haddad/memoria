@@ -3,13 +3,13 @@ import { Term } from "@/components/Term";
 
 // خطوات الحجز كما تحدث فعلاً، تُعرض للعروس قبل إرسال الطلب حتى لا تتفاجأ بأي خطوة.
 // الترتيب يطابق مسار الموافقة: طلب ← تأكيد الرقم ← موافقة (24 س) ← عربون (48 س) ← العرس ← المتبقي ← التسليم.
-export function BookingJourney({ deposit, remaining, gender }: { deposit: number; remaining: number; gender?: string | null }) {
+export function BookingJourney({ deposit, remaining, gender, approvalHours = 24 }: { deposit: number; remaining: number; gender?: string | null; approvalHours?: number }) {
   const m = gender === "male";
   const n = (v: number) => v.toLocaleString(locale("ar-JO"));
   const steps = [
     tr("ترسلين الطلب الآن، ولا تدفعين شيئاً."),
     tr("تؤكّدين رقمكِ برسالة واتساب أو برمز يصلكِ على الإيميل."),
-    m ? tr("المصوّر يوافق أو يعتذر خلال 24 ساعة. التاريخ محجوز لكِ خلالها.") : tr("المصوّرة توافق أو تعتذر خلال 24 ساعة. التاريخ محجوز لكِ خلالها."),
+    m ? tr("المصوّر يوافق أو يعتذر خلال {0} ساعة. التاريخ محجوز لكِ خلالها.", [approvalHours]) : tr("المصوّرة توافق أو تعتذر خلال {0} ساعة. التاريخ محجوز لكِ خلالها.", [approvalHours]),
     deposit > 0
       ? (m ? tr("بعد موافقته تحوّلين العربون ({0} د.أ) له مباشرة خلال 48 ساعة، وترفعين صورة الإيصال.", [n(deposit)]) : tr("بعد موافقتها تحوّلين العربون ({0} د.أ) لها مباشرة خلال 48 ساعة، وترفعين صورة الإيصال.", [n(deposit)]))
       : (m ? tr("بعد موافقته يتأكّد حجزكِ.") : tr("بعد موافقتها يتأكّد حجزكِ.")),

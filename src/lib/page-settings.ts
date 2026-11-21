@@ -55,6 +55,10 @@ export const LAYOUTS = {
 } as const;
 
 export const GALLERY_COUNTS = [6, 9, 12] as const;
+// مهلة ردّ المصوّرة، أقل مهلة قبل المناسبة، الفاصل بين حجزين (الخادم يفرضها في SQL وTypeScript)
+export const APPROVAL_HOURS = [24, 48, 72] as const;
+export const NOTICE_DAYS = [0, 1, 2, 3, 7, 14] as const;
+export const BUFFER_MINUTES = [0, 30, 60, 90, 120] as const;
 export const QUOTE_MAX = 80;
 export const ANNOUNCE_MAX = 120;
 
@@ -71,6 +75,9 @@ export type PageSettings = {
   gallery_count: (typeof GALLERY_COUNTS)[number];
   section_order: "packages_first" | "gallery_first";
   bookings_per_day: "one" | "multi";
+  approval_hours: (typeof APPROVAL_HOURS)[number];
+  min_notice_days: (typeof NOTICE_DAYS)[number];
+  buffer_minutes: (typeof BUFFER_MINUTES)[number];
   show_gallery: boolean;
   show_reviews: boolean;
   show_stats: boolean;
@@ -93,6 +100,9 @@ export const DEFAULT_PAGE_SETTINGS: PageSettings = {
   gallery_count: 12,
   section_order: "packages_first",
   bookings_per_day: "one",
+  approval_hours: 24,
+  min_notice_days: 0,
+  buffer_minutes: 0,
   show_gallery: true,
   show_reviews: true,
   show_stats: true,
@@ -109,6 +119,7 @@ const LEGACY_FONT: Record<string, PageSettings["font"]> = { modern: "gallery", r
 
 const keysOf = <T extends object>(o: T) => Object.keys(o) as (keyof T)[];
 const oneOf = <T extends string>(v: unknown, keys: readonly T[], d: T): T => (keys.includes(v as T) ? (v as T) : d);
+const pick = <T extends number>(v: unknown, allowed: readonly T[], d: T): T => (allowed.includes(Number(v) as T) ? (Number(v) as T) : d);
 const bool = (v: unknown, d: boolean) => (typeof v === "boolean" ? v : d);
 // نص عادي فقط: بلا روابط ولا أكواد ولا أسطر متعددة
 const text = (v: unknown, max: number) =>
@@ -132,6 +143,9 @@ export function sanitizePageSettings(raw: unknown): PageSettings {
     gallery_count: (GALLERY_COUNTS as readonly number[]).includes(count) ? (count as PageSettings["gallery_count"]) : d.gallery_count,
     section_order: oneOf(r.section_order, ["packages_first", "gallery_first"] as const, d.section_order),
     bookings_per_day: oneOf(r.bookings_per_day, ["one", "multi"] as const, d.bookings_per_day),
+    approval_hours: pick(r.approval_hours, APPROVAL_HOURS, d.approval_hours),
+    min_notice_days: pick(r.min_notice_days, NOTICE_DAYS, d.min_notice_days),
+    buffer_minutes: pick(r.buffer_minutes, BUFFER_MINUTES, d.buffer_minutes),
     show_gallery: bool(r.show_gallery, d.show_gallery),
     show_reviews: bool(r.show_reviews, d.show_reviews),
     show_stats: bool(r.show_stats, d.show_stats),

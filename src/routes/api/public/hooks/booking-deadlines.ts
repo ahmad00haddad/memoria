@@ -64,12 +64,14 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
             if (!claimed) continue;
             const name = await nameOf(b.photographer_id);
             const searchUrl = `${appBase()}/search?date=${b.event_date}`;
+            const { data: hrsRaw } = await admin.rpc("approval_window_hours", { _pid: b.photographer_id });
+            const hrs = [24, 48, 72].includes(Number(hrsRaw)) ? Number(hrsRaw) : 24;
             if (b.auto_cancel_kind === "approval_timeout") {
               await notifyBride(b.id, {
                 subject: "طلب حجزك أُلغي تلقائياً",
                 title: "المصوّرة لم تردّ على طلبك",
                 lines: [
-                  `${name} لم تردّ على طلب حجزك بتاريخ ${arDate(b.event_date)} خلال 24 ساعة، فأُلغي الطلب تلقائياً.`,
+                  `${name} لم تردّ على طلب حجزك بتاريخ ${arDate(b.event_date)} خلال ${hrs} ساعة، فأُلغي الطلب تلقائياً.`,
                   "لم يُدفع أي مبلغ. يمكنك اختيار مصوّرة أخرى متاحة بنفس التاريخ.",
                 ],
                 template: "approval_timeout_client",
@@ -78,7 +80,7 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
               });
               await notifyPhotographer(b.photographer_id, {
                 title: "فاتك طلب حجز",
-                body: `طلب ${b.client_name} بتاريخ ${arDate(b.event_date)} أُلغي تلقائياً لأنه لم يصل ردّك خلال 24 ساعة. التاريخ صار متاحاً من جديد.`,
+                body: `طلب ${b.client_name} بتاريخ ${arDate(b.event_date)} أُلغي تلقائياً لأنه لم يصل ردّك خلال ${hrs} ساعة. التاريخ صار متاحاً من جديد.`,
                 link: `/dashboard/bookings/${b.id}`,
                 template: "approval_timeout_photographer",
                 bookingId: b.id,
@@ -99,7 +101,9 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
           .in("status", ["pending_deposit", "quote"]).not("phone_verified_at", "is", null)
           .limit(200);
         for (const b of (waiting ?? []) as any[]) {
-          const left = new Date(b.phone_verified_at).getTime() + 24 * H - Date.now();
+          const { data: wRaw } = await admin.rpc("approval_window_hours", { _pid: b.photographer_id });
+          const winH = [24, 48, 72].includes(Number(wRaw)) ? Number(wRaw) : 24;
+          const left = new Date(b.phone_verified_at).getTime() + winH * H - Date.now();
           if (left <= 0) continue;
           const sent: string[] = b.reminders_sent ?? [];
           let due: string[] = [];
