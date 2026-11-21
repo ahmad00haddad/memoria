@@ -94,7 +94,7 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
     const ruleIds = data.items.map((i) => i.rule_id);
     const { data: rules, error: rulesErr } = await supabaseAdmin
       .from("pricing_rules")
-      .select("id, photographer_id, label, price, service, package, description, subtitle, hours, deliverable_count, delivery_days, shooter, overtime_fee, excludes, unedited_included, revision_rounds")
+      .select("id, photographer_id, label, price, service, package, description, subtitle, hours, deliverable_count, delivery_days, shooter, overtime_fee, excludes, unedited_included, revision_rounds, cities, photo_shooters, video_shooters, video_types, all_good_edited")
       .in("id", ruleIds);
     if (rulesErr) throw new Error(rulesErr.message);
     const ruleMap = new Map((rules ?? []).map((r: any) => [r.id, r]));

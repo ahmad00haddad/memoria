@@ -29,6 +29,11 @@ import { BarChart2 } from "lucide-react";
 import { t as tr, tx, locale } from "@/i18n";
 
 
+// نوع فيديو التسليم (اختياري على الباقة) — للفرز فقط
+const VIDEO_TYPE_FILTERS = (): [string, string][] => [
+  ["highlight", tr("فيلم قصير")], ["full_film", tr("فيلم سردي كامل")], ["full_event", tr("تسجيل كامل للحفل")], ["reels", tr("ريلز")],
+];
+
 // مدن قريبة: إذا ما في نتائج بمدينة، نقترح جاراتها (المصوّرة غالباً بتتنقّل بينهن)
 const NEARBY_CITIES: Record<string, string[]> = {
   "عمّان": ["الزرقاء", "السلط", "مادبا"],
@@ -72,6 +77,7 @@ function SearchPage() {
   // ✅ فلتر "موثّقة" — يعرض فقط المصوّرات المميّزات (اجتزن مراجعة الأدمن)
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [teamFilter, setTeamFilter] = useState<"" | "female" | "male">("");
+  const [videoType, setVideoType] = useState<string>("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [compareList, setCompareList] = useState<SearchResultItem[]>([]);
   const [availableThisWeek, setAvailableThisWeek] = useState(false);
@@ -138,7 +144,7 @@ function SearchPage() {
   }, [city, maxPrice, date]);
 
   const resultsQ = useQuery({
-    queryKey: ["search", correctedQ, city, minPrice, maxPrice, date, sort],
+    queryKey: ["search", correctedQ, city, minPrice, maxPrice, date, sort, videoType],
     queryFn: () =>
       runSearch({
         data: {
@@ -148,6 +154,7 @@ function SearchPage() {
           max_price: maxPrice ? Number(maxPrice) : null,
           available_date: date || null,
           sort,
+          video_type: videoType || null,
         },
       }),
     placeholderData: (prev) => prev,
@@ -162,8 +169,8 @@ function SearchPage() {
     .filter((r) => (favsOnly ? favs.includes(r.username) : true));
 
   const hasFilters = useMemo(
-    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0 || verifiedOnly || favsOnly || teamFilter),
-    [city, minPrice, maxPrice, date, debouncedQ, minRating, verifiedOnly, favsOnly, teamFilter],
+    () => !!(city || minPrice || maxPrice || date || debouncedQ || minRating > 0 || verifiedOnly || favsOnly || teamFilter || videoType),
+    [city, minPrice, maxPrice, date, debouncedQ, minRating, verifiedOnly, favsOnly, teamFilter, videoType],
   );
 
   const clearAll = () => {
@@ -178,6 +185,7 @@ function SearchPage() {
     setVerifiedOnly(false);
     setFavsOnly(false);
     setTeamFilter("");
+    setVideoType("");
   };
 
   // شرائح الفلاتر النشطة — كل شريحة تُزال بنقرة
@@ -189,6 +197,7 @@ function SearchPage() {
     verifiedOnly && { k: "verified", label: tr("موثّقة"), clear: () => setVerifiedOnly(false) },
     teamFilter && { k: "team", label: teamFilter === "female" ? tr("فريق نسائي") : tr("فريق رجالي"), clear: () => setTeamFilter("") },
     favsOnly && { k: "favs", label: tr("مفضّلتي"), clear: () => setFavsOnly(false) },
+    videoType && { k: "video", label: VIDEO_TYPE_FILTERS().find(([v]) => v === videoType)?.[1] ?? videoType, clear: () => setVideoType("") },
   ].filter(Boolean) as { k: string; label: string; clear: () => void }[];
   const drawerFilterCount = [date, minPrice || maxPrice, sort !== "featured"].filter(Boolean).length;
 
@@ -528,6 +537,17 @@ function SearchPage() {
                       type="button"
                       onClick={() => setTeamFilter((x) => (x === v ? "" : v))}
                       className={`elastic-press inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${teamFilter === v ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                  <span className="mx-2 h-4 w-px bg-border" />
+                  {VIDEO_TYPE_FILTERS().map(([v, label]) => (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => setVideoType((x) => (x === v ? "" : v))}
+                      className={`elastic-press inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-sm border transition ${videoType === v ? "bg-charcoal text-ivory border-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
                       {label}
                     </button>

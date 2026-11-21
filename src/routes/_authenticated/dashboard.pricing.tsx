@@ -19,6 +19,7 @@ import { usePlan } from "@/hooks/use-plan";
 import { BasicLimitNote } from "@/components/dashboard/BasicLimitNote";
 import { BASIC_LIMITS } from "@/lib/plans";
 import { missingDisclosures } from "@/components/PackageFacts";
+import { JORDAN_CITIES, sameCity, VIDEO_TYPES } from "@/lib/cities";
 
 export const Route = createFileRoute("/_authenticated/dashboard/pricing")({ component: PricingMgr });
 
@@ -32,6 +33,9 @@ type Rule = {
   shooter?: "me" | "me_team" | "team" | null; overtime_fee?: number | string | null; excludes?: string | null;
   unedited_included?: boolean | null; revision_rounds?: number | string | null;
   is_visible?: boolean | null;
+  // إضافات اختيارية: مدن الباقة (فارغة = كل المدن)، عدد الفريق، نوع الفيديو، «كل الصور الجيدة»
+  cities?: string[] | null; photo_shooters?: number | string | null; video_shooters?: number | string | null;
+  video_types?: string[] | null; all_good_edited?: boolean | null;
   // التفاوض: مغلق افتراضياً؛ أقل سعر اختياري ولا يراه أحد غيرك
   allow_negotiation?: boolean | null; min_offer_price?: number | string | null;
 };
@@ -55,6 +59,7 @@ function PricingMgr() {
   const [saved, setSaved] = useState<string>("[]");
   const [saving, setSaving] = useState(false);
   const [deposit, setDeposit] = useState<{ percent: number; fixed: number | null }>({ percent: 25, fixed: null });
+  const [homeCity, setHomeCity] = useState<string | null>(null);
   // المفتاح ثابت حتى بعد أن تأخذ الباقة الجديدة id من الحفظ التلقائي (فلا تنطوي أثناء الكتابة)
   const keyOf = (r: Rule) => r._key ?? r.id ?? "";
   // الباقات المحفوظة تظهر مطوية (اسم + سعر)؛ تُفتح واحدة للتعديل. الجديدة مفتوحة دائماً.
@@ -80,6 +85,7 @@ function PricingMgr() {
           setRules(withKeys((data ?? []) as Rule[]));
           setSaved(snapshot((data ?? []) as Rule[]));
           if (prof) setDeposit({ percent: Number(prof.deposit_percent ?? 25), fixed: prof.fixed_deposit ? Number(prof.fixed_deposit) : null });
+          if (prof?.city) setHomeCity(prof.city);
         };
         // فوري من الكاش، ثم تحديث صامت (لا نلمس تعديلات غير محفوظة)
         const cached = getCached(cacheKey("pricing", session.user.id));
@@ -182,6 +188,11 @@ function PricingMgr() {
           excludes: r.excludes?.trim() || null,
           unedited_included: !!r.unedited_included,
           revision_rounds: numOrNull(r.revision_rounds),
+          cities: r.package === "addon" || !r.cities?.length ? null : r.cities,
+          photo_shooters: r.shooter === "me_team" || r.shooter === "team" ? numOrNull(r.photo_shooters) : null,
+          video_shooters: r.shooter === "me_team" || r.shooter === "team" ? numOrNull(r.video_shooters) : null,
+          video_types: r.service === "photography" || !r.video_types?.length ? null : r.video_types,
+          all_good_edited: r.service !== "cinematic_video" && !!r.all_good_edited,
           is_visible: r.is_visible !== false,
           allow_negotiation: r.package !== "addon" && !!r.allow_negotiation,
         };
@@ -219,7 +230,7 @@ function PricingMgr() {
     const writtenKeys = new Set(toWrite.map((r) => r._key));
     const snap = snapshot(next.map((r) => (writtenKeys.has(r._key) ? r : (r.id && savedById.has(r.id) ? { ...r, ...JSON.parse(savedById.get(r.id)!) } : r))));
     setSaved(snap);
-    setCached(cacheKey("pricing", uid), { rules: next.filter((r) => r.id), prof: { deposit_percent: deposit.percent, fixed_deposit: deposit.fixed } });
+    setCached(cacheKey("pricing", uid), { rules: next.filter((r) => r.id), prof: { deposit_percent: deposit.percent, fixed_deposit: deposit.fixed, city: homeCity } });
   };
   const autosave = useAutosave({ dirty: !loading && snapshot(rules) !== saved, blocked: overBasic, save, version: snapshot(rules) });
 
@@ -419,6 +430,7 @@ function PricingMgr() {
                   )}
                 </div>
               )}
+              {r.package !== "addon" && <CityPicker r={r} homeCity={homeCity} set={(v) => upd(i, "cities", v)} />}
               {r.package !== "addon" && <DisclosureFields r={r} set={(f, v) => upd(i, f, v)} />}
 
               {isShort(k) ? (
@@ -494,7 +506,7 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
 }
 
 // «من يصوّر فعلياً» إلزامي (أهم ما تسأل عنه العروس)؛ الباقي اختياري ومطوي حتى لا
-// تثقل التعبئة. مدة التسليم لا تُكتب هنا: تُحسب من تسليماتها الفعلية وتظهر كمعدّل.
+// تثقل التعبئة. مدة التسليم اختيارية لكل باقة (والمعدّل الفعلي من تسليماتها يظهر كما هو).
 function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) => void }) {
   const video = r.service === "cinematic_video";
   const box = "w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm tabular-nums outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50";
@@ -505,7 +517,15 @@ function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) =>
       <input type="number" min="0" inputMode="decimal" value={(r[k] as any) ?? ""} placeholder={ph} onChange={(e) => set(k, e.target.value)} className={box} />
     </label>
   );
-  const optionalFilled = [r.hours, r.deliverable_count, r.overtime_fee, r.revision_rounds, r.excludes].some((v) => v !== null && v !== undefined && String(v).trim() !== "") || !!r.unedited_included;
+  const optionalFilled = [r.hours, r.deliverable_count, r.delivery_days, r.overtime_fee, r.revision_rounds, r.excludes].some((v) => v !== null && v !== undefined && String(v).trim() !== "")
+    || !!r.unedited_included || !!r.all_good_edited || !!r.video_types?.length;
+  const withTeam = r.shooter === "me_team" || r.shooter === "team";
+  const hasVideo = r.service !== "photography";
+  const videoTypeLabel: Record<string, string> = { highlight: t("فيلم قصير (هايلايت)"), full_film: t("فيلم سردي كامل"), full_event: t("تسجيل كامل للحفل"), reels: t("ريلز") };
+  const toggleVideoType = (v: string) => {
+    const cur = r.video_types ?? [];
+    set("video_types", cur.includes(v) ? cur.filter((x) => x !== v) : [...cur, v]);
+  };
   return (
     <div className="mb-5 space-y-3">
       <label className={`block rounded-2xl border p-4 ${r.shooter ? "border-border" : "border-amber-400/70 bg-amber-50/40 dark:border-amber-800/60 dark:bg-amber-950/10"}`}>
@@ -517,6 +537,15 @@ function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) =>
           <option value="me_team">{t("أنا مع فريقي")}</option>
           <option value="team">{t("فريقي بدوني (أنا لن أحضر)")}</option>
         </select>
+        {withTeam && (
+          <div className="mt-3">
+            <span className="mb-1 block text-xs text-muted-foreground">{g(t("عدد الفريق — اختياري. اتركيه فارغاً إن أردتِ «مع فريقي» فقط."), t("عدد الفريق — اختياري. اتركه فارغاً إن أردت «مع فريقي» فقط."))}</span>
+            <div className="grid grid-cols-2 gap-3">
+              {num("photo_shooters", t("مصوّرو الصور"), t("اختياري"))}
+              {hasVideo && num("video_shooters", t("مصوّرو الفيديو"), t("اختياري"))}
+            </div>
+          </div>
+        )}
       </label>
 
       <details className="group rounded-2xl border border-border p-4" open={optionalFilled}>
@@ -526,9 +555,28 @@ function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) =>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {num("hours", t("ساعات التصوير"), t("مفتوحة"))}
           {num("deliverable_count", video ? t("مدة الفيلم (دقائق)") : t("عدد الصور المعدّلة"), t("اختياري"))}
+          {num("delivery_days", t("التسليم خلال (يوم)"), t("اختياري"))}
           {num("overtime_fee", t("الساعة الإضافية (د.أ)"), t("اختياري"))}
           {num("revision_rounds", t("جولات تعديل مجانية"), t("اختياري"))}
         </div>
+        {r.service === "photo_video" && (
+          <p className="mt-1.5 text-[11px] text-muted-foreground">{g(t("باقة صور + فيديو: اكتبي مدة تسليم الأبطأ بينهما (عادةً الفيديو)."), t("باقة صور + فيديو: اكتب مدة تسليم الأبطأ بينهما (عادةً الفيديو)."))}</p>
+        )}
+        {!video && (
+          <div className="mt-3">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={!!r.all_good_edited} onChange={(e) => set("all_good_edited", e.target.checked)} className="h-4 w-4" />
+              {t("أعدّل وأسلّم كل الصور الجيدة بعد الفرز")}
+            </label>
+            {r.all_good_edited && (
+              <p className={`mt-1 ps-6 text-[11px] ${numOrNull(r.deliverable_count) ? "text-muted-foreground" : "text-amber-700 dark:text-amber-400"}`}>
+                {numOrNull(r.deliverable_count)
+                  ? t("ستظهر للعروس: «{0} صورة معدّلة على الأقل، وكل الصور الجيدة بعد الفرز».", [numOrNull(r.deliverable_count)!])
+                  : g(t("نقترح كتابة «عدد الصور المعدّلة» أعلاه كحدّ أدنى مضمون، حتى تعرف العروس ما ينتظرها."), t("نقترح كتابة «عدد الصور المعدّلة» أعلاه كحدّ أدنى مضمون، حتى تعرف العروس ما ينتظرها."))}
+              </p>
+            )}
+          </div>
+        )}
         {!video && (
           <label className="mt-3 flex items-center gap-2 text-sm">
             <input type="checkbox" checked={!!r.unedited_included} onChange={(e) => set("unedited_included", e.target.checked)} className="h-4 w-4" />
@@ -539,7 +587,62 @@ function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) =>
           <span className="mb-1 block text-xs text-muted-foreground">{t("ما لا تشمله الباقة")}</span>
           <input value={r.excludes ?? ""} maxLength={300} onChange={(e) => set("excludes", e.target.value)} placeholder={t("مثلاً: الألبوم، الدرون")} className={box} />
         </label>
+        {hasVideo && (
+          <div className="mt-3">
+            <span className="mb-1.5 block text-xs text-muted-foreground">{t("نوع فيديو التسليم")}{" "}<span className="text-muted-foreground/70">{t("(اختياري — يساعد العرائس في البحث)")}</span></span>
+            <div className="flex flex-wrap gap-1.5">
+              {VIDEO_TYPES.map((v) => {
+                const on = (r.video_types ?? []).includes(v);
+                return (
+                  <button key={v} type="button" onClick={() => toggleVideoType(v)} aria-pressed={on}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${on ? "border-gold bg-gold/10 text-foreground" : "border-border text-muted-foreground hover:border-gold/40"}`}>
+                    {videoTypeLabel[v]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </details>
+    </div>
+  );
+}
+
+// مدن الباقة: الافتراضي «كل المدن» (لا يتغيّر شيء). اختيار مدن يجعل صفحتها تعرض فلتر مدن،
+// والباقة غير المربوطة تظهر في كل المدن.
+function CityPicker({ r, homeCity, set }: { r: Rule; homeCity: string | null; set: (v: string[] | null) => void }) {
+  const cur = r.cities ?? [];
+  const [open, setOpen] = useState(cur.length > 0);
+  const list = homeCity && !JORDAN_CITIES.some((c) => sameCity(c, homeCity)) ? [homeCity, ...JORDAN_CITIES] : JORDAN_CITIES;
+  const extra = cur.filter((c) => !list.some((x) => sameCity(x, c)));
+  const toggle = (c: string) => {
+    const has = cur.some((x) => sameCity(x, c));
+    const next = has ? cur.filter((x) => !sameCity(x, c)) : [...cur, c];
+    set(next.length ? next : null);
+  };
+  const chip = (c: string, on: boolean, onClick: () => void) => (
+    <button key={c} type="button" onClick={onClick} aria-pressed={on}
+      className={`rounded-full border px-3 py-1 text-xs transition-colors ${on ? "border-gold bg-gold/10 text-foreground" : "border-border text-muted-foreground hover:border-gold/40"}`}>
+      {tx(c)}
+    </button>
+  );
+  if (!open) {
+    return (
+      <div className="mb-4 flex flex-wrap items-center gap-x-2 text-sm">
+        <span className="text-muted-foreground">{t("متاحة في: كل المدن")}</span>
+        <button type="button" onClick={() => setOpen(true)} className="text-xs text-gold underline">{g(t("حدّديها لمدن معيّنة (اختياري)"), t("حدّدها لمدن معيّنة (اختياري)"))}</button>
+      </div>
+    );
+  }
+  return (
+    <div className="mb-4 rounded-2xl border border-border p-4">
+      <span className="mb-1 block text-sm">{t("متاحة في")}</span>
+      <span className="mb-2 block text-[11px] text-muted-foreground">{g(t("لو عندكِ أسعار مختلفة لكل مدينة. بدون اختيار = كل المدن. الباقات غير المحدّدة تظهر في كل المدن."), t("لو عندك أسعار مختلفة لكل مدينة. بدون اختيار = كل المدن. الباقات غير المحدّدة تظهر في كل المدن."))}</span>
+      <div className="flex flex-wrap gap-1.5">
+        {chip(t("كل المدن"), cur.length === 0, () => set(null))}
+        {list.map((c) => chip(c, cur.some((x) => sameCity(x, c)), () => toggle(c)))}
+        {extra.map((c) => chip(c, true, () => toggle(c)))}
+      </div>
     </div>
   );
 }

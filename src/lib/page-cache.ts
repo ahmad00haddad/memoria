@@ -66,7 +66,7 @@ const fetchers: Record<string, (uid: string) => Promise<any>> = {
   pricing: async (uid) => {
     const [{ data, error }, { data: prof }, { data: floors }] = await Promise.all([
       supabase.from("pricing_rules").select("*").eq("photographer_id", uid).order("price"),
-      supabase.from("profiles").select("deposit_percent,fixed_deposit").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("deposit_percent,fixed_deposit,city").eq("id", uid).maybeSingle(),
       (supabase as any).from("pricing_rule_floors").select("rule_id,min_offer_price").eq("photographer_id", uid),
     ]);
     if (error) throw error;

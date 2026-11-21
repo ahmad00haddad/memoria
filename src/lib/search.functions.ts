@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { servesCity, VIDEO_TYPES } from "@/lib/cities";
 
 function getPublicClient() {
   return createClient<Database>(
@@ -20,6 +21,8 @@ type SearchInput = {
   available_date?: string | null; // YYYY-MM-DD
   sort?: SearchSort;
   limit?: number;
+  /** نوع فيديو التسليم (اختياري): highlight | full_film | full_event | reels */
+  video_type?: string | null;
 };
 
 export type SearchResultItem = {
@@ -51,6 +54,7 @@ function validate(d: SearchInput): SearchInput {
   const allowed: SearchSort[] = ["featured", "rating", "price_asc", "price_desc"];
   out.sort = allowed.includes(d?.sort as any) ? (d!.sort as SearchSort) : "featured";
   out.limit = Math.min(Math.max(Number(d?.limit) || 48, 1), 96);
+  if (typeof d?.video_type === "string" && (VIDEO_TYPES as readonly string[]).includes(d.video_type)) out.video_type = d.video_type;
   return out;
 }
 
@@ -62,7 +66,7 @@ export const searchPhotographers = createServerFn({ method: "POST" })
     // 50 JOD extra showed as "starts from 50" on a 100 JOD photographer. The real
     // starting price (cheapest bookable package) is recomputed below, and price
     // filters/sorts are applied on it here instead of in the RPC.
-    const priceFiltered = data.min_price != null || data.max_price != null;
+    const priceFiltered = data.min_price != null || data.max_price != null || !!data.video_type;
     const priceSorted = data.sort === "price_asc" || data.sort === "price_desc";
     const limit = data.limit ?? 48;
     const { data: rows, error } = await supabase.rpc("search_photographers", {
@@ -82,6 +86,7 @@ export const searchPhotographers = createServerFn({ method: "POST" })
     const team = new Map<string, SearchResultItem["team_gender"]>();
     const pro = new Set<string>();
     const startFrom = new Map<string, number>();
+    const hasVideoType = new Set<string>();
     if (names.length) {
       const { data: profs } = await supabase.from("profiles").select("id, username, is_demo, team_gender").in("username", names);
       const byId = new Map<string, string>();
@@ -96,12 +101,16 @@ export const searchPhotographers = createServerFn({ method: "POST" })
         for (const id of (proIds ?? []) as string[]) pro.add(byId.get(id)!);
         const { data: rules } = await supabase
           .from("pricing_rules")
-          .select("photographer_id, price, package")
+          .select("photographer_id, price, package, cities, video_types, is_visible")
           .in("photographer_id", [...byId.keys()])
           .neq("package", "addon")
           .gt("price", 0);
         for (const r of (rules ?? []) as any[]) {
           const u = byId.get(r.photographer_id);
+          if (r.is_visible === false) continue;
+          // البحث بمدينة: «تبدأ من» = أرخص باقة متاحة في تلك المدينة (الباقة بلا مدن متاحة في كل المدن)
+          if (data.city && !servesCity(r, data.city)) continue;
+          if (u && data.video_type && (r.video_types ?? []).includes(data.video_type)) hasVideoType.add(u);
           const v = Number(r.price);
           if (u && (!startFrom.has(u) || v < startFrom.get(u)!)) startFrom.set(u, v);
         }
@@ -125,6 +134,7 @@ export const searchPhotographers = createServerFn({ method: "POST" })
       review_count: r.review_count != null ? Number(r.review_count) : 0,
     }));
 
+    if (data.video_type) out = out.filter((r) => hasVideoType.has(r.username));
     if (data.min_price != null) out = out.filter((r) => r.min_price != null && r.min_price >= data.min_price!);
     if (data.max_price != null) out = out.filter((r) => r.min_price != null && r.min_price <= data.max_price!);
     if (!priceSorted && (data.sort || "featured") === "featured") {

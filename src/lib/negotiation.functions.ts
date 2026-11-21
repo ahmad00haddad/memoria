@@ -332,7 +332,7 @@ export const respondToOffer = createServerFn({ method: "POST" })
     // نفس وعود الباقة التي يحصل عليها الحجز العادي (لقطة الباقة، الصور، موعد التسليم، الساعة الإضافية)؛ العرض الحر بلا باقة يتخطّاها
     try {
       const { data: rule } = await admin.from("pricing_rules")
-        .select("id, photographer_id, label, price, service, package, description, subtitle, hours, deliverable_count, delivery_days, shooter, overtime_fee, excludes, unedited_included, revision_rounds")
+        .select("id, photographer_id, label, price, service, package, description, subtitle, hours, deliverable_count, delivery_days, shooter, overtime_fee, excludes, unedited_included, revision_rounds, cities, photo_shooters, video_shooters, video_types, all_good_edited")
         .eq("id", o.rule_id).maybeSingle();
       if (rule && rule.photographer_id === userId && rule.package !== "addon") {
         const { applyPackagePromises } = await import("@/lib/booking-promises.server");

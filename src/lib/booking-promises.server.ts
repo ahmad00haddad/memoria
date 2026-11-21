@@ -25,6 +25,8 @@ export async function applyPackagePromises(
     hours: m.hours != null ? Number(m.hours) : null, deliverable_count: m.deliverable_count ?? null, delivery_days: days,
     shooter: m.shooter ?? null, overtime_fee: m.overtime_fee != null ? Number(m.overtime_fee) : null,
     excludes: m.excludes ?? null, unedited_included: !!m.unedited_included, revision_rounds: m.revision_rounds ?? null,
+    cities: m.cities ?? null, photo_shooters: m.photo_shooters ?? null, video_shooters: m.video_shooters ?? null,
+    video_types: m.video_types ?? null, all_good_edited: !!m.all_good_edited,
     addons: a.items.filter((x) => x.kind === "addon"), gender: (a.profile as any).gender ?? "female", taken_at: new Date().toISOString(),
   };
   const promised: Record<string, unknown> = { package_snapshot: snapshot };

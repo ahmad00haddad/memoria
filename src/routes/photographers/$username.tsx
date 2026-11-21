@@ -42,6 +42,7 @@ import { ReportProfile } from "@/components/ReportProfile";
 import { AskPhotographer } from "@/components/AskPhotographer";
 import { t as tr, tx, getLang, setLang, LANG_COOKIE } from "@/i18n";
 import { sanitizePageSettings, applyPageTheme, type PageSettings } from "@/lib/page-settings";
+import { filterCities, sameCity, servesCity } from "@/lib/cities";
 
 const GALLERY_GRID: Record<PageSettings["gallery_layout"], string> = {
   grid: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2",
@@ -190,6 +191,8 @@ function PhotographerPage() {
   const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
+  // فلتر المدن: يظهر فقط إن ربطت المصوّرة باقة واحدة على الأقل بمدينة
+  const [cityTab, setCityTab] = useState<string | null>(null);
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [showAllPkgs, setShowAllPkgs] = useState(false);
@@ -332,6 +335,23 @@ function PhotographerPage() {
     return () => { window.dispatchEvent(new CustomEvent("memoria-tour-hide", { detail: false })); };
   }, [loadFailed]);
 
+  const pkgCities = filterCities(pricing);
+  // المدينة الافتراضية: ?city= في الرابط، ثم آخر مدينة بحثت بها العروس، ثم مدينة المصوّرة، ثم الأولى
+  useEffect(() => {
+    if (!pkgCities.length) { if (cityTab) setCityTab(null); return; }
+    if (cityTab && pkgCities.some((c) => sameCity(c, cityTab))) return;
+    let wanted: string | null = null;
+    try { wanted = new URLSearchParams(window.location.search).get("city"); } catch { /* ignore */ }
+    if (!wanted) { try { wanted = JSON.parse(localStorage.getItem("memoria_last_search") || "null")?.city ?? null; } catch { /* ignore */ } }
+    const pick = [wanted, profile?.city].map((w) => pkgCities.find((c) => sameCity(c, w))).find(Boolean);
+    setCityTab(pick ?? pkgCities[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pkgCities.join("|"), profile?.city]);
+  const cityPricing = pkgCities.length && cityTab ? pricing.filter((p) => p.package === "addon" || servesCity(p, cityTab)) : pricing;
+  useEffect(() => {
+    if (pickedPackageId && !cityPricing.some((p) => p.id === pickedPackageId)) setPickedPackageId("");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityTab]);
   if (loading) return seo ? <SeoPreview seo={seo} /> : <FallbackPage>{tr("جاري التحميل…")}</FallbackPage>;
   if (loadFailed) return (
     <FallbackPage>
@@ -628,11 +648,24 @@ function PhotographerPage() {
           <div className="text-xs uppercase tracking-[0.3em] text-gold mb-2">{tr("الباقات")}</div>
           <h2 className="font-serif text-3xl sm:text-4xl">{tr("بطاقة الأسعار")}</h2>
         </div>
+        {pkgCities.length > 0 && (
+          <div role="tablist" aria-label={tr("المدينة")} className="mb-6 flex flex-wrap justify-center gap-2">
+            {pkgCities.map((c) => {
+              const on = !!cityTab && sameCity(c, cityTab);
+              return (
+                <button key={c} type="button" role="tab" aria-selected={on} onClick={() => setCityTab(c)}
+                  className={`elastic-press inline-flex min-h-10 items-center gap-1.5 rounded-full px-4 py-2 text-sm transition-colors ${on ? "bg-charcoal text-ivory" : "border border-border bg-card text-foreground hover:border-gold/40"}`}>
+                  <MapPin className="h-3.5 w-3.5" />{tx(c)}
+                </button>
+              );
+            })}
+          </div>
+        )}
         {pricing.length === 0 ? (
           <p className="text-center text-muted-foreground">{tr("لم تُحدَّد الباقات بعد.")}</p>
         ) : (
           <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 relative">
-            {pricing.filter((p) => p.package !== "addon").map((p, idx, all) => {
+            {cityPricing.filter((p) => p.package !== "addon").map((p, idx, all) => {
               const features = parseFeatures(p.description);
               return (
                 <RiseIn key={p.id} index={idx} className={`h-full shrink-0 snap-center sm:w-auto ${all.length > 1 ? "w-[85%]" : "w-full"}`}>
@@ -672,7 +705,7 @@ function PhotographerPage() {
       <section id="book" className="bg-secondary/40 py-10 sm:py-16">
         <div className="container-editorial grid gap-8 lg:grid-cols-[1.2fr_1fr]">
           {acceptsBookings || profile.is_demo ? (
-            <SimpleBookingForm profile={profile} pricing={pricing} blockedDates={blockedDates} bookedSlots={bookedSlots} multiPerDay={multiPerDay} pickedPackageId={pickedPackageId} />
+            <SimpleBookingForm profile={profile} pricing={cityPricing} blockedDates={blockedDates} bookedSlots={bookedSlots} multiPerDay={multiPerDay} pickedPackageId={pickedPackageId} />
           ) : (
             <div className="rounded-sm border border-border bg-card p-8 text-center">
               <h2 className="font-serif text-2xl mb-2">{tr("الحجز غير متاح حالياً")}</h2>

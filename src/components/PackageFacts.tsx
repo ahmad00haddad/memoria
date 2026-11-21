@@ -1,4 +1,4 @@
-import { Clock, Images, Film, CalendarClock, User, Timer, XCircle, CheckCircle2, RefreshCw } from "lucide-react";
+import { Clock, Images, Film, CalendarClock, User, Users, Timer, XCircle, CheckCircle2, RefreshCw, MapPin, Clapperboard } from "lucide-react";
 import { t as tr, tx, locale } from "@/i18n";
 
 // ============================================================================
@@ -16,7 +16,27 @@ export type PackageDisclosure = {
   excludes?: string | null;
   unedited_included?: boolean | null;
   revision_rounds?: number | null;
+  // إضافات اختيارية
+  cities?: string[] | null;
+  photo_shooters?: number | null;
+  video_shooters?: number | null;
+  video_types?: string[] | null;
+  all_good_edited?: boolean | null;
 };
+
+const VIDEO_TYPE_LABEL = (): Record<string, string> => ({
+  highlight: tr("فيلم قصير (هايلايت)"), full_film: tr("فيلم سردي كامل"), full_event: tr("تسجيل كامل للحفل"), reels: tr("ريلز"),
+});
+
+/** «فريق من ٤: ٢ صور + ٢ فيديو» — فقط إن كتبت المصوّرة العدد مع «مع فريقي»/«فريقي» */
+function teamLine(d: PackageDisclosure): string | null {
+  if (d.shooter !== "me_team" && d.shooter !== "team") return null;
+  const ph = Number(d.photo_shooters) || 0;
+  const vi = d.service === "photography" ? 0 : Number(d.video_shooters) || 0;
+  if (!ph && !vi) return null;
+  const parts = [ph && tr("{0} تصوير", [n(ph)]), vi && tr("{0} فيديو", [n(vi)])].filter(Boolean).join(" + ");
+  return ph && vi ? tr("فريق من {0}: {1}", [n(ph + vi), parts]) : tr("الفريق: {0}", [parts]);
+}
 
 /**
  * سطر «من يصوّر» يظهر فقط إذا لم تكن هي وحدها (الافتراضي المتوقّع):
@@ -42,7 +62,7 @@ export function missingDisclosures(r: PackageDisclosure): string[] {
 export function hasFacts(d: PackageDisclosure): boolean {
   const set = (v: unknown) => v !== null && v !== undefined && String(v).trim() !== "";
   return !!(d.hours || d.deliverable_count || set(d.overtime_fee) || d.revision_rounds || set(d.excludes) || d.unedited_included
-    || (d.shooter && d.shooter !== "me"));
+    || (d.shooter && d.shooter !== "me") || d.delivery_days || d.all_good_edited || d.video_types?.length || d.cities?.length);
 }
 
 const n = (v: number) => v.toLocaleString(locale("ar-JO"));
@@ -53,16 +73,26 @@ export function PackageFacts({ d, compact = false, className = "", gender = "fem
   const rows: { icon: typeof Clock; text: string; tone?: "no" | "yes" | "warn" }[] = [];
   const who = shooterLine(d.shooter, gender === "male" ? "male" : "female");
   if (who) rows.push({ icon: User, text: who.text, tone: who.warn ? "warn" : undefined });
+  const team = teamLine(d);
+  if (team) rows.push({ icon: Users, text: team });
   if (d.hours) rows.push({ icon: Clock, text: tr("{0} ساعات تصوير", [n(Number(d.hours))]) });
+  const allGood = !!d.all_good_edited && !video;
   if (d.deliverable_count) rows.push(video
     ? { icon: Film, text: tr("فيلم نهائي حوالي {0} دقيقة", [n(Number(d.deliverable_count))]) }
-    : { icon: Images, text: tr("حوالي {0} صورة معدّلة", [n(Number(d.deliverable_count))]) });
+    : allGood
+      ? { icon: Images, text: tr("{0} صورة معدّلة على الأقل، وكل الصور الجيدة بعد الفرز", [n(Number(d.deliverable_count))]) }
+      : { icon: Images, text: tr("حوالي {0} صورة معدّلة", [n(Number(d.deliverable_count))]) });
+  else if (allGood) rows.push({ icon: Images, text: tr("كل الصور الجيدة بعد الفرز، معدّلة") });
+  const vt = (d.service === "photography" ? [] : d.video_types ?? []).map((v) => VIDEO_TYPE_LABEL()[v]).filter(Boolean);
+  if (vt.length) rows.push({ icon: Clapperboard, text: tr("الفيديو: {0}", [vt.join(" · ")]) });
   if (d.unedited_included && !video) rows.push({ icon: CheckCircle2, text: tr("وكل الصور الصالحة غير المعدّلة"), tone: "yes" });
   if (d.delivery_days) rows.push({ icon: CalendarClock, text: tr("التسليم خلال {0} يوماً من المناسبة", [n(Number(d.delivery_days))]) });
   if (d.overtime_fee != null && String(d.overtime_fee) !== "") rows.push({ icon: Timer, text: Number(d.overtime_fee) > 0
     ? tr("الساعة الإضافية: {0} د.أ", [n(Number(d.overtime_fee))])
     : tr("لا يوجد تمديد بعد انتهاء الوقت") });
   if (d.revision_rounds) rows.push({ icon: RefreshCw, text: tr("{0} جولة تعديل مجانية", [n(Number(d.revision_rounds))]) });
+  const cities = (d.cities ?? []).filter(Boolean);
+  if (cities.length) rows.push({ icon: MapPin, text: tr("متاحة في: {0}", [cities.map((c) => tx(c)).join("، ")]) });
   const excludes = (d.excludes ?? "").split(/\n|،|,/).map((x) => x.trim()).filter(Boolean);
   if (!rows.length && !excludes.length) return null;
 
