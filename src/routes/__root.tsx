@@ -123,6 +123,15 @@ const ASSET_RELOAD_GUARD = `(function(){
   });
 })();`;
 
+// Public page change: the new page rises 8px on a calm spring (back: drops in from above);
+// the old page fades out quickly. Opacity never overshoots.
+const PAGE_EASE = [0.22, 1, 0.36, 1] as const;
+const PAGE_VARIANTS = {
+  enter: (d: number) => ({ opacity: 0, y: 8 * d }),
+  shown: { opacity: 1, y: 0, transition: { opacity: { duration: 0.24, ease: PAGE_EASE }, y: { type: "spring" as const, stiffness: 260, damping: 24 } } },
+  leave: (d: number) => ({ opacity: 0, y: -4 * d, transition: { duration: 0.18, ease: PAGE_EASE } }),
+};
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -366,6 +375,14 @@ function RootComponent() {
   const firstPage = useRef(true);
   const appRoute = pathname.startsWith("/dashboard") || pathname === "/notifications";
   useEffect(() => { firstPage.current = false; }, []);
+  // Direction of travel: going back in history (lower history index) moves the other way
+  const nav = useRef({ path: pathname, idx: 0, dir: 1 });
+  useEffect(() => { nav.current.idx = window.history.state?.__TSR_index ?? 0; }, []);
+  if (typeof window !== "undefined" && nav.current.path !== pathname) {
+    const idx = window.history.state?.__TSR_index ?? nav.current.idx + 1;
+    nav.current = { path: pathname, idx, dir: idx < nav.current.idx ? -1 : 1 };
+  }
+  const navDir = nav.current.dir;
 
   // Entrance choreography plays on a browser's first visit only (see lib/intro).
   // Read once per page load: the server and the hydrating client agree, and the
@@ -409,15 +426,16 @@ function RootComponent() {
             {/* No initial={false} here: it is inherited by every page and would make all
                 their entrance animations render already finished. The wrapper itself
                 skips its fade only on the very first page. */}
-            <AnimatePresence mode="wait">
+            <AnimatePresence mode="wait" custom={navDir}>
               <motion.div
                 id="main-content"
                 key={pathname}
+                custom={navDir}
+                variants={PAGE_VARIANTS}
                 // صفحات اللوحة: الانتقال بـ View Transitions، بلا انتظار تلاشي الصفحة السابقة (كان يضيف ~280ms)
-                initial={firstPage.current || appRoute ? false : { opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={appRoute ? undefined : { opacity: 0, y: -6 }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                initial={firstPage.current || appRoute ? false : "enter"}
+                animate="shown"
+                exit={appRoute ? undefined : "leave"}
               >
                 {/* Remounts with each page: on return visits initial={false} renders every
                     entrance already finished; things that mount later (galleries,

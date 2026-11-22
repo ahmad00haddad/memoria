@@ -1,7 +1,7 @@
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { usePhotographerSubject } from "@/hooks/use-photographer-subject";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BadgeCheck, Instagram, MessageCircle, Copy, Share2, Star, CheckCircle2, Send, ChevronRight, ChevronLeft, Shield, Clock, CalendarCheck, Award, ClipboardCopy, Loader2, Check, Play, ExternalLink } from "lucide-react";
 import { splitPortfolioItem, linkLabel } from "@/lib/portfolio-link";
 import { Header } from "@/components/site/Header";
@@ -908,6 +908,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<{ token: string; verify: VerifyInfo | null } | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  // the next step enters from the reading-forward side (RTL: left), going back from the other side
+  const prevStep = useRef(step);
+  const stepBack = step < prevStep.current;
+  useEffect(() => { prevStep.current = step; }, [step]);
+  const stepX = (typeof document !== "undefined" && document.documentElement.dir === "ltr" ? 12 : -12) * (stepBack ? -1 : 1);
   const [pkgListOpen, setPkgListOpen] = useState(false);
   // الأوقات تتبع الباقة المختارة ما لم تعدّلها العروس بنفسها
   const [timesTouched, setTimesTouched] = useState(false);
@@ -1344,7 +1349,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
       </div>
 
       {step === 1 && (
-      <motion.div key="step-1" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <motion.div key="step-1" initial={{ opacity: 0, x: stepX }} animate={{ opacity: 1, x: 0 }} transition={{ opacity: { duration: 0.3 }, x: { type: "spring", stiffness: 300, damping: 24 } }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
           <label className="text-sm text-muted-foreground">{tr("التاريخ")}</label>
           <Popover>
@@ -1451,7 +1456,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
       )}
 
       {step === 2 && (
-      <motion.div key="step-2" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <motion.div key="step-2" initial={{ opacity: 0, x: stepX }} animate={{ opacity: 1, x: 0 }} transition={{ opacity: { duration: 0.3 }, x: { type: "spring", stiffness: 300, damping: 24 } }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
           <Field label={tr("الموقع / القاعة")} v={f.venue_address} on={(v) => setF({ ...f, venue_address: v })} />
         </div>
@@ -1515,7 +1520,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
       )}
 
       {step === 3 && (
-      <motion.div key="step-3" initial={{ opacity: 0, x: -28 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.55, ease: EASE_OUT }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <motion.div key="step-3" initial={{ opacity: 0, x: stepX }} animate={{ opacity: 1, x: 0 }} transition={{ opacity: { duration: 0.3 }, x: { type: "spring", stiffness: 300, damping: 24 } }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label={tr("الاسم")} v={f.client_name} on={(v) => setF({ ...f, client_name: v })} />
         <div>
           <Field label={tr("رقم الجوال (واتساب)")} type="tel" v={f.client_phone} on={(v) => setF({ ...f, client_phone: v })} />

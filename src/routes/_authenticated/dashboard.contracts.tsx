@@ -182,7 +182,7 @@ function Contracts() {
               <div className="flex gap-1 rounded-full bg-secondary p-1 text-xs">
                 {([["all", tr("الكل")], ["pending", tr("بانتظار التوقيع ({0})", [pendingCount])], ["signed", tr("موقّعة")]] as const).map(([k, l]) => (
                   <button key={k} onClick={() => setFilter(k)} className={`relative rounded-full px-3 py-1 transition-colors ${filter === k ? "text-foreground" : "text-muted-foreground"}`}>
-                    {filter === k && <motion.span layoutId="contracts-filter" className="absolute inset-0 rounded-full bg-card shadow-sm" />}
+                    {filter === k && <motion.span layoutId="contracts-filter" transition={{ type: "spring", stiffness: 500, damping: 30 }} className="absolute inset-0 rounded-full bg-card shadow-sm" />}
                     <span className="relative">{tx(l)}</span>
                   </button>
                 ))}
@@ -260,7 +260,7 @@ function Contracts() {
 
           <AnimatePresence initial={false}>
             {editorOpen && (
-              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} transition={{ height: { type: "spring", stiffness: 320, damping: 30 }, opacity: { duration: 0.2 } }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                 <div className="mt-6 border-t border-border pt-6">
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr("اسم القالب (مثال: عقد عرس قياسي)")}
                     className="w-full rounded-xl border border-input px-3 py-2 mb-3 bg-background" />

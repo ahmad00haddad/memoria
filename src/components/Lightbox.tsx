@@ -128,7 +128,7 @@ export function Lightbox({
         className="flex max-w-full max-h-full items-center justify-center"
         initial={{ scale: 0.96 }}
         animate={{ scale: 1 }}
-        transition={{ duration: 0.25, ease: EASE_OUT }}
+        transition={{ type: "spring", stiffness: 400, damping: 26 }}
       >
       <motion.div className="flex max-w-full max-h-full items-center justify-center" style={{ x: dragX, y: dragY, scale: dragScale }}>
       <AnimatePresence initial={false} custom={dir} mode="popLayout">
@@ -138,12 +138,12 @@ export function Lightbox({
         variants={{
           enter: (d: number) => ({ opacity: 0, x: d * 24 }),
           center: { opacity: 1, x: 0 },
-          exit: (d: number) => ({ opacity: 0, x: d * -24 }),
+          exit: (d: number) => ({ opacity: 0, x: d * -24, scale: 0.98 }),
         }}
         initial="enter"
         animate="center"
         exit="exit"
-        transition={{ duration: 0.22, ease: EASE_OUT }}
+        transition={{ x: { type: "spring", stiffness: 360, damping: 28 }, scale: { duration: 0.2 }, opacity: { duration: 0.2, ease: EASE_OUT } }}
         src={images[i]}
         alt=""
         className="max-w-full max-h-full object-contain p-4"

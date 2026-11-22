@@ -437,7 +437,7 @@ function Block({ icon, title, hint, children }: { icon: React.ReactNode; title: 
         <h2 className="font-serif text-xl flex-1">{title}</h2>
         <ChevronDown className={`sm:hidden h-4 w-4 text-muted-foreground transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
-      <div className={`${open ? "block" : "hidden"} sm:block`}>
+      <div className={`${open ? "block rise-in" : "hidden"} sm:block`}>
         {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
         <div className="mt-4">{children}</div>
       </div>

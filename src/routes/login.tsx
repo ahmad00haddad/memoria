@@ -171,7 +171,7 @@ function LoginPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ height: { type: "spring", stiffness: 320, damping: 30 }, opacity: { duration: 0.2 } }}
             onSubmit={submit}
             className="space-y-4 overflow-hidden px-0.5 pb-0.5"
           >

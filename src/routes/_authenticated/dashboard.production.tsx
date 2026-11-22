@@ -391,7 +391,7 @@ function ProductionBoard() {
                       onClick={() => setActiveStage(s.key)}
                       className={`relative shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-full border text-xs whitespace-nowrap transition-colors ${isActive ? "border-transparent text-ivory dark:text-charcoal" : "border-border bg-card hover:bg-secondary"}`}
                     >
-                      {isActive && <motion.span layoutId="prod-stage-pill" className="absolute inset-0 rounded-full bg-charcoal dark:bg-gold" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+                      {isActive && <motion.span layoutId="prod-stage-pill" className="absolute inset-0 rounded-full bg-charcoal dark:bg-gold" transition={{ type: "spring", stiffness: 500, damping: 30 }} />}
                       <span className="relative inline-flex items-center gap-2">
                         {tx(s.label)}
                         <AnimatePresence mode="popLayout" initial={false}>
@@ -513,7 +513,7 @@ function StageCard({ b, sIdx, compact, moving, wiggle, lockLeft, onMove }: {
       initial={{ opacity: 0, scale: 0.96 }}
       animate={wiggle ? { opacity: 1, scale: 1, x: [-5, 5, -4, 4, 0] } : { opacity: 1, scale: 1, x: 0 }}
       exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1], layout: { type: "spring", stiffness: 300, damping: 28 } }}
       className={`relative rounded-xl border bg-card text-foreground ${overdue ? "border-amber-500/60" : "border-border"} ${compact ? "p-3 text-xs" : "p-4 text-sm"} space-y-2`}
     >
       <div className="flex items-start justify-between gap-2">

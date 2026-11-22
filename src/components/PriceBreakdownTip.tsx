@@ -26,7 +26,7 @@ export function PriceBreakdownTip() {
         {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: "auto", opacity: 1 }} transition={{ height: { type: "spring", stiffness: 320, damping: 30 }, opacity: { duration: 0.2 } }}
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >

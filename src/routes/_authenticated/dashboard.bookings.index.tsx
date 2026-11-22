@@ -283,7 +283,7 @@ function BookingsList() {
                 onClick={() => setFilter(f.value)}
                 className={`relative flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border transition-colors ${active ? "border-transparent text-ivory dark:text-charcoal" : f.value === "action" ? "border-gold/50 text-gold" : "border-border text-muted-foreground hover:border-foreground/30"}`}
               >
-                {active && <motion.span layoutId="bookings-filter" className="absolute inset-0 rounded-full bg-charcoal dark:bg-gold" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+                {active && <motion.span layoutId="bookings-filter" className="absolute inset-0 rounded-full bg-charcoal dark:bg-gold" transition={{ type: "spring", stiffness: 500, damping: 30 }} />}
                 <span className="relative">{tx(f.label)}</span>
                 <span className={`relative tabular-nums ${active ? "opacity-70" : "opacity-60"}`}>{tx(n)}</span>
               </button>

@@ -103,7 +103,7 @@ function NotificationsPage() {
           <div className="mb-6 inline-flex gap-1 rounded-full bg-secondary p-1 text-xs">
             {([[false, tr("الكل")], [true, tr("غير المقروءة ({0})", [unread])]] as const).map(([k, l]) => (
               <button key={String(k)} onClick={() => setUnreadOnly(k)} className={`relative rounded-full px-3 py-1.5 ${unreadOnly === k ? "text-foreground" : "text-muted-foreground"}`}>
-                {unreadOnly === k && <motion.span layoutId="notif-filter" className="absolute inset-0 rounded-full bg-card shadow-sm" />}
+                {unreadOnly === k && <motion.span layoutId="notif-filter" transition={{ type: "spring", stiffness: 500, damping: 30 }} className="absolute inset-0 rounded-full bg-card shadow-sm" />}
                 <span className="relative">{tx(l)}</span>
               </button>
             ))}
@@ -136,7 +136,7 @@ function NotificationsPage() {
                 <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
                   <AnimatePresence initial={false}>
                     {list.map((n) => (
-                      <motion.li key={n.id} layout exit={{ opacity: 0, height: 0 }}>
+                      <motion.li key={n.id} layout exit={{ opacity: 0, height: 0 }} transition={{ layout: { type: "spring", stiffness: 380, damping: 30 }, height: { type: "spring", stiffness: 380, damping: 30 }, opacity: { duration: 0.18 } }}>
                         <button
                           onClick={() => open(n)}
                           className={`group flex w-full items-start gap-3 p-4 text-start transition-colors hover:bg-secondary/50 ${n.link ? "cursor-pointer" : "cursor-default"}`}

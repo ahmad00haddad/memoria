@@ -803,7 +803,7 @@ function Dashboard() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ height: { type: "spring", stiffness: 320, damping: 30 }, opacity: { duration: 0.2 } }}
                       className="overflow-hidden"
                     >
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-4">

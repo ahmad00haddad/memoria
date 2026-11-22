@@ -658,7 +658,7 @@ function Card({ id, title, done, open, onToggle, children }: { id: string; title
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ height: { type: "spring", stiffness: 320, damping: 30 }, opacity: { duration: 0.2 } }}
             className="overflow-hidden"
           >
             <div className="space-y-4 px-4 pb-4 sm:px-6 sm:pb-6">{children}</div>

@@ -673,7 +673,7 @@ function BookingDetail() {
             <motion.div
               key={h.key}
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
+              animate={{ opacity: 1, height: "auto" }} transition={{ height: { type: "spring", stiffness: 320, damping: 30 }, opacity: { duration: 0.2 } }}
               exit={{ opacity: 0, height: 0 }}
               className={`overflow-hidden ${hi > 0 ? "hidden sm:block" : ""}`}
             >

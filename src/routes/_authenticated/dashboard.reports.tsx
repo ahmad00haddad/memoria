@@ -126,7 +126,7 @@ function ReportsPage() {
             <div className="flex gap-1 rounded-full bg-secondary p-1 text-xs" role="tablist" aria-label={t("الفترة")}>
               {RANGES.map(([k, l]) => (
                 <button key={k} role="tab" aria-selected={range === k} onClick={() => setRange(k)} className={`relative rounded-full px-3 py-1.5 transition-colors ${range === k ? "text-foreground" : "text-muted-foreground"}`}>
-                  {range === k && <motion.span layoutId="reports-range" className="absolute inset-0 rounded-full bg-card shadow-sm" transition={{ type: "spring", stiffness: 500, damping: 40 }} />}
+                  {range === k && <motion.span layoutId="reports-range" className="absolute inset-0 rounded-full bg-card shadow-sm" transition={{ type: "spring", stiffness: 500, damping: 30 }} />}
                   <span className="relative">{tx(l)}</span>
                 </button>
               ))}
@@ -162,7 +162,7 @@ function ReportsPage() {
         </div>
         <AnimatePresence initial={false}>
           {showMore && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} transition={{ height: { type: "spring", stiffness: 320, damping: 30 }, opacity: { duration: 0.2 } }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-1 pb-3">
                 <Stat icon={<DollarSign className="h-5 w-5 text-emerald-700" />} label={t("إجمالي الإيرادات")} value={t("{0} د.أ", [stats.totalRevenue.toFixed(0)])} sub={t("{0} حجزاً", [stats.count])} />
                 <Stat icon={<CheckCircle2 className="h-5 w-5 text-emerald-700" />} label={t("مكتمل ومحصّل")} value={t("{0} د.أ", [stats.completedRevenue.toFixed(0)])} />
