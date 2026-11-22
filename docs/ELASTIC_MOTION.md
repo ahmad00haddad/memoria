@@ -190,6 +190,44 @@ data-[state=open]:zoom-in-90 data-[state=open]:duration-[450ms] data-[state=open
 
 **صورة تحمّلت:** صفّر `loaded` عند تغيّر الرابط، وأضف `img-settle` فقط بعد `onLoad`.
 
+## الانتقال من شيء لآخر
+
+| الانتقال | الطريقة |
+|---|---|
+| تبديل الصفحات | الجديدة تصعد 8px بـ spring ‏260/24 مع ظهور 0.24s؛ القديمة تختفي 0.18s وتصعد 4px |
+| الرجوع في السجل | نفس الحركة بالعكس: قارن `history.state.__TSR_index` (أو index خاص بالراوتر) بالسابق؛ أقل = رجوع → `dir = -1` |
+| خطوات فورم | الخطوة الجديدة تدخل 12px من جهة التقدّم (RTL: يسار)، والرجوع من الجهة المعاكسة؛ x spring ‏300/24 |
+| مؤشر التبويب / الفلاتر | `layoutId` واحد ينزلق بين الخيارات، spring ‏500–520 / 24–30 (لا damping 40: يقتل المرونة) |
+| أقسام قابلة للطي | `height: "auto"` بـ spring ‏320/30، الشفافية 0.2s؛ المحتوى الداخلي ينزل 4px |
+| Accordion (Radix) | منحنى الارتفاع `cubic-bezier(0.34,1.12,0.64,1)` + `acc-in` على الداخل |
+| حذف من قائمة | `layout` + exit `height: 0` بـ spring ‏380/30 حتى يسدّ الباقي الفراغ |
+| عارض الصور | الصورة التالية x spring ‏360/28، القديمة تصغر إلى 0.98 وهي تخرج؛ الفتح scale 0.96 → 1 spring ‏400/26 |
+| لوحة سفلية | keyframes: ‏100% → ‏-3px → ‏0، مع `box-shadow: 0 12px 0 0 <bg>` حتى لا تظهر فجوة تحت اللوحة |
+| Toasts (sonner) | `transition-timing-function: cubic-bezier(0.34,1.15,0.64,1)` على transform و height فقط |
+
+```tsx
+// page variants (framer-motion) — AnimatePresence mode="wait" custom={dir}
+const PAGE_VARIANTS = {
+  enter: (d: number) => ({ opacity: 0, y: 8 * d }),
+  shown: { opacity: 1, y: 0, transition: { opacity: { duration: 0.24 }, y: { type: "spring", stiffness: 260, damping: 24 } } },
+  leave: (d: number) => ({ opacity: 0, y: -4 * d, transition: { duration: 0.18 } }),
+};
+```
+
+```css
+[data-state="open"] > .acc-inner { animation: acc-in 0.45s var(--ease-elastic-soft) both; }
+@keyframes acc-in { from { translate: 0 -4px; opacity: 0; } to { translate: 0 0; opacity: 1; } }
+.sheet-bottom[data-state="open"] { animation: sheet-up 0.5s both; box-shadow: 0 12px 0 0 var(--color-background); }
+@keyframes sheet-up {
+  0% { translate: 0 100%; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  70% { translate: 0 -3px; animation-timing-function: ease-in-out; }
+  100% { translate: 0 0; }
+}
+```
+
+**مهم:** التجاوز يتناسب مع المسافة. منحنى EB على حركة 100% (لوحة كاملة) = تجاوز عشرات البكسلات. للمسافات الكبيرة استخدم keyframes بتجاوز ثابت (‏-3px) بدل منحنى bezier.
+**لا تستخدم** View Transitions لتحويل بطاقة إلى صفحة إذا كان هناك `AnimatePresence mode="wait"` على الصفحات: اللقطة الجديدة تُؤخذ قبل ظهور الصفحة.
+
 ## أين نطبّقها (قائمة فحص لأي مشروع)
 
 1. أزرار الأيقونات الصغيرة: `elastic-press`.
