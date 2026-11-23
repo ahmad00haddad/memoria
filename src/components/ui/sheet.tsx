@@ -6,8 +6,13 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useBackClose } from "@/hooks/use-back-close";
 
-const Sheet = SheetPrimitive.Root;
+const Sheet = (props: React.ComponentProps<typeof SheetPrimitive.Root>) => {
+  useBackClose(!!props.open, () => props.onOpenChange?.(false));
+  return <SheetPrimitive.Root {...props} />;
+};
+Sheet.displayName = "Sheet";
 
 const SheetTrigger = SheetPrimitive.Trigger;
 

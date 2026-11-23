@@ -5,8 +5,14 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useBackClose } from "@/hooks/use-back-close";
 
-const Dialog = DialogPrimitive.Root;
+const Dialog = (props: React.ComponentProps<typeof DialogPrimitive.Root>) => {
+  // Back button closes a controlled dialog instead of leaving the page
+  useBackClose(!!props.open, () => props.onOpenChange?.(false));
+  return <DialogPrimitive.Root {...props} />;
+};
+Dialog.displayName = "Dialog";
 
 const DialogTrigger = DialogPrimitive.Trigger;
 

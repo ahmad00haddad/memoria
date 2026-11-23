@@ -25,6 +25,8 @@ import { CompareMode } from "@/components/search/CompareMode";
 import { PriceRange } from "@/components/search/PriceRange";
 import { typoCorrect } from "@/lib/searchUtils";
 import { playSound } from "@/lib/sounds";
+import { ProgressiveImg } from "@/components/ui/ProgressiveImg";
+import { useBackClose } from "@/hooks/use-back-close";
 import { BarChart2 } from "lucide-react";
 import { t as tr, tx, locale } from "@/i18n";
 
@@ -87,6 +89,7 @@ function SearchPage() {
   const [favsOnly, setFavsOnly] = useState(false);
   const [favs, setFavs] = useState<string[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  useBackClose(drawerOpen, () => setDrawerOpen(false));
   const [lastSearch, setLastSearch] = useState<{ city?: string; maxPrice?: string; date?: string } | null>(null);
 
   useEffect(() => {
@@ -858,12 +861,11 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
           </button>
           
           {p.cover_url ? (
-            <img
+            <ProgressiveImg
               src={p.cover_url}
               alt={p.display_name ?? p.username}
               loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover
-                         transition-transform duration-700 will-change-transform
+              className="absolute inset-0 w-full h-full object-cover will-change-transform
                          group-hover:scale-105"
             />
           ) : (

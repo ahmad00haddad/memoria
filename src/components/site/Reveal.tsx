@@ -115,11 +115,16 @@ export function SettleIn({ children, className = "", delay = 0, scale = 0.86 }: 
 /** An image that rises into its frame from the bottom edge (clip only, so hover scaling still works). */
 export function RiseImg({ className = "", delay = 0, ...img }: React.ImgHTMLAttributes<HTMLImageElement> & { delay?: number }) {
   const [ref, on] = useSeen<HTMLImageElement>(0.25);
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => { if (ref.current?.complete && ref.current.naturalWidth > 0) setLoaded(true); }, [ref]);
   return (
     <motion.img
       ref={ref}
       {...(img as object)}
-      className={className}
+      data-loaded={loaded}
+      onLoad={() => setLoaded(true)}
+      onError={() => setLoaded(true)}
+      className={`img-blur ${className}`}
       animate={{ clipPath: on ? "inset(0% 0% 0% 0%)" : "inset(100% 0% 0% 0%)" }}
       transition={{ duration: 1.3, delay, ease: EASE_OUT }}
     />

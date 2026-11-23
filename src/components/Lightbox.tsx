@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { t, tx } from "@/i18n";
+import { useBackClose } from "@/hooks/use-back-close";
 
 const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 
@@ -24,6 +25,7 @@ export function Lightbox({
   // +1 = moved to the next image, -1 = previous; drives the slide direction
   const [dir, setDir] = useState(1);
 
+  useBackClose(true, onClose);
   useEffect(() => setI(index), [index]);
 
   useEffect(() => {
