@@ -1580,7 +1580,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
             {tr("التالي")}{" "}<ChevronLeft className="h-4 w-4" />
           </button>
         ) : (
-          <button onClick={submit} disabled={submitting} className="elastic-press-soft flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm transition-all duration-300">
+          <button onClick={submit} disabled={submitting} className="elastic-press-soft flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm transition duration-300">
             {submitting ? (
               <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />{" "}{tr("جاري الإرسال…")}
@@ -1715,7 +1715,7 @@ function DepositCard({ profile, cliqAlias, bankInfo }: { profile: Profile; cliqA
               <div className="font-mono text-lg truncate">{tx(cliqAlias)}</div>
               <button 
                 onClick={handleCopy} 
-                className={`p-2 rounded-sm transition-all duration-300 ${copied ? "bg-green-500/20 text-green-400" : "hover:bg-ivory/10"}`}
+                className={`p-2 rounded-sm transition duration-300 ${copied ? "bg-green-500/20 text-green-400" : "hover:bg-ivory/10"}`}
                 aria-label={tr("نسخ")}
               >
                 <AnimatePresence mode="wait">

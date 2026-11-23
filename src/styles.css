@@ -212,6 +212,18 @@
     outline-offset: 3px;
   }
 
+  /* browser surfaces drawn from the palette: caret, native controls, scrollbar, link underlines */
+  input, textarea, [contenteditable="true"] { caret-color: var(--gold); }
+  input[type="checkbox"], input[type="radio"], input[type="range"], progress { accent-color: var(--gold); }
+  html { scrollbar-color: color-mix(in oklab, var(--foreground) 26%, transparent) transparent; }
+  a { text-underline-offset: 0.22em; text-decoration-thickness: 1px; }
+
+  /* photos get a hairline inner edge so pale pictures don't melt into the ivory page (or dark ones into the dark page) */
+  img.object-cover:not([alt=""]) {
+    outline: 1px solid color-mix(in oklab, var(--foreground) 7%, transparent);
+    outline-offset: -1px;
+  }
+
   p { text-wrap: pretty; }
   /* prices, counts and dates keep their digit widths so they don't jitter */
   :where(table, [data-numeric]) { font-variant-numeric: tabular-nums; }

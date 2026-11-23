@@ -185,7 +185,7 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
         {steps.map((s, i) => {
           const isActive = i === activeIdx;
           return (
-            <div key={s.num} className={`relative rounded-2xl border p-6 transition-all ${
+            <div key={s.num} className={`relative rounded-2xl border p-6 transition ${
               s.done
                 ? "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20"
                 : isActive
@@ -315,7 +315,7 @@ function Card({ title, desc, cta, to, external, disabled, icon, badge, badgeText
     : urgent
       ? "bg-card ring-gold/60"
       : "bg-card ring-border/70";
-  const sharedClassName = `group relative flex flex-col overflow-hidden rounded-2xl p-6 ring-1 transition-all duration-500 ${tone} ${feature ? "min-h-[260px]" : "min-h-[190px]"} ${disabled ? "cursor-not-allowed opacity-55" : "hover:-translate-y-0.5 hover:shadow-elegant hover:ring-gold/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"} ${className}`;
+  const sharedClassName = `group relative flex flex-col overflow-hidden rounded-2xl p-6 ring-1 transition duration-500 ${tone} ${feature ? "min-h-[260px]" : "min-h-[190px]"} ${disabled ? "cursor-not-allowed opacity-55" : "hover:-translate-y-0.5 hover:shadow-elegant hover:ring-gold/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"} ${className}`;
 
   const cardContent = (
     <div className="relative z-10 flex h-full flex-1 flex-col" onMouseEnter={() => !disabled && playSound('tick')}>

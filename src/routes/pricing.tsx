@@ -96,7 +96,7 @@ function PricingPage() {
           <div className="w-[85%] shrink-0 snap-center md:w-auto rounded-sm border border-border bg-card p-6 sm:p-8 shadow-soft">
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">{t("للبداية")}</div>
             <h3 className="font-serif text-2xl mb-1">{t("تجربة مجانية")}</h3>
-            <div className="text-4xl font-serif my-4">
+            <div className="text-4xl font-serif my-4 tabular-nums">
               0 <span className="text-xl font-sans">{t("د.أ")}</span> <span className="text-sm text-muted-foreground">{t("/ 14 يوم")}</span>
             </div>
             <p className="text-sm text-muted-foreground mb-6">{t("جرّبي كل شيء قبل الالتزام. تبدأ تلقائيًا عند التسجيل.")}</p>
@@ -112,7 +112,7 @@ function PricingPage() {
           <div className="w-[85%] shrink-0 snap-center md:w-auto rounded-sm border border-border bg-card p-6 sm:p-8 shadow-soft">
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">{t("للبداية الجدية")}</div>
             <h3 className="font-serif text-2xl mb-1">Basic</h3>
-            <div className="text-4xl font-serif my-4">
+            <div className="text-4xl font-serif my-4 tabular-nums">
               {yearly ? PRICES.basic.yearly : PRICES.basic.monthly} <span className="text-xl font-sans">{t("د.أ")}</span> <span className="text-sm text-muted-foreground">{per}</span>
             </div>
             {yearly && <p className="-mt-2 mb-4 text-xs text-muted-foreground">{t("نفس سعر الشهري × ١٢ — بلا أي توفير")}</p>}
@@ -140,7 +140,7 @@ function PricingPage() {
             </motion.div>
             <div className="text-xs uppercase tracking-[0.25em] text-gold mb-2">{t("للمحترفات")}</div>
             <h3 className="font-serif text-2xl mb-1">Pro</h3>
-            <div className="text-4xl font-serif my-4">
+            <div className="text-4xl font-serif my-4 tabular-nums">
               {yearly && <span className="me-2 text-xl text-muted-foreground line-through decoration-gold/70">{PRICES.pro.monthly * 12}</span>}
               {yearly ? PRICES.pro.yearly : PRICES.pro.monthly} <span className="text-xl font-sans">{t("د.أ")}</span> <span className="text-sm text-muted-foreground">{per}</span>
             </div>

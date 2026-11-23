@@ -82,7 +82,7 @@ export function ToolIndex({ tools }: { tools: Tool[] }) {
         const inner = (
           <>
             <div className="flex items-start justify-between gap-2">
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-secondary text-foreground/70 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:text-gold [&_svg]:h-[18px] [&_svg]:w-[18px]">
+              <span className="grid h-9 w-9 place-items-center rounded-lg bg-secondary text-foreground/70 transition duration-300 group-hover:-translate-y-0.5 group-hover:text-gold [&_svg]:h-[18px] [&_svg]:w-[18px]">
                 {tx(t.icon)}
               </span>
               {t.badge ? (
@@ -96,7 +96,7 @@ export function ToolIndex({ tools }: { tools: Tool[] }) {
             </div>
             <div className="mt-4 flex items-center justify-between gap-2">
               <span className="text-sm font-medium">{tx(t.title)}</span>
-              <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition-all duration-300 group-hover:-translate-x-0.5 group-hover:text-gold group-hover:opacity-100" />
+              <ArrowLeft className="h-3.5 w-3.5 text-muted-foreground opacity-0 transition duration-300 group-hover:-translate-x-0.5 group-hover:text-gold group-hover:opacity-100" />
             </div>
             {t.hint && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{tx(t.hint)}</p>}
           </>

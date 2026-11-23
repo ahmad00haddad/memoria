@@ -284,7 +284,7 @@ function PricingMgr() {
               </p>
               <button 
                 onClick={injectMarketTemplates}
-                className="bg-gold text-white px-6 py-2.5 rounded-sm hover:shadow-elegant hover:-translate-y-0.5 active:scale-95 transition-all duration-300 font-medium"
+                className="bg-gold text-white px-6 py-2.5 rounded-sm hover:shadow-elegant hover:-translate-y-0.5 active:scale-95 transition duration-300 font-medium"
               >
                 {t("استخدام الباقات القياسية الآن 🪄")}
               </button>

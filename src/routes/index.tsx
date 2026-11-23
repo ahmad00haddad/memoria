@@ -88,7 +88,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
         <motion.button
           variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } } }}
           onClick={() => onSelect("client")}
-          className="group flex flex-col items-start p-7 rounded-sm border-2 border-border bg-card hover:border-gold/60 hover:bg-gold/5 hover:shadow-elegant transition-all text-start"
+          className="group flex flex-col items-start p-7 rounded-sm border-2 border-border bg-card hover:border-gold/60 hover:bg-gold/5 hover:shadow-elegant transition text-start"
         >
           <motion.div className="text-4xl mb-4" variants={{ hidden: { scale: 0.6, opacity: 0 }, visible: { scale: [0.6, 1.25, 1], opacity: 1, transition: { duration: 0.9, delay: 0.35, ease: EASE_OUT } } }}>🌸</motion.div>
           <div className="font-serif text-2xl mb-2">{tr("عروس أو أهل الزفاف")}</div>
@@ -104,7 +104,7 @@ function RoleGate({ onSelect }: { onSelect: (role: "client" | "photographer" | "
         <motion.button
           variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } } }}
           onClick={() => onSelect("photographer")}
-          className="group flex flex-col items-start p-7 rounded-sm border-2 border-charcoal bg-charcoal text-ivory hover:opacity-95 hover:shadow-elegant transition-all text-start"
+          className="group flex flex-col items-start p-7 rounded-sm border-2 border-charcoal bg-charcoal text-ivory hover:opacity-95 hover:shadow-elegant transition text-start"
         >
           <motion.div className="text-4xl mb-4" variants={{ hidden: { scale: 0.6, opacity: 0 }, visible: { scale: [0.6, 1.25, 1], opacity: 1, transition: { duration: 0.9, delay: 0.35, ease: EASE_OUT } } }}>📷</motion.div>
           <div className="font-serif text-2xl mb-2">{tr("مصوّرة محترفة")}</div>
@@ -289,7 +289,7 @@ function Landing() {
       {/* Hero — invitation-card composition: arch-framed portrait, calligraphic accent */}
       <section className="relative overflow-hidden grain-overlay">
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[70%] bg-[radial-gradient(60%_60%_at_70%_20%,color-mix(in_oklab,var(--gold)_14%,transparent),transparent_70%)]" />
-        <div className="container-editorial relative pt-10 lg:pt-16 pb-16 sm:pb-24 lg:pb-32">
+        <div className="container-editorial relative pt-10 lg:pt-16 pb-16 sm:pb-24 lg:pb-24">
           <motion.div
             variants={fadeUp}
             initial="hidden"
@@ -480,7 +480,7 @@ function Landing() {
       {(!visitorRole || visitorRole === "guest" || isPhotographer) && (
         <ScrollReveal delay={0.05}>
         <motion.section
-          className="container-editorial py-12 sm:py-20"
+          className="container-editorial py-12 sm:py-16"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
@@ -728,7 +728,7 @@ function RoleCard({ index, title, desc, cta, href, highlight }: { index: string;
     <motion.div variants={fadeUp} className="h-full">
       <Link
         to={href}
-        className={`group relative flex h-full flex-col overflow-hidden rounded-2xl p-8 sm:p-10 transition-all duration-500 hover:shadow-elegant ${
+        className={`group relative flex h-full flex-col overflow-hidden rounded-2xl p-8 sm:p-10 transition duration-500 hover:shadow-elegant ${
           highlight ? "bg-charcoal text-ivory grain-overlay" : "bg-card border border-border"
         }`}
       >
