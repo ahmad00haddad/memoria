@@ -93,7 +93,7 @@ function PricingPage() {
         {/* على الهاتف: البطاقات تتمرّر أفقياً بالسحب بدل أن تتكدّس، وPro أولاً */}
         <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pt-4 pb-2 [scrollbar-width:none] md:mx-auto md:grid md:max-w-5xl md:grid-cols-3 md:gap-8 md:overflow-visible md:px-0 md:pt-0 md:pb-0">
           {/* Free trial card */}
-          <div className="w-[85%] shrink-0 snap-center md:w-auto rounded-sm border border-border bg-card p-6 sm:p-8 shadow-soft">
+          <div className="w-[85%] shrink-0 snap-center md:w-auto rounded-sm border border-border bg-card p-6 sm:p-8">
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">{t("للبداية")}</div>
             <h3 className="font-serif text-2xl mb-1">{t("تجربة مجانية")}</h3>
             <div className="text-4xl font-serif my-4 tabular-nums">
@@ -109,7 +109,7 @@ function PricingPage() {
           </div>
 
           {/* Basic */}
-          <div className="w-[85%] shrink-0 snap-center md:w-auto rounded-sm border border-border bg-card p-6 sm:p-8 shadow-soft">
+          <div className="w-[85%] shrink-0 snap-center md:w-auto rounded-sm border border-border bg-card p-6 sm:p-8">
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">{t("للبداية الجدية")}</div>
             <h3 className="font-serif text-2xl mb-1">Basic</h3>
             <div className="text-4xl font-serif my-4 tabular-nums">

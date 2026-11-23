@@ -142,7 +142,7 @@ function LoginPage() {
         </div>
         <motion.div
           animate={shakeCtl}
-          className="space-y-4 bg-card border border-border rounded-2xl p-6 shadow-soft"
+          className="space-y-4 bg-card border border-border rounded-2xl p-6"
         >
           <GoogleSignIn
             redirectPath={redirectPath}

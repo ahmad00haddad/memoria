@@ -902,12 +902,12 @@ const BentoPhotographerCard = forwardRef<HTMLDivElement, { p: SearchResultItem; 
                   <Star className="h-3 w-3 fill-gold text-gold" />
                   {p.avg_rating.toFixed(1)}
                   {p.review_count > 0 && (
-                    <span className="text-white/50">({tx(p.review_count)})</span>
+                    <span className="text-white/70">({tx(p.review_count)})</span>
                   )}
                 </span>
               )}
               {p.min_price != null && (
-                <span className="text-xs text-white/55">{tr("من {0} د.أ", [p.min_price])}</span>
+                <span className="text-xs text-white/75">{tr("من {0} د.أ", [p.min_price])}</span>
               )}
             </div>
           </div>

@@ -450,7 +450,7 @@ function TrackingPage() {
                           transition={{ delay: 0.1 + i * 0.08, type: "spring", stiffness: 260, damping: 13 }}
                           className={`h-1 w-full origin-right rounded-full ${st.done ? "bg-gold" : current ? "bg-gold/40" : "bg-ivory/15 dark:bg-border"}`}
                         />
-                        <span className={`text-[10px] leading-tight ${current ? "" : "hidden sm:inline"} ${current ? "text-gold font-medium" : st.done ? "text-ivory/80 dark:text-foreground" : "text-ivory/40 dark:text-muted-foreground"}`}>{tx(st.label)}</span>
+                        <span className={`text-[10px] leading-tight ${current ? "" : "hidden sm:inline"} ${current ? "text-gold font-medium" : st.done ? "text-ivory/80 dark:text-foreground" : "text-ivory/60 dark:text-muted-foreground"}`}>{tx(st.label)}</span>
                       </li>
                     );
                   })}

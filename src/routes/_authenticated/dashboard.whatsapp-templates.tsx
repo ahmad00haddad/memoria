@@ -276,7 +276,7 @@ function TemplateCard({ t, dirty, justSaved, onChange, onSave, onRemove }: {
 
         {/* معاينة كما تصل في واتساب */}
         <div className="rounded-xl bg-[#e5ddd5] p-4 dark:bg-[#0b141a]">
-          <div className="mb-2 text-[11px] text-black/50 dark:text-white/50">معاينة (ببيانات تجريبية)</div>
+          <div className="mb-2 text-[11px] text-black/65 dark:text-white/65">معاينة (ببيانات تجريبية)</div>
           <motion.div
             key={preview.length}
             initial={{ opacity: 0.85 }}

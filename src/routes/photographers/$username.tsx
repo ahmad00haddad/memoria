@@ -669,7 +669,7 @@ function PhotographerPage() {
               const features = parseFeatures(p.description);
               return (
                 <RiseIn key={p.id} index={idx} className={`h-full shrink-0 snap-center sm:w-auto ${all.length > 1 ? "w-[85%]" : "w-full"}`}>
-                <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elegant border-border ${pickedPackageId === p.id ? "pkg-picked" : ""}`}>
+                <div className={`relative flex h-full flex-col rounded-sm border bg-card p-6 transition hover:-translate-y-0.5 hover:shadow-elegant border-border ${pickedPackageId === p.id ? "pkg-picked" : ""}`}>
                   <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">{p.service === "photo_video" ? tr("صور + فيديو") : p.service === "cinematic_video" ? tr("فيديو سينمائي") : tr("تصوير فوتوغرافي")}</div>
                   {/* word joiners keep a range like "3–4" on one line */}
                   <h3 className="font-serif text-2xl mb-1">{tx(p.label).replace(/(\d)\s*([–-])\s*(\d)/g, "$1⁠$2⁠$3")}</h3>
@@ -1184,7 +1184,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
 
   if (offerSent) {
     return (
-      <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
+      <div className="bg-card border border-border rounded-sm p-6 sm:p-8 text-center">
         <div className="mb-3 flex justify-center"><CheckCircle2 className="h-14 w-14 text-emerald-600" /></div>
         <h2 className="font-serif text-2xl mb-2">{pg(profile?.gender, tr("تم إرسال عرضكِ للمصوّرة"), tr("تم إرسال عرضكِ للمصوّر"))}</h2>
         <p className="text-muted-foreground mb-5">{pg(profile?.gender, tr("تم إرسال عرضكِ للمصوّرة. لن يُحجز الموعد إلا بعد موافقتها، وسنراسلكِ على بريدكِ وواتساب."), tr("تم إرسال عرضكِ للمصوّر. لن يُحجز الموعد إلا بعد موافقته، وسنراسلكِ على بريدكِ وواتساب."))}</p>
@@ -1199,7 +1199,7 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
     const fullUrl = typeof window !== "undefined" ? `${window.location.origin}${trackUrl}` : trackUrl;
     const bookingRef = success.token.slice(0, 8).toUpperCase();
     return (
-      <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
+      <div className="bg-card border border-border rounded-sm p-6 sm:p-8 text-center">
         <div className="mb-3 flex justify-center">
           <span className="relative inline-block">
             <DrawIcon duration={1.1}><CheckCircle2 className="h-14 w-14 text-emerald-600" /></DrawIcon>

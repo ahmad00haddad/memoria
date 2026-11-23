@@ -390,8 +390,8 @@ function PricingMgr() {
               </div>
 
               <label className="block text-xs text-muted-foreground mb-1">{t("اسم الباقة")}</label>
-              <input placeholder={t("مثال: باقة ٤ ساعات")} value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="w-full bg-transparent font-serif text-2xl border-b border-border pb-2 mb-3 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />
-              {!isShort(k) && <input maxLength={120} aria-label={t("وصف قصير تحت الاسم")} placeholder={t("سطر قصير تحت الاسم، مثال: مثالية للحفلات العائلية الأنيقة")} value={r.subtitle ?? ""} onChange={(e) => upd(i, "subtitle", e.target.value)} className="w-full bg-transparent text-sm text-muted-foreground border-b border-border/60 pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/50" />}
+              <input placeholder={t("مثال: باقة ٤ ساعات")} value={r.label} onChange={(e) => upd(i, "label", e.target.value)} className="w-full bg-transparent font-serif text-2xl border-b border-border pb-2 mb-3 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/80" />
+              {!isShort(k) && <input maxLength={120} aria-label={t("وصف قصير تحت الاسم")} placeholder={t("سطر قصير تحت الاسم، مثال: مثالية للحفلات العائلية الأنيقة")} value={r.subtitle ?? ""} onChange={(e) => upd(i, "subtitle", e.target.value)} className="w-full bg-transparent text-sm text-muted-foreground border-b border-border/60 pb-2 mb-5 outline-none transition-colors focus:border-gold placeholder:text-muted-foreground/80" />}
 
               <div className="grid grid-cols-2 gap-4 mb-5">
                 <div>
@@ -405,7 +405,7 @@ function PricingMgr() {
                 </div>
                 {!isShort(k) && <div>
                   <label className="block text-xs text-muted-foreground mb-1">{t("سعر الصورة الإضافية")}</label>
-                  <input type="number" min="0" inputMode="decimal" placeholder={t("اختياري")} value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="w-full bg-transparent font-serif text-3xl tabular-nums border-b border-border pb-1 outline-none transition-colors focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/50" />
+                  <input type="number" min="0" inputMode="decimal" placeholder={t("اختياري")} value={r.per_photo_price ?? ""} onChange={(e) => upd(i, "per_photo_price", e.target.value)} className="w-full bg-transparent font-serif text-3xl tabular-nums border-b border-border pb-1 outline-none transition-colors focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/80" />
                 </div>}
               </div>
 
@@ -425,7 +425,7 @@ function PricingMgr() {
                   {r.allow_negotiation && (
                     <div className="mt-2 ps-6">
                       <label className="block text-xs text-muted-foreground mb-1">{t("أقل سعر تقبلينه (د.أ)")}{" "}<span className="text-muted-foreground/70">{t("— اختياري، لا تراه العروس. بدونه يُقبل أي سعر أقل من المعلن لتقرّري أنتِ.")}</span></label>
-                      <input type="number" min="0" inputMode="decimal" placeholder={t("اختياري")} value={r.min_offer_price ?? ""} onChange={(e) => upd(i, "min_offer_price", e.target.value)} className="w-40 bg-transparent font-serif text-2xl tabular-nums border-b border-border pb-1 outline-none focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/50" />
+                      <input type="number" min="0" inputMode="decimal" placeholder={t("اختياري")} value={r.min_offer_price ?? ""} onChange={(e) => upd(i, "min_offer_price", e.target.value)} className="w-40 bg-transparent font-serif text-2xl tabular-nums border-b border-border pb-1 outline-none focus:border-gold placeholder:text-base placeholder:font-sans placeholder:text-muted-foreground/80" />
                     </div>
                   )}
                 </div>
@@ -442,7 +442,7 @@ function PricingMgr() {
               <FeatureEditor value={r.description ?? ""} onChange={(v) => upd(i, "description", v)} />
 
               <label className="block text-xs text-muted-foreground mt-5 mb-1">{t("نص زر الحجز")}{" "}<span className="text-muted-foreground/70">{t("(اختياري)")}</span></label>
-              <input maxLength={40} placeholder={t("احجزي هذه الباقة")} value={r.cta_label ?? ""} onChange={(e) => upd(i, "cta_label", e.target.value)} className="w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50" />
+              <input maxLength={40} placeholder={t("احجزي هذه الباقة")} value={r.cta_label ?? ""} onChange={(e) => upd(i, "cta_label", e.target.value)} className="w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/80" />
               </>)}
             </motion.div>
             );
@@ -487,7 +487,7 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
             <input value={f.text} maxLength={90} placeholder={t("مثال: تغطية 6 ساعات")}
               onChange={(e) => set(i, { text: e.target.value.replace(/^[★⚡]\s*/, "") })}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); insertAfter(i); } }}
-              className="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-foreground/50" />
+              className="min-w-0 flex-1 bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-foreground/80" />
             {rows.length > 1 && (
               <button type="button" aria-label={t("حذف الميزة")} onClick={() => commit(rows.filter((_, j) => j !== i))}
                 className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted-foreground hover:text-destructive">
@@ -509,7 +509,7 @@ function FeatureEditor({ value, onChange }: { value: string; onChange: (v: strin
 // تثقل التعبئة. مدة التسليم اختيارية لكل باقة (والمعدّل الفعلي من تسليماتها يظهر كما هو).
 function DisclosureFields({ r, set }: { r: Rule; set: (k: keyof Rule, v: any) => void }) {
   const video = r.service === "cinematic_video";
-  const box = "w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm tabular-nums outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/50";
+  const box = "w-full rounded-xl bg-secondary/60 px-3 py-2 text-sm tabular-nums outline-none ring-1 ring-transparent transition focus:ring-gold/50 placeholder:text-muted-foreground/80";
   // دالة لا مكوّن: مكوّن داخلي يُعاد إنشاؤه مع كل رسم فيفقد الحقل التركيز بعد كل حرف
   const num = (k: keyof Rule, label: string, ph: string) => (
     <label key={String(k)} className="block">

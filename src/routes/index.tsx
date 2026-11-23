@@ -317,7 +317,7 @@ function Landing() {
                 className="font-serif text-[2.4rem] sm:text-7xl lg:text-[5.6rem] !leading-[1.15]"
               >
                 {tr("من أول بحث")}
-                <span className="block font-script text-gold text-[2.8rem] sm:text-[5.2rem] lg:text-[6.6rem] !leading-[1.5] mt-1 sm:mt-3 lg:-me-10">
+                <span className="block font-script text-gold text-[2.8rem] sm:text-[5.2rem] lg:text-[6rem] !leading-[1.5] mt-1 sm:mt-3 lg:-me-10">
                   <Calligraphy onMount delay={0.9} duration={2}><Shimmer onMount delay={3.2}>{tr("حتى تستلمي صوركِ")}</Shimmer></Calligraphy>
                 </span>
               </motion.h1>
@@ -511,7 +511,6 @@ function Landing() {
           <div className="hidden sm:grid gap-6 md:grid-cols-12">
             <div className="md:col-span-5">
               <RoleCard
-                index={tr("٠١")}
                 title={tr("العروس وأهل الزفاف")}
                 desc={tr("قارني بين المصوّرات واعرفي من المتاحة في تاريخ عرسكِ.")}
                 cta={tr("ابحثي عن مصوّرة")}
@@ -521,7 +520,6 @@ function Landing() {
             <div className="md:col-span-7 md:mt-12">
               {!authLoading && !isPhotographer ? (
                 <RoleCard
-                  index={tr("٠٢")}
                   title={tr("مصوّرة محترفة")}
                   desc={tr("اكتبي باقاتكِ وأسعاركِ واربطي تقويم Google، فلا تصلكِ طلبات إلا على أيامكِ المتاحة.")}
                   cta={tr("انضمي إلى المنصة")}
@@ -530,7 +528,6 @@ function Landing() {
                 />
               ) : (
                 <RoleCard
-                  index={tr("٠٢")}
                   title={tr("حسابك جاهز")}
                   desc={tr("الباقات والحجوزات والاشتراك تجدينها في لوحة التحكم.")}
                   cta={tr("افتحي لوحة التحكم")}
@@ -723,7 +720,7 @@ function Quote({ name, text }: { name: string; text: string }) {
   );
 }
 
-function RoleCard({ index, title, desc, cta, href, highlight }: { index: string; title: string; desc: string; cta: string; href: string; highlight?: boolean }) {
+function RoleCard({ title, desc, cta, href, highlight }: { title: string; desc: string; cta: string; href: string; highlight?: boolean }) {
   return (
     <motion.div variants={fadeUp} className="h-full">
       <Link
@@ -733,7 +730,6 @@ function RoleCard({ index, title, desc, cta, href, highlight }: { index: string;
         }`}
       >
         <DrawFrame fade width={1.5} radius={16} duration={2} delay={0.3} className={highlight ? "text-gold/70" : "text-gold"} />
-        <span aria-hidden className={`absolute -top-6 end-4 font-serif text-[8rem] leading-none select-none transition-transform duration-700 ease-out group-hover:-translate-x-3 group-hover:translate-y-2 ${highlight ? "text-ivory/[0.06]" : "text-foreground/[0.05]"}`}>{tx(index)}</span>
         <div className={`eyebrow mb-6 ${highlight ? "" : "!text-muted-foreground"}`}>
           {highlight ? tr("للمصوّرين") : tr("للعملاء")}
         </div>

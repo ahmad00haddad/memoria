@@ -60,7 +60,7 @@ function OfferPage() {
           const Icon = c.icon;
           const discount = offer.listed_price > 0 ? Math.round((1 - offer.offered_price / offer.listed_price) * 100) : 0;
           return (
-            <div className="bg-card border border-border rounded-sm p-6 sm:p-8 shadow-soft text-center">
+            <div className="bg-card border border-border rounded-sm p-6 sm:p-8 text-center">
               <div className="mb-3 flex justify-center"><Icon className={`h-14 w-14 ${c.cls}`} /></div>
               <h1 className="font-serif text-3xl mb-2">{tx(c.title)}</h1>
               <p className="text-muted-foreground mb-5">{tx(c.text)}</p>
