@@ -771,3 +771,13 @@ input[type="checkbox"]:checked:focus, input[type="radio"]:checked:focus { animat
 
 /* digits keep one width everywhere, so prices, counts and times don't jitter */
 body { font-variant-numeric: tabular-nums; }
+
+/* One press feel for every button (in the base layer, so any utility or component class overrides it): a small quick shrink, 0.97.
+   :where() keeps specificity at zero, so any button that styles its own press
+   (.elastic-press, active:scale-*, calendar days...) keeps it. */
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    :where(button:not(:disabled), [role="button"]:not([aria-disabled="true"])):active { scale: 0.97; }
+    :where(button, [role="button"]) { transition: scale 0.16s cubic-bezier(0.23, 1, 0.32, 1); }
+  }
+}

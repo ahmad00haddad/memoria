@@ -1446,7 +1446,7 @@ function BlurImage({ src, alt }: { src: string; alt: string }) {
       alt={tx(alt)}
       loading="lazy"
       onLoad={() => setLoaded(true)}
-      className={`h-full w-full object-cover transition-all duration-700 ${loaded ? "blur-0 scale-100" : "blur-md scale-105"}`}
+      className={`h-full w-full object-cover transition duration-700 ${loaded ? "blur-0 scale-100" : "blur-md scale-105"}`}
     />
   );
 }

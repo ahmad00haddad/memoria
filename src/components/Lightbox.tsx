@@ -91,7 +91,7 @@ export function Lightbox({
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      <button onClick={onClose} className="absolute top-3 end-3 text-white/80 hover:text-white p-2 z-10" aria-label={t("إغلاق")}>
+      <button onClick={onClose} className="absolute top-3 end-3 text-white/80 hover:text-white p-3 z-10" aria-label={t("إغلاق")}>
         <X className="h-6 w-6" />
       </button>
       {images.length > 1 && (

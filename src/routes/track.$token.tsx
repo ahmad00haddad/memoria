@@ -503,7 +503,7 @@ function TrackingPage() {
               <div className="relative h-48 sm:h-64 w-full">
                 <img 
                   src={b.sneak_peek_url} 
-                  className={`w-full h-full object-cover transition-all duration-700 ${(b.final_paid_at || remainingDue <= 0) ? '' : 'blur-xl scale-110 opacity-70 grayscale'}`}
+                  className={`w-full h-full object-cover transition duration-700 ${(b.final_paid_at || remainingDue <= 0) ? '' : 'blur-xl scale-110 opacity-70 grayscale'}`}
                   alt="Sneak Peek"
                 />
                 {!(b.final_paid_at || remainingDue <= 0) && (

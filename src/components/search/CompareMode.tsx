@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { Drawer } from "vaul";
 import { playSound } from "@/lib/sounds";
+import { useBackClose } from "@/hooks/use-back-close";
 import { t, tx, locale } from "@/i18n";
 
 const jod = (n: number) => t("{0} د.أ", [n.toLocaleString("en")]);
@@ -185,6 +186,10 @@ export function CompareMode({
   compareList: SearchResultItem[];
   setCompareList: React.Dispatch<React.SetStateAction<SearchResultItem[]>>;
 }) {
+  // controlled so the back button closes the comparison drawer
+  const [open, setOpen] = useState(false);
+  useBackClose(open, () => setOpen(false));
+  useEffect(() => { if (compareList.length === 0) setOpen(false); }, [compareList.length]);
   if (compareList.length === 0) return null;
 
   return (
@@ -207,7 +212,7 @@ export function CompareMode({
         </div>
         
         <div className="flex items-center gap-2 ps-2">
-          <Drawer.Root>
+          <Drawer.Root open={open} onOpenChange={setOpen}>
             <Drawer.Trigger asChild>
               <button 
                 className="bg-gold text-charcoal px-4 py-2 rounded-full text-sm font-medium hover:bg-gold/90 transition-colors shadow-soft"
@@ -243,7 +248,7 @@ export function CompareMode({
           </Drawer.Root>
           
           <button 
-            className="w-8 h-8 rounded-full bg-secondary/80 flex items-center justify-center hover:bg-secondary text-muted-foreground transition-colors"
+            className="relative w-8 h-8 rounded-full bg-secondary/80 flex items-center justify-center hover:bg-secondary text-muted-foreground transition-colors after:absolute after:-inset-1.5 after:content-['']"
             onClick={() => {
               setCompareList([]);
               playSound('tick');

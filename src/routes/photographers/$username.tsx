@@ -818,7 +818,7 @@ function ProgressiveImage({ src, alt, className }: { src: string, alt?: string, 
       <img
         src={src}
         alt={tx(alt)}
-        className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-md scale-105"}`}
+        className={`w-full h-full object-cover transition duration-700 ease-in-out ${loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-md scale-105"}`}
         onLoad={() => setLoaded(true)}
       />
     </div>

@@ -174,7 +174,7 @@ function NewUserWelcome({ profile, pricingCount, hasCliq }: { profile: any; pric
         {/* شريط التقدم */}
         <div className="flex items-center justify-center gap-2 mt-4 max-w-[200px] mx-auto">
           {steps.map((s, i) => (
-            <div key={i} className={`h-2 flex-1 rounded-full transition-all duration-500 ${s.done ? "bg-gold" : i === activeIdx ? "bg-gold/40" : "bg-secondary"}`} />
+            <div key={i} className={`h-2 flex-1 rounded-full transition-colors duration-500 ${s.done ? "bg-gold" : i === activeIdx ? "bg-gold/40" : "bg-secondary"}`} />
           ))}
         </div>
         <p className="text-xs text-muted-foreground mt-2">{tr("{0} من {1} مكتملة", [doneCount, steps.length])}</p>
@@ -249,7 +249,7 @@ function QuickStart({ profile, pricingCount, hasCliq, onDismiss }: { profile: an
       </div>
       <div className="flex gap-1.5 mb-4">
         {steps.map((s, i) => (
-          <div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${s.done ? "bg-gold" : "bg-secondary"}`} />
+          <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${s.done ? "bg-gold" : "bg-secondary"}`} />
         ))}
       </div>
       {!next ? (

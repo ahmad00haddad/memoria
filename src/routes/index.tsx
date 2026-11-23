@@ -299,7 +299,6 @@ function Landing() {
             <span className="eyebrow">Memoria</span>
             <DrawRule onMount delay={0.3} duration={1.1} className="h-px flex-1 max-w-24 bg-gold/40" />
             <span className="text-xs">{tr("عمّان · الأردن")}</span>
-            <span className="hidden sm:inline font-serif italic text-sm text-muted-foreground/70" dir="ltr">Wedding photography, booked beautifully</span>
           </motion.div>
 
           <div className="grid gap-12 sm:gap-14 lg:grid-cols-12 items-end">

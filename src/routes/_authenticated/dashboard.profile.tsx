@@ -718,7 +718,7 @@ function ImgPicker({ label, url, onPick, aspect = "aspect-square", hint }: any) 
         className={`group relative w-full ${aspect} bg-secondary rounded-xl overflow-hidden border border-border grid place-items-center hover:border-gold/50 transition-colors ${url && loaded ? "img-settle" : ""}`}
       >
         {url ? (
-          <img src={url} onLoad={() => setLoaded(true)} className={`w-full h-full object-cover transition-all duration-700 ${loaded ? "blur-0" : "blur-md"}`} alt="" />
+          <img src={url} onLoad={() => setLoaded(true)} className={`w-full h-full object-cover transition duration-700 ${loaded ? "blur-0" : "blur-md"}`} alt="" />
         ) : (
           <Upload className="h-6 w-6 text-muted-foreground" />
         )}
