@@ -343,7 +343,7 @@ function Landing() {
                     <span className="text-xs text-muted-foreground shrink-0">{tr("تاريخ العرس")}</span>
                     <span className="relative flex-1">
                       {/* حقل التاريخ يعرض mm/dd/yyyy بلغة المتصفح؛ نخفيه بنص عربي حتى تختار العروس */}
-                      {!heroDate && <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center text-sm text-muted-foreground">{tr("اختاري اليوم")}</span>}
+                      {!heroDate && <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center text-sm text-muted-foreground rtl:ps-7">{tr("اختاري اليوم")}</span>}
                       <input type="date" value={heroDate} min={jordanToday()} onChange={(e) => setHeroDate(e.target.value)} aria-label={tr("تاريخ العرس")} className={`w-full bg-transparent text-sm outline-none ${heroDate ? "" : "text-transparent"}`} />
                     </span>
                   </label>
