@@ -19,6 +19,8 @@ import {
 } from "@/lib/page-settings";
 import { savePageSettings } from "@/lib/page-settings.functions";
 import { updateRefundPolicy } from "@/lib/cancellation.functions";
+import { deleteMyAccount } from "@/lib/account.functions";
+import { signOut } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/dashboard/settings")({ component: SettingsPage });
 
@@ -32,6 +34,9 @@ function SettingsPage() {
   const nav = useNavigate();
   const saveFn = useServerFn(savePageSettings);
   const refundFn = useServerFn(updateRefundPolicy);
+  const deleteFn = useServerFn(deleteMyAccount);
+  const [delText, setDelText] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [allThemes, setAllThemes] = useState(false);
@@ -370,6 +375,23 @@ function SettingsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <section className="container-editorial pb-24">
+        <div className="max-w-xl rounded-md border border-destructive/30 p-5">
+          <h2 className="font-serif text-lg text-destructive">{tr("حذف الحساب")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{tr("تُخفى صفحتكِ ويُغلق دخولكِ. اكتبي «حذف» للتأكيد.")}</p>
+          <div className="mt-3 flex gap-2">
+            <input value={delText} onChange={(e) => setDelText(e.target.value)} aria-label={tr("تأكيد الحذف")} className="h-10 flex-1 rounded-md border border-border bg-background px-3 text-sm" />
+            <button type="button" disabled={delText.trim() !== "حذف" || deleting}
+              onClick={async () => {
+                setDeleting(true);
+                try { await deleteFn({ data: { confirm: delText } }); await signOut(); }
+                catch (e: any) { toast.error(String(e?.message ?? tr("تعذّر الحذف"))); setDeleting(false); }
+              }}
+              className="h-10 rounded-md bg-destructive px-4 text-sm text-destructive-foreground disabled:opacity-40">{tr("حذف")}</button>
+          </div>
+        </div>
+      </section>
 
       <AutosaveChip status={autosave.status} retry={autosave.retry} />
       <Footer />

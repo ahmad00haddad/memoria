@@ -4,7 +4,8 @@ import { Footer } from "@/components/site/Footer";
 import { Mail, MessageCircle, Clock, MapPin, CheckCircle } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { sendContactMessage } from "@/lib/contact.functions";
 import { t, tx } from "@/i18n";
 
 export const Route = createFileRoute("/contact")({
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/contact")({
 function ContactPage() {
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const sendFn = useServerFn(sendContactMessage);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,16 +44,13 @@ function ContactPage() {
     }
 
     try {
-      const { error } = await (supabase as any)
-        .from("contact_messages")
-        .insert({ name, email, phone: phone || null, message });
-
-      if (error) throw error;
+      await sendFn({ data: { name, email, phone, message } });
 
       setSent(true);
       toast.success(t("تم إرسال رسالتك بنجاح! سنردّ عليكِ خلال 24 ساعة."));
     } catch (err: any) {
       console.error("[contact] failed to save message:", err);
+      if (String(err?.message ?? "").includes("محاولات كثيرة")) { toast.error(String(err.message)); return; }
       // Fallback: open mailto if DB fails
       const subject = encodeURIComponent(t("[ميموريا] رسالة من {0}", [name]));
       const body = encodeURIComponent(t("الاسم: {0} البريد: {1} الهاتف: {2} {3}", [name, email, phone || "—", message]));
