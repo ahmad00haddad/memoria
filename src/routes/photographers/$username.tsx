@@ -1576,11 +1576,11 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
           </button>
         )}
         {step < 3 ? (
-          <button type="button" onClick={goNext} aria-disabled={!stepValid[step]} className={`flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 ${stepValid[step] ? "" : "opacity-50"} inline-flex items-center justify-center gap-1 text-sm`}>
+          <button type="button" onClick={goNext} aria-disabled={!stepValid[step]} className={`elastic-press-soft flex-1 bg-charcoal text-ivory py-3 rounded-sm hover:opacity-90 ${stepValid[step] ? "" : "opacity-50"} inline-flex items-center justify-center gap-1 text-sm`}>
             {tr("التالي")}{" "}<ChevronLeft className="h-4 w-4" />
           </button>
         ) : (
-          <button onClick={submit} disabled={submitting} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm transition-all duration-300">
+          <button onClick={submit} disabled={submitting} className="elastic-press-soft flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-sm inline-flex items-center justify-center gap-2 disabled:opacity-60 text-sm transition-all duration-300">
             {submitting ? (
               <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />{" "}{tr("جاري الإرسال…")}
@@ -1759,7 +1759,8 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function Field({ label, v, on, type = "text" }: { label: string; v: string; on: (v: string) => void; type?: string }) {
   const auto = type === "email" ? "email" : type === "tel" ? "tel" : label === "الاسم" ? "name" : "off";
-  return <label className="block"><span className="text-sm text-muted-foreground">{tx(label)}</span><input type={type} autoComplete={auto} dir={type === "text" ? undefined : "ltr"} value={v} onChange={(e) => on(e.target.value)} className="w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background" /></label>;
+  const ok = type === "email" ? /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) : type === "tel" ? v.replace(/\D/g, "").length >= 9 : false;
+  return <label className="block"><span className="text-sm text-muted-foreground">{tx(label)}</span><span className="relative block"><input type={type} autoComplete={auto} dir={type === "text" ? undefined : "ltr"} value={v} onChange={(e) => on(e.target.value)} className={`w-full mt-1 border border-border rounded-sm px-3 py-2 bg-background ${ok ? "pe-9" : ""}`} />{ok && <Check aria-hidden className="elastic-dot pointer-events-none absolute end-3 top-1/2 mt-0.5 h-4 w-4 -translate-y-1/2 text-emerald-600" />}</span></label>;
 }
 
 // ما يُعرض أثناء تحميل الصفحة، ومن السيرفر: الاسم والمدينة والنبذة والباقات (هذا ما يقرأه Google)

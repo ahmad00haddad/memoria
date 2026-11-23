@@ -225,13 +225,14 @@ export function UploadZone({
           <img
             src={preview}
             alt={t("معاينة")}
-            className="w-full max-h-48 object-cover"
+            key={preview}
+            className="img-settle w-full max-h-48 object-cover"
             onError={() => setPreview(null)}
           />
           <button
             type="button"
             onClick={remove}
-            className="absolute top-2 end-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+            className="elastic-press elastic-dot absolute top-2 end-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
             title={t("إزالة الصورة")}
           >
             <X className="h-3.5 w-3.5" />
