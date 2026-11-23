@@ -628,11 +628,9 @@ function SearchPage() {
             {tr("تعذّر تحميل النتائج. تحقّق من اتصالك وحاول مجدداً.")}
           </div>
         ) : resultsQ.isLoading ? (
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 -mx-4 sm:mx-0">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="break-inside-avoid mb-4">
-                <SkeletonCard aspectRatio={i % 3 === 0 ? "4/5" : "3/4"} />
-              </div>
+              <SkeletonCard key={i} aspectRatio="3/4" />
             ))}
           </div>
         ) : displayResults.length === 0 ? (
@@ -726,7 +724,7 @@ function SearchPage() {
           // Cards keep their identity across filter changes: the ones that stay glide to
           // their new spot, dropped ones fade out, newcomers arrive in sequence.
           <LayoutGroup>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 -mx-4 sm:mx-0">
+            <div className="content-settle grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 -mx-4 sm:mx-0">
               <AnimatePresence mode="popLayout" initial={false}>
                 {displayResults.map((p, idx) => (
                   <BentoPhotographerCard key={p.username} p={p} idx={idx} compareList={compareList} setCompareList={setCompareList} />
