@@ -108,8 +108,9 @@
 
   --gradient-royal: linear-gradient(135deg, oklch(0.985 0.008 85) 0%, oklch(0.93 0.03 80) 100%);
   --gradient-gold: linear-gradient(135deg, oklch(0.82 0.08 80) 0%, oklch(0.7 0.1 70) 100%);
-  --shadow-elegant: 0 30px 60px -30px oklch(0.3 0.03 55 / 0.35);
-  --shadow-soft: 0 12px 30px -18px oklch(0.3 0.03 55 / 0.22);
+  /* two layers: a tight contact shadow under a wide soft one, warm-tinted */
+  --shadow-elegant: 0 1px 2px oklch(0.3 0.03 55 / 0.06), 0 30px 60px -30px oklch(0.3 0.03 55 / 0.35);
+  --shadow-soft: 0 1px 1px oklch(0.3 0.03 55 / 0.04), 0 12px 30px -18px oklch(0.3 0.03 55 / 0.22);
 }
 
 .dark {
@@ -133,6 +134,9 @@
   --border: oklch(1 0 0 / 0.1);
   --input: oklch(1 0 0 / 0.15);
   --ring: var(--gold);
+  /* dark: a shadow can't show on dark, so a faint top edge of light lifts the card instead */
+  --shadow-elegant: inset 0 1px 0 oklch(1 0 0 / 0.05), 0 30px 60px -30px oklch(0 0 0 / 0.6);
+  --shadow-soft: inset 0 1px 0 oklch(1 0 0 / 0.04), 0 12px 30px -18px oklch(0 0 0 / 0.5);
 }
 
 @layer base {
@@ -143,7 +147,10 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "ss01", "cv01";
-    
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+
     /* App-like behaviors */
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;
@@ -196,7 +203,18 @@
   /* Arrows were drawn for right-to-left reading; mirror them in English */
   html[dir="ltr"] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right) { scale: -1 1; }
 
+  /* anchor jumps stop below the sticky header */
+  html { scroll-padding-top: 5rem; }
+
+  /* one gold keyboard ring for links and buttons that don't draw their own */
+  :where(a, button, summary, [role="button"], [role="tab"]):focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+
   p { text-wrap: pretty; }
+  /* prices, counts and dates keep their digit widths so they don't jitter */
+  :where(table, [data-numeric]) { font-variant-numeric: tabular-nums; }
   h1, h2, h3 { text-wrap: balance; }
   /* لا scroll-behavior: smooth عام: كان يجعل كل انتقال بين الصفحات يتمرّر ببطء للأعلى. التمرير الناعم للروابط الداخلية يتم بـ scrollIntoView. */
   ::selection { background: color-mix(in oklab, var(--gold) 35%, transparent); }
