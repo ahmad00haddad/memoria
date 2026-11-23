@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Memoria · قبل / بعد</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: system-ui, "Segoe UI", sans-serif; background: #15120f; color: #f3ede2; padding: 24px; max-width: 1500px; margin-inline: auto; }
+  h1 { font-size: 22px; margin-bottom: 6px; }
+  .sub { color: #a39a8c; font-size: 14px; margin-bottom: 28px; line-height: 1.7; }
+  .row { margin-bottom: 40px; }
+  .row h2 { font-size: 16px; color: #c9a96e; margin-bottom: 4px; }
+  .row p { font-size: 13px; color: #a39a8c; margin-bottom: 10px; line-height: 1.7; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  figure { background: #1e1a15; border: 1px solid #2c2620; border-radius: 10px; overflow: hidden; }
+  figcaption { font-size: 12px; padding: 7px 12px; letter-spacing: .04em; }
+  figcaption b { color: #c9a96e; }
+  img { display: block; width: 100%; height: auto; cursor: zoom-in; }
+  .zoom { position: fixed; inset: 0; background: #000d; display: none; place-items: center; z-index: 9; cursor: zoom-out; }
+  .zoom.on { display: grid; }
+  .zoom img { max-width: 96vw; max-height: 96vh; width: auto; cursor: zoom-out; }
+  ul { font-size: 13px; color: #cfc6b6; line-height: 1.9; padding-inline-start: 18px; margin-bottom: 30px; }
+  @media (max-width: 800px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<h1>ميموريا · قبل وبعد التحسينات</h1>
+<p class="sub">اليمين = قبل (آخر نسخة قبل التعديل) · اليسار = بعد (المنشورة الآن). لقطات بنفس المقاس، الوضع الداكن، سطح المكتب. اضغطي على أي صورة لتكبيرها.</p>
+
+<div class="row">
+  <h2>١ · القسم الثاني من الرئيسية «من أنت؟»</h2>
+  <p>أوضح فرق: المسافة بين الهيرو والقسم أقصر بنحو ٣٠ بكسل، وحافة البطاقة العليا تلمع بخط ضوء خافت فترفعها عن الخلفية الداكنة.</p>
+  <div class="pair">
+    <figure><figcaption><b>قبل</b></figcaption><img src="role-before.jpg" alt="قبل"></figure>
+    <figure><figcaption><b>بعد</b></figcaption><img src="role-after.jpg" alt="بعد"></figure>
+  </div>
+</div>
+
+<div class="row">
+  <h2>٢ · هيرو الرئيسية</h2>
+  <p>شبه متطابق عمداً. الفرق: حواف الصورة بإطار داخلي خفيف جداً، ونعومة الحروف.</p>
+  <div class="pair">
+    <figure><figcaption><b>قبل</b></figcaption><img src="hero-before.jpg" alt="قبل"></figure>
+    <figure><figcaption><b>بعد</b></figcaption><img src="hero-after.jpg" alt="بعد"></figure>
+  </div>
+</div>
+
+<div class="row">
+  <h2>٣ · الباقات والأسعار</h2>
+  <p>أرقام الأسعار صارت بعرض ثابت لكل رقم (tabular)، وظلال البطاقات طبقتان.</p>
+  <div class="pair">
+    <figure><figcaption><b>قبل</b></figcaption><img src="pricing-before.jpg" alt="قبل"></figure>
+    <figure><figcaption><b>بعد</b></figcaption><img src="pricing-after.jpg" alt="بعد"></figure>
+  </div>
+</div>
+
+<h2 style="font-size:16px;color:#c9a96e;margin-bottom:6px">ما لا تلتقطه الصور (جرّبيه بنفسك على الموقع)</h2>
+<ul>
+  <li>اضغطي <b>Tab</b>: حلقة التركيز ذهبية بدل الزرقاء.</li>
+  <li>مؤشر الكتابة (caret) داخل الحقول ذهبي، والـ checkbox والـ slider بلون الذهب.</li>
+  <li>شريط التمرير بلون هادئ من لوحة الألوان.</li>
+  <li>الأزرار والبطاقات تتحرك بخصائص محددة بدل «كل شيء»، فتخف الحمل ولا تُرى كفرق.</li>
+  <li>الروابط الداخلية تتوقف تحت الهيدر الثابت.</li>
+</ul>
+
+<div class="zoom" id="z"><img alt=""></div>
+<script>
+  const z = document.getElementById("z"), zi = z.querySelector("img");
+  document.querySelectorAll("figure img").forEach(i => i.onclick = () => { zi.src = i.src; z.classList.add("on"); });
+  z.onclick = () => z.classList.remove("on");
+</script>
+</body>
+</html>
