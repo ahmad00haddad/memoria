@@ -193,6 +193,7 @@ function PhotographerPage() {
   const [pickedPackageId, setPickedPackageId] = useState<string>("");
   // فلتر المدن: يظهر فقط إن ربطت المصوّرة باقة واحدة على الأقل بمدينة
   const [cityTab, setCityTab] = useState<string | null>(null);
+  const [cityPicked, setCityPicked] = useState(false); // السعر يتحرك فقط بعد أن يضغط الزائر تبويب مدينة
   const [deposit, setDeposit] = useState<{ cliq_alias: string | null; bank_info: string | null }>({ cliq_alias: null, bank_info: null });
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [showAllPkgs, setShowAllPkgs] = useState(false);
@@ -653,7 +654,7 @@ function PhotographerPage() {
             {pkgCities.map((c) => {
               const on = !!cityTab && sameCity(c, cityTab);
               return (
-                <button key={c} type="button" role="tab" aria-selected={on} onClick={() => setCityTab(c)}
+                <button key={c} type="button" role="tab" aria-selected={on} onClick={() => { setCityPicked(true); setCityTab(c); }}
                   className={`elastic-press inline-flex min-h-10 items-center gap-1.5 rounded-full px-4 py-2 text-sm transition-colors ${on ? "bg-charcoal text-ivory" : "border border-border bg-card text-foreground hover:border-gold/40"}`}>
                   <MapPin className="h-3.5 w-3.5" />{tx(c)}
                 </button>
@@ -674,7 +675,7 @@ function PhotographerPage() {
                   {/* word joiners keep a range like "3–4" on one line */}
                   <h3 className="font-serif text-2xl mb-1">{tx(p.label).replace(/(\d)\s*([–-])\s*(\d)/g, "$1⁠$2⁠$3")}</h3>
                   {p.subtitle && <p className="text-sm text-muted-foreground">{tx(p.subtitle)}</p>}
-                  <div className="font-serif text-3xl text-gold my-4">{Number(p.price).toLocaleString(locale("ar-JO"))} <span className="text-sm">{tr("د.أ")}</span></div>
+                  <div className="font-serif text-3xl text-gold my-4"><span key={cityPicked ? `${cityTab}-${p.price}` : "init"} className={cityPicked ? "elastic-bump" : ""}>{Number(p.price).toLocaleString(locale("ar-JO"))}</span> <span className="text-sm">{tr("د.أ")}</span></div>
                   <PackageFacts d={p} compact gender={profile.gender} className="mb-4 border-y border-border/60 py-3" />
                   {features.length > 0 && (
                     <PackageFeatureList count={features.length}>
