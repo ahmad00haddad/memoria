@@ -7,6 +7,11 @@
     "dev": "vite dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bundle:report": "vite build --sourcemap && node scripts/bundle-report.mjs",
+    "deploy:dev": "node scripts/deploy-dev.mjs",
+    "deploy:prod": "node scripts/deploy-prod.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."

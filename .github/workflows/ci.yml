@@ -1,0 +1,42 @@
+name: CI
+
+# Gate for every push and pull request. Production deploys are manual and guarded (npm run deploy:prod).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm test
+
+      # Builds with the committed public .env.production (publishable keys only). No secrets are needed or used.
+      - name: Build (with sourcemaps for the bundle report)
+        run: npx vite build --sourcemap
+
+      - name: Bundle budget
+        run: node scripts/bundle-report.mjs
+
+      - name: Built worker must target production Supabase only
+        run: node -e "const g=require('./.output/server/wrangler.json');const t=JSON.stringify(g.vars);if(g.name!=='memoria-production'||!t.includes('qrpkfanblpjiqgkufnrb')||t.includes('ysqpmqulbeawzcatauqq')||t.includes('ukjkgiahtpnevqdoguiq')){console.error('unexpected worker target');process.exit(1)}"
