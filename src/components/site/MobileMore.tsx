@@ -4,7 +4,8 @@ import { t } from "@/i18n";
 // على الهاتف نعرض أول عناصر القائمة فقط والباقي خلف زر «عرض الكل».
 // العناصر المطوية تبقى في الصفحة (مخفية بالـCSS) فلا يخسر محرّك البحث شيئاً، والشاشات الكبيرة تعرض كل شيء.
 export function mobileHidden(index: number, limit: number, open: boolean) {
-  return !open && index >= limit ? "hidden sm:block" : "";
+  if (index < limit) return "";
+  return open ? "rise-in" : "hidden sm:block";
 }
 
 export function MobileMoreButton({ total, limit, open, onToggle, className = "" }: { total: number; limit: number; open: boolean; onToggle: () => void; className?: string }) {

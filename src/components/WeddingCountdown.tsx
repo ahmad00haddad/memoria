@@ -90,7 +90,7 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
             className="h-full rounded-full bg-gold"
             initial={{ width: 0 }}
             animate={{ width: `${(done / steps.length) * 100}%` }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ type: "spring", stiffness: 110, damping: 17 }}
           />
         </div>
         <ul className="space-y-1.5">
@@ -103,7 +103,7 @@ export function WeddingCountdown({ eventDate, startTime, photographerName, steps
                 className="flex min-h-11 w-full items-center gap-3 rounded-xl px-2 text-sm disabled:cursor-default enabled:hover:bg-secondary/60"
               >
                 <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${st.done ? "bg-gold text-charcoal" : "ring-1 ring-border"}`}>
-                  {st.done && <Check className="h-3.5 w-3.5" />}
+                  {st.done && <Check className="elastic-dot h-3.5 w-3.5" />}
                 </span>
                 <span className={st.done ? "text-muted-foreground line-through decoration-gold/50" : "text-foreground"}>{tx(st.label)}</span>
               </button>
