@@ -1,6 +1,5 @@
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { getCookie, getRequest } from "@tanstack/react-start/server";
-import en from "./en.json";
 import { secondToMale, thirdToMale, thirdToMaleEn } from "@/lib/gender-text";
 
 /**
@@ -18,7 +17,13 @@ import { secondToMale, thirdToMale, thirdToMaleEn } from "@/lib/gender-text";
 export type Lang = "ar" | "en";
 export const LANG_COOKIE = "memoria_lang";
 
-const dict = en as Record<string, string>;
+// English dictionary (~545 KB). Arabic is the source text, so Arabic visitors never need it:
+// load it only on the server (any request may be English) and in the browser when the page is English.
+// Top-level await keeps every module that calls t() at load time waiting until it is ready.
+let dict: Record<string, string> = {};
+if (typeof window === "undefined" || document.documentElement.lang === "en") {
+  dict = (await import("./en.json")).default as Record<string, string>;
+}
 
 function parse(v: string | null | undefined): Lang | null {
   return v === "en" || v === "ar" ? v : null;
