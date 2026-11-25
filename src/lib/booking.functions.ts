@@ -804,7 +804,14 @@ export const regenerateBookingToken = createServerFn({ method: "POST" })
 
 export const uploadSneakPeek = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { booking_id: string; url: string }) => d)
+  .inputValidator((d: { booking_id: string; url: string }) => {
+    if (!d || typeof d.booking_id !== "string" || !/^[0-9a-f-]{36}$/i.test(d.booking_id)) throw new Error("invalid booking_id");
+    // رابط https فقط (يظهر للعروس): لا javascript: ولا data: ولا نصوص طويلة
+    let ok = false;
+    try { ok = typeof d.url === "string" && d.url.length <= 500 && new URL(d.url).protocol === "https:"; } catch { ok = false; }
+    if (!ok) throw new Error("invalid url");
+    return d;
+  })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     const { data: b } = await supabase.from("bookings").select("photographer_id").eq("id", data.booking_id).single();

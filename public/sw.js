@@ -1,7 +1,7 @@
 // Memoria Service Worker — PWA caching + offline support
 // Version: 5.0 (wedding redesign; never cache cross-origin/API responses)
 
-const CACHE_NAME = "memoria-v8";
+const CACHE_NAME = "memoria-v9";
 const OFFLINE_PAGE = "/offline.html";
 
 // الملفات الأساسية التي تُحفظ دائماً في الـ cache (App Shell)
@@ -140,20 +140,24 @@ async function staleWhileRevalidate(request) {
   return cached || fetchPromise;
 }
 
+// صفحات خاصة (بيانات حجز/حساب/إدارة): لا تُخزَّن أبداً في الجهاز
+const PRIVATE_PATH = /^\/(track|dashboard|admin|contracts|offer|ask|review|onboarding|notifications|recover|reset-password|forgot-password)(\/|$)/;
+
 // ===== استراتيجية: Network First + Offline Page =====
 async function networkFirstWithOffline(request) {
+  const isPrivate = PRIVATE_PATH.test(new URL(request.url).pathname);
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && !isPrivate) {
       const cache = await caches.open(CACHE_NAME);
-      // نُخزّن صفحات الـ HTML لمدة محدودة
+      // نُخزّن صفحات الـ HTML العامة فقط
       if (request.headers.get("accept")?.includes("text/html")) {
         cache.put(request, response.clone());
       }
     }
     return response;
   } catch {
-    const cached = await caches.match(request);
+    const cached = isPrivate ? null : await caches.match(request);
     if (cached) return cached;
     // Offline page كـ fallback أخير
     const offline = await caches.match(OFFLINE_PAGE);
