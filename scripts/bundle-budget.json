@@ -1,4 +1,4 @@
 {
-  "_note": "Entry chunk gzip budget in bytes. Baseline 2026-11-24 = 490,965. Ratchet DOWN after each optimization stage (target <= 300,000).",
-  "entryGzipBytes": 500000
+  "_note": "Entry chunk gzip budget in bytes. Baseline 2026-11-24 = 490,965; after en.json split = 338,299. Ratchet DOWN after each optimization stage (target <= 300,000).",
+  "entryGzipBytes": 360000
 }

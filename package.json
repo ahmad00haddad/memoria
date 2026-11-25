@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:security": "vitest run -c vitest.security.config.ts",
     "bundle:report": "vite build --sourcemap && node scripts/bundle-report.mjs",
     "deploy:dev": "node scripts/deploy-dev.mjs",
     "deploy:prod": "node scripts/deploy-prod.mjs",
