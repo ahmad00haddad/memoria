@@ -15,6 +15,7 @@ type SubmitInput = {
   items: BookingItemInput[];
   client_notes?: string | null;
   privacy_level: "public" | "no_publish" | "private_only";
+  turnstile_token?: string | null;
 };
 
 function validateInput(d: SubmitInput): SubmitInput {
@@ -66,6 +67,13 @@ export const submitBookingRequest = createServerFn({ method: "POST" })
       const ab = await import("@/lib/abuse.server");
       const okIp = await ab.allow(`ip:${ab.clientIp()}`, "book_ip", 10, 3600);
       const okMail = await ab.allow(`mail:${data.client_email.toLowerCase()}`, "book_email", 6, 3600);
+      // Turnstile: رمز غير صالح = رفض. رمز غائب (إضافة محجوبة) = يُسمح لكن بسقف أشد (3/ساعة لكل IP)
+      const { verifyTurnstile } = await import("@/lib/turnstile.server");
+      const ts = await verifyTurnstile(data.turnstile_token, ab.clientIp());
+      if (ts === "invalid") throw new Error(tr("تعذّر التحقق أنكِ لستِ برنامجاً آلياً. أعيدي تحميل الصفحة وحاولي مجدداً."));
+      if (ts === "missing" && !(await ab.allow(`ip:${ab.clientIp()}`, "book_no_turnstile", 3, 3600))) {
+        throw new Error(tr("طلبات كثيرة خلال وقت قصير. انتظري قليلاً ثم أعيدي المحاولة."));
+      }
       if (!okIp || !okMail) throw new Error(tr("طلبات كثيرة خلال وقت قصير. انتظري قليلاً ثم أعيدي المحاولة."));
       // أكثر من 6 طلبات معلّقة لنفس الرقم بكل التواريخ = حجز تواريخ بلا نية (أو مزاحمة مصوّرات)
       const today = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);

@@ -1257,10 +1257,10 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
         if (rawFile.type.startsWith('image/') && rawFile.type !== 'image/gif' && rawFile.type !== 'image/svg+xml') {
           try {
             f = await (await import("browser-image-compression")).default(rawFile, {
-              maxSizeMB: 0.5,
-              maxWidthOrHeight: 2048,
+              maxSizeMB: 0.25,
+              maxWidthOrHeight: 1600,
               useWebWorker: true,
-              fileType: rawFile.type === 'image/png' ? 'image/png' : 'image/jpeg',
+              fileType: (await import("@/lib/upload")).preferredImageType(),
             });
           } catch (e) {
             console.warn("Gallery image compression failed:", e);
@@ -1268,7 +1268,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
         }
 
         const fileId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const ext = f.type === "image/png" ? "png" : (f.type === "image/jpeg" ? "jpg" : (f.name.split(".").pop()?.toLowerCase() || "jpg"));
+        const ext = f.type === "image/webp" ? "webp" : f.type === "image/png" ? "png" : (f.type === "image/jpeg" ? "jpg" : (f.name.split(".").pop()?.toLowerCase() || "jpg"));
         const isImage = f.type.startsWith("image/");
 
         if (watermarkOn && watermarkText.trim() && isImage) {
@@ -1287,7 +1287,7 @@ function GalleryPanel({ bookingId, clientToken, b }: { bookingId: string; client
           } catch (wErr) {
             console.warn("watermark failed — uploading original as preview", wErr);
           }
-          const previewExt = watermarked.type === "image/jpeg" ? "jpg" : ext;
+          const previewExt = watermarked.type === "image/webp" ? "webp" : watermarked.type === "image/jpeg" ? "jpg" : ext;
           const previewPath = `${uid}/${gallery.id}/previews/${fileId}.${previewExt}`;
           const { error: previewErr } = await supabase.storage
             .from("delivery-photos")

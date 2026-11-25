@@ -275,7 +275,7 @@ function TrackingPage() {
             maxSizeMB: 0.4,
             maxWidthOrHeight: 1600,
             useWebWorker: true,
-            fileType: 'image/jpeg',
+            fileType: (await import('@/lib/upload')).preferredImageType(),
           });
         } catch (err) {
           console.warn('receipt compression failed', err);
@@ -290,7 +290,7 @@ function TrackingPage() {
       //    لأن سياسة RLS للزوّار غير المسجّلين تسمح بهذا المسار فقط.
       const ext = finalFile.type === 'application/pdf'
         ? 'pdf'
-        : (finalFile.type === 'image/png' ? 'png' : 'jpg');
+        : (finalFile.type === 'image/png' ? 'png' : finalFile.type === 'image/webp' ? 'webp' : 'jpg');
       const path = `public-tokens/${token}/${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from('deposit-proofs')

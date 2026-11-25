@@ -82,6 +82,21 @@ function validateFileType(file: File, allowedTypes: AllowedFileType): string | n
   return null;
 }
 
+/** WebP أخف بـ 25-35% من JPEG بنفس الجودة. نستعمله فقط إن دعمه المتصفح فعلاً (Safari القديم يحوّله لـ PNG ضخم). */
+let _webp: boolean | null = null;
+export function preferredImageType(): "image/webp" | "image/jpeg" {
+  if (_webp === null) {
+    try {
+      _webp = typeof document !== "undefined" &&
+        document.createElement("canvas").toDataURL("image/webp").startsWith("data:image/webp");
+    } catch { _webp = false; }
+  }
+  return _webp ? "image/webp" : "image/jpeg";
+}
+export function extForImageType(type: string): string {
+  return type === "image/webp" ? ".webp" : type === "image/png" ? ".png" : ".jpg";
+}
+
 /** تحقّق من أبعاد الصورة (للصور فقط) */
 async function validateImageDimensions(file: File, maxDimension: number): Promise<string | null> {
   if (!file.type.startsWith("image/")) return null;
@@ -208,8 +223,8 @@ export async function uploadFile(
         maxSizeMB: targetSizeMb,
         maxWidthOrHeight: maxDimension,
         useWebWorker: true,
-        // JPEG دائماً للصور غير الشفافة — أصغر بكثير من PNG
-        fileType: 'image/jpeg',
+        // WebP إن أمكن (أخف)، وإلا JPEG — أصغر بكثير من PNG
+        fileType: preferredImageType(),
       };
       finalFile = await (await import("browser-image-compression")).default(file, options);
     } catch (e) {
@@ -220,7 +235,7 @@ export async function uploadFile(
   // إن غيّر الضغط نوع الصورة (HEIC → JPEG مثلاً) نُصحّح امتداد المسار
   let uploadPath = path;
   if (finalFile.type && finalFile.type !== file.type) {
-    uploadPath = path.replace(/\.[^./]+$/, "") + (finalFile.type === "image/png" ? ".png" : ".jpg");
+    uploadPath = path.replace(/\.[^./]+$/, "") + extForImageType(finalFile.type);
   }
 
   // 2. تحقّق من الحجم (using finalFile)

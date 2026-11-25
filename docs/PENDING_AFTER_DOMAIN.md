@@ -197,3 +197,24 @@ group by 1,2 order by 3 desc;
 - [ ] كلمة سر رابط المتابعة (القسم 6)
 - [ ] رمز إيميل لتوقيع العقد + تجربة الإلغاء والملاحق (القسم 10)
 - [ ] SEO (القسم 8): redirect 301 من workers.dev، Search Console + sitemap، Bing، og:image للمدن والمقالات
+
+---
+
+## 11. من المرحلة 2 (2026-11-25): كل ما ينتظر الدومين
+
+المرجع الكامل: `docs/MEMORIA_PHASE_2_PRODUCTION_STRATEGY.md` القسم 4 و`docs/PHASE2_STATUS.md`.
+
+1. **Resend + SPF/DKIM/DMARC** على subdomain للمعاملات (`mail.<الدومين>`). DMARC يبدأ `p=none` أسبوعين ثم `quarantine` ثم `reject`. تحقق برؤوس `spf=pass dkim=pass dmarc=pass` في Gmail وOutlook.
+2. **outbox داخل Postgres** (`notification_outbox` مع `dedupe_key` فريد، إعادة محاولة 1د/5د/30د/3س ثم `dead`، `FOR UPDATE SKIP LOCKED`، `delivery_log` لكل قناة). تصميمه بالقسم 4.4 من التقرير. لا قيمة له قبل أن يصل الإيميل فعلاً.
+3. **ربط webhook Resend** (bounces/complaints) عبر route جديد `hooks/resend`.
+4. **تحويل الإيميل لقناة التحقق من الرقم** (OTP بالإيميل) بدل `auto`، ثم إيقاف مسار `markBookingVerified(…, "auto")`.
+5. **Supabase Auth SMTP** على Resend (تأكيد الحساب وإعادة كلمة المرور حالياً بمزوّد Supabase المحدود).
+6. **ترقية Resend** للخطة المدفوعة (Free = 100 رسالة باليوم، لا تكفي للإطلاق).
+7. **استرجاع رابط التتبع للعروس** (`recoverTrackingLinks`) يعتمد الإيميل.
+8. **الموافقة/الإلغاء بعد العربون** للعروس (رمز step-up بالإيميل) انظر القسم 10.
+
+### مؤجّل بقرار أحمد (ليس دومين)
+- **Telegram:** محجوب بالأردن بلا VPN. لا نعتمد عليه لتنبيهات المراقبة أو المصوّرات. بدائل تُدرس لاحقاً: إيميل (بعد الدومين)، push، واتساب.
+- **واتساب Cloud API + قوالب Meta المعتمدة:** غير مُهيّأ. قرار لاحق.
+- **لا إعادة هيكلة للكود** (قرار 2026-11-25): الأداء بتحسينات موضعية فقط.
+- **صور التسليم:** خارج Memoria (Drive/WeTransfer) باشتراك المصوّرة نفسها. Memoria تخزّن فقط ثمبنيل خفيفاً جداً بصيغة WebP.

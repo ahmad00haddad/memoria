@@ -67,15 +67,17 @@ export async function watermarkImageFile(file: File, opts: WatermarkOptions): Pr
   }
   ctx.restore();
 
+  const outType = (await import("@/lib/upload")).preferredImageType();
   const blob: Blob = await new Promise((resolve, reject) => {
     canvas.toBlob(
       (b) => (b ? resolve(b) : reject(new Error("canvas toBlob failed"))),
-      "image/jpeg",
+      outType,
       quality,
     );
   });
-  const newName = file.name.replace(/\.(png|webp|jpg|jpeg|heic|heif)$/i, "") + "-wm.jpg";
-  return new File([blob], newName, { type: "image/jpeg" });
+  const outType2 = blob.type === "image/webp" ? "image/webp" : "image/jpeg";
+  const newName = file.name.replace(/\.(png|webp|jpg|jpeg|heic|heif)$/i, "") + (outType2 === "image/webp" ? "-wm.webp" : "-wm.jpg");
+  return new File([blob], newName, { type: outType2 });
 }
 
 async function loadBitmap(file: File): Promise<ImageBitmap | HTMLImageElement> {

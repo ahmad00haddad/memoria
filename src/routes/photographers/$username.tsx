@@ -1090,8 +1090,10 @@ function SimpleBookingForm({ profile, pricing, blockedDates, bookedSlots, multiP
         { rule_id: selected.id, qty: 1 },
         ...selectedAddons.map((x) => ({ rule_id: x.rule.id, qty: x.qty })),
       ];
+      const turnstile_token = await (await import("@/lib/turnstile")).getTurnstileToken();
       const res = await submitFn({
         data: {
+          turnstile_token,
           photographer_id: profile.id,
           client_name: f.client_name,
           client_email: f.client_email.trim(),
