@@ -673,7 +673,10 @@ export const confirmBookingAfterDeposit = createServerFn({ method: "POST" })
       .eq("id", data.booking_id).eq("photographer_id", userId)
       .in("status", ["pending_deposit", "quote"]) // ألغت العروس بالأثناء ← لا نعيد إحياء الحجز
       .select("id").maybeSingle();
-    if (uerr) throw new Error(uerr.message);
+    if (uerr) {
+      if (String(uerr.message).includes("SLOT_CONFLICT")) throw new Error(tr("عندكِ حجز آخر يشغل هذا اليوم. ألغي أحدهما أو انقلي موعده قبل التأكيد."));
+      throw new Error(uerr.message);
+    }
     if (!done) throw new Error(tr("تغيّرت حالة الحجز قبل التأكيد (ربما أُلغي). حدّثي الصفحة."));
     // سجلّ تدقيق (عبر service-role لتجاوز RLS على audit_logs).
     try {

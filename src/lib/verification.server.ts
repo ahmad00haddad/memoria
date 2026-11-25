@@ -65,7 +65,7 @@ export async function markBookingVerified(
       }
     }
   }
-  const { data: updated } = await supabaseAdmin
+  const { data: updated, error: verErr } = await supabaseAdmin
     .from("bookings")
     .update({
       phone_verified_at: new Date().toISOString(),
@@ -78,6 +78,11 @@ export async function markBookingVerified(
     .is("phone_verified_at" as any, null)
     .select("id")
     .maybeSingle();
+  if (verErr?.message?.includes("SLOT_CONFLICT")) {
+    await supabaseAdmin.from("bookings").update({ deleted_at: new Date().toISOString() } as any).eq("id", bookingId);
+    const { t } = await import("@/i18n");
+    throw new Error(t(DATE_TAKEN_BEFORE_VERIFY));
+  }
   if (!updated) return false;
   await notifyNewBooking(bookingId, via, !!opts?.offerAccepted);
   return true;

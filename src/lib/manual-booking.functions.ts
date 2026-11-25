@@ -124,6 +124,7 @@ export const createManualBooking = createServerFn({ method: "POST" })
       })
       .select("id, client_tracking_token")
       .single();
+    if (error?.message?.includes("SLOT_CONFLICT")) throw new Error(t("عندك حجز آخر في هذا اليوم"));
     if (error || !row) throw new Error(error?.message || t("تعذّر إنشاء الحجز"));
 
     // عقد تلقائي من قالب المصوّرة عند التأكيد (إن وُجد قالب)

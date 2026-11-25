@@ -185,6 +185,32 @@ export const Route = createFileRoute("/api/public/hooks/booking-deadlines")({
           } catch (e) { console.error("[deadlines] deposit reminder failed", e); out.errors++; }
         }
 
+        // 3ب-2) إيصال عربون وصل ولم تؤكّده المصوّرة: مال العروس معلّق → تذكير بعد 12 ثم 48 ساعة
+        try {
+          const { data: proofs } = await admin.from("bookings")
+            .select("id, photographer_id, client_name, event_date, deposit_amount, deposit_sent_at, reminders_sent")
+            .eq("status", "pending_deposit").not("deposit_sent_at", "is", null).is("deleted_at", null)
+            .order("deposit_sent_at", { ascending: true })
+            .limit(200);
+          for (const b of (proofs ?? []) as any[]) {
+            const age = Date.now() - new Date(b.deposit_sent_at).getTime();
+            const sent: string[] = b.reminders_sent ?? [];
+            let key: string | null = null;
+            if (age >= 48 * H && !sent.includes("proof48")) key = "proof48";
+            else if (age >= 12 * H && !sent.includes("proof12")) key = "proof12";
+            if (!key) continue;
+            await mark(b.id, sent, key === "proof48" ? ["proof12", "proof48"] : ["proof12"]);
+            await notifyPhotographer(b.photographer_id, {
+              title: key === "proof48" ? `⚠️ إيصال ${b.client_name} ينتظر تأكيدكِ منذ يومين` : `إيصال عربون من ${b.client_name} بانتظار تأكيدكِ`,
+              body: `العروس رفعت إيصال ${b.deposit_amount} د.أ لحجز ${arDate(b.event_date)}. افحصي حسابكِ واضغطي "وصلني العربون" لتثبيت الحجز، أو راسليها إن كان الإيصال غير واضح.`,
+              link: `/dashboard/bookings/${b.id}`,
+              template: "deposit_sent_photographer",
+              bookingId: b.id,
+            });
+            out.deposit_reminders++;
+          }
+        } catch (e) { console.error("[deadlines] proof reminder failed", e); out.errors++; }
+
         // اليوم بتوقيت الأردن ± أيام (YYYY-MM-DD)
         const jDay = (n: number) => new Date(Date.now() + 3 * H + n * 24 * H).toISOString().slice(0, 10);
 

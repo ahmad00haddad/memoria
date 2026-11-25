@@ -289,6 +289,7 @@ export const respondAddendum = createServerFn({ method: "POST" })
     }
     if (Object.keys(patch).length) {
       const { error: eb } = await supabaseAdmin.from("bookings").update(patch as any).eq("id", bk.id);
+      if (eb?.message?.includes("SLOT_CONFLICT")) throw new Error(tr("التاريخ الجديد لم يعد متاحاً عند المصوّرة. راسليها لاقتراح موعد آخر."));
       if (eb) throw new Error(eb.message);
     }
     const { data: upd, error } = await supabaseAdmin.from("booking_addenda")
