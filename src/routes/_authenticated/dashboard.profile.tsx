@@ -24,7 +24,7 @@ import { BASIC_LIMITS, PRO_PHOTOS } from "@/lib/plans";
 import { BasicLimitNote } from "@/components/dashboard/BasicLimitNote";
 import { getMyVerification, requestVerification, updateNotificationPreferences } from "@/lib/trust.functions";
 import { startTour, useTourState, resetTour } from "@/components/ClientTour";
-import { startPhotographerTour } from "@/components/PhotographerTour";
+import { startPhotographerTour } from "@/components/tour-start";
 import { PaymentMethodsEditor } from "@/components/PaymentMethods";
 import { parseMethods, normalizeMethods, legacyColumns, isUsable, isStarted, isComplete, missingFields } from "@/lib/payment-methods";
 import { locale } from "@/i18n";

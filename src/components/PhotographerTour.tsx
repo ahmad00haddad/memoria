@@ -24,10 +24,7 @@ function write(s: State) {
   try { localStorage.setItem(KEY, JSON.stringify(s)); window.dispatchEvent(new Event("photographer-tour")); } catch { /* ignore */ }
 }
 
-/** يشغّل الجولة من أولها (زر «أعيدي الجولة» في الفوتر والإعدادات). */
-export function startPhotographerTour() {
-  write({ status: "active", step: 0, min: false });
-}
+export { startPhotographerTour } from "@/components/tour-start";
 
 type Progress = { photo: boolean; name: boolean; cliq: boolean; pkg: boolean; published: boolean; telegram: boolean };
 

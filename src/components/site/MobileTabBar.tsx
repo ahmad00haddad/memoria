@@ -2,7 +2,7 @@ import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, Search, LayoutDashboard, User, HelpCircle, Briefcase, Tag, PlusCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { openCommandPalette } from "@/components/CommandPalette";
+import { openCommandPalette } from "@/components/command-event";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { useEffect, useState } from "react";
 import { t as tr, tx } from "@/i18n";

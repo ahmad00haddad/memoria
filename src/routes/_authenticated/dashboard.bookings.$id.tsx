@@ -16,7 +16,7 @@ import { confirmBookingAfterDeposit, softDeleteBooking, regenerateBookingToken
 } from "@/lib/booking.functions";
 import { createContractForBooking } from "@/lib/contracts.functions";
 import { cancelBooking } from "@/lib/cancellation.functions";
-import { approveBookingRequest, rejectBookingRequest } from "@/lib/approval.functions";
+import { approveBookingRequest, rejectBookingRequest, rejectDepositProof } from "@/lib/approval.functions";
 import { WhatsAppQuickSend } from "@/components/WhatsAppQuickSend";
 import { ShotList } from "@/components/ShotList";
 import { watermarkImageFile } from "@/lib/watermark";
@@ -122,6 +122,8 @@ function BookingDetail() {
   const [cancelReason, setCancelReason] = useState("");
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [proofRejectOpen, setProofRejectOpen] = useState(false);
+  const [proofRejectReason, setProofRejectReason] = useState("");
   // التلميحات المُغلقة تُحفظ لكل حجز حتى لا تعود للظهور في كل زيارة
   const hintsKey = `memoria.dismissed-hints.${id}`;
   const [dismissedHints, setDismissedHints] = useState<string[]>(() => {
@@ -138,6 +140,7 @@ function BookingDetail() {
   const approveFn = useServerFn(approveBookingRequest);
   const reportChatFn = useServerFn(reportChatAsPhotographer);
   const rejectFn = useServerFn(rejectBookingRequest);
+  const rejectProofFn = useServerFn(rejectDepositProof);
   const createContractFn = useServerFn(createContractForBooking);
   const { isBasic } = usePlan();
   // Server functions آمنة بديلاً عن الكتابة المباشرة
@@ -336,6 +339,21 @@ function BookingDetail() {
     }
   };
 
+  const doRejectProof = async () => {
+    setActionLoading("proofreject");
+    try {
+      await rejectProofFn({ data: { booking_id: id, reason: proofRejectReason.trim() } });
+      setProofRejectOpen(false);
+      setProofRejectReason("");
+      toast.success(tr("رُفض الإيصال وأبلغنا العروس بالسبب"));
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || tr("تعذّر رفض الإيصال"));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const doReject = async () => {
     setActionLoading("reject");
     try {
@@ -486,7 +504,7 @@ function BookingDetail() {
       return { title: tr("طلب جديد بانتظار موافقتك"), detail: tr("باقي {0} ساعة — بعدها يُلغى تلقائياً ويُفتح التاريخ", [left]), cta: tr("موافقة"), icon: <CheckCircle2 className="h-4 w-4" />, run: doApprove, busy: actionLoading === "approve", secondary: { label: tr("رفض"), run: () => setRejectOpen(true) } };
     }
     if (b.status === "pending_deposit" && (b.deposit_proof_url || b.deposit_sent_at)) {
-      return { title: g(tr("العربون وصل — راجعيه وأكّدي"), tr("العربون وصل — راجعه وأكّد")), detail: g(tr("تأكّدي من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال", [b.deposit_amount]), tr("تأكّد من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمد على صورة الإيصال", [b.deposit_amount])), cta: tr("تأكيد العربون"), icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status" };
+      return { title: g(tr("العربون وصل — راجعيه وأكّدي"), tr("العربون وصل — راجعه وأكّد")), detail: g(tr("تأكّدي من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمدي على صورة الإيصال", [b.deposit_amount]), tr("تأكّد من تطبيق البنك أن {0} د.أ وصلت فعلاً — لا تعتمد على صورة الإيصال", [b.deposit_amount])), cta: tr("تأكيد العربون"), icon: <CheckCircle2 className="h-4 w-4" />, run: () => setStatus("confirmed"), busy: actionLoading === "status", secondary: { label: tr("الإيصال غير صحيح"), run: () => setProofRejectOpen(true) } };
     }
     if (b.status === "quote" || b.status === "pending_deposit") {
       // حدّ أعلى 48: ساعة الجهاز قد تتأخر قليلاً عن الخادم فتظهر «49 ساعة» بعد الموافقة مباشرة
@@ -990,6 +1008,21 @@ function BookingDetail() {
           <div className="flex justify-end gap-2">
             <button onClick={() => setRejectOpen(false)} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{tr("تراجع")}</button>
             <button onClick={doReject} disabled={rejectReason.trim().length < 3 || actionLoading === "reject"} className="rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50">{tr("رفض الطلب")}</button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* رفض إيصال العربون — الحجز يبقى والسبب يصل للعروس */}
+      <Dialog open={proofRejectOpen} onOpenChange={setProofRejectOpen}>
+        <DialogContent dir={dirOf(getLang())}>
+          <DialogHeader>
+            <DialogTitle>{tr("رفض إيصال {0}", [b.client_name])}</DialogTitle>
+            <DialogDescription>{tr("الحجز يبقى محفوظاً ولا يُلغى. ستصل للعروس رسالة بالسبب لترفع إيصالاً صحيحاً.")}</DialogDescription>
+          </DialogHeader>
+          <label htmlFor="proof-reject-reason" className="text-sm">{tr("السبب")}{" "}<span className="text-muted-foreground">{tr("(إلزامي — يصل للعروس)")}</span></label>
+          <textarea id="proof-reject-reason" value={proofRejectReason} onChange={(e) => setProofRejectReason(e.target.value)} rows={3} placeholder={tr("مثلاً: المبلغ لم يصل إلى حسابي بعد")} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm" />
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setProofRejectOpen(false)} className="rounded-full border border-border px-4 py-2 text-sm hover:bg-secondary">{tr("تراجع")}</button>
+            <button onClick={doRejectProof} disabled={proofRejectReason.trim().length < 3 || actionLoading === "proofreject"} className="rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50">{tr("رفض الإيصال")}</button>
           </div>
         </DialogContent>
       </Dialog>

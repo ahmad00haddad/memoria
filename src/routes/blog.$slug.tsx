@@ -1,13 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
-import { BLOG_POSTS, getPost } from "@/content/blog";
-import { SITE_URL } from "@/content/seo";
+import { BLOG_POSTS } from "@/content/blog";
+import { SITE_URL } from "@/content/site-url";
 import { locale } from "@/i18n";
 import { t as tr, tx } from "@/i18n";
 
 export const Route = createFileRoute("/blog/$slug")({
-  loader: ({ params }) => {
+  loader: async ({ params }) => {
+    const { getPost } = await import("@/content/blog");
     const post = getPost(params.slug);
     if (!post) throw notFound();
     return post;

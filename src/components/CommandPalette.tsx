@@ -9,12 +9,8 @@ import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, C
 import { locale } from "@/i18n";
 import { t, tx } from "@/i18n";
 
-export const OPEN_COMMAND_EVENT = "memoria:open-command";
-
-/** يفتح لوحة الأوامر من أي زر في الصفحة. */
-export function openCommandPalette() {
-  window.dispatchEvent(new Event(OPEN_COMMAND_EVENT));
-}
+import { OPEN_COMMAND_EVENT } from "@/components/command-event";
+export { OPEN_COMMAND_EVENT, openCommandPalette } from "@/components/command-event";
 
 const PAGES = [
   { label: "لوحتي", to: "/dashboard", icon: Home, keywords: "dashboard home الرئيسية" },

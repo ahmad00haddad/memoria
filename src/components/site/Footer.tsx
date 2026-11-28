@@ -3,7 +3,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useAuthState } from "@/hooks/use-auth-state";
 import { startTour } from "@/components/ClientTour";
-import { startPhotographerTour } from "@/components/PhotographerTour";
+import { startPhotographerTour } from "@/components/tour-start";
 import { DrawRule } from "@/components/site/Reveal";
 import { t } from "@/i18n";
 

@@ -1,6 +1,7 @@
 import { t } from "@/i18n";
 // محتوى صفحات المدن والمناسبات (SEO). كل المحتوى نصي ثابت بلا أرقام أو ادعاءات مخترعة.
-export const SITE_URL = "https://memoria-production.ahmad000haddad.workers.dev";
+import { SITE_URL } from "@/content/site-url";
+export { SITE_URL };
 
 export type Faq = { q: string; a: string };
 

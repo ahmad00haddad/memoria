@@ -13,6 +13,7 @@ export default (nitroApp: any) => {
     const base = env.PUBLIC_APP_URL || "https://memoria-production.ahmad000haddad.workers.dev";
     const now = new Date();
     const daily = now.getUTCHours() === 6 && now.getUTCMinutes() < 30;
+    const results: { job: string; status: number; error?: string }[] = [];
     for (const path of daily ? [...PATHS, ...DAILY_PATHS] : PATHS) {
       try {
         const res = await nitroApp.fetch(
@@ -22,9 +23,23 @@ export default (nitroApp: any) => {
           }),
         );
         console.log("[cron]", path, res.status, (await res.text()).slice(0, 500));
+        results.push({ job: path, status: res.status });
       } catch (e) {
         console.error("[cron]", path, "failed", e);
+        results.push({ job: path, status: 0, error: String((e as any)?.message ?? e) });
       }
+    }
+    // نبض: يسجّل النتيجة وينبّه الأدمن عند التعثّر (فشله لا يؤثر على المهام)
+    try {
+      await nitroApp.fetch(
+        new Request(`${base}/api/public/hooks/heartbeat`, {
+          method: "POST",
+          headers: { "x-cron-secret": env.CRON_SECRET, "content-type": "application/json" },
+          body: JSON.stringify({ results }),
+        }),
+      );
+    } catch (e) {
+      console.error("[cron] heartbeat failed", e);
     }
   });
 };

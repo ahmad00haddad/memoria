@@ -82,6 +82,7 @@ import { Route as ApiPublicGoogleCallbackRouteImport } from './routes/api/public
 import { Route as ApiPublicHooksBookingChangedRouteImport } from './routes/api/public/hooks/booking-changed'
 import { Route as ApiPublicHooksBookingDeadlinesRouteImport } from './routes/api/public/hooks/booking-deadlines'
 import { Route as ApiPublicHooksEmailRemindersRouteImport } from './routes/api/public/hooks/email-reminders'
+import { Route as ApiPublicHooksHeartbeatRouteImport } from './routes/api/public/hooks/heartbeat'
 import { Route as ApiPublicHooksIcalSyncRouteImport } from './routes/api/public/hooks/ical-sync'
 import { Route as ApiPublicHooksPaymentRouteImport } from './routes/api/public/hooks/payment'
 import { Route as ApiPublicHooksPaytabsRouteImport } from './routes/api/public/hooks/paytabs'
@@ -488,6 +489,11 @@ const ApiPublicHooksEmailRemindersRoute =
     path: '/api/public/hooks/email-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksHeartbeatRoute = ApiPublicHooksHeartbeatRouteImport.update({
+  id: '/api/public/hooks/heartbeat',
+  path: '/api/public/hooks/heartbeat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksIcalSyncRoute = ApiPublicHooksIcalSyncRouteImport.update({
   id: '/api/public/hooks/ical-sync',
   path: '/api/public/hooks/ical-sync',
@@ -591,6 +597,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
   '/api/public/hooks/booking-deadlines': typeof ApiPublicHooksBookingDeadlinesRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
+  '/api/public/hooks/heartbeat': typeof ApiPublicHooksHeartbeatRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
@@ -668,6 +675,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
   '/api/public/hooks/booking-deadlines': typeof ApiPublicHooksBookingDeadlinesRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
+  '/api/public/hooks/heartbeat': typeof ApiPublicHooksHeartbeatRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
@@ -750,6 +758,7 @@ export interface FileRoutesById {
   '/api/public/hooks/booking-changed': typeof ApiPublicHooksBookingChangedRoute
   '/api/public/hooks/booking-deadlines': typeof ApiPublicHooksBookingDeadlinesRoute
   '/api/public/hooks/email-reminders': typeof ApiPublicHooksEmailRemindersRoute
+  '/api/public/hooks/heartbeat': typeof ApiPublicHooksHeartbeatRoute
   '/api/public/hooks/ical-sync': typeof ApiPublicHooksIcalSyncRoute
   '/api/public/hooks/payment': typeof ApiPublicHooksPaymentRoute
   '/api/public/hooks/paytabs': typeof ApiPublicHooksPaytabsRoute
@@ -832,6 +841,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/booking-changed'
     | '/api/public/hooks/booking-deadlines'
     | '/api/public/hooks/email-reminders'
+    | '/api/public/hooks/heartbeat'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/hooks/paytabs'
@@ -909,6 +919,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/booking-changed'
     | '/api/public/hooks/booking-deadlines'
     | '/api/public/hooks/email-reminders'
+    | '/api/public/hooks/heartbeat'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/hooks/paytabs'
@@ -990,6 +1001,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/booking-changed'
     | '/api/public/hooks/booking-deadlines'
     | '/api/public/hooks/email-reminders'
+    | '/api/public/hooks/heartbeat'
     | '/api/public/hooks/ical-sync'
     | '/api/public/hooks/payment'
     | '/api/public/hooks/paytabs'
@@ -1036,6 +1048,7 @@ export interface RootRouteChildren {
   ApiPublicHooksBookingChangedRoute: typeof ApiPublicHooksBookingChangedRoute
   ApiPublicHooksBookingDeadlinesRoute: typeof ApiPublicHooksBookingDeadlinesRoute
   ApiPublicHooksEmailRemindersRoute: typeof ApiPublicHooksEmailRemindersRoute
+  ApiPublicHooksHeartbeatRoute: typeof ApiPublicHooksHeartbeatRoute
   ApiPublicHooksIcalSyncRoute: typeof ApiPublicHooksIcalSyncRoute
   ApiPublicHooksPaymentRoute: typeof ApiPublicHooksPaymentRoute
   ApiPublicHooksPaytabsRoute: typeof ApiPublicHooksPaytabsRoute
@@ -1557,6 +1570,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksEmailRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/heartbeat': {
+      id: '/api/public/hooks/heartbeat'
+      path: '/api/public/hooks/heartbeat'
+      fullPath: '/api/public/hooks/heartbeat'
+      preLoaderRoute: typeof ApiPublicHooksHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/ical-sync': {
       id: '/api/public/hooks/ical-sync'
       path: '/api/public/hooks/ical-sync'
@@ -1763,6 +1783,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksBookingChangedRoute: ApiPublicHooksBookingChangedRoute,
   ApiPublicHooksBookingDeadlinesRoute: ApiPublicHooksBookingDeadlinesRoute,
   ApiPublicHooksEmailRemindersRoute: ApiPublicHooksEmailRemindersRoute,
+  ApiPublicHooksHeartbeatRoute: ApiPublicHooksHeartbeatRoute,
   ApiPublicHooksIcalSyncRoute: ApiPublicHooksIcalSyncRoute,
   ApiPublicHooksPaymentRoute: ApiPublicHooksPaymentRoute,
   ApiPublicHooksPaytabsRoute: ApiPublicHooksPaytabsRoute,

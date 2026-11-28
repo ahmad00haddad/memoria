@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { BLOG_POSTS } from "@/content/blog";
-import { SITE_URL } from "@/content/seo";
+import { SITE_URL } from "@/content/site-url";
 import { t, tx } from "@/i18n";
 
 const URL = `${SITE_URL}/blog`;

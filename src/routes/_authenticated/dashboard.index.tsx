@@ -44,7 +44,7 @@ import { missingDisclosures } from "@/components/PackageFacts";
 import { NotifyChannelsCard } from "@/components/dashboard/NotifyChannelsCard";
 import { ToolIndex, Sparkline, sortTools, type Tool } from "@/components/dashboard/ToolIndex";
 import { computeFocusItems, type FocusItem } from "@/components/dashboard/focus";
-import { openCommandPalette } from "@/components/CommandPalette";
+import { openCommandPalette } from "@/components/command-event";
 import { Search } from "lucide-react";
 import { locale } from "@/i18n";
 import { tx, t as tr } from "@/i18n";

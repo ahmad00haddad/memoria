@@ -15,19 +15,18 @@ import { Toaster } from "@/components/ui/sonner";
 import { installFriendlyToasts } from "@/lib/friendlyErrors";
 installFriendlyToasts();
 import { supabase } from "@/integrations/supabase/client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
-import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
-import { PhotographerCommandPalette } from "@/components/CommandPalette";
+const PhotographerCommandPalette = lazy(() => import("@/components/CommandPalette").then((m) => ({ default: m.PhotographerCommandPalette })));
 import { LazyMotion, domAnimation, motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { MobileTabBar } from "@/components/site/MobileTabBar";
-import { PwaInstallPrompt } from "@/components/site/PwaInstallPrompt";
-import { GameHint } from "@/components/site/GameHint";
+const PwaInstallPrompt = lazy(() => import("@/components/site/PwaInstallPrompt").then((m) => ({ default: m.PwaInstallPrompt })));
+const GameHint = lazy(() => import("@/components/site/GameHint").then((m) => ({ default: m.GameHint })));
 import { BrideGame } from "@/components/site/BrideGame";
 import { ClientTour } from "@/components/ClientTour";
-import { PhotographerTour } from "@/components/PhotographerTour";
+const PhotographerTour = lazy(() => import("@/components/PhotographerTour").then((m) => ({ default: m.PhotographerTour })));
 import { IntroContext, markIntroSeen, readIntro } from "@/lib/intro";
 import { FirstVisitIntro } from "@/components/site/FirstVisitIntro";
 import { getLang, dirOf, LANG_COOKIE } from "@/i18n";
@@ -351,23 +350,28 @@ function RootComponent() {
     if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/notifications')) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: "vertical",
-      smoothWheel: true,
-    });
-    
-    let animationFrameId: number;
-    function raf(time: number) {
-      lenis.raf(time);
+    let cancelled = false;
+    let animationFrameId = 0;
+    let lenis: { raf: (t: number) => void; destroy: () => void } | null = null;
+    import("lenis").then(({ default: Lenis }) => {
+      if (cancelled) return;
+      lenis = new Lenis({
+        duration: 1.2,
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: "vertical",
+        smoothWheel: true,
+      });
+      const raf = (time: number) => {
+        lenis?.raf(time);
+        animationFrameId = requestAnimationFrame(raf);
+      };
       animationFrameId = requestAnimationFrame(raf);
-    }
-    animationFrameId = requestAnimationFrame(raf);
-    
+    });
+
     return () => {
+      cancelled = true;
       cancelAnimationFrame(animationFrameId);
-      lenis.destroy();
+      lenis?.destroy();
     };
   }, [pathname]);
 
@@ -448,13 +452,13 @@ function RootComponent() {
               </motion.div>
             </AnimatePresence>
             <MobileTabBar />
-            <PhotographerCommandPalette />
+            <Suspense fallback={null}><PhotographerCommandPalette /></Suspense>
             {/* داخل معاينة الإعدادات: الصفحة فقط، بلا جولات أو نوافذ ترويجية */}
             {!embedded && <>
-            <PwaInstallPrompt />
-            <GameHint />
+            <Suspense fallback={null}><PwaInstallPrompt /></Suspense>
+            <Suspense fallback={null}><GameHint /></Suspense>
             <ClientTour />
-            <PhotographerTour />
+            <Suspense fallback={null}><PhotographerTour /></Suspense>
             </>}
             <Toaster position="top-center" richColors closeButton />
            </MotionConfig>

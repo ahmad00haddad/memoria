@@ -1,11 +1,11 @@
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { LayoutDashboard, Calendar, ListChecks, User, Plus, CalendarX, Link2, MessageCircle, Clapperboard, X, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthState } from "@/hooks/use-auth-state";
-import { ManualBookingSheet } from "@/components/dashboard/ManualBookingSheet";
+const ManualBookingSheet = lazy(() => import("@/components/dashboard/ManualBookingSheet").then((m) => ({ default: m.ManualBookingSheet })));
 import { BlockDaySheet } from "@/components/dashboard/BlockDaySheet";
 import { supabase } from "@/integrations/supabase/client";
 import { g } from "@/hooks/use-gender";
@@ -128,7 +128,7 @@ function QuickActions({ open, onClose }: { open: boolean; onClose: () => void })
 
   return (
     <>
-    <ManualBookingSheet open={sheet === "booking"} onClose={() => setSheet(null)} />
+    {sheet === "booking" && <Suspense fallback={null}><ManualBookingSheet open onClose={() => setSheet(null)} /></Suspense>}
     <BlockDaySheet open={sheet === "block"} onClose={() => setSheet(null)} />
     <AnimatePresence>
       {open && (
