@@ -234,6 +234,50 @@ export const Route = createFileRoute("/api/public/hooks/email-reminders")({
         }
 
         // ===================================================================
+        // 1d) تسليم متأخر (ST5) — تذكير داخل التطبيق للمصوّرة كل 3 أيام بعد delivery_due_at
+        //     ثلاث استدعاءات فقط (قراءة، قراءة تكرار، إدراج دفعة واحدة) بسبب حد الـ subrequests.
+        // ===================================================================
+        try {
+          const nowIso = new Date().toISOString();
+          const { data: late } = await (supabaseAdmin as any)
+            .from("bookings")
+            .select("id, photographer_id, client_name, delivery_due_at")
+            .eq("status", "confirmed")
+            .neq("production_stage", "delivered")
+            .lt("delivery_due_at", nowIso)
+            .is("deleted_at", null)
+            .order("delivery_due_at", { ascending: true })
+            .limit(15);
+          const lateRows = (late ?? []) as any[];
+          if (lateRows.length) {
+            const links = lateRows.map((b) => `/dashboard/bookings/${b.id}`);
+            const since = new Date(Date.now() - 3 * 86400000).toISOString();
+            const { data: recent } = await (supabaseAdmin as any)
+              .from("notifications").select("link")
+              .eq("title", "تسليم متأخر").in("link", links).gte("created_at", since);
+            const done = new Set(((recent ?? []) as any[]).map((r) => r.link));
+            const rows = lateRows
+              .filter((b) => !done.has(`/dashboard/bookings/${b.id}`))
+              .map((b) => {
+                const days = Math.max(1, Math.floor((Date.now() - new Date(b.delivery_due_at).getTime()) / 86400000));
+                return {
+                  user_id: b.photographer_id,
+                  title: "تسليم متأخر",
+                  body: `تأخّر تسليم صور ${b.client_name || "العميلة"} ${days} يوم عن الموعد الموعود. حدّثي المرحلة أو راسليها.`,
+                  link: `/dashboard/bookings/${b.id}`,
+                };
+              });
+            if (rows.length) {
+              await (supabaseAdmin as any).from("notifications").insert(rows);
+              results.reminders += rows.length;
+            }
+          }
+        } catch (e) {
+          console.error("[email-reminders] late-delivery reminder failed:", e);
+          results.errors++;
+        }
+
+        // ===================================================================
         // 1c) مصوّرة لم تُكمل إعداد صفحتها — بعد يوم وبعد 3 أيام من التسجيل، مرة واحدة لكل منهما
         // ===================================================================
         try {
